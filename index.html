@@ -26,12 +26,45 @@ Hinweis: Entfernen oder Verändern dieser Signatur ist nicht autorisiert.
 :root{
   --bg:#0a0e13; --panel:#141b25; --panel2:#1a2330; --panel3:#202c3c;
   --line:#27364a; --line2:#1d2939;
-  --tx:#dce6f2; --mut:#8ca0b6; --dim:#5f7186;
+  --tx:#dce6f2; --mut:#8ca0b6; --dim:#7d8da0;
   --acc:#ffd24a; --acc2:#4fd2ff; --ch3:#ff7ad9; --ch4:#7dff9b;
   --gut:#3ecf8e; --bad:#ff6b6b; --warnbg:#3a2620; --warnbd:#b3582f;
+  --accBg:#ffd24a;
   --mono:ui-monospace,'SF Mono',Menlo,Consolas,'Cascadia Mono',monospace;
   --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
+
+/* === Light-Theme (Chrome hell; Scope-Bilder bleiben bewusst dunkel) === */
+:root[data-theme="light"]{
+  --bg:#eaeef3; --panel:#ffffff; --panel2:#f3f6fa; --panel3:#e6ecf3;
+  --line:#cbd6e1; --line2:#d9e1ea;
+  --tx:#14212f; --mut:#41516a; --dim:#586778;
+  --acc:#7a5d05; --accBg:#f2c024;
+  --acc2:#0a6ea0; --ch3:#b23694; --ch4:#1f8a54;
+  --gut:#1c8a5a; --bad:#c5343d;
+  --warnbg:#fff2e2; --warnbd:#c07636;
+}
+:root[data-theme="light"] body{background:var(--bg);color:var(--tx)}
+:root[data-theme="light"] header{background:linear-gradient(#f6f9fc,#eef2f7)}
+:root[data-theme="light"] #installbar{background:linear-gradient(#f6f9fc,#eef2f7)}
+:root[data-theme="light"] .hero{background:linear-gradient(160deg,#ffffff,#eef3f8)}
+:root[data-theme="light"] code,:root[data-theme="light"] .mono{background:#e5ebf2}
+:root[data-theme="light"] .tip{background:#e7f4ec;border-color:#7cc79b}
+:root[data-theme="light"] .simp{background:#e6f0f8;border-color:#8fbcd8}
+:root[data-theme="light"] .prof{background:#f6efda;border-color:#cdb877}
+:root[data-theme="light"] .warn b{color:#a75a24}
+:root[data-theme="light"] .b-sensor{color:#1668a8;border-color:#8fbcd8}
+:root[data-theme="light"] .b-aktor{color:#a85a1f;border-color:#d8ab86}
+:root[data-theme="light"] .b-lambda{color:#2c7a2c;border-color:#9ccf9c}
+:root[data-theme="light"] .b-bus{color:#7a3aa8;border-color:#c3a4e0}
+:root[data-theme="light"] .fchip.on{background:#8fd0ef;border-color:#8fd0ef;color:#06222e}
+:root[data-theme="light"] .gsbtn.gut.on{background:#dff2e8;color:#14663f}
+:root[data-theme="light"] .gsbtn.bad.on{background:#fbe3e3;color:#9e2b2b}
+:root[data-theme="light"] input[type=search],
+:root[data-theme="light"] input[type=text],
+:root[data-theme="light"] #importmodal select,
+:root[data-theme="light"] #importmodal textarea,
+:root[data-theme="light"] .varsel{background:#ffffff;color:var(--tx)}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--tx);font:16px/1.55 var(--sans);padding-bottom:60px}
@@ -52,12 +85,12 @@ header{position:sticky;top:0;z-index:50;background:linear-gradient(#0d131b,#0b10
 .hbtn{margin-left:auto;display:flex;gap:.4rem}
 button{font:inherit;color:inherit;cursor:pointer}
 .ibtn{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:.4rem .65rem;font-size:.85rem;font-family:var(--mono)}
-.ibtn.on{background:var(--acc);color:#1a1405;border-color:var(--acc);font-weight:700}
+.ibtn.on{background:var(--accBg);color:#1a1405;border-color:var(--accBg);font-weight:700}
 /* Kapitel-Chips */
 nav.chips{display:flex;gap:.4rem;overflow-x:auto;padding:.5rem .8rem .6rem;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 nav.chips::-webkit-scrollbar{display:none}
 .chip{flex:0 0 auto;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:.34rem .85rem;font-size:.84rem;color:var(--mut);white-space:nowrap}
-.chip.act{background:var(--acc);border-color:var(--acc);color:#1a1405;font-weight:700}
+.chip.act{background:var(--accBg);border-color:var(--accBg);color:#1a1405;font-weight:700}
 /* ===== Seiten ===== */
 main{max-width:880px;margin:0 auto;padding:1rem .8rem}
 .page{display:none}
@@ -122,8 +155,8 @@ input::placeholder{color:var(--dim)}
 .sigset{display:none}.sigset.on{display:block}
 /* Signalbilder */
 figure.sig{margin:.7rem 0;border-radius:10px;overflow:hidden;border:2px solid var(--line)}
-figure.sig.g{border-color:#1f5c43}
-figure.sig.b{border-color:#6e2c2c}
+figure.sig.g{border-color:#1f5c43;border-style:solid}
+figure.sig.b{border-color:#6e2c2c;border-style:dashed}
 figure.sig svg{display:block;width:100%;height:auto;background:#0c1118}
 figcaption{background:var(--panel2);padding:.5rem .7rem;font-size:.86rem;color:var(--mut)}
 figcaption b{color:var(--tx)}
@@ -188,9 +221,15 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
 /* === Barrierefreiheit: sichtbarer Tastatur-Fokus === */
 :focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
 .chip:focus-visible,.fchip:focus-visible,.gsbtn:focus-visible,.khead:focus-visible,.sres:focus-visible,summary:focus-visible,.qbtn:focus-visible,.ibtn:focus-visible{outline:2px solid var(--acc2);outline-offset:2px;border-radius:8px}
-.skip{position:absolute;left:-999px;top:0;z-index:200;background:var(--acc);color:#1a1405;padding:.5rem .8rem;border-radius:0 0 8px 0;font-weight:700;text-decoration:none}
+.skip{position:absolute;left:-999px;top:0;z-index:200;background:var(--accBg);color:#1a1405;padding:.5rem .8rem;border-radius:0 0 8px 0;font-weight:700;text-decoration:none}
 .skip:focus{left:0}
 [hidden]{display:none!important}
+
+/* === Install-Leiste (PWA) === */
+#installbar{display:flex;align-items:center;gap:.5rem;padding:.5rem .8rem;background:linear-gradient(#141d2a,#0e1620);border-bottom:1px solid var(--line);font-size:.9rem}
+#installbar .itxt{color:var(--mut);flex:1;min-width:0}
+#installbar .itxt b{color:var(--acc)}
+#installbar #installClose{padding:.3rem .55rem}
 
 /* === Such-Overlay-Panel (vorher ohne CSS) === */
 .spanel{max-width:680px;margin:0 auto}
@@ -201,6 +240,32 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
 /* === Ergebniszähler Messkarten === */
 .cardcount{font-family:var(--mono);font-size:.78rem;color:var(--dim);margin:.1rem .2rem .5rem;letter-spacing:.03em}
 figcaption .why{color:var(--dim)}
+
+/* === Fahrzeug-/Quellen-Varianten === */
+.varrow{display:flex;align-items:center;gap:.5rem;margin:.35rem 0 .5rem;flex-wrap:wrap}
+.varlbl{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--acc2)}
+.varsel{flex:1;min-width:180px;background:#0e141d;border:1px solid var(--line);border-radius:8px;color:var(--tx);font:inherit;padding:.45rem .6rem}
+.varquelle{font-size:.78rem;color:var(--dim);margin:.15rem 0 .4rem;font-style:italic}
+.varquelle:empty{display:none}
+.addvar{margin-top:.5rem}
+.linkbtn{background:none;border:1px dashed var(--line);border-radius:8px;padding:.4rem .7rem;color:var(--acc2);font:inherit;font-size:.85rem}
+.linkbtn:active{background:var(--panel2)}
+
+/* === Import-Modal (eigene Messung) === */
+#importmodal{position:fixed;box-sizing:border-box;inset:0;background:rgba(6,9,13,.96);z-index:100;padding:1rem .8rem;overflow:auto}
+#importmodal.on{display:block}
+.imptitle{color:var(--acc);font-size:1rem}
+.impbody{display:flex;flex-direction:column;gap:.55rem}
+.implab{display:flex;flex-direction:column;gap:.25rem;font-size:.8rem;color:var(--mut)}
+.implab>b{color:var(--tx)}
+.improw2{display:flex;gap:.6rem;flex-wrap:wrap}
+.improw2>.implab{flex:1;min-width:150px}
+#importmodal select,#importmodal textarea{width:100%;background:#0e141d;border:1px solid var(--line);border-radius:8px;color:var(--tx);font:inherit;padding:.45rem .6rem}
+#importmodal textarea{font-family:var(--mono);font-size:.85rem;resize:vertical}
+.imphint{font-size:.78rem;color:var(--dim)}
+.imppreview{border:1px solid var(--line2);border-radius:8px;padding:.4rem;background:var(--panel)}
+.impactions{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.3rem}
+.ibtn:disabled{opacity:.45;cursor:not-allowed}
 
 /* === Druckansicht: lesbar unabhängig von der Hintergrundgrafik-Einstellung === */
 @media print{
@@ -236,9 +301,11 @@ figcaption .why{color:var(--dim)}
 <meta name="rights" content="Alle Rechte vorbehalten">
 
 <meta name="description" content="KFZ-Oszilloskop-Kompendium: Offline-Diagnoseunterlage mit Messkarten, Oszi-Einstellungen, schematischen Gut- und Fehlerbildern, Ursachen und Prüfplänen für die Werkstatt.">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="dark light">
+<script>/* Theme sofort setzen – verhindert Flackern beim Laden */try{var _t=localStorage.getItem('kfzoszi-theme')||'dark';document.documentElement.setAttribute('data-theme',_t);}catch(e){}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%230a0e13%22/%3E%3Crect x=%223%22 y=%223%22 width=%2226%22 height=%2226%22 rx=%225%22 fill=%22%23070a0e%22 stroke=%22%2327364a%22/%3E%3Cpath d=%22M4 19h6l2-11 3 16 2.5-9 1.5 4H28%22 fill=%22none%22 stroke=%22%23ffd24a%22 stroke-width=%222%22 stroke-linejoin=%22round%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%230a0e13%22/%3E%3Cpath d=%22M4 19h6l2-11 3 16 2.5-9 1.5 4H28%22 fill=%22none%22 stroke=%22%23ffd24a%22 stroke-width=%222%22 stroke-linejoin=%22round%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 </head>
 <body>
 <a class="skip" href="#main">Zum Inhalt springen</a>
@@ -246,19 +313,25 @@ figcaption .why{color:var(--dim)}
 <div class="hrow">
 <div class="logo">KFZ-OSZI <small>Kompendium</small></div>
 <div class="hbtn">
+<button class="ibtn" id="btnTheme" aria-label="Hellen/dunklen Modus wechseln" title="Hell/Dunkel">☾</button>
 <button class="ibtn" id="btnSuche" aria-label="Suche öffnen" aria-haspopup="dialog">⌕ Suche</button>
 <button class="ibtn" id="btnModus">Modus: Alles</button>
 </div>
 </div>
 <nav class="chips" id="navchips"></nav>
 </header>
+<div id="installbar" hidden>
+<span class="itxt"><b>Als App installieren</b> – offline & im Vollbild nutzen</span>
+<button class="ibtn on" id="btnInstall">Installieren</button>
+<button class="ibtn" id="installClose" aria-label="Hinweis schließen">✕</button>
+</div>
 <main id="main" tabindex="-1">
 <!-- ================= START ================= -->
 <section class="page act" data-nav="Start" id="pg-start">
 <div class="hero">
 <h1>KFZ-OSZILLOSKOP-KOMPENDIUM</h1>
 <p>Lern- und Diagnoseunterlage für die Werkstatt: Messkarten mit Einstellungen, Gut- und Fehlerbildern, Ursachen und Lösungen. Offline nutzbar, für Smartphone optimiert.</p>
-<div class="legende"><i class="c1">■ CH1</i><i class="c2">■ CH2</i><i class="c3">■ CH3</i><i class="c4">■ CH4</i><i style="color:var(--gut)">▣ Gutbild</i><i style="color:var(--bad)">▣ Fehlerbild</i></div>
+<div class="legende"><i class="c1">■ CH1</i><i class="c2">■ CH2</i><i class="c3">■ CH3</i><i class="c4">■ CH4</i><i style="color:var(--gut)">✓ Gutbild</i><i style="color:var(--bad)">✕ Fehlerbild</i></div>
 </div>
 <section class="blk">
 <h3>Schnelleinstieg nach Symptom</h3>
@@ -1197,6 +1270,33 @@ Perfekt geometrische Signale sind im Fahrzeug selten realistisch.
 <div id="sres"></div>
 </div>
 </div>
+<!-- Import-Overlay: eigene Messung (CSV) -->
+<div hidden="" id="importmodal" role="dialog" aria-modal="true" aria-label="Eigene Messung importieren">
+<div class="spanel">
+<div class="srow"><b class="imptitle" id="impTitle">Eigene Messung hinzufügen</b><button class="xbtn" id="impClose" aria-label="Schließen">✕</button></div>
+<div class="impbody">
+<label class="implab">Fahrzeug / Bezeichnung<input id="impFahrzeug" type="text" placeholder="z. B. VW 1.9 TDI (AXR)"></label>
+<label class="implab">Quelle / Notiz<input id="impQuelle" type="text" placeholder="z. B. eigene Messung 03/2026"></label>
+<div class="improw2">
+<label class="implab">Bewertung<select id="impBewertung"><option value="gut">Gutbild ✓</option><option value="schlecht">Fehlerbild ✕</option></select></label>
+<label class="implab">Bildunterschrift<input id="impCaption" type="text" placeholder="kurze Beschreibung"></label>
+</div>
+<label class="implab">Messdaten – CSV: <b>Zeit,Spannung</b> (ein Wertepaar pro Zeile; Trenner , ; Tab oder Leerzeichen)
+<textarea id="impCsv" rows="5" placeholder="0.000, 0.10&#10;0.001, 0.42&#10;0.002, 1.83&#10;…"></textarea></label>
+<div class="improw2"><button type="button" class="ibtn" id="impFile">CSV-Datei wählen…</button><span class="imphint" id="impStatus"></span></div>
+<input type="file" id="impFileInput" accept=".csv,text/csv,text/plain" hidden>
+<div class="kl">Vorschau</div>
+<div id="impPreview" class="imppreview"><div class="note">Daten eingeben oder Datei laden – die Vorschau erscheint automatisch.</div></div>
+<div class="impactions">
+<button type="button" class="ibtn on" id="impSave" disabled>Speichern</button>
+<button type="button" class="ibtn" id="impExport">Alle exportieren</button>
+<button type="button" class="ibtn" id="impImport">JSON importieren</button>
+<input type="file" id="impJsonInput" accept=".json,application/json" hidden>
+</div>
+<div class="imphint">Gespeichert wird lokal auf diesem Gerät (Browser-Speicher). Export/Import teilt Varianten zwischen Geräten.</div>
+</div>
+</div>
+</div>
 <button class="up" id="upbtn" title="Nach oben">▲</button>
 <footer>
 <p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-Einzeldatei · Alle Signalbilder schematisch.</p>
@@ -1409,6 +1509,14 @@ var G = {
       if(d<0) return 0.05*Math.sin(t*200);
       return amp*Math.exp(-d*18)*Math.sin(d*420)+0.05*Math.sin(t*200);
     };
+  },
+
+  /* Echte Messpunkte [[t,v],...] (t normiert 0..1) – für importierte Captures.
+     Nutzt dieselbe lineare Interpolation wie 'ana'. */
+  samples: function(o){
+    var p=o.data||o.pts||[];
+    if(!p.length) return function(){ return 0; };
+    return G.ana({pts:p});
   }
 };
 
@@ -1487,8 +1595,10 @@ function W(spec){
   s+='<text x="'+PX.x0+'" y="'+(PX.h-12)+'" font-size="11" font-family="ui-monospace,monospace">'+leg+'</text>';
   s+='<text x="'+(PX.x1)+'" y="'+(PX.h-12)+'" text-anchor="end" fill="#8aa0b8" font-size="11" font-family="ui-monospace,monospace">'+(spec.vdiv||"")+(spec.vdiv&&spec.tdiv?"  ·  ":"")+(spec.tdiv||"")+'</text>';
 
-  /* SCHEMATISCH-Stempel + Badge */
-  s+='<text x="'+(PX.x1-6)+'" y="'+(PX.y0+14)+'" text-anchor="end" fill="#5b6b7d" font-size="10" font-family="ui-monospace,monospace" letter-spacing="2">SCHEMATISCH</text>';
+  /* Stempel: echte Messung vs. schematisch + Badge */
+  var isReal = spec.stamp || (spec.tr||[]).some(function(tr){ return tr.g==='samples'; });
+  var stampTxt = spec.stamp || (isReal ? 'MESSUNG' : 'SCHEMATISCH');
+  s+='<text x="'+(PX.x1-6)+'" y="'+(PX.y0+14)+'" text-anchor="end" fill="#5b6b7d" font-size="10" font-family="ui-monospace,monospace" letter-spacing="2">'+stampTxt+'</text>';
   if(spec.badge){
     var bcol=spec.badge==="GUT"?"#3ecf8e":"#ff6b6b";
     s+='<rect x="'+(PX.x0+4)+'" y="'+(PX.y0+4)+'" width="64" height="20" rx="4" fill="'+bcol+'22" stroke="'+bcol+'"/>';
@@ -1503,6 +1613,11 @@ function W(spec){
 
 /* ---------- 2) MESSKARTEN ---------- */
 var RW="Richtwerte können je nach Hersteller, System, Motorsteuergerät und Messgerät abweichen. Herstellerdaten und Stromlaufplan haben Vorrang.";
+
+/* Beispiel für einen echten, ins Gerät importierten Capture (KW induktiv, VW 1.9 TDI, Leerlauf).
+   t normiert 0..1, v in Volt. Zeigt, dass fahrzeugspezifische Realmessungen als reine Daten
+   in derselben Scope-Darstellung gerendert werden (Generator 'samples'). */
+var SAMPLE_KW_VWTDI=[[0,-0.1],[0.0111,1.19],[0.0222,2.37],[0.0333,2.96],[0.0444,3.02],[0.0556,2.7],[0.0667,1.81],[0.0778,0.57],[0.0889,-0.65],[0.1,-1.92],[0.1111,-2.71],[0.1222,-3.04],[0.1333,-3.03],[0.1444,-2.38],[0.1556,-1.35],[0.1667,0.08],[0.1778,1.17],[0.1889,2.4],[0.2,2.91],[0.2111,2.99],[0.2222,2.67],[0.2333,1.91],[0.2444,0.65],[0.2556,-0.63],[0.2667,-1.82],[0.2778,-2.66],[0.2889,-3.04],[0.3,-3.02],[0.3111,-2.34],[0.3222,-1.29],[0.3333,-0.05],[0.3444,1.54],[0.3556,2.94],[0.3667,3.79],[0.3778,3.97],[0.3889,3.41],[0.4,2.36],[0.4111,0.79],[0.4222,-0.92],[0.4333,-2.38],[0.4444,-3.46],[0.4556,-3.98],[0.4667,-3.76],[0.4778,-2.99],[0.4889,-1.57],[0.5,0.16],[0.5111,0],[0.5222,0.07],[0.5333,-0.12],[0.5444,-0.02],[0.5556,-0.01],[0.5667,-0.04],[0.5778,0.13],[0.5889,-0.01],[0.6,0.05],[0.6111,0.15],[0.6222,-0.06],[0.6333,-0.02],[0.6444,-0.14],[0.6556,0],[0.6667,-0.03],[0.6778,1.61],[0.6889,2.86],[0.7,3.68],[0.7111,3.75],[0.7222,3.27],[0.7333,2.22],[0.7444,0.82],[0.7556,-0.77],[0.7667,-2.22],[0.7778,-3.22],[0.7889,-3.75],[0.8,-3.64],[0.8111,-2.78],[0.8222,-1.59],[0.8333,-0.04],[0.8444,1.17],[0.8556,2.21],[0.8667,2.92],[0.8778,3.09],[0.8889,2.78],[0.9,1.81],[0.9111,0.67],[0.9222,-0.67],[0.9333,-1.79],[0.9444,-2.6],[0.9556,-3.09],[0.9667,-2.93],[0.9778,-2.31],[0.9889,-1.35],[1,0.04]];
 
 var KARTEN=[
 
@@ -1562,7 +1677,19 @@ profi:"Differenznahe Messung (Leitung gegen Leitung) killt Gleichtaktstörungen.
 check10:"Wellen gleichmäßig? Lücke da? Amplitude > ~1 V beim Start? → vermutlich gut.",
 wannschlecht:"Aussetzer, fehlende Lücke, Amplitude deutlich unter Nachbarwerten gleicher Drehzahl, Störspitzen.",
 wannok:"Kleine Amplitude bei Anlasserdrehzahl; leicht unsymmetrische Halbwellen; überhöhte Zähne neben der Lücke.",
-next:"Signal gut, startet trotzdem nicht → NW/Sync, Raildruck, Freigaben. Signal schlecht → Luftspalt/Geberrad, dann Leitung."
+next:"Signal gut, startet trotzdem nicht → NW/Sync, Raildruck, Freigaben. Signal schlecht → Luftspalt/Geberrad, dann Leitung.",
+varianten:[
+ { fahrzeug:"VW 1.9 TDI (AXR) – Leerlauf", quelle:"Beispiel-Capture (echte Messpunkte, importiert)",
+   gut:[ {yr:[-8,8],yunit:"V",vdiv:"2 V/div",tdiv:"5 ms/div",badge:"GUT",
+     tr:[{ch:1,g:"samples",o:{data:SAMPLE_KW_VWTDI},mp:"KW (Capture)"}],
+     caption:"Echte Aufzeichnung statt Schema: gleichmäßige Zähne, klar erkennbare 58-2-Lücke.",
+     why:"Aus dem Fahrzeug aufgezeichnete Kurve (kein Schema). Amplitude, Rauschen und Lückenform entsprechen dem realen Sensor bei Leerlaufdrehzahl – direkt vergleichbar mit der eigenen Messung."} ],
+   schlecht:[ {yr:[-8,8],yunit:"V",vdiv:"2 V/div",tdiv:"5 ms/div",badge:"FEHLER",
+     tr:[{ch:1,g:"samples",o:{data:SAMPLE_KW_VWTDI},tf:[function(p){return tScale(p,0.34);}],mp:"KW (Capture)"}],
+     marks:[{t:0.2,v:1.0,txt:"Amplitude zu klein"}],
+     caption:"Gleiche Messung, Amplitude auf ~1/3 – zu großer Luftspalt.",
+     why:"Reale Kurve mit stark reduzierter Amplitude: Das STG verliert das Signal zuerst bei niedriger Drehzahl (Start/Heißstart). Lücke bleibt erkennbar, Pegel jedoch grenzwertig."} ] }
+]
 },
 
 {
@@ -3684,6 +3811,126 @@ function grpBadge(c){ var g=GRPLBL[cardGroup(c)]; return '<span class="badge '+g
 function diffBadge(d){ var dots=(d>=3?'●●●':d===2?'●●':'●'); return '<span class="badge b-d'+d+'">'+dots+'</span>'; }
 function sigBadge(s){ return '<span class="badge">'+esc(s)+'</span>'; }
 
+/* ---- Fahrzeug-/Quellen-Varianten (eingebaut + nutzerdefiniert) ---- */
+function loadUserVariants(){ try{ return JSON.parse(localStorage.getItem('kfzoszi-uservariants')||'{}')||{}; }catch(e){ return {}; } }
+function saveUserVariants(obj){ try{ localStorage.setItem('kfzoszi-uservariants', JSON.stringify(obj)); return true; }catch(e){ return false; } }
+function userVariantsFor(id){ var all=loadUserVariants(); return all[id]||[]; }
+function specToHtml(s){ try{ return typeof s==='string' ? s : W(s); }catch(e){ return '<div class="note">Bild konnte nicht erzeugt werden.</div>'; } }
+function variantSources(c){
+  var out=[{label:'Neutral (schematisch)', quelle:'', user:false,
+            gut:(c.gut||[]).map(specToHtml).join(''), bad:(c.schlecht||[]).map(specToHtml).join('')}];
+  (c.varianten||[]).forEach(function(v){
+    out.push({label:v.fahrzeug||'Variante', quelle:v.quelle||'', user:false,
+              gut:(v.gut||[]).map(specToHtml).join(''), bad:(v.schlecht||[]).map(specToHtml).join('')});
+  });
+  userVariantsFor(c.id).forEach(function(v,i){
+    out.push({label:(v.fahrzeug||'Eigene Messung')+' ·', quelle:v.quelle||'eigener Import', user:true, uidx:i,
+              gut:(v.gut||[]).map(specToHtml).join(''), bad:(v.schlecht||[]).map(specToHtml).join('')});
+  });
+  return out;
+}
+
+/* ---- CSV-Import eigener Messungen ---- */
+function parseCsv(text){
+  var out=[], lines=String(text).split(/\r?\n/);
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i].trim(); if(!line) continue;
+    var parts, decComma=false;
+    if(/[;\t]/.test(line)){ parts=line.split(/[;\t]+/); decComma=true; }  /* ; oder Tab: Komma = Dezimal */
+    else parts=line.split(/[, ]+/);                                        /* Komma/Leerz. = Trenner */
+    if(parts.length<2) continue;
+    var a=parseFloat(decComma?parts[0].replace(',','.'):parts[0]);
+    var b=parseFloat(decComma?parts[1].replace(',','.'):parts[1]);
+    if(isFinite(a)&&isFinite(b)) out.push([a,b]);
+  }
+  return out;
+}
+function buildSampleSpec(pairs,opts){
+  opts=opts||{};
+  var ts=pairs.map(function(p){return p[0];}), vs=pairs.map(function(p){return p[1];});
+  var tmin=Math.min.apply(null,ts), tmax=Math.max.apply(null,ts), tspan=(tmax-tmin)||1;
+  var data=pairs.map(function(p){ return [ (p[0]-tmin)/tspan, p[1] ]; });
+  var vmin=Math.min.apply(null,vs), vmax=Math.max.apply(null,vs);
+  var pad=((vmax-vmin)*0.12)||0.5, lo=vmin-pad, hi=vmax+pad;
+  if(lo>0) lo=0;                        /* Nulllinie einblenden wenn nah */
+  var perDivV=((hi-lo)/8);
+  var perDivMs=(tspan/10)*1000;         /* Annahme: Zeit in Sekunden */
+  var tdiv = perDivMs>=1000 ? (perDivMs/1000).toFixed(2)+' s/div' : (perDivMs>=1?perDivMs.toFixed(1)+' ms/div':(perDivMs*1000).toFixed(0)+' µs/div');
+  return {
+    yr:[+lo.toFixed(2), +hi.toFixed(2)], yunit:'V',
+    vdiv:perDivV.toFixed(perDivV<1?2:1)+' V/div', tdiv:tdiv,
+    badge:opts.badge||'',
+    tr:[{ch:1, g:'samples', o:{data:data}, mp:opts.mp||'Capture'}],
+    caption:opts.caption||''
+  };
+}
+var _impCid=null, _impReturnFocus=null;
+function currentImportPairs(){ var ta=document.getElementById('impCsv'); return ta?parseCsv(ta.value):[]; }
+function currentImportSpec(){
+  var pairs=currentImportPairs(); if(pairs.length<2) return null;
+  var bew=(document.getElementById('impBewertung')||{}).value||'gut';
+  var cap=(document.getElementById('impCaption')||{}).value||'';
+  var fz=(document.getElementById('impFahrzeug')||{}).value||'';
+  return buildSampleSpec(pairs,{badge:bew==='gut'?'GUT':'FEHLER', caption:cap, mp:(fz?fz:'Capture')});
+}
+function updateImportPreview(){
+  var prev=document.getElementById('impPreview'), st=document.getElementById('impStatus'), save=document.getElementById('impSave');
+  var pairs=currentImportPairs();
+  var fz=(document.getElementById('impFahrzeug')||{}).value.trim();
+  if(st) st.textContent=pairs.length?(pairs.length+' Messpunkte erkannt'):'';
+  if(pairs.length<2){ if(prev) prev.innerHTML='<div class="note">Mindestens zwei gültige Wertepaare eingeben.</div>'; if(save) save.disabled=true; return; }
+  var spec=currentImportSpec();
+  if(prev) prev.innerHTML=W(spec);
+  if(save) save.disabled=!fz;
+}
+function openCsvImport(cid){
+  _impCid=cid; _impReturnFocus=document.activeElement;
+  var card=cardById(cid);
+  var t=document.getElementById('impTitle'); if(t) t.textContent='Eigene Messung – '+(card?card.name:'');
+  ['impFahrzeug','impQuelle','impCaption','impCsv'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  var o=document.getElementById('importmodal'); o.hidden=false; o.classList.add('on');
+  updateImportPreview();
+  setTimeout(function(){ var f=document.getElementById('impFahrzeug'); if(f) f.focus(); },30);
+}
+function closeCsvImport(){ var o=document.getElementById('importmodal'); if(o){ o.classList.remove('on'); o.hidden=true; } if(_impReturnFocus&&_impReturnFocus.focus){ try{_impReturnFocus.focus();}catch(e){} } }
+function refreshCard(cid){ var k=document.querySelector('.karte[data-id="'+cid+'"]'); if(!k) return; var body=k.querySelector('.kbody'); if(body){ body.setAttribute('data-filled','0'); fillCard(k); } }
+function saveImport(){
+  var cid=_impCid; if(!cid) return;
+  var fz=(document.getElementById('impFahrzeug')||{}).value.trim(); if(!fz) return;
+  var quelle=(document.getElementById('impQuelle')||{}).value.trim();
+  var bew=(document.getElementById('impBewertung')||{}).value||'gut';
+  var spec=currentImportSpec(); if(!spec) return;
+  var all=loadUserVariants(), arr=all[cid]||[], v=null;
+  for(var i=0;i<arr.length;i++){ if(arr[i].fahrzeug===fz){ v=arr[i]; break; } }
+  if(!v){ v={fahrzeug:fz, quelle:quelle, gut:[], schlecht:[]}; arr.push(v); }
+  else if(quelle){ v.quelle=quelle; }
+  (bew==='gut'?v.gut:v.schlecht).push(spec);
+  all[cid]=arr;
+  if(!saveUserVariants(all)){ alert('Speichern fehlgeschlagen (Browser-Speicher voll oder gesperrt).'); return; }
+  closeCsvImport();
+  refreshCard(cid);
+  /* neu hinzugefügte Variante direkt auswählen */
+  var k=document.querySelector('.karte[data-id="'+cid+'"]');
+  if(k){ var sel=k.querySelector('.varsel'); if(sel){ sel.value=String(sel.options.length-1); sel.dispatchEvent(new Event('change',{bubbles:true})); } }
+}
+function exportVariants(){
+  var data=JSON.stringify(loadUserVariants(),null,2);
+  var blob=new Blob([data],{type:'application/json'});
+  var url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download='kfzoszi-eigene-messungen.json'; document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); },100);
+}
+function importVariantsJson(text){
+  var obj; try{ obj=JSON.parse(text); }catch(e){ alert('Ungültige JSON-Datei.'); return; }
+  if(!obj||typeof obj!=='object'){ alert('Unerwartetes Format.'); return; }
+  var all=loadUserVariants(), n=0;
+  Object.keys(obj).forEach(function(cid){
+    if(!Array.isArray(obj[cid])) return;
+    all[cid]=(all[cid]||[]).concat(obj[cid]); n+=obj[cid].length;
+  });
+  if(saveUserVariants(all)){ alert(n+' Varianten importiert.'); if(_impCid) refreshCard(_impCid); }
+}
+
 /* ---- Karten-Body (lazy) ---- */
 function kfeld(label,val){ return val?('<div class="kfeld"><div class="kl">'+label+'</div><div>'+esc(val)+'</div></div>'):''; }
 function kfeldList(label,arr){ if(!arr||!arr.length) return ''; return '<div class="kfeld"><div class="kl">'+label+'</div><ul>'+arr.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>'; }
@@ -3710,12 +3957,26 @@ function buildCardBody(c){
   }
   /* Vorgang */
   if(c.vorgang&&c.vorgang.length){ h+='<div class="kfeld"><div class="kl">Mess-Vorgehen</div><ol>'+c.vorgang.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></div>'; }
-  /* Gut/Schlecht-Umschaltung */
-  if((c.gut&&c.gut.length)||(c.schlecht&&c.schlecht.length)){
+  /* Gut/Schlecht-Umschaltung + Fahrzeug-/Quellen-Varianten */
+  var vsrc=variantSources(c);
+  var hasImg=vsrc.some(function(s){ return s.gut||s.bad; });
+  if(hasImg){
+    var cur=vsrc[0];
+    var selHtml='';
+    if(vsrc.length>1){
+      selHtml='<div class="varrow"><label class="varlbl" for="varsel-'+c.id+'">Fahrzeug / Quelle</label>'
+        +'<select class="varsel" id="varsel-'+c.id+'" data-cid="'+c.id+'">'
+        +vsrc.map(function(s,i){ return '<option value="'+i+'">'+esc(s.label)+'</option>'; }).join('')
+        +'</select></div>';
+    }
     h+='<div class="kfeld"><div class="kl">Signalbilder — Gut vs. Fehler</div>'
-      +'<div class="gsbar" role="group" aria-label="Signalbild wählen"><button type="button" class="gsbtn gut on" data-gs="gut" aria-pressed="true">● Gutbild</button><button type="button" class="gsbtn bad" data-gs="bad" aria-pressed="false">● Fehlerbild</button></div>'
-      +'<div class="sigset gut on">'+(c.gut?c.gut.join(''):'')+'</div>'
-      +'<div class="sigset bad">'+(c.schlecht?c.schlecht.join(''):'')+'</div></div>';
+      +selHtml
+      +'<div class="gsbar" role="group" aria-label="Signalbild wählen"><button type="button" class="gsbtn gut on" data-gs="gut" aria-pressed="true"><span aria-hidden="true">✓</span> Gutbild</button><button type="button" class="gsbtn bad" data-gs="bad" aria-pressed="false"><span aria-hidden="true">✕</span> Fehlerbild</button></div>'
+      +'<div class="varquelle">'+(cur.quelle?('Quelle: '+esc(cur.quelle)):'')+'</div>'
+      +'<div class="sigset gut on" data-role="gut">'+cur.gut+'</div>'
+      +'<div class="sigset bad" data-role="bad">'+cur.bad+'</div>'
+      +'<div class="addvar"><button type="button" class="linkbtn addvarbtn" data-cid="'+c.id+'">+ Eigene Messung (CSV) hinzufügen</button></div>'
+      +'</div>';
   }
   if(c.check10) h+='<div class="s10"><b>10-Sekunden-Check:</b> '+esc(c.check10)+'</div>';
   h+=kfeldList('Häufige Ursachen',c.ursachen);
@@ -3902,11 +4163,56 @@ function restoreMode(){
   applyMode();
 }
 
+/* ---- Theme hell/dunkel (mit Persistenz) ---- */
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  var b=document.getElementById('btnTheme');
+  if(b){ b.textContent=(t==='light'?'☀':'☾'); b.setAttribute('aria-label', t==='light'?'Zu dunklem Modus wechseln':'Zu hellem Modus wechseln'); }
+  var m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute('content', t==='light'?'#eaeef3':'#0a0e13');
+}
+function restoreTheme(){ applyTheme(storeGet('kfzoszi-theme')||'dark'); }
+function toggleTheme(){
+  var next=(document.documentElement.getAttribute('data-theme')==='light')?'dark':'light';
+  applyTheme(next); storeSet('kfzoszi-theme', next);
+}
+
+/* ---- Datenvalidierung (Aufruf: ?validate oder window.validateKompendium()) ---- */
+function validateKompendium(){
+  var errs=[], warns=[];
+  var KAT=['sensor','lambda','aktor','zuend','einspr','elektrik','bus'];
+  var ids={};
+  KARTEN.forEach(function(c){
+    if(!c.id){ errs.push('Karte ohne id: '+(c.name||'?')); return; }
+    if(ids[c.id]) errs.push('Doppelte Karten-id: '+c.id); else ids[c.id]=1;
+    if(!c.name) errs.push(c.id+': kein name');
+    if(!c.kat) warns.push(c.id+': kein kat'); else if(KAT.indexOf(c.kat)<0) warns.push(c.id+': unbekanntes kat "'+c.kat+'"');
+    if(!(c.diff>=1&&c.diff<=3)) warns.push(c.id+': diff ausserhalb 1..3');
+    if(!c.sig) warns.push(c.id+': kein sig');
+    (c.varianten||[]).forEach(function(v,i){
+      if(!v.fahrzeug) warns.push(c.id+': Variante '+i+' ohne fahrzeug');
+      ['gut','schlecht'].forEach(function(side){
+        (v[side]||[]).forEach(function(spec,j){
+          if(typeof spec==='string') return;
+          if(!spec.yr) errs.push(c.id+': Variante '+i+'/'+side+'['+j+'] ohne yr');
+          (spec.tr||[]).forEach(function(tr){ if(!G[tr.g]) errs.push(c.id+': Variante '+i+'/'+side+'['+j+'] unbekannter Generator "'+tr.g+'"'); });
+        });
+      });
+    });
+  });
+  var fids={}; FEHLERDB.forEach(function(f){ if(!f.id){ errs.push('Fehlerbild ohne id'); } else if(fids[f.id]) errs.push('Doppelte Fehlerbild-id: '+f.id); else fids[f.id]=1; if(!f.titel) errs.push((f.id||'?')+': kein titel'); });
+  var terms={}; GLOSSAR.forEach(function(g){ if(!g.term){ errs.push('Glossar ohne term'); } else if(terms[g.term]) warns.push('Doppelter Glossarbegriff: '+g.term); else terms[g.term]=1; if(!g.def) warns.push((g.term||'?')+': keine def'); });
+  document.querySelectorAll('[data-open]').forEach(function(el){ var t=el.getAttribute('data-open'); if(t && t.indexOf("'")<0 && !document.getElementById(t)) errs.push('data-open Ziel fehlt: #'+t); });
+  document.querySelectorAll('[data-go]').forEach(function(el){ var t=el.getAttribute('data-go'); if(t && !document.getElementById(t)) errs.push('data-go Ziel fehlt: #'+t); });
+  return {errors:errs, warnings:warns, cards:KARTEN.length, fdb:FEHLERDB.length, gloss:GLOSSAR.length};
+}
+try{ window.validateKompendium=validateKompendium; }catch(e){}
+
 /* ---- Init ---- */
 function init(){
   renderStatics();
   buildNav();
   restoreMode();
+  restoreTheme();
   renderGloss(); glossRendered=true;
   buildIndex();
 
@@ -3926,13 +4232,26 @@ function init(){
     kk.querySelectorAll('.sigset').forEach(function(sset){ sset.classList.toggle('on', sset.classList.contains(which)); });
   }
   function toggleCard(head){ var k=head.closest('.karte'); fillCard(k); var open=k.classList.toggle('open'); head.setAttribute('aria-expanded', open?'true':'false'); }
+  function applyVariant(karte,cid,idx){
+    var card=cardById(cid); if(!card) return;
+    var srcs=variantSources(card); var s=srcs[idx]||srcs[0];
+    var gEl=karte.querySelector('.sigset[data-role="gut"]'), bEl=karte.querySelector('.sigset[data-role="bad"]');
+    if(gEl) gEl.innerHTML=s.gut; if(bEl) bEl.innerHTML=s.bad;
+    var q=karte.querySelector('.varquelle'); if(q) q.innerHTML=s.quelle?('Quelle: '+esc(s.quelle)):'';
+  }
   var cl=document.getElementById('cardlist');
   if(cl){
     cl.addEventListener('click',function(e){
+      var av=e.target.closest('.addvarbtn');
+      if(av){ e.preventDefault(); openCsvImport(av.getAttribute('data-cid')); return; }
       var gs=e.target.closest('.gsbtn');
       if(gs){ setGut(gs.closest('.karte'), gs.getAttribute('data-gs')); return; }
       var head=e.target.closest('.khead');
       if(head) toggleCard(head);
+    });
+    cl.addEventListener('change',function(e){
+      var sel=e.target.closest('.varsel'); if(!sel) return;
+      applyVariant(sel.closest('.karte'), sel.getAttribute('data-cid'), parseInt(sel.value,10)||0);
     });
     cl.addEventListener('keydown',function(e){
       if(e.key!=='Enter'&&e.key!==' ') return;
@@ -3953,8 +4272,23 @@ function init(){
   document.addEventListener('click',function(e){ var t=e.target.closest('[data-go]'); if(!t) return; e.preventDefault();
     var id=t.getAttribute('data-go'); var open=t.getAttribute('data-open'); go(id, open?{open:open}:{}); });
 
+  /* Import-Modal (eigene Messung / CSV) */
+  var impC=document.getElementById('impClose'); if(impC) impC.addEventListener('click',closeCsvImport);
+  ['impCsv','impFahrzeug','impCaption','impBewertung'].forEach(function(id){ var el=document.getElementById(id); if(el){ el.addEventListener('input',updateImportPreview); el.addEventListener('change',updateImportPreview); } });
+  var impFile=document.getElementById('impFile'), impFileInput=document.getElementById('impFileInput');
+  if(impFile&&impFileInput){ impFile.addEventListener('click',function(){ impFileInput.click(); });
+    impFileInput.addEventListener('change',function(){ var f=impFileInput.files&&impFileInput.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ var ta=document.getElementById('impCsv'); if(ta){ ta.value=String(r.result); updateImportPreview(); } }; r.readAsText(f); impFileInput.value=''; }); }
+  var impSave=document.getElementById('impSave'); if(impSave) impSave.addEventListener('click',saveImport);
+  var impExp=document.getElementById('impExport'); if(impExp) impExp.addEventListener('click',exportVariants);
+  var impImp=document.getElementById('impImport'), impJson=document.getElementById('impJsonInput');
+  if(impImp&&impJson){ impImp.addEventListener('click',function(){ impJson.click(); });
+    impJson.addEventListener('change',function(){ var f=impJson.files&&impJson.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ importVariantsJson(String(r.result)); }; r.readAsText(f); impJson.value=''; }); }
+
   /* Modus */
   var bm=document.getElementById('btnModus'); if(bm) bm.addEventListener('click',cycleMode);
+
+  /* Theme */
+  var bt=document.getElementById('btnTheme'); if(bt) bt.addEventListener('click',toggleTheme);
 
   /* Suche */
   var bs=document.getElementById('btnSuche'); if(bs) bs.addEventListener('click',openSearch);
@@ -3986,7 +4320,7 @@ function init(){
 
   /* Tastatur: / öffnet Suche, Esc schließt */
   document.addEventListener('keydown',function(e){
-    if(e.key==='Escape'){ closeSearch(); return; }
+    if(e.key==='Escape'){ closeSearch(); closeCsvImport(); return; }
     if(e.key==='/' && document.activeElement && ['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){ e.preventDefault(); openSearch(); }
   });
 
@@ -3999,12 +4333,49 @@ function init(){
   /* Routing */
   window.addEventListener('popstate',function(){ parseHash(); });
   if(location.hash){ parseHash(); } else { applyPage('pg-start',{}); }
+
+  /* Datenvalidierung auf Wunsch (?validate) */
+  if(location.search.indexOf('validate')>=0){
+    var vr=validateKompendium();
+    console.log('[validate] Karten:'+vr.cards+' Fehlerbilder:'+vr.fdb+' Glossar:'+vr.gloss+' – Fehler:'+vr.errors.length+' Warnungen:'+vr.warnings.length);
+    vr.errors.forEach(function(e){ console.error('  ✗ '+e); });
+    vr.warnings.forEach(function(w){ console.warn('  ! '+w); });
+  }
 }
 
 if(document.readyState!=='loading'){ init(); } else { document.addEventListener('DOMContentLoaded',init); }
 </script>
 
-<!-- PWA-Funktionen in Standalone-Version entfernt -->
+<!-- ================= PWA: Service Worker + Installation ================= -->
+<script>
+(function(){
+  "use strict";
+  /* Service Worker nur über http(s) registrieren – als lokale Einzeldatei (file:) still überspringen */
+  if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){ /* offline/kein SW – App läuft trotzdem */ });
+    });
+  }
+  /* Installations-Angebot (Android/Desktop). iOS bietet kein beforeinstallprompt. */
+  var deferred=null;
+  function store(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  function read(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function showBar(){ if(read('kfzoszi-install-dismiss')==='1') return; var b=document.getElementById('installbar'); if(b) b.hidden=false; }
+  function hideBar(){ var b=document.getElementById('installbar'); if(b) b.hidden=true; }
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferred=e; showBar(); });
+  window.addEventListener('appinstalled', function(){ hideBar(); deferred=null; store('kfzoszi-install-dismiss','1'); });
+  document.addEventListener('DOMContentLoaded', function(){
+    var bi=document.getElementById('btnInstall');
+    if(bi) bi.addEventListener('click', function(){
+      if(!deferred) return;
+      deferred.prompt();
+      deferred.userChoice.then(function(){ deferred=null; hideBar(); });
+    });
+    var ic=document.getElementById('installClose');
+    if(ic) ic.addEventListener('click', function(){ hideBar(); store('kfzoszi-install-dismiss','1'); });
+  });
+})();
+</script>
 
 
 <!--

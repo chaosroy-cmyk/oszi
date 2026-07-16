@@ -1,0 +1,21 @@
+{
+  "name": "KFZ-Oszilloskop-Kompendium",
+  "short_name": "KFZ-Oszi",
+  "description": "Offline-Diagnoseunterlage: Messkarten, Oszi-Einstellungen, schematische und fahrzeugspezifische Gut-/Fehlerbilder, Ursachen und Prüfpläne für die Werkstatt.",
+  "lang": "de",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0a0e13",
+  "theme_color": "#0a0e13",
+  "categories": ["education", "productivity", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

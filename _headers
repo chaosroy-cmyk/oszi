@@ -1,0 +1,18 @@
+# Cloudflare Pages – HTTP-Header
+
+# Service Worker und Einstiegsseite immer frisch prüfen (kein Stale-SW)
+/sw.js
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/
+  Cache-Control: no-cache
+
+# Manifest mit korrektem MIME-Typ ausliefern
+/manifest.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: public, max-age=3600
+
+# Icons dürfen lange gecacht werden
+/icons/*
+  Cache-Control: public, max-age=604800
