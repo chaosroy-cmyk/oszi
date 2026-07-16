@@ -185,6 +185,43 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
 .owner-signature .cr{display:block;margin-top:.15rem;color:var(--dim)}
 @media print{.owner-signature{break-inside:avoid;color:#000;border-color:#888}}
 
+/* === Barrierefreiheit: sichtbarer Tastatur-Fokus === */
+:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+.chip:focus-visible,.fchip:focus-visible,.gsbtn:focus-visible,.khead:focus-visible,.sres:focus-visible,summary:focus-visible,.qbtn:focus-visible,.ibtn:focus-visible{outline:2px solid var(--acc2);outline-offset:2px;border-radius:8px}
+.skip{position:absolute;left:-999px;top:0;z-index:200;background:var(--acc);color:#1a1405;padding:.5rem .8rem;border-radius:0 0 8px 0;font-weight:700;text-decoration:none}
+.skip:focus{left:0}
+[hidden]{display:none!important}
+
+/* === Such-Overlay-Panel (vorher ohne CSS) === */
+.spanel{max-width:680px;margin:0 auto}
+.srow{display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem}
+.srow input[type=search]{flex:1}
+.srow .xbtn{position:static;float:none;flex:0 0 auto;margin-left:0}
+
+/* === Ergebniszähler Messkarten === */
+.cardcount{font-family:var(--mono);font-size:.78rem;color:var(--dim);margin:.1rem .2rem .5rem;letter-spacing:.03em}
+figcaption .why{color:var(--dim)}
+
+/* === Druckansicht: lesbar unabhängig von der Hintergrundgrafik-Einstellung === */
+@media print{
+  html,body{background:#fff!important;color:#000!important;padding:0}
+  header,nav.chips,.hbtn,#suche,.up,.filterbar,.chip,.skip,.up{display:none!important}
+  .page{display:none!important}
+  .page.act{display:block!important}
+  main{max-width:100%;margin:0;padding:0}
+  /* Alle Inhaltsflächen auf hell + dunklen Text erzwingen */
+  section.blk,details,details details,.karte,.kbody,.khead,.hero,.qbtn,.note,.simp,.prof,.s10,.setuptab,.warn,.tip{
+    background:#fff!important;color:#000!important;border-color:#999!important}
+  th{background:#eee!important;color:#000!important}
+  td,th,li,p,dt,dd,summary,.kname,.kl,.setuptab b,.setuptab span{color:#000!important}
+  h2,h3,h4,.hero h1,.simp b,.prof b,.tip b,.warn b,figcaption b{color:#000!important}
+  a{color:#000!important;text-decoration:underline}
+  code,.mono{color:#000!important;background:#eee!important}
+  section.blk,.karte,figure.sig,details,.twrap,tr{break-inside:avoid;page-break-inside:avoid}
+  /* Signalbilder originalgetreu drucken: dunkler Scope-Hintergrund + helle Kurve (inkl. Bildunterschrift) */
+  figure.sig,figure.sig *{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
+}
+
 </style>
 
 <meta content="#0a0e13" name="theme-color"/>
@@ -198,19 +235,24 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
 <meta name="copyright" content="© 2026 Roy Sperlich – Alle Rechte vorbehalten">
 <meta name="rights" content="Alle Rechte vorbehalten">
 
+<meta name="description" content="KFZ-Oszilloskop-Kompendium: Offline-Diagnoseunterlage mit Messkarten, Oszi-Einstellungen, schematischen Gut- und Fehlerbildern, Ursachen und Prüfplänen für die Werkstatt.">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%230a0e13%22/%3E%3Crect x=%223%22 y=%223%22 width=%2226%22 height=%2226%22 rx=%225%22 fill=%22%23070a0e%22 stroke=%22%2327364a%22/%3E%3Cpath d=%22M4 19h6l2-11 3 16 2.5-9 1.5 4H28%22 fill=%22none%22 stroke=%22%23ffd24a%22 stroke-width=%222%22 stroke-linejoin=%22round%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%230a0e13%22/%3E%3Cpath d=%22M4 19h6l2-11 3 16 2.5-9 1.5 4H28%22 fill=%22none%22 stroke=%22%23ffd24a%22 stroke-width=%222%22 stroke-linejoin=%22round%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 </head>
 <body>
+<a class="skip" href="#main">Zum Inhalt springen</a>
 <header>
 <div class="hrow">
 <div class="logo">KFZ-OSZI <small>Kompendium</small></div>
 <div class="hbtn">
-<button class="ibtn" id="btnSuche">⌕ Suche</button>
+<button class="ibtn" id="btnSuche" aria-label="Suche öffnen" aria-haspopup="dialog">⌕ Suche</button>
 <button class="ibtn" id="btnModus">Modus: Alles</button>
 </div>
 </div>
 <nav class="chips" id="navchips"></nav>
 </header>
-<main>
+<main id="main" tabindex="-1">
 <!-- ================= START ================= -->
 <section class="page act" data-nav="Start" id="pg-start">
 <div class="hero">
@@ -1149,9 +1191,9 @@ Perfekt geometrische Signale sind im Fahrzeug selten realistisch.
 </section>
 </section></main>
 <!-- Such-Overlay -->
-<div hidden="" id="suche">
+<div hidden="" id="suche" role="dialog" aria-modal="true" aria-label="Suche im Kompendium">
 <div class="spanel">
-<div class="srow"><input autocomplete="off" id="sfeld" placeholder="Suchen… (Bauteil, Fehler, Begriff)" type="search"/><button class="xbtn" id="sclose">✕</button></div>
+<div class="srow"><input autocomplete="off" id="sfeld" aria-label="Suchbegriff" placeholder="Suchen… (Bauteil, Fehler, Begriff)" type="search"/><button class="xbtn" id="sclose" aria-label="Suche schließen">✕</button></div>
 <div id="sres"></div>
 </div>
 </div>
@@ -1386,6 +1428,8 @@ function W(spec){
   function Y(v){ var f=(v-ymin)/(ymax-ymin); return PX.y1 - f*(PX.y1-PX.y0); }
 
   var s='<svg viewBox="0 0 '+PX.w+' '+PX.h+'" xmlns="http://www.w3.org/2000/svg" role="img">';
+  var titleTxt=((spec.badge?spec.badge+': ':'')+(spec.caption||'Oszilloskop-Signalbild (schematisch)')).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  s+='<title>'+titleTxt+'</title>';
   s+='<rect x="0" y="0" width="'+PX.w+'" height="'+PX.h+'" rx="8" fill="#0b0f14"/>';
   s+='<rect x="'+PX.x0+'" y="'+PX.y0+'" width="'+(PX.x1-PX.x0)+'" height="'+(PX.y1-PX.y0)+'" fill="#070a0e" stroke="#1d2733"/>';
   /* Raster 10x8 */
@@ -3669,7 +3713,7 @@ function buildCardBody(c){
   /* Gut/Schlecht-Umschaltung */
   if((c.gut&&c.gut.length)||(c.schlecht&&c.schlecht.length)){
     h+='<div class="kfeld"><div class="kl">Signalbilder — Gut vs. Fehler</div>'
-      +'<div class="gsbar"><button class="gsbtn gut on" data-gs="gut">● Gutbild</button><button class="gsbtn bad" data-gs="bad">● Fehlerbild</button></div>'
+      +'<div class="gsbar" role="group" aria-label="Signalbild wählen"><button type="button" class="gsbtn gut on" data-gs="gut" aria-pressed="true">● Gutbild</button><button type="button" class="gsbtn bad" data-gs="bad" aria-pressed="false">● Fehlerbild</button></div>'
       +'<div class="sigset gut on">'+(c.gut?c.gut.join(''):'')+'</div>'
       +'<div class="sigset bad">'+(c.schlecht?c.schlecht.join(''):'')+'</div></div>';
   }
@@ -3704,9 +3748,12 @@ function cardMatch(c){
 function renderCards(){
   var box=document.getElementById('cardlist'); if(!box) return;
   var list=KARTEN.filter(cardMatch);
-  if(!list.length){ box.innerHTML='<div class="note">Keine Messkarte passt zu den aktuellen Filtern. Setze die Filter oben zurück.</div>'; return; }
-  box.innerHTML=list.map(function(c){
-    return '<div class="karte" data-id="'+c.id+'"><div class="khead"><div class="kname">'+esc(c.name)+'</div>'
+  var total=KARTEN.length;
+  var cnt=list.length===total?(total+' Messkarten'):(list.length+' von '+total+' Messkarten');
+  var count='<div class="cardcount" aria-live="polite">'+cnt+'</div>';
+  if(!list.length){ box.innerHTML='<div class="cardcount" aria-live="polite">0 von '+total+' Messkarten</div><div class="note">Keine Messkarte passt zu den aktuellen Filtern. Setze die Filter oben zurück.</div>'; return; }
+  box.innerHTML=count+list.map(function(c){
+    return '<div class="karte" data-id="'+c.id+'"><div class="khead" role="button" tabindex="0" aria-expanded="false"><div class="kname">'+esc(c.name)+'</div>'
       +'<div>'+grpBadge(c)+diffBadge(c.diff)+sigBadge(c.sig)+'</div></div>'
       +'<div class="kbody" data-filled="0"></div></div>';
   }).join('');
@@ -3722,6 +3769,7 @@ function openCard(id){
   renderCards(); cardsRendered=true;
   var k=document.querySelector('.karte[data-id="'+id+'"]'); if(!k) return;
   fillCard(k); k.classList.add('open');
+  var hd=k.querySelector('.khead'); if(hd) hd.setAttribute('aria-expanded','true');
   setTimeout(function(){ k.scrollIntoView({behavior:'smooth',block:'start'}); },60);
 }
 
@@ -3743,7 +3791,7 @@ function buildFdbBody(f){
 function renderFdb(){
   var box=document.getElementById('fdblist'); if(!box) return;
   box.innerHTML=FEHLERDB.map(function(f){
-    return '<div class="karte" data-fid="'+f.id+'"><div class="khead"><div class="kname">'+esc(f.titel)+'</div>'
+    return '<div class="karte" data-fid="'+f.id+'"><div class="khead" role="button" tabindex="0" aria-expanded="false"><div class="kname">'+esc(f.titel)+'</div>'
       +'<div><span class="badge b-d3">Fehlermuster</span></div></div>'
       +'<div class="kbody" data-filled="0"></div></div>';
   }).join('');
@@ -3756,6 +3804,7 @@ function openFdb(id){
   renderFdb(); fdbRendered=true;
   var k=document.querySelector('.karte[data-fid="'+id+'"]'); if(!k) return;
   fillFdb(k); k.classList.add('open');
+  var hd=k.querySelector('.khead'); if(hd) hd.setAttribute('aria-expanded','true');
   setTimeout(function(){ k.scrollIntoView({behavior:'smooth',block:'start'}); },60);
 }
 
@@ -3814,8 +3863,9 @@ function buildIndex(){
   document.querySelectorAll('.page[data-nav]').forEach(function(p){ var n=p.getAttribute('data-nav'); IDX.push({t:n,k:'Kapitel',page:p.id,q:n.toLowerCase()}); });
   document.querySelectorAll('#pg-plan details').forEach(function(d){ var s=d.querySelector('summary'); if(s&&d.id){ IDX.push({t:s.textContent.trim(),k:'Prüfplan',page:'pg-plan',open:d.id,q:s.textContent.toLowerCase()}); } });
 }
-function openSearch(){ var o=document.getElementById('suche'); o.classList.add('on'); var f=document.getElementById('sfeld'); f.value=''; runSearch(''); setTimeout(function(){ f.focus(); },30); }
-function closeSearch(){ document.getElementById('suche').classList.remove('on'); }
+var _searchReturnFocus=null;
+function openSearch(){ _searchReturnFocus=document.activeElement; var o=document.getElementById('suche'); o.hidden=false; o.classList.add('on'); var f=document.getElementById('sfeld'); f.value=''; runSearch(''); setTimeout(function(){ f.focus(); },30); }
+function closeSearch(){ var o=document.getElementById('suche'); o.classList.remove('on'); o.hidden=true; if(_searchReturnFocus&&_searchReturnFocus.focus){ try{ _searchReturnFocus.focus(); }catch(e){} } }
 function runSearch(query){
   var res=document.getElementById('sres'); if(!res) return;
   var q=(query||'').toLowerCase().trim();
@@ -3824,7 +3874,7 @@ function runSearch(query){
   var hits=IDX.filter(function(it){ return toks.every(function(t){ return it.q.indexOf(t)>=0; }); }).slice(0,50);
   if(!hits.length){ res.innerHTML='<div class="note">Nichts gefunden für „'+esc(query)+'".</div>'; return; }
   res.innerHTML=hits.map(function(it){
-    return '<div class="sres" data-page="'+it.page+'"'
+    return '<div class="sres" role="button" tabindex="0" data-page="'+it.page+'"'
       +(it.card?(' data-card="'+it.card+'"'):'')
       +(it.fdb?(' data-fdb="'+it.fdb+'"'):'')
       +(it.open?(' data-open="'+it.open+'"'):'')
@@ -3832,19 +3882,31 @@ function runSearch(query){
   }).join('');
 }
 
-/* ---- Modus ---- */
+/* ---- Modus (mit Persistenz) ---- */
 var MODES=[['','Alles'],['einsteiger','Einsteiger'],['profi','Profi']]; var mIdx=0;
-function cycleMode(){
-  mIdx=(mIdx+1)%MODES.length;
+function storeGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function storeSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function applyMode(){
   document.body.classList.remove('einsteiger','profi');
   if(MODES[mIdx][0]) document.body.classList.add(MODES[mIdx][0]);
-  var b=document.getElementById('btnModus'); if(b) b.textContent='Modus: '+MODES[mIdx][1];
+  var b=document.getElementById('btnModus'); if(b){ b.textContent='Modus: '+MODES[mIdx][1]; b.setAttribute('aria-label','Anzeigemodus '+MODES[mIdx][1]+' – tippen zum Wechseln'); }
+}
+function cycleMode(){
+  mIdx=(mIdx+1)%MODES.length;
+  applyMode();
+  storeSet('kfzoszi-mode', String(mIdx));
+}
+function restoreMode(){
+  var v=storeGet('kfzoszi-mode');
+  if(v!==null){ var i=parseInt(v,10); if(!isNaN(i)&&i>=0&&i<MODES.length){ mIdx=i; } }
+  applyMode();
 }
 
 /* ---- Init ---- */
 function init(){
   renderStatics();
   buildNav();
+  restoreMode();
   renderGloss(); glossRendered=true;
   buildIndex();
 
@@ -3859,20 +3921,33 @@ function init(){
   if(kf){ kf.addEventListener('input',function(){ state.text=kf.value.toLowerCase().trim(); renderCards(); cardsRendered=true; }); }
 
   /* Karten-Akkordeon + Gut/Schlecht (Delegation) */
+  function setGut(kk,which){
+    kk.querySelectorAll('.gsbtn').forEach(function(b){ var on=b.getAttribute('data-gs')===which; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on?'true':'false'); });
+    kk.querySelectorAll('.sigset').forEach(function(sset){ sset.classList.toggle('on', sset.classList.contains(which)); });
+  }
+  function toggleCard(head){ var k=head.closest('.karte'); fillCard(k); var open=k.classList.toggle('open'); head.setAttribute('aria-expanded', open?'true':'false'); }
   var cl=document.getElementById('cardlist');
-  if(cl){ cl.addEventListener('click',function(e){
-    var gs=e.target.closest('.gsbtn');
-    if(gs){ var kk=gs.closest('.karte'); var which=gs.getAttribute('data-gs');
-      kk.querySelectorAll('.gsbtn').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-gs')===which); });
-      kk.querySelectorAll('.sigset').forEach(function(sset){ sset.classList.toggle('on', sset.classList.contains(which)); });
-      return; }
-    var head=e.target.closest('.khead');
-    if(head){ var k=head.closest('.karte'); fillCard(k); k.classList.toggle('open'); }
-  }); }
+  if(cl){
+    cl.addEventListener('click',function(e){
+      var gs=e.target.closest('.gsbtn');
+      if(gs){ setGut(gs.closest('.karte'), gs.getAttribute('data-gs')); return; }
+      var head=e.target.closest('.khead');
+      if(head) toggleCard(head);
+    });
+    cl.addEventListener('keydown',function(e){
+      if(e.key!=='Enter'&&e.key!==' ') return;
+      var head=e.target.closest('.khead'); if(!head) return;
+      e.preventDefault(); toggleCard(head);
+    });
+  }
 
   /* Fehlerbild-Akkordeon (Delegation) */
+  function toggleFdb(head){ var k=head.closest('.karte'); fillFdb(k); var open=k.classList.toggle('open'); head.setAttribute('aria-expanded', open?'true':'false'); }
   var fl=document.getElementById('fdblist');
-  if(fl){ fl.addEventListener('click',function(e){ var head=e.target.closest('.khead'); if(head){ var k=head.closest('.karte'); fillFdb(k); k.classList.toggle('open'); } }); }
+  if(fl){
+    fl.addEventListener('click',function(e){ var head=e.target.closest('.khead'); if(head) toggleFdb(head); });
+    fl.addEventListener('keydown',function(e){ if(e.key!=='Enter'&&e.key!==' ')return; var head=e.target.closest('.khead'); if(!head)return; e.preventDefault(); toggleFdb(head); });
+  }
 
   /* Schnellzugriff-Buttons & alle [data-go] */
   document.addEventListener('click',function(e){ var t=e.target.closest('[data-go]'); if(!t) return; e.preventDefault();
@@ -3884,13 +3959,30 @@ function init(){
   /* Suche */
   var bs=document.getElementById('btnSuche'); if(bs) bs.addEventListener('click',openSearch);
   var sc=document.getElementById('sclose'); if(sc) sc.addEventListener('click',closeSearch);
-  var sf=document.getElementById('sfeld'); if(sf) sf.addEventListener('input',function(){ runSearch(sf.value); });
-  var sr=document.getElementById('sres');
-  if(sr){ sr.addEventListener('click',function(e){ var r=e.target.closest('.sres'); if(!r) return;
-    var opts={}; if(r.getAttribute('data-card'))opts.card=r.getAttribute('data-card');
+  var sf=document.getElementById('sfeld');
+  if(sf){
+    sf.addEventListener('input',function(){ runSearch(sf.value); });
+    sf.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); var first=document.querySelector('#sres .sres'); if(first) first.click(); } });
+  }
+  function openRes(r){ var opts={}; if(r.getAttribute('data-card'))opts.card=r.getAttribute('data-card');
     if(r.getAttribute('data-fdb'))opts.fdb=r.getAttribute('data-fdb');
     if(r.getAttribute('data-open'))opts.open=r.getAttribute('data-open');
-    closeSearch(); go(r.getAttribute('data-page'),opts); }); }
+    closeSearch(); go(r.getAttribute('data-page'),opts); }
+  var sr=document.getElementById('sres');
+  if(sr){
+    sr.addEventListener('click',function(e){ var r=e.target.closest('.sres'); if(r) openRes(r); });
+    sr.addEventListener('keydown',function(e){ if(e.key!=='Enter'&&e.key!==' ')return; var r=e.target.closest('.sres'); if(!r)return; e.preventDefault(); openRes(r); });
+  }
+  /* Fokus-Falle im Such-Dialog */
+  var sucheEl=document.getElementById('suche');
+  if(sucheEl){ sucheEl.addEventListener('keydown',function(e){
+    if(e.key!=='Tab') return;
+    var f=Array.prototype.filter.call(sucheEl.querySelectorAll('input,button,[tabindex]:not([tabindex="-1"])'),function(el){ return el.offsetParent!==null; });
+    if(!f.length) return;
+    var first=f[0], last=f[f.length-1];
+    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+  }); }
 
   /* Tastatur: / öffnet Suche, Esc schließt */
   document.addEventListener('keydown',function(e){
