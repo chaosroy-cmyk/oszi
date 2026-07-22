@@ -465,7 +465,7 @@ body.beginner .beg-explain{display:block}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '7.2-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '7.3-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -652,7 +652,8 @@ const TESTS = [
  bad:"Fester Wert ohne Reaktion = keine Ansteuerung. Mittelwert wird leicht falsch interpretiert.",
  next:"Signalform sauber beurteilen → Oszilloskop nötig. Beispiel: 12 V PWM bei 50 % zeigt ~6 V.",
  beg:"PWM = schnelles Ein/Aus. Das Multimeter mittelt das und zeigt z.B. 6 V statt 12 V. Grob ok, genau geht nur mit Oszilloskop.",
- warn:[["info","Billige Multimeter zeigen PWM, Taktung & schnelle Signale oft falsch an. Für saubere Beurteilung: Oszilloskop."]]
+ warn:[["info","Billige Multimeter zeigen PWM, Taktung & schnelle Signale oft falsch an. Für saubere Beurteilung: Oszilloskop."],
+       ["caution","Duty-Cycle-Anzeige hängt von der Messpolarität ab: Bei massegeschalteten Verbrauchern zeigt das MM je nach Einstellung (+/−-Flanke) den invertierten Wert (z.B. 30 % statt 70 %)."]]
 },
 /* ---------- SENSOREN ---------- */
 {
@@ -843,7 +844,7 @@ const TESTS = [
  mess:"Spannungsfrei Widerstand nur bei passiver Bauart prüfen. PTC/NTC/aktive Auswertung möglich – immer mit Sollwert und Livedaten vergleichen.",
  good:"Plausibler Wert zur realen Temperatur; mehrere AGT-Sensoren kalt ähnlich/plausibel.",
  bad:"OL/fest/unplausibel oder Kaltwerte einzelner Sensoren stark abweichend.",
- next:"Livedaten der einzelnen AGT-Sensoren vergleichen, Kabel/Stecker auf Hitze- und Abgasschäden prüfen.",
+ next:"Livedaten der einzelnen AGT-Sensoren vergleichen, Kabel/Stecker auf Hitze- und Abgasschäden prüfen. PT200/PT1000-Bauart → Prüfung 'PTC-Temperatursensor'.",
  beg:"Nicht pauschal NTC: Manche Kennlinien steigen, andere fallen. Entscheidend ist Sollwert und Plausibilität im Fahrzeug."
 },
 {
@@ -959,7 +960,8 @@ const TESTS = [
  good:"Niedriger Widerstand, alle Kerzen ähnlich.",
  bad:"OL = durchgebrannt. Stark abweichend = defekt.",
  next:"Versorgung/Ansteuerung des Glührelais prüfen.",
- beg:"Glühkerze ist fast ein Kurzschluss (sehr wenig Ohm). OL heißt durchgebrannt. Messspitzen-Eigenwiderstand abziehen!"
+ beg:"Glühkerze ist fast ein Kurzschluss (sehr wenig Ohm). OL heißt durchgebrannt. Messspitzen-Eigenwiderstand abziehen!",
+ warn:[["caution","Moderne Niedervolt-Glühkerzen (Keramik, 4,4 V / 7 V) niemals direkt an 12 V legen – sie brennen sofort durch. Spannungsklasse vor jedem Direkttest klären."]]
 },
 {
  id:"ptc-heizung",cat:"aktor",ic:"♨️",nm:"PTC-Heizelement / Zuheizer",tag:"gef",
@@ -993,7 +995,8 @@ const TESTS = [
  good:"Versorgung da, Masse gut (geringer Abfall), Motor läuft.",
  bad:"Versorgung/Masse fehlt, hoher Abfall, Motor brummt nur.",
  next:"Spannungsabfall Plus & Masse messen. PWM → Oszilloskop.",
- beg:"Prüfen: kommt Strom an, ist die Masse gut? Läuft er nicht, liegt's oft an Versorgung oder Masse."
+ beg:"Prüfen: kommt Strom an, ist die Masse gut? Läuft er nicht, liegt's oft an Versorgung oder Masse.",
+ warn:[["danger","Kühlerlüfter kann auch bei Zündung AUS unvermittelt anlaufen (Nachlauf/Klimalogik) – Finger und Werkzeug fernhalten, bei Arbeiten am Lüfter Stecker ziehen."]]
 },
 {
  id:"kraftstoffpumpe",cat:"aktor",ic:"⛽",nm:"Kraftstoffpumpe",tag:"mm",
@@ -1168,7 +1171,7 @@ const DEEP = {
  rt:{head:["Befund","Anzeige","Bedeutung"],rows:[
    ["Durchgehend","Piepton / ~0 Ω","g"],["Hoher Übergang","Ton schwach / einige Ω","w"],
    ["Unterbrechung","kein Ton / OL","b"]],
-   note:"Durchgangston sagt nichts über Belastbarkeit. Schlechte Kontakte erst unter Last sichtbar."},
+   note:"Durchgangston sagt nichts über Belastbarkeit. Schlechte Kontakte erst unter Last sichtbar. Piepschwelle je nach MM unterschiedlich (oft bis 20–70 Ω) – der Ton kann also auch bei deutlich erhöhtem Widerstand noch kommen."},
  urs:[["Leitungsbruch","kein Ton","h"],["Steckerkontakt aufgeweitet","Ton da, aber unter Last Verlust","h"],
       ["Korrosion","schwankender Ton","m"]],
  fs:[{s:"1 Spannungsfrei",do:"Beide Enden freilegen, Zündung aus",ok:"weiter",ng:""},
@@ -1245,7 +1248,7 @@ const DEEP = {
 /* ===== BATTERIE / LADE / START ===== */
 "batterie":{
  anl:["<b>Ruhespannung:</b> Fahrzeug stand mind. 1 h (besser über Nacht). MM auf DC Volt, rot an Plus-, schwarz an Minuspol. Wert mit der Ladetabelle vergleichen.",
-   "<b>Startspannung:</b> MM angeschlossen lassen, Motor anlassen und während des Startvorgangs die Spannung beobachten. Sie darf nicht dauerhaft unter ~9,6–10 V einbrechen.",
+   "<b>Startspannung:</b> MM angeschlossen lassen, Motor anlassen und während des Startvorgangs die Spannung beobachten. Sie darf nicht dauerhaft unter ~9,6–10 V einbrechen. Tipp: <b>MIN/MAX-Funktion</b> nutzen – sie hält den tiefsten Wert beim Starten automatisch fest (Autorange ist dafür oft zu träge).",
    "<b>Ladespannung:</b> Motor läuft. Die Spannung muss auf 13,5–14,8 V steigen (Generator lädt).",
    "<b>Polklemmen unter Last:</b> beim Starten den Spannungsabfall zwischen Klemme und Batteriepol messen (rot an Klemme, schwarz an Pol). < 0,1 V = guter Kontakt.",
    "<b>Masseband:</b> beim Starten Abfall Motor↔Karosserie prüfen. Hoher Wert = schlechtes Masseband (häufige Ursache für lahmes Drehen).",
@@ -1516,7 +1519,7 @@ const DEEP = {
 },
 "radsensor":{
  rt:{head:["Typ/Messung","Richtwert","Bewertung"],rows:[
-   ["Aktiv: Versorgung/Strom","nach Schaltplan, typabhängig","g"],["Aktiv: Signal/Strom (MM grob)","ändert sich beim Drehen","g"],
+   ["Aktiv: Versorgung","nach Schaltplan (oft ~12 V, 2-polig)","g"],["Aktiv: Strommodulation","typ. ~7 ↔ 14 mA beim Drehen (typabhängig)","g"],["Aktiv: Signal/Strom (MM grob)","ändert sich beim Drehen","g"],
    ["Passiv: Spulen-Ohm","nur bei sicher passiv, Sollwert","g"],["Passiv: AC beim Drehen","steigt mit Drehzahl","g"],
    ["kein Signal/AC","defekt/Luftspalt","b"]],
    note:"Pinzahl ist kein sicherer Hinweis: aktive Raddrehzahlsensoren können 2-polig und strommoduliert sein. Ohm-Messung nur bei sicher passivem Induktivsensor. VAG/BMW häufig aktiv; Magnetencoder-/Radlager-Schäden häufig."},
@@ -1532,7 +1535,7 @@ const DEEP = {
 },
 "kw-ind":{
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
-   ["Spulen-Ohm","~0,5–1,5 kΩ typ.","g"],["AC beim Anlassen","mehrere V (drehzahlabh.)","g"],
+   ["Spulen-Ohm","~0,5–1,5 kΩ typ.","g"],["AC beim Anlassen","~1–5 V (drehzahl-/geberabhängig)","g"],
    ["OL","Spule unterbrochen","b"],["keine AC","kein Signal/Luftspalt","b"]],
    note:"Induktiv = erzeugt selbst Spannung. Geschirmte Leitung – Schirmmasse wichtig. Luftspalt typ. 0,5–1,5 mm."},
  urs:[["Spule unterbrochen","OL, kein Start","m"],["Luftspalt/Geberrad","kein/schwaches Signal","m"],
@@ -1872,7 +1875,7 @@ const DEEP = {
 },
 "ruhestrom":{
  anl:["Alle Verbraucher aus, Zündung aus, Schlüssel raus. Motorhaube ggf. über einen Magnet-/Ersatzschalter „geschlossen“ simulieren, damit die Haubenbeleuchtung/Alarm den Wert nicht verfälscht.",
-   "MM auf <b>DC Ampere</b> (10-A-Buchse). Massekabel an der Batterie lösen – aber vorher überlegen: Trennen weckt Steuergeräte und setzt die Einschlafzeit zurück.",
+   "MM auf <b>DC Ampere</b> (10-A-Buchse). Massekabel an der Batterie lösen – aber vorher überlegen: Trennen weckt Steuergeräte und setzt die Einschlafzeit zurück. Außerdem klären: Radio-Code, Fensterheber-/Schiebedach-Normierung und Adaptionen können beim Abklemmen verloren gehen.",
    "MM <b>in Reihe</b> zwischen Batterie-Minuspol und abgeklemmtem Massekabel schalten. Erst dann ist der Stromkreis wieder geschlossen.",
    "Fahrzeug <b>einschlafen lassen</b> – je nach Hersteller 15–45 min, teils länger. Während dieser Zeit nichts bedienen, Türen verriegelt halten.",
    "Wenn der Strom auf den Normalbereich (20–50 mA) gefallen ist: Wert notieren. Bleibt er hoch → Verbraucher aktiv.",
@@ -1965,6 +1968,10 @@ const GLOSS = [
  ["mV-Drop-Methode","Ruhestrom pro Kreis bestimmen, indem man den Spannungsabfall über der gesteckten Sicherung misst und per Innenwiderstand in Strom umrechnet – ohne den Kreis aufzutrennen."],
  ["Sicherungs-Innenwiderstand","Kleiner Widerstand (mΩ) einer Sicherung. Aus ihm und dem gemessenen mV-Wert lässt sich der Strom berechnen (I = U / R)."],
  ["True-RMS","Echte Effektivwertmessung – wichtig bei nicht-sinusförmigen Signalen."],
+ ["CAT-Messkategorie","Sicherheitsklasse von Messgerät und Leitungen (CAT II–IV). Für 12-V-Bordnetz unkritisch, für HV-Systeme Pflicht (geeignetes Gerät + Leitungen)."],
+ ["MIN/MAX-Funktion","Das MM speichert kleinsten/größten Messwert – ideal für Startspannungs-Einbruch und Wackeltest."],
+ ["Autorange","Automatische Messbereichswahl. Bei schnellen Ereignissen träge – für Startspannung besser MIN/MAX oder fester Bereich."],
+ ["V⎓ / V~","V⎓ (VDC) = Gleichspannung, V~ (VAC) = Wechselspannung. Im KFZ fast immer V⎓ – V~ nur für Ripple und Induktivgeber."],
  ["OL","'Over Limit' – Messbereich überschritten / Unterbrechung."],
 ];
 
@@ -2703,6 +2710,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
          "Stromkreis identifizieren: Versorgung, Masse, Sensor, Aktuator, Bus, Airbag oder Hochvolt.",
          "Messart festlegen: Spannung parallel, Strom in Reihe/Zange, Widerstand nur spannungsfrei, Spannungsabfall nur unter Last.",
          "Messleitungen prüfen: schwarze Leitung COM, rote Leitung V/Ω oder A – je nach Messung.",
+         "Messleitungen selbst testen: Spitzen zusammenhalten, Ohm-Bereich ≈ 0,1–0,5 Ω. Springt der Wert beim Biegen der Leitung, ist das Messkabel gebrochen – häufige Ursache für 'unerklärliche' Messwerte.",
          "Messbereich zuerst bewusst wählen. Nach Strommessung rote Leitung sofort aus der A-Buchse entfernen.",
          "Bei unbekannter Leitung zuerst hochohmig Spannung messen, nicht belasten."],
     rt:{head:["Situation","Regel","Bewertung"],rows:[
@@ -2730,6 +2738,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
    },
    "hv-hybrid":{
     anl:["HV-Bereich erkennen: orange Leitungen, HV-Batterie, Inverter, E-Maschine, elektrischer Klimakompressor, DC/DC.",
+         "48-V-Mildhybrid abgrenzen: meist blaue Leitungen – kein Hochvolt im rechtlichen Sinn, aber Lichtbogen- und Kurzschlussgefahr. Nie unter Last trennen, Herstellervorgaben beachten.",
          "Ohne HV-Qualifikation keine HV-Komponenten öffnen, trennen oder messen.",
          "12-V-System darf diagnostiziert werden, solange HV-Komponenten nicht berührt/geöffnet werden.",
          "Bei Unfall, Wasserschaden, beschädigten orangen Leitungen oder Isolationsfehler: Fahrzeug sichern und HV-Fachkraft."],

@@ -7,6 +7,18 @@
 > Schalter & Spannungsteiler-Eingänge (Zwischenpegel = normal), getaktete
 > Pull-ups im Standby, Open-Collector-Zusammenhang (Hallgeber).
 >
+> **Nachtrag v7.3 (Vollkontrolle für Werkstatt-Alltag):** Zweiter kompletter
+> Prüfdurchgang über alle Karten, Bäume, Glossar und Rechner. Korrigiert:
+> Induktivgeber-AC beim Anlassen realistisch ~1–5 V (statt „mehrere V" –
+> verhinderte falsche Verurteilung guter Geber). Ergänzt: Sicherheitswarnung
+> Lüfter-Nachlauf (Lüfter kann bei Zündung AUS anlaufen), Warnung
+> Niedervolt-Glühkerzen (4,4/7 V nie an 12 V), Duty-Cycle-Polaritätsfalle
+> bei massegeschalteten Verbrauchern, Strommodulation aktiver Radsensoren
+> (~7↔14 mA), MIN/MAX-Tipp für Startspannung, Radio-Code-/Normierungs-
+> Hinweis vor Batterieabklemmen, 48-V-Mildhybrid-Abgrenzung,
+> Messleitungs-Selbsttest, Piepschwelle der Durchgangsprüfung (20–70 Ω),
+> Glossar: CAT-Messkategorie, MIN/MAX, Autorange, V⎓/V~.
+>
 > **Nachtrag v7.2:** PTC-Widerstände ergänzt (fehlten als eigene Prüfungen):
 > neue Karte „PTC-Temperatursensor (PT/KTY)" mit genormter PT200/PT1000-
 > Kennlinie (IEC 60751) und KTY-Richtwerten inkl. NTC-Verwechslungswarnung,
