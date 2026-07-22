@@ -1,5 +1,12 @@
 # Prüfbericht: „KFZ Multimeter Profi" PWA (v6 → v7)
 
+> **Nachtrag v7.1:** Prüfkarte „Pull-up / Pull-down Signal" fachlich
+> vervollständigt: 0-V-Mehrdeutigkeit (Pull-down vs. Masseschluss vs.
+> Leitungsbruch, Klärung per Ohm-Messung), Gegenprobe gegen Batterieminus,
+> konkrete Pegel (5-V-Sensorkreis / 12-V-Schalterkreis), widerstandskodierte
+> Schalter & Spannungsteiler-Eingänge (Zwischenpegel = normal), getaktete
+> Pull-ups im Standby, Open-Collector-Zusammenhang (Hallgeber).
+
 Vollständige Prüfung aus drei Blickwinkeln – Kfz-Meister (fachliche Richtigkeit),
 Berufsschullehrer (Didaktik/Verständlichkeit) und Senior-Softwareentwickler
 (Code, PWA, UX, Mobile). Alle als *behoben* markierten Punkte sind in v7

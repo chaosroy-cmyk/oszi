@@ -465,7 +465,7 @@ body.beginner .beg-explain{display:block}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '7-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '7.1-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -2509,16 +2509,18 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
   },
   {
    id:"pullup-pulldown",cat:"bus",ic:"↕️",nm:"Pull-up / Pull-down Signal",tag:"mm",
-   was:"Erkennen, ob eine Signalleitung vom Steuergerät intern auf Plus oder Masse gezogen wird.",
+   was:"Erkennen, ob eine Signalleitung vom Steuergerät intern auf Plus (Pull-up) oder Masse (Pull-down) gezogen wird – und den Ruhepegel richtig deuten.",
    set:{mode:"DC Volt",buchse:"COM + V/Ω"},
-   probes:[["r","Signalleitung"],["b","Sensor-Masse"]],
-   mess:"Stecker abziehen und Spannung am Steuergeräte-seitigen Signalpin messen. Typisch liegt ein definierter Pegel an, der durch den Sensor verändert wird.",
-   good:"Plausibler Ruhepegel nach Schaltplan, Signal ändert sich mit Sensor/Schalter.",
-   bad:"Signal hängt dauerhaft 0 V oder 5/12 V, keine Reaktion, Kurzschluss oder Leitungsunterbrechung.",
-   next:"Gegen Masse und gegen Plus auf Kurzschluss prüfen, Sensor wieder anstecken und Signalverlauf vergleichen.",
-   beg:"Manche Steuergeräte legen eine Leitung absichtlich auf 5 V oder Masse. Der Sensor zieht sie dann in die andere Richtung.",
+   probes:[["r","Signalleitung (steuergeräteseitig)"],["b","Sensor-Masse, Gegenprobe Batterieminus"]],
+   mess:"Stecker abziehen und Spannung am steuergeräteseitigen Signalpin messen – gegen Sensor-Masse UND zur Kontrolle gegen Batterieminus. Typisch liegt ein definierter Pegel an (5 V Sensorkreis, 12 V Schalterkreis), den der Sensor/Schalter verändert.",
+   good:"Plausibler Ruhepegel nach Schaltplan (z.B. ~5 V oder ~12 V bei Pull-up), Signal wechselt sauber beim Anstecken/Betätigen.",
+   bad:"0 V offen kann DREI Ursachen haben: Pull-down (normal), Kurzschluss nach Masse ODER Leitungsunterbrechung – am Voltmeter nicht unterscheidbar. Kein Pegelwechsel nach Anstecken = Sensor zieht nicht/Leitung. Undefinierte Zwischenwerte = Feuchtigkeit/Kriechstrom im Stecker.",
+   next:"0-V-Fall spannungsfrei per Ohm klären (niederohmig gegen Masse = Schluss; OL = Bruch oder Halbleiter-Pull-down). Sensor anstecken und Signalverlauf vergleichen. Feste Zwischenpegel können bei widerstandskodierten Schaltern normal sein – Schaltplan!",
+   beg:"Manche Steuergeräte legen eine Leitung absichtlich auf 5 V oder Masse. Der Sensor zieht sie dann in die andere Richtung. Hallgeber z.B. schalten nur nach Masse – die 5 V kommen vom Steuergerät. Fehlen sie, liegt es nicht automatisch am Sensor.",
    quality:"MM gut, Oszi bei schnellen Signalen",risk:"mittel",
-   requires:["Schaltplan","Stecker-Seite sicher unterscheiden"],limits:["schnelle Signale nur Oszi"]
+   requires:["Schaltplan","Stecker-Seite sicher unterscheiden","Gegenprobe gegen Batterieminus"],limits:["schnelle/getaktete Signale nur Oszi","0 V offen: Bruch vs. Schluss nur per Ohm-Messung unterscheidbar"],
+   warn:[["info","Manche Steuergeräte takten den Pull-up im Standby (Stromsparen, z.B. Türkontakte) – das MM zeigt dann schwankende oder mittlere Werte. Bewertung bei Zündung an bzw. per Oszilloskop."],
+         ["caution","Fester Zwischenpegel ist nicht automatisch ein Fehler: widerstandskodierte Schalter und Spannungsteiler-Eingänge (Leitungsbruch-Überwachung) erzeugen bewusst Werte zwischen 0 V und 5 V."]]
   },
   {
    id:"kurzschluss-plus-masse",cat:"leit",ic:"⚔️",nm:"Kurzschluss gegen Plus/Masse finden",tag:"mm",
@@ -2704,18 +2706,34 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
         {s:"3 Leitung",do:"Masseleitung zur ECU prüfen",ok:"repariert",ng:"Stecker/ECU-Masse"}]
    },
    "pullup-pulldown":{
-    anl:["Stecker am Sensor/Schalter trennen und klären, welche Seite zum Steuergerät geht.",
-         "Zündung an, Signalpin gegen Sensor-Masse messen.",
-         "Liegt 5 V/12 V an, kann das ein Pull-up sein. Liegt 0 V an, kann Pull-down oder Kurzschluss vorliegen.",
-         "Sensor/Schalter wieder anstecken und Änderung beobachten.",
-         "Bei getakteten oder schnellen Signalen mit Oszi prüfen."],
-    rt:{head:["Beobachtung","Mögliche Bedeutung","Bewertung"],rows:[
-      ["Signal offen bei 5 V","Pull-up wahrscheinlich","g"],["Signal offen bei 0 V","Pull-down oder Kurzschluss","w"],["Signal bleibt immer 5 V","Unterbrechung/Sensor offen","w"],["Signal bleibt immer 0 V","Kurzschluss Masse/Sensor zieht","b"]],
-      note:"Nur mit Schaltplan sicher beurteilen. Steuergeräte-Eingänge sind unterschiedlich aufgebaut."},
-    urs:[["Kurzschluss nach Masse","Signal permanent niedrig","h"],["Unterbrechung","Pull-up bleibt hoch","h"],["Sensor zieht nicht","keine Zustandsänderung","m"],["falsche Bezugsmasse","Fehlinterpretation","m"]],
-    fs:[{s:"1 Offen messen",do:"Sensor ab, Steuergeräteseite messen",ok:"definierter Pegel",ng:"Leitung/ECU prüfen"},
-        {s:"2 Anstecken",do:"Sensor anschließen und betätigen",ok:"Pegel ändert sich",ng:"Sensor/Leitung"},
-        {s:"3 Kurzschluss",do:"spannungsfrei gegen Masse/Plus prüfen",ok:"kein Schluss",ng:"Kabelbaum"}]
+    anl:["Stecker am Sensor/Schalter trennen und im Schaltplan klären, welche Steckerseite zum Steuergerät geht (Pinbelegung).",
+         "Zündung an. Steuergeräteseitigen Signalpin gegen <b>Sensor-Masse</b> messen – und denselben Pegel zur Kontrolle gegen <b>Batterieminus</b>. Weichen beide Werte deutlich voneinander ab, ist der Sensor-Masse-Pfad verdächtig (→ Prüfung Sensor-Masseversatz).",
+         "<b>Pegel deuten (offene Leitung):</b> ~5 V = Pull-up auf Sensorkreis (typisch, interner Widerstand oft 1–10 kΩ). ~12 V = Pull-up auf Schalterkreis (z.B. Türkontakt, massegeschaltet). ~0 V = Pull-down, Kurzschluss nach Masse ODER Leitungsunterbrechung – das Voltmeter kann diese drei Fälle NICHT unterscheiden.",
+         "<b>0-V-Fall klären:</b> Zündung aus, spannungsfrei. Widerstand der Leitung gegen Masse messen: niederohmig = Kurzschluss nach Masse. OL = Leitungsbruch möglich (Durchgang zum STG prüfen) oder Halbleiter-Pull-down im Steuergerät (nicht immer ohmisch messbar).",
+         "Sensor/Schalter wieder anstecken und betätigen: Der Pegel muss definiert wechseln (z.B. Türkontakt 12 V ↔ ~0 V, Hallgeber 5 V ↔ ~0,3 V).",
+         "<b>Zwischenpegel richtig deuten:</b> Feste Zwischenwerte (z.B. 2,5 V) können NORMAL sein – widerstandskodierte Schalter und Spannungsteiler-Eingänge zur Leitungsbruch-Überwachung (z.B. Bremslichtschalter-Kanäle) arbeiten bewusst so. Unerwartete, schwankende Zwischenwerte deuten dagegen auf Feuchtigkeit/Kriechstrom oder Übergangswiderstand im Stecker.",
+         "Manche Steuergeräte legen den Pull-up nur <b>getaktet</b> an (Stromsparen im Standby, z.B. Türkontakte, Haubenschalter) – das MM zeigt dann pulsierende oder mittlere Werte. Erst bei Zündung an bewerten, im Zweifel Oszilloskop.",
+         "<b>Open-Collector-Sensoren</b> (z.B. Hallgeber, viele Schaltausgänge) schalten nur nach Masse – den High-Pegel liefert allein der Pull-up des Steuergeräts. Liegt die Leitung dauerhaft auf 0 V, kann also auch der Pull-up/das Steuergerät fehlen, nicht nur der Sensor defekt sein."],
+    rt:{head:["Beobachtung (offen, Zündung an)","Mögliche Bedeutung","Bewertung"],rows:[
+      ["~5 V stabil","Pull-up Sensorkreis (typisch)","g"],
+      ["~12 V stabil","Pull-up Schalterkreis (z.B. Türkontakt)","g"],
+      ["~0 V","Pull-down ODER Schluss n. Masse ODER Leitungsbruch – per Ohm klären","w"],
+      ["fester Zwischenwert","Widerstandskodierung/Spannungsteiler möglich – Schaltplan!","w"],
+      ["schwankend/pulsierend","getakteter Pull-up (Standby) – bei Zündung an neu bewerten","w"],
+      ["nach Anstecken kein Wechsel","Sensor zieht nicht / Unterbrechung zum Sensor","b"],
+      ["dauerhaft ~0 V in jedem Zustand","Kurzschluss nach Masse","b"]],
+      note:"Nur mit Schaltplan sicher beurteilen – Eingänge sind unterschiedlich beschaltet (Pull-up 1–10 kΩ typ., Kodierung, Spannungsteiler). Pegel immer gegen Sensor-Masse UND Batterieminus vergleichen."},
+    urs:[["Kurzschluss nach Masse","Signal permanent niedrig, in jedem Zustand","h"],
+         ["Unterbrechung","offen 0 V statt Pull-up-Pegel bzw. Pegel wechselt nie","h"],
+         ["Sensor zieht nicht (Ausgang defekt)","keine Zustandsänderung trotz intaktem Pull-up","m"],
+         ["Feuchtigkeit/Kriechstrom im Stecker","undefinierte, schwankende Zwischenpegel","m"],
+         ["falsche Bezugsmasse","Fehlinterpretation – Gegenprobe Batterieminus","m"],
+         ["getakteter Pull-up fehlgedeutet","vermeintlich defekter Pegel im Standby","s"]],
+    fs:[{s:"1 Offen messen",do:"Sensor ab, STG-Seite gegen Sensor-Masse UND Batterieminus messen",ok:"definierter Pegel, beide gleich → weiter",ng:"Werte weichen ab → Sensor-Masse-Pfad prüfen"},
+        {s:"2 0-V-Fall klären",do:"Spannungsfrei: Ohm der Leitung gegen Masse",ok:"OL → Bruch/Pull-down möglich → Durchgang zum STG prüfen",ng:"niederohmig → Schluss nach Masse suchen"},
+        {s:"3 Anstecken & betätigen",do:"Sensor anschließen, Zustand wechseln",ok:"Pegel wechselt sauber → Eingang & Sensor ok",ng:"kein Wechsel → Sensor/Leitung"},
+        {s:"4 Zwischenpegel bewerten",do:"Schaltplan: Kodierung/Spannungsteiler vorgesehen?",ok:"plausibel → normal",ng:"unerwartet → Stecker auf Feuchtigkeit/Korrosion"},
+        {s:"5 Schnelle Signale",do:"Getaktete/schnelle Pegel mit Oszilloskop darstellen",ok:"sauber → ok",ng:"gestört → Leitung/STG"}]
    },
    "kurzschluss-plus-masse":{
     anl:["Batterie abklemmen oder Steuergerät/Verbraucher nach Vorgabe trennen, damit keine Elektronik parallel hängt.",
