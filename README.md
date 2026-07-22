@@ -18,6 +18,19 @@ Für Smartphone optimiert, ohne externe Abhängigkeiten.
 | `icons/` | App-Icons (192/512 + maskable) |
 | `tools/validate.js` | Datenvalidierung (headless, für CI) |
 | `DEPLOY.md` | Deployment über Cloudflare Pages |
+| `multimeter/` | Zweite, eigenständige PWA „KFZ Multimeter Profi" (s. u.) |
+
+## Zweite App: KFZ Multimeter Profi (`multimeter/`)
+
+Eigenständige Schwester-PWA mit Multimeter-Prüfanleitungen (Spannung,
+Strom, Widerstand, Diodentest, Spannungsabfall, Ruhestrom inkl.
+mV-Drop-Rechner), Diagnosebäumen, Sicherheits-Checks und Glossar.
+Sie hat eigenes Manifest, eigenen Service Worker und eigenen Scope
+(`/multimeter/`) und ist damit getrennt vom Kompendium installierbar.
+Prüfbericht und Änderungshistorie: `multimeter/REVIEW.md`.
+
+Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
+`CACHE_NAME` in `multimeter/sw.js` gemeinsam erhöhen.
 
 ## Nutzung
 
