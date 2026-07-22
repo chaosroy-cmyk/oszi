@@ -6,6 +6,13 @@
 > konkrete Pegel (5-V-Sensorkreis / 12-V-Schalterkreis), widerstandskodierte
 > Schalter & Spannungsteiler-Eingänge (Zwischenpegel = normal), getaktete
 > Pull-ups im Standby, Open-Collector-Zusammenhang (Hallgeber).
+>
+> **Nachtrag v7.2:** PTC-Widerstände ergänzt (fehlten als eigene Prüfungen):
+> neue Karte „PTC-Temperatursensor (PT/KTY)" mit genormter PT200/PT1000-
+> Kennlinie (IEC 60751) und KTY-Richtwerten inkl. NTC-Verwechslungswarnung,
+> neue Karte „PTC-Heizelement / Zuheizer" (Selbstregel-Verhalten, Stufen-/
+> LIN-Ansteuerung, Stromzangen-Pflicht bis ~80 A, HV-Zuheizer-Abgrenzung,
+> Polyfuse-Hinweis) sowie Glossareinträge PT200/PT1000, KTY und Polyfuse.
 
 Vollständige Prüfung aus drei Blickwinkeln – Kfz-Meister (fachliche Richtigkeit),
 Berufsschullehrer (Didaktik/Verständlichkeit) und Senior-Softwareentwickler

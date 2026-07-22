@@ -465,7 +465,7 @@ body.beginner .beg-explain{display:block}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '7.1-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '7.2-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -678,6 +678,23 @@ const TESTS = [
  bad:"OL/fest/springt = defekt.",
  next:"Versorgung & Signalspannung im Betrieb gegenprüfen.",
  beg:"Wie der Kühlmittelfühler, nur für die Ansaugluft. Anwärmen → Wert muss runtergehen."
+},
+{
+ id:"ptc-sensor",cat:"sensor",ic:"📈",nm:"PTC-Temperatursensor (PT/KTY)",tag:"mm",
+ was:"Temperatursensor mit STEIGENDEM Widerstand bei Wärme (PTC): Platin PT200/PT1000 (v.a. Abgastemperatur) und Silizium-KTY (Generator-/E-Motor-Wicklung).",
+ set:{mode:"Ohm (Ω) spannungsfrei / DC V nach Schaltplan",buchse:"COM + V/Ω"},
+ probes:[["r","Sensorpin 1"],["b","Sensorpin 2 / Masse nach Schaltplan"]],
+ mess:"Spannungsfrei Ohm bei bekannter Temperatur messen, mit Kennlinie vergleichen. Dann erwärmen: Wert muss GLEICHMÄSSIG STEIGEN – genau umgekehrt zum NTC.",
+ good:"Wert passt zur Kennlinie (z.B. PT1000: ~1078 Ω bei 20 °C) und steigt gleichmäßig beim Erwärmen.",
+ bad:"OL = unterbrochen. Fester Wert = klemmt. Wert FÄLLT beim Erwärmen = es ist ein NTC – Typ im Datenblatt klären, bevor du den Sensor verurteilst.",
+ next:"Typ (NTC/PTC) immer über Datenblatt/Sollwert klären. Abgastemperatur → eigene Prüfung. Livedaten kalt: alle Temperatursensoren ≈ Umgebungstemperatur.",
+ beg:"PTC heißt: warm = mehr Widerstand, kalt = weniger. Beim NTC ist es umgekehrt. Erst den Typ klären, dann bewerten – sonst hältst du einen guten Sensor für kaputt.",
+ quality:"MM sehr gut",risk:"niedrig",
+ requires:["spannungsfrei","Typ/Kennlinie bekannt (Datenblatt)"],
+ limits:["ohne Kennlinie keine sichere Bewertung","Leitungs-/Steckerwiderstand geht mit ein"],
+ table:{head:["Typ / Temperatur","Widerstand (typ.)","Bewertung"],rows:[
+   ["PT1000, 0 °C","1000 Ω","g"],["PT1000, 20 °C","~1078 Ω","g"],["PT1000, 100 °C","~1385 Ω","g"],
+   ["PT200, 20 °C","~216 Ω","g"],["KTY81-1xx, 25 °C","~1000 Ω","g"],["Wert fällt bei Wärme","NTC! Typ klären","w"]]}
 },
 {
  id:"poti-dk",cat:"sensor",ic:"🎚️",nm:"Drosselklappe / Pedalgeber",tag:"mm",
@@ -943,6 +960,29 @@ const TESTS = [
  bad:"OL = durchgebrannt. Stark abweichend = defekt.",
  next:"Versorgung/Ansteuerung des Glührelais prüfen.",
  beg:"Glühkerze ist fast ein Kurzschluss (sehr wenig Ohm). OL heißt durchgebrannt. Messspitzen-Eigenwiderstand abziehen!"
+},
+{
+ id:"ptc-heizung",cat:"aktor",ic:"♨️",nm:"PTC-Heizelement / Zuheizer",tag:"gef",
+ was:"Selbstregelnde PTC-Heizer: elektrischer Zuheizer (Diesel), Kraftstofffilter-, Kurbelgehäuseentlüftungs- und Waschdüsenheizung. Kalt niederohmig, heiß hochohmig.",
+ set:{mode:"Ohm spannungsfrei + DC V / Stromzange",buchse:"COM + V/Ω (Strom: Zange!)"},
+ probes:[["r","Versorgung am Element"],["b","Masse am Element"]],
+ mess:"Kalt Ohm messen (sehr niedrig). Im Betrieb Versorgung/Masse prüfen und Strom mit der ZANGE: Einschaltstrom hoch, fällt beim Aufheizen – das ist das typische PTC-Verhalten.",
+ good:"Kalt niederohmig, kein OL. Strom beim Einschalten hoch und sinkt nach Sekunden bis Minuten. Element wird fühlbar warm.",
+ bad:"OL = Element/Zuleitung offen. 0 A trotz Spannung = offen. Strom bleibt dauerhaft maximal = keine Selbstregelung (Element/Luftstrom prüfen).",
+ next:"Ansteuerung prüfen: Relais-Stufen oder LIN-Steuergerät. Hybrid/EV: Hochvolt-PTC-Zuheizer (orange Leitungen) NICHT anfassen – HV-Regeln.",
+ beg:"Ein PTC-Heizer begrenzt seinen Strom selbst: kalt zieht er viel, warm immer weniger. Ein hoher Einschaltstrom ist hier also normal und kein Fehler.",
+ quality:"MM für Ohm/Spannung, Strom nur Zange",risk:"hoch",
+ requires:["Stromzange für Betriebsstrom","Einschaltbedingungen kennen (Kaltstart, Motor läuft)"],
+ limits:["kalte Ohm-Werte teils unter 1 Ω – Messspitzen-Eigenwiderstand abziehen","Stufenlogik/LIN nur per Diagnose"],
+ dont:["Betriebsstrom nie über die 10-A-Buchse des MM in Reihe messen","HV-Zuheizer (orange) ohne HV-Qualifikation tabu"],
+ warn:[["danger","12-V-Zuheizer ziehen in Stufen zusammen bis ~80 A – niemals mit dem Multimeter in Reihe messen, nur mit der Stromzange."],
+       ["info","PTC gibt es auch als selbstrückstellende Sicherung (Polyfuse), z.B. in Fensterheber-/Wischermotoren: nach Überlast hochohmig, nach Abkühlen wieder leitend. 'Geht nach einer Pause wieder' ist das typische Indiz."]],
+ table:{head:["Element","Richtwert","Bewertung"],rows:[
+   ["Zuheizer 12 V (gesamt)","bis ~1 kW / ~80 A in Stufen","g"],
+   ["Kraftstofffilterheizung","~30–60 W (2,5–5 A)","g"],
+   ["KGE-/Schlauchheizung","~15–25 W (1–2 A)","g"],
+   ["Einschaltstrom","hoch, fällt beim Aufheizen","g"],
+   ["0 A trotz Spannung","Element offen","b"]]}
 },
 {
  id:"luefter",cat:"aktor",ic:"🌬️",nm:"Lüftermotor",tag:"mm",
@@ -1374,6 +1414,29 @@ const DEEP = {
      {s:"2 Anwärmen/anpusten",do:"Wert muss sinken",ok:"sinkt → ok",ng:"keine Reaktion → Sensor"},
      {s:"3 Signal & Plausibilität",do:"Livedaten vs. Kühlmittel-/Außentemp.",ok:"plausibel → ok",ng:"Abweichung → tauschen"}]
 },
+"ptc-sensor":{
+ anl:["Typ zuerst klären (Datenblatt/Schaltplan): PT200/PT1000 = Platin mit genormter Kennlinie, KTY = Silizium – beide PTC. Die meisten Kühlmittel-/Luftfühler im KFZ sind dagegen NTC: nicht verwechseln!",
+   "Spannungsfrei machen, Stecker ziehen, Ohm direkt am Sensor messen.",
+   "Wert mit der Kennlinie bei aktueller Temperatur vergleichen (PT1000: 1000 Ω bei 0 °C, grob +3,9 Ω pro °C; PT200 = ein Fünftel davon).",
+   "Sensor vorsichtig erwärmen (Fön/Motorwärme): Widerstand muss gleichmäßig und ohne Sprünge STEIGEN.",
+   "Wackeltest an Kabel/Stecker während der Messung – Sprünge deuten auf Kontakt-/Leitungsfehler, gerade im heißen Abgasbereich.",
+   "Im Betrieb Signalspannung nach Schaltplan gegenprüfen und mit Livedaten vergleichen: kalt müssen alle Temperatursensoren ≈ Umgebungstemperatur zeigen."],
+ rt:{head:["Messpunkt","Sollwert (typ.)","Bewertung"],rows:[
+   ["PT1000 bei 0 / 20 / 100 °C","1000 / ~1078 / ~1385 Ω","g"],
+   ["PT200 bei 0 / 20 / 100 °C","200 / ~216 / ~277 Ω","g"],
+   ["KTY81-1xx bei 25 / 100 °C","~1000 / ~1700 Ω","g"],
+   ["OL / fester Wert","Unterbrechung / klemmt","b"],
+   ["fällt beim Erwärmen","NTC – Typ klären!","w"]],
+   note:"PT-Kennlinie ist genormt (IEC 60751): grob +0,39 % pro °C vom 0-°C-Wert. Leitungs- und Steckerwiderstand addiert sich – bei kleinen PT200-Werten relevant, Messspitzen-Eigenwiderstand abziehen."},
+ urs:[["Leitung/Stecker korrodiert (Hitzebereich!)","Zusatzwiderstand, springende Werte","h"],
+      ["Sensorelement gealtert/driftet","Wert plausibel, aber falsch – Livedaten-Vergleich","m"],
+      ["Unterbrechung durch Vibration/Hitze","OL, Fehlercode 'Stromkreis offen'","m"],
+      ["Falscher Sensortyp verbaut/angenommen","Kennlinie passt nicht → Fehldiagnose","m"]],
+ fs:[{s:"1 Typ klären",do:"Datenblatt/Sollwerte: NTC oder PTC?",ok:"PTC bestätigt → weiter",ng:"NTC → NTC-Prüfung verwenden"},
+     {s:"2 Ohm kalt",do:"Spannungsfrei bei bekannter Temperatur messen",ok:"passt zur Kennlinie → weiter",ng:"OL/fest → Sensor defekt"},
+     {s:"3 Erwärmen",do:"Wert beim Erwärmen beobachten",ok:"steigt gleichmäßig → ok",ng:"fällt → Typ klären; springt → Sensor/Kontakt"},
+     {s:"4 Plausibilität",do:"Livedaten kalt mit Umgebungstemperatur vergleichen",ok:"stimmt → ok",ng:"Abweichung → Sensor/Leitung"}]
+},
 "poti-dk":{
  rt:{head:["Stellung","Signal (typ.)","Bewertung"],rows:[
    ["Leerlauf/0 %","0,5–0,9 V","g"],["Teillast","gleichmäßig steigend","g"],
@@ -1654,6 +1717,30 @@ const DEEP = {
      {s:"2 Versorgung beim Vorglühen",do:"Spannung an Kerze während Glühphase",ok:"kommt an → ok",ng:"fehlt → Relais/STG (J179)"},
      {s:"3 Stromaufnahme",do:"Stromzange je Kerze beim Glühen",ok:"plausibel → ok",ng:"0 A → Kerze/Leitung"}]
 },
+"ptc-heizung":{
+ anl:["Elementtyp klären: 12-V-Zuheizer (Stufen über Relais oder LIN-Steuergerät), Filter-/Schlauchheizung (einfach geschaltet) oder HV-Zuheizer (orange Leitungen – nur mit HV-Qualifikation, Finger weg!).",
+   "Spannungsfrei: Ohm des Elements messen. PTC kalt = sehr niederohmig (teils unter 1 Ω) – Eigenwiderstand der Messspitzen abziehen. OL = defekt.",
+   "Einschaltbedingungen herstellen: Kaltstart, Motor läuft, niedrige Außentemperatur – oder Stellgliedtest per Diagnose.",
+   "Versorgung und Masseabfall am Element unter Ansteuerung prüfen (unter Last!).",
+   "Strom mit der DC-Stromzange messen: Einschaltstrom hoch, muss beim Aufheizen deutlich sinken (Selbstregelung). Bei Stufen-Zuheizern jede Stufe einzeln bewerten.",
+   "Element muss fühlbar warm werden. Kein Strom trotz Spannung = offen. Strom ohne Selbstregel-Verhalten = Element bzw. fehlenden Luftstrom prüfen."],
+ rt:{head:["Prüfung","Richtwert","Bewertung"],rows:[
+   ["Ohm kalt (je Stufe)","niederohmig, kein OL","g"],
+   ["Einschaltstrom Zuheizer-Stufe","hoch (z.B. 20–40 A)","g"],
+   ["Strom nach Aufheizen","deutlich gefallen","g"],
+   ["Masseabfall unter Last","< 0,2 V","g"],
+   ["0 A trotz Spannung","Element/Zuleitung offen","b"],
+   ["Strom bleibt maximal","keine Selbstregelung – Element/Luftstrom","b"]],
+   note:"Leistungs- und Stromwerte sind stark fahrzeugabhängig (Zuheizer gesamt bis ~1 kW bei 12 V). Stufenansteuerung über Relais oder LIN – Ansteuerlogik per Schaltplan/Diagnose klären. Hochstromkreis: Stecker und Leitungen auf Schmorstellen prüfen."},
+ urs:[["Relais-/LIN-Ansteuerung fehlt","kein Strom, Element selbst ok","h"],
+      ["Element gealtert/Teilausfall","Heizleistung und Strom zu niedrig","h"],
+      ["Versorgung/Masse hochohmig","Spannungsabfall, wenig Leistung","m"],
+      ["Stecker/Leitung verschmort","Hochstromkreis – Brandgefahr","m"]],
+ fs:[{s:"1 Ohm kalt",do:"Spannungsfrei je Element/Stufe messen",ok:"niederohmig → weiter",ng:"OL → Element defekt"},
+     {s:"2 Ansteuerung",do:"Einschaltbedingung/Stellgliedtest, Versorgung am Element",ok:"Spannung da → weiter",ng:"fehlt → Relais/LIN/Sicherung"},
+     {s:"3 Strom je Stufe",do:"DC-Zange: Einschaltstrom und Verlauf beobachten",ok:"hoch, fällt beim Aufheizen → ok",ng:"0 A → offen; bleibt maximal → Element/Luftstrom"},
+     {s:"4 Wirkung",do:"Erwärmung fühlen / Livedaten Temperatur",ok:"heizt → ok",ng:"kalt → Element tauschen"}]
+},
 "luefter":{
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
    ["Versorgung am Lüfter","≈ Bordspannung","g"],["Masseabfall unter Last","< 0,2 V","g"],
@@ -1864,6 +1951,9 @@ const GLOSS = [
  ["Induktivgeber","Sensor, der beim Drehen selbst Wechselspannung erzeugt."],
  ["NTC","Widerstand sinkt bei steigender Temperatur."],
  ["PTC","Widerstand steigt bei steigender Temperatur."],
+ ["PT200 / PT1000","Platin-PTC-Messwiderstand mit genormter Kennlinie (200 bzw. 1000 Ω bei 0 °C, ca. +0,39 %/°C) – häufig als Abgastemperatursensor."],
+ ["KTY","Silizium-PTC-Temperatursensor (~1000 Ω bei 25 °C), z.B. in Generator- und E-Motor-Wicklungen."],
+ ["Polyfuse (PTC-Sicherung)","Selbstrückstellende PTC-Sicherung: wird bei Überstrom heiß und hochohmig, nach dem Abkühlen wieder leitend (z.B. in Fensterheber-/Wischermotoren)."],
  ["CAN","Schneller Zweidraht-Datenbus (High/Low)."],
  ["LIN","Langsamer einadriger Datenbus."],
  ["Ruhestrom","Stromverbrauch im abgestellten Zustand."],

@@ -1,7 +1,7 @@
 /* KFZ Multimeter Profi – Service Worker
    Precache der App-Shell, network-first für Navigationen (frische index.html),
    cache-first für Assets. CACHE_NAME bei jedem Release erhöhen (passend zu APP_VERSION). */
-const CACHE_NAME = 'kfz-multimeter-profi-v7-1';
+const CACHE_NAME = 'kfz-multimeter-profi-v7-2';
 const ASSETS = [
   './',
   './index.html',
