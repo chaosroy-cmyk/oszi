@@ -1,0 +1,27 @@
+name: Deploy to Cloudflare Pages
+
+# Optionaler CI-Deploy. Empfohlen ist die Git-Integration im Cloudflare-
+# Dashboard (siehe DEPLOY.md). Dieser Workflow ist nur nötig, wenn aus der
+# GitHub-CI deployt werden soll. Erfordert die Repository-Secrets
+# CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy static site to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy . --project-name=kfz-oszi-kompendium
