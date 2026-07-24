@@ -465,7 +465,7 @@ body.beginner .beg-explain{display:block}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '7-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '7.3-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -652,7 +652,8 @@ const TESTS = [
  bad:"Fester Wert ohne Reaktion = keine Ansteuerung. Mittelwert wird leicht falsch interpretiert.",
  next:"Signalform sauber beurteilen → Oszilloskop nötig. Beispiel: 12 V PWM bei 50 % zeigt ~6 V.",
  beg:"PWM = schnelles Ein/Aus. Das Multimeter mittelt das und zeigt z.B. 6 V statt 12 V. Grob ok, genau geht nur mit Oszilloskop.",
- warn:[["info","Billige Multimeter zeigen PWM, Taktung & schnelle Signale oft falsch an. Für saubere Beurteilung: Oszilloskop."]]
+ warn:[["info","Billige Multimeter zeigen PWM, Taktung & schnelle Signale oft falsch an. Für saubere Beurteilung: Oszilloskop."],
+       ["caution","Duty-Cycle-Anzeige hängt von der Messpolarität ab: Bei massegeschalteten Verbrauchern zeigt das MM je nach Einstellung (+/−-Flanke) den invertierten Wert (z.B. 30 % statt 70 %)."]]
 },
 /* ---------- SENSOREN ---------- */
 {
@@ -678,6 +679,23 @@ const TESTS = [
  bad:"OL/fest/springt = defekt.",
  next:"Versorgung & Signalspannung im Betrieb gegenprüfen.",
  beg:"Wie der Kühlmittelfühler, nur für die Ansaugluft. Anwärmen → Wert muss runtergehen."
+},
+{
+ id:"ptc-sensor",cat:"sensor",ic:"📈",nm:"PTC-Temperatursensor (PT/KTY)",tag:"mm",
+ was:"Temperatursensor mit STEIGENDEM Widerstand bei Wärme (PTC): Platin PT200/PT1000 (v.a. Abgastemperatur) und Silizium-KTY (Generator-/E-Motor-Wicklung).",
+ set:{mode:"Ohm (Ω) spannungsfrei / DC V nach Schaltplan",buchse:"COM + V/Ω"},
+ probes:[["r","Sensorpin 1"],["b","Sensorpin 2 / Masse nach Schaltplan"]],
+ mess:"Spannungsfrei Ohm bei bekannter Temperatur messen, mit Kennlinie vergleichen. Dann erwärmen: Wert muss GLEICHMÄSSIG STEIGEN – genau umgekehrt zum NTC.",
+ good:"Wert passt zur Kennlinie (z.B. PT1000: ~1078 Ω bei 20 °C) und steigt gleichmäßig beim Erwärmen.",
+ bad:"OL = unterbrochen. Fester Wert = klemmt. Wert FÄLLT beim Erwärmen = es ist ein NTC – Typ im Datenblatt klären, bevor du den Sensor verurteilst.",
+ next:"Typ (NTC/PTC) immer über Datenblatt/Sollwert klären. Abgastemperatur → eigene Prüfung. Livedaten kalt: alle Temperatursensoren ≈ Umgebungstemperatur.",
+ beg:"PTC heißt: warm = mehr Widerstand, kalt = weniger. Beim NTC ist es umgekehrt. Erst den Typ klären, dann bewerten – sonst hältst du einen guten Sensor für kaputt.",
+ quality:"MM sehr gut",risk:"niedrig",
+ requires:["spannungsfrei","Typ/Kennlinie bekannt (Datenblatt)"],
+ limits:["ohne Kennlinie keine sichere Bewertung","Leitungs-/Steckerwiderstand geht mit ein"],
+ table:{head:["Typ / Temperatur","Widerstand (typ.)","Bewertung"],rows:[
+   ["PT1000, 0 °C","1000 Ω","g"],["PT1000, 20 °C","~1078 Ω","g"],["PT1000, 100 °C","~1385 Ω","g"],
+   ["PT200, 20 °C","~216 Ω","g"],["KTY81-1xx, 25 °C","~1000 Ω","g"],["Wert fällt bei Wärme","NTC! Typ klären","w"]]}
 },
 {
  id:"poti-dk",cat:"sensor",ic:"🎚️",nm:"Drosselklappe / Pedalgeber",tag:"mm",
@@ -826,7 +844,7 @@ const TESTS = [
  mess:"Spannungsfrei Widerstand nur bei passiver Bauart prüfen. PTC/NTC/aktive Auswertung möglich – immer mit Sollwert und Livedaten vergleichen.",
  good:"Plausibler Wert zur realen Temperatur; mehrere AGT-Sensoren kalt ähnlich/plausibel.",
  bad:"OL/fest/unplausibel oder Kaltwerte einzelner Sensoren stark abweichend.",
- next:"Livedaten der einzelnen AGT-Sensoren vergleichen, Kabel/Stecker auf Hitze- und Abgasschäden prüfen.",
+ next:"Livedaten der einzelnen AGT-Sensoren vergleichen, Kabel/Stecker auf Hitze- und Abgasschäden prüfen. PT200/PT1000-Bauart → Prüfung 'PTC-Temperatursensor'.",
  beg:"Nicht pauschal NTC: Manche Kennlinien steigen, andere fallen. Entscheidend ist Sollwert und Plausibilität im Fahrzeug."
 },
 {
@@ -942,7 +960,31 @@ const TESTS = [
  good:"Niedriger Widerstand, alle Kerzen ähnlich.",
  bad:"OL = durchgebrannt. Stark abweichend = defekt.",
  next:"Versorgung/Ansteuerung des Glührelais prüfen.",
- beg:"Glühkerze ist fast ein Kurzschluss (sehr wenig Ohm). OL heißt durchgebrannt. Messspitzen-Eigenwiderstand abziehen!"
+ beg:"Glühkerze ist fast ein Kurzschluss (sehr wenig Ohm). OL heißt durchgebrannt. Messspitzen-Eigenwiderstand abziehen!",
+ warn:[["caution","Moderne Niedervolt-Glühkerzen (Keramik, 4,4 V / 7 V) niemals direkt an 12 V legen – sie brennen sofort durch. Spannungsklasse vor jedem Direkttest klären."]]
+},
+{
+ id:"ptc-heizung",cat:"aktor",ic:"♨️",nm:"PTC-Heizelement / Zuheizer",tag:"gef",
+ was:"Selbstregelnde PTC-Heizer: elektrischer Zuheizer (Diesel), Kraftstofffilter-, Kurbelgehäuseentlüftungs- und Waschdüsenheizung. Kalt niederohmig, heiß hochohmig.",
+ set:{mode:"Ohm spannungsfrei + DC V / Stromzange",buchse:"COM + V/Ω (Strom: Zange!)"},
+ probes:[["r","Versorgung am Element"],["b","Masse am Element"]],
+ mess:"Kalt Ohm messen (sehr niedrig). Im Betrieb Versorgung/Masse prüfen und Strom mit der ZANGE: Einschaltstrom hoch, fällt beim Aufheizen – das ist das typische PTC-Verhalten.",
+ good:"Kalt niederohmig, kein OL. Strom beim Einschalten hoch und sinkt nach Sekunden bis Minuten. Element wird fühlbar warm.",
+ bad:"OL = Element/Zuleitung offen. 0 A trotz Spannung = offen. Strom bleibt dauerhaft maximal = keine Selbstregelung (Element/Luftstrom prüfen).",
+ next:"Ansteuerung prüfen: Relais-Stufen oder LIN-Steuergerät. Hybrid/EV: Hochvolt-PTC-Zuheizer (orange Leitungen) NICHT anfassen – HV-Regeln.",
+ beg:"Ein PTC-Heizer begrenzt seinen Strom selbst: kalt zieht er viel, warm immer weniger. Ein hoher Einschaltstrom ist hier also normal und kein Fehler.",
+ quality:"MM für Ohm/Spannung, Strom nur Zange",risk:"hoch",
+ requires:["Stromzange für Betriebsstrom","Einschaltbedingungen kennen (Kaltstart, Motor läuft)"],
+ limits:["kalte Ohm-Werte teils unter 1 Ω – Messspitzen-Eigenwiderstand abziehen","Stufenlogik/LIN nur per Diagnose"],
+ dont:["Betriebsstrom nie über die 10-A-Buchse des MM in Reihe messen","HV-Zuheizer (orange) ohne HV-Qualifikation tabu"],
+ warn:[["danger","12-V-Zuheizer ziehen in Stufen zusammen bis ~80 A – niemals mit dem Multimeter in Reihe messen, nur mit der Stromzange."],
+       ["info","PTC gibt es auch als selbstrückstellende Sicherung (Polyfuse), z.B. in Fensterheber-/Wischermotoren: nach Überlast hochohmig, nach Abkühlen wieder leitend. 'Geht nach einer Pause wieder' ist das typische Indiz."]],
+ table:{head:["Element","Richtwert","Bewertung"],rows:[
+   ["Zuheizer 12 V (gesamt)","bis ~1 kW / ~80 A in Stufen","g"],
+   ["Kraftstofffilterheizung","~30–60 W (2,5–5 A)","g"],
+   ["KGE-/Schlauchheizung","~15–25 W (1–2 A)","g"],
+   ["Einschaltstrom","hoch, fällt beim Aufheizen","g"],
+   ["0 A trotz Spannung","Element offen","b"]]}
 },
 {
  id:"luefter",cat:"aktor",ic:"🌬️",nm:"Lüftermotor",tag:"mm",
@@ -953,7 +995,8 @@ const TESTS = [
  good:"Versorgung da, Masse gut (geringer Abfall), Motor läuft.",
  bad:"Versorgung/Masse fehlt, hoher Abfall, Motor brummt nur.",
  next:"Spannungsabfall Plus & Masse messen. PWM → Oszilloskop.",
- beg:"Prüfen: kommt Strom an, ist die Masse gut? Läuft er nicht, liegt's oft an Versorgung oder Masse."
+ beg:"Prüfen: kommt Strom an, ist die Masse gut? Läuft er nicht, liegt's oft an Versorgung oder Masse.",
+ warn:[["danger","Kühlerlüfter kann auch bei Zündung AUS unvermittelt anlaufen (Nachlauf/Klimalogik) – Finger und Werkzeug fernhalten, bei Arbeiten am Lüfter Stecker ziehen."]]
 },
 {
  id:"kraftstoffpumpe",cat:"aktor",ic:"⛽",nm:"Kraftstoffpumpe",tag:"mm",
@@ -1128,7 +1171,7 @@ const DEEP = {
  rt:{head:["Befund","Anzeige","Bedeutung"],rows:[
    ["Durchgehend","Piepton / ~0 Ω","g"],["Hoher Übergang","Ton schwach / einige Ω","w"],
    ["Unterbrechung","kein Ton / OL","b"]],
-   note:"Durchgangston sagt nichts über Belastbarkeit. Schlechte Kontakte erst unter Last sichtbar."},
+   note:"Durchgangston sagt nichts über Belastbarkeit. Schlechte Kontakte erst unter Last sichtbar. Piepschwelle je nach MM unterschiedlich (oft bis 20–70 Ω) – der Ton kann also auch bei deutlich erhöhtem Widerstand noch kommen."},
  urs:[["Leitungsbruch","kein Ton","h"],["Steckerkontakt aufgeweitet","Ton da, aber unter Last Verlust","h"],
       ["Korrosion","schwankender Ton","m"]],
  fs:[{s:"1 Spannungsfrei",do:"Beide Enden freilegen, Zündung aus",ok:"weiter",ng:""},
@@ -1205,7 +1248,7 @@ const DEEP = {
 /* ===== BATTERIE / LADE / START ===== */
 "batterie":{
  anl:["<b>Ruhespannung:</b> Fahrzeug stand mind. 1 h (besser über Nacht). MM auf DC Volt, rot an Plus-, schwarz an Minuspol. Wert mit der Ladetabelle vergleichen.",
-   "<b>Startspannung:</b> MM angeschlossen lassen, Motor anlassen und während des Startvorgangs die Spannung beobachten. Sie darf nicht dauerhaft unter ~9,6–10 V einbrechen.",
+   "<b>Startspannung:</b> MM angeschlossen lassen, Motor anlassen und während des Startvorgangs die Spannung beobachten. Sie darf nicht dauerhaft unter ~9,6–10 V einbrechen. Tipp: <b>MIN/MAX-Funktion</b> nutzen – sie hält den tiefsten Wert beim Starten automatisch fest (Autorange ist dafür oft zu träge).",
    "<b>Ladespannung:</b> Motor läuft. Die Spannung muss auf 13,5–14,8 V steigen (Generator lädt).",
    "<b>Polklemmen unter Last:</b> beim Starten den Spannungsabfall zwischen Klemme und Batteriepol messen (rot an Klemme, schwarz an Pol). < 0,1 V = guter Kontakt.",
    "<b>Masseband:</b> beim Starten Abfall Motor↔Karosserie prüfen. Hoher Wert = schlechtes Masseband (häufige Ursache für lahmes Drehen).",
@@ -1374,6 +1417,29 @@ const DEEP = {
      {s:"2 Anwärmen/anpusten",do:"Wert muss sinken",ok:"sinkt → ok",ng:"keine Reaktion → Sensor"},
      {s:"3 Signal & Plausibilität",do:"Livedaten vs. Kühlmittel-/Außentemp.",ok:"plausibel → ok",ng:"Abweichung → tauschen"}]
 },
+"ptc-sensor":{
+ anl:["Typ zuerst klären (Datenblatt/Schaltplan): PT200/PT1000 = Platin mit genormter Kennlinie, KTY = Silizium – beide PTC. Die meisten Kühlmittel-/Luftfühler im KFZ sind dagegen NTC: nicht verwechseln!",
+   "Spannungsfrei machen, Stecker ziehen, Ohm direkt am Sensor messen.",
+   "Wert mit der Kennlinie bei aktueller Temperatur vergleichen (PT1000: 1000 Ω bei 0 °C, grob +3,9 Ω pro °C; PT200 = ein Fünftel davon).",
+   "Sensor vorsichtig erwärmen (Fön/Motorwärme): Widerstand muss gleichmäßig und ohne Sprünge STEIGEN.",
+   "Wackeltest an Kabel/Stecker während der Messung – Sprünge deuten auf Kontakt-/Leitungsfehler, gerade im heißen Abgasbereich.",
+   "Im Betrieb Signalspannung nach Schaltplan gegenprüfen und mit Livedaten vergleichen: kalt müssen alle Temperatursensoren ≈ Umgebungstemperatur zeigen."],
+ rt:{head:["Messpunkt","Sollwert (typ.)","Bewertung"],rows:[
+   ["PT1000 bei 0 / 20 / 100 °C","1000 / ~1078 / ~1385 Ω","g"],
+   ["PT200 bei 0 / 20 / 100 °C","200 / ~216 / ~277 Ω","g"],
+   ["KTY81-1xx bei 25 / 100 °C","~1000 / ~1700 Ω","g"],
+   ["OL / fester Wert","Unterbrechung / klemmt","b"],
+   ["fällt beim Erwärmen","NTC – Typ klären!","w"]],
+   note:"PT-Kennlinie ist genormt (IEC 60751): grob +0,39 % pro °C vom 0-°C-Wert. Leitungs- und Steckerwiderstand addiert sich – bei kleinen PT200-Werten relevant, Messspitzen-Eigenwiderstand abziehen."},
+ urs:[["Leitung/Stecker korrodiert (Hitzebereich!)","Zusatzwiderstand, springende Werte","h"],
+      ["Sensorelement gealtert/driftet","Wert plausibel, aber falsch – Livedaten-Vergleich","m"],
+      ["Unterbrechung durch Vibration/Hitze","OL, Fehlercode 'Stromkreis offen'","m"],
+      ["Falscher Sensortyp verbaut/angenommen","Kennlinie passt nicht → Fehldiagnose","m"]],
+ fs:[{s:"1 Typ klären",do:"Datenblatt/Sollwerte: NTC oder PTC?",ok:"PTC bestätigt → weiter",ng:"NTC → NTC-Prüfung verwenden"},
+     {s:"2 Ohm kalt",do:"Spannungsfrei bei bekannter Temperatur messen",ok:"passt zur Kennlinie → weiter",ng:"OL/fest → Sensor defekt"},
+     {s:"3 Erwärmen",do:"Wert beim Erwärmen beobachten",ok:"steigt gleichmäßig → ok",ng:"fällt → Typ klären; springt → Sensor/Kontakt"},
+     {s:"4 Plausibilität",do:"Livedaten kalt mit Umgebungstemperatur vergleichen",ok:"stimmt → ok",ng:"Abweichung → Sensor/Leitung"}]
+},
 "poti-dk":{
  rt:{head:["Stellung","Signal (typ.)","Bewertung"],rows:[
    ["Leerlauf/0 %","0,5–0,9 V","g"],["Teillast","gleichmäßig steigend","g"],
@@ -1453,7 +1519,7 @@ const DEEP = {
 },
 "radsensor":{
  rt:{head:["Typ/Messung","Richtwert","Bewertung"],rows:[
-   ["Aktiv: Versorgung/Strom","nach Schaltplan, typabhängig","g"],["Aktiv: Signal/Strom (MM grob)","ändert sich beim Drehen","g"],
+   ["Aktiv: Versorgung","nach Schaltplan (oft ~12 V, 2-polig)","g"],["Aktiv: Strommodulation","typ. ~7 ↔ 14 mA beim Drehen (typabhängig)","g"],["Aktiv: Signal/Strom (MM grob)","ändert sich beim Drehen","g"],
    ["Passiv: Spulen-Ohm","nur bei sicher passiv, Sollwert","g"],["Passiv: AC beim Drehen","steigt mit Drehzahl","g"],
    ["kein Signal/AC","defekt/Luftspalt","b"]],
    note:"Pinzahl ist kein sicherer Hinweis: aktive Raddrehzahlsensoren können 2-polig und strommoduliert sein. Ohm-Messung nur bei sicher passivem Induktivsensor. VAG/BMW häufig aktiv; Magnetencoder-/Radlager-Schäden häufig."},
@@ -1469,7 +1535,7 @@ const DEEP = {
 },
 "kw-ind":{
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
-   ["Spulen-Ohm","~0,5–1,5 kΩ typ.","g"],["AC beim Anlassen","mehrere V (drehzahlabh.)","g"],
+   ["Spulen-Ohm","~0,5–1,5 kΩ typ.","g"],["AC beim Anlassen","~1–5 V (drehzahl-/geberabhängig)","g"],
    ["OL","Spule unterbrochen","b"],["keine AC","kein Signal/Luftspalt","b"]],
    note:"Induktiv = erzeugt selbst Spannung. Geschirmte Leitung – Schirmmasse wichtig. Luftspalt typ. 0,5–1,5 mm."},
  urs:[["Spule unterbrochen","OL, kein Start","m"],["Luftspalt/Geberrad","kein/schwaches Signal","m"],
@@ -1654,6 +1720,30 @@ const DEEP = {
      {s:"2 Versorgung beim Vorglühen",do:"Spannung an Kerze während Glühphase",ok:"kommt an → ok",ng:"fehlt → Relais/STG (J179)"},
      {s:"3 Stromaufnahme",do:"Stromzange je Kerze beim Glühen",ok:"plausibel → ok",ng:"0 A → Kerze/Leitung"}]
 },
+"ptc-heizung":{
+ anl:["Elementtyp klären: 12-V-Zuheizer (Stufen über Relais oder LIN-Steuergerät), Filter-/Schlauchheizung (einfach geschaltet) oder HV-Zuheizer (orange Leitungen – nur mit HV-Qualifikation, Finger weg!).",
+   "Spannungsfrei: Ohm des Elements messen. PTC kalt = sehr niederohmig (teils unter 1 Ω) – Eigenwiderstand der Messspitzen abziehen. OL = defekt.",
+   "Einschaltbedingungen herstellen: Kaltstart, Motor läuft, niedrige Außentemperatur – oder Stellgliedtest per Diagnose.",
+   "Versorgung und Masseabfall am Element unter Ansteuerung prüfen (unter Last!).",
+   "Strom mit der DC-Stromzange messen: Einschaltstrom hoch, muss beim Aufheizen deutlich sinken (Selbstregelung). Bei Stufen-Zuheizern jede Stufe einzeln bewerten.",
+   "Element muss fühlbar warm werden. Kein Strom trotz Spannung = offen. Strom ohne Selbstregel-Verhalten = Element bzw. fehlenden Luftstrom prüfen."],
+ rt:{head:["Prüfung","Richtwert","Bewertung"],rows:[
+   ["Ohm kalt (je Stufe)","niederohmig, kein OL","g"],
+   ["Einschaltstrom Zuheizer-Stufe","hoch (z.B. 20–40 A)","g"],
+   ["Strom nach Aufheizen","deutlich gefallen","g"],
+   ["Masseabfall unter Last","< 0,2 V","g"],
+   ["0 A trotz Spannung","Element/Zuleitung offen","b"],
+   ["Strom bleibt maximal","keine Selbstregelung – Element/Luftstrom","b"]],
+   note:"Leistungs- und Stromwerte sind stark fahrzeugabhängig (Zuheizer gesamt bis ~1 kW bei 12 V). Stufenansteuerung über Relais oder LIN – Ansteuerlogik per Schaltplan/Diagnose klären. Hochstromkreis: Stecker und Leitungen auf Schmorstellen prüfen."},
+ urs:[["Relais-/LIN-Ansteuerung fehlt","kein Strom, Element selbst ok","h"],
+      ["Element gealtert/Teilausfall","Heizleistung und Strom zu niedrig","h"],
+      ["Versorgung/Masse hochohmig","Spannungsabfall, wenig Leistung","m"],
+      ["Stecker/Leitung verschmort","Hochstromkreis – Brandgefahr","m"]],
+ fs:[{s:"1 Ohm kalt",do:"Spannungsfrei je Element/Stufe messen",ok:"niederohmig → weiter",ng:"OL → Element defekt"},
+     {s:"2 Ansteuerung",do:"Einschaltbedingung/Stellgliedtest, Versorgung am Element",ok:"Spannung da → weiter",ng:"fehlt → Relais/LIN/Sicherung"},
+     {s:"3 Strom je Stufe",do:"DC-Zange: Einschaltstrom und Verlauf beobachten",ok:"hoch, fällt beim Aufheizen → ok",ng:"0 A → offen; bleibt maximal → Element/Luftstrom"},
+     {s:"4 Wirkung",do:"Erwärmung fühlen / Livedaten Temperatur",ok:"heizt → ok",ng:"kalt → Element tauschen"}]
+},
 "luefter":{
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
    ["Versorgung am Lüfter","≈ Bordspannung","g"],["Masseabfall unter Last","< 0,2 V","g"],
@@ -1785,7 +1875,7 @@ const DEEP = {
 },
 "ruhestrom":{
  anl:["Alle Verbraucher aus, Zündung aus, Schlüssel raus. Motorhaube ggf. über einen Magnet-/Ersatzschalter „geschlossen“ simulieren, damit die Haubenbeleuchtung/Alarm den Wert nicht verfälscht.",
-   "MM auf <b>DC Ampere</b> (10-A-Buchse). Massekabel an der Batterie lösen – aber vorher überlegen: Trennen weckt Steuergeräte und setzt die Einschlafzeit zurück.",
+   "MM auf <b>DC Ampere</b> (10-A-Buchse). Massekabel an der Batterie lösen – aber vorher überlegen: Trennen weckt Steuergeräte und setzt die Einschlafzeit zurück. Außerdem klären: Radio-Code, Fensterheber-/Schiebedach-Normierung und Adaptionen können beim Abklemmen verloren gehen.",
    "MM <b>in Reihe</b> zwischen Batterie-Minuspol und abgeklemmtem Massekabel schalten. Erst dann ist der Stromkreis wieder geschlossen.",
    "Fahrzeug <b>einschlafen lassen</b> – je nach Hersteller 15–45 min, teils länger. Während dieser Zeit nichts bedienen, Türen verriegelt halten.",
    "Wenn der Strom auf den Normalbereich (20–50 mA) gefallen ist: Wert notieren. Bleibt er hoch → Verbraucher aktiv.",
@@ -1864,6 +1954,9 @@ const GLOSS = [
  ["Induktivgeber","Sensor, der beim Drehen selbst Wechselspannung erzeugt."],
  ["NTC","Widerstand sinkt bei steigender Temperatur."],
  ["PTC","Widerstand steigt bei steigender Temperatur."],
+ ["PT200 / PT1000","Platin-PTC-Messwiderstand mit genormter Kennlinie (200 bzw. 1000 Ω bei 0 °C, ca. +0,39 %/°C) – häufig als Abgastemperatursensor."],
+ ["KTY","Silizium-PTC-Temperatursensor (~1000 Ω bei 25 °C), z.B. in Generator- und E-Motor-Wicklungen."],
+ ["Polyfuse (PTC-Sicherung)","Selbstrückstellende PTC-Sicherung: wird bei Überstrom heiß und hochohmig, nach dem Abkühlen wieder leitend (z.B. in Fensterheber-/Wischermotoren)."],
  ["CAN","Schneller Zweidraht-Datenbus (High/Low)."],
  ["LIN","Langsamer einadriger Datenbus."],
  ["Ruhestrom","Stromverbrauch im abgestellten Zustand."],
@@ -1875,6 +1968,10 @@ const GLOSS = [
  ["mV-Drop-Methode","Ruhestrom pro Kreis bestimmen, indem man den Spannungsabfall über der gesteckten Sicherung misst und per Innenwiderstand in Strom umrechnet – ohne den Kreis aufzutrennen."],
  ["Sicherungs-Innenwiderstand","Kleiner Widerstand (mΩ) einer Sicherung. Aus ihm und dem gemessenen mV-Wert lässt sich der Strom berechnen (I = U / R)."],
  ["True-RMS","Echte Effektivwertmessung – wichtig bei nicht-sinusförmigen Signalen."],
+ ["CAT-Messkategorie","Sicherheitsklasse von Messgerät und Leitungen (CAT II–IV). Für 12-V-Bordnetz unkritisch, für HV-Systeme Pflicht (geeignetes Gerät + Leitungen)."],
+ ["MIN/MAX-Funktion","Das MM speichert kleinsten/größten Messwert – ideal für Startspannungs-Einbruch und Wackeltest."],
+ ["Autorange","Automatische Messbereichswahl. Bei schnellen Ereignissen träge – für Startspannung besser MIN/MAX oder fester Bereich."],
+ ["V⎓ / V~","V⎓ (VDC) = Gleichspannung, V~ (VAC) = Wechselspannung. Im KFZ fast immer V⎓ – V~ nur für Ripple und Induktivgeber."],
  ["OL","'Over Limit' – Messbereich überschritten / Unterbrechung."],
 ];
 
@@ -2509,16 +2606,18 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
   },
   {
    id:"pullup-pulldown",cat:"bus",ic:"↕️",nm:"Pull-up / Pull-down Signal",tag:"mm",
-   was:"Erkennen, ob eine Signalleitung vom Steuergerät intern auf Plus oder Masse gezogen wird.",
+   was:"Erkennen, ob eine Signalleitung vom Steuergerät intern auf Plus (Pull-up) oder Masse (Pull-down) gezogen wird – und den Ruhepegel richtig deuten.",
    set:{mode:"DC Volt",buchse:"COM + V/Ω"},
-   probes:[["r","Signalleitung"],["b","Sensor-Masse"]],
-   mess:"Stecker abziehen und Spannung am Steuergeräte-seitigen Signalpin messen. Typisch liegt ein definierter Pegel an, der durch den Sensor verändert wird.",
-   good:"Plausibler Ruhepegel nach Schaltplan, Signal ändert sich mit Sensor/Schalter.",
-   bad:"Signal hängt dauerhaft 0 V oder 5/12 V, keine Reaktion, Kurzschluss oder Leitungsunterbrechung.",
-   next:"Gegen Masse und gegen Plus auf Kurzschluss prüfen, Sensor wieder anstecken und Signalverlauf vergleichen.",
-   beg:"Manche Steuergeräte legen eine Leitung absichtlich auf 5 V oder Masse. Der Sensor zieht sie dann in die andere Richtung.",
+   probes:[["r","Signalleitung (steuergeräteseitig)"],["b","Sensor-Masse, Gegenprobe Batterieminus"]],
+   mess:"Stecker abziehen und Spannung am steuergeräteseitigen Signalpin messen – gegen Sensor-Masse UND zur Kontrolle gegen Batterieminus. Typisch liegt ein definierter Pegel an (5 V Sensorkreis, 12 V Schalterkreis), den der Sensor/Schalter verändert.",
+   good:"Plausibler Ruhepegel nach Schaltplan (z.B. ~5 V oder ~12 V bei Pull-up), Signal wechselt sauber beim Anstecken/Betätigen.",
+   bad:"0 V offen kann DREI Ursachen haben: Pull-down (normal), Kurzschluss nach Masse ODER Leitungsunterbrechung – am Voltmeter nicht unterscheidbar. Kein Pegelwechsel nach Anstecken = Sensor zieht nicht/Leitung. Undefinierte Zwischenwerte = Feuchtigkeit/Kriechstrom im Stecker.",
+   next:"0-V-Fall spannungsfrei per Ohm klären (niederohmig gegen Masse = Schluss; OL = Bruch oder Halbleiter-Pull-down). Sensor anstecken und Signalverlauf vergleichen. Feste Zwischenpegel können bei widerstandskodierten Schaltern normal sein – Schaltplan!",
+   beg:"Manche Steuergeräte legen eine Leitung absichtlich auf 5 V oder Masse. Der Sensor zieht sie dann in die andere Richtung. Hallgeber z.B. schalten nur nach Masse – die 5 V kommen vom Steuergerät. Fehlen sie, liegt es nicht automatisch am Sensor.",
    quality:"MM gut, Oszi bei schnellen Signalen",risk:"mittel",
-   requires:["Schaltplan","Stecker-Seite sicher unterscheiden"],limits:["schnelle Signale nur Oszi"]
+   requires:["Schaltplan","Stecker-Seite sicher unterscheiden","Gegenprobe gegen Batterieminus"],limits:["schnelle/getaktete Signale nur Oszi","0 V offen: Bruch vs. Schluss nur per Ohm-Messung unterscheidbar"],
+   warn:[["info","Manche Steuergeräte takten den Pull-up im Standby (Stromsparen, z.B. Türkontakte) – das MM zeigt dann schwankende oder mittlere Werte. Bewertung bei Zündung an bzw. per Oszilloskop."],
+         ["caution","Fester Zwischenpegel ist nicht automatisch ein Fehler: widerstandskodierte Schalter und Spannungsteiler-Eingänge (Leitungsbruch-Überwachung) erzeugen bewusst Werte zwischen 0 V und 5 V."]]
   },
   {
    id:"kurzschluss-plus-masse",cat:"leit",ic:"⚔️",nm:"Kurzschluss gegen Plus/Masse finden",tag:"mm",
@@ -2611,6 +2710,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
          "Stromkreis identifizieren: Versorgung, Masse, Sensor, Aktuator, Bus, Airbag oder Hochvolt.",
          "Messart festlegen: Spannung parallel, Strom in Reihe/Zange, Widerstand nur spannungsfrei, Spannungsabfall nur unter Last.",
          "Messleitungen prüfen: schwarze Leitung COM, rote Leitung V/Ω oder A – je nach Messung.",
+         "Messleitungen selbst testen: Spitzen zusammenhalten, Ohm-Bereich ≈ 0,1–0,5 Ω. Springt der Wert beim Biegen der Leitung, ist das Messkabel gebrochen – häufige Ursache für 'unerklärliche' Messwerte.",
          "Messbereich zuerst bewusst wählen. Nach Strommessung rote Leitung sofort aus der A-Buchse entfernen.",
          "Bei unbekannter Leitung zuerst hochohmig Spannung messen, nicht belasten."],
     rt:{head:["Situation","Regel","Bewertung"],rows:[
@@ -2638,6 +2738,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
    },
    "hv-hybrid":{
     anl:["HV-Bereich erkennen: orange Leitungen, HV-Batterie, Inverter, E-Maschine, elektrischer Klimakompressor, DC/DC.",
+         "48-V-Mildhybrid abgrenzen: meist blaue Leitungen – kein Hochvolt im rechtlichen Sinn, aber Lichtbogen- und Kurzschlussgefahr. Nie unter Last trennen, Herstellervorgaben beachten.",
          "Ohne HV-Qualifikation keine HV-Komponenten öffnen, trennen oder messen.",
          "12-V-System darf diagnostiziert werden, solange HV-Komponenten nicht berührt/geöffnet werden.",
          "Bei Unfall, Wasserschaden, beschädigten orangen Leitungen oder Isolationsfehler: Fahrzeug sichern und HV-Fachkraft."],
@@ -2704,18 +2805,34 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
         {s:"3 Leitung",do:"Masseleitung zur ECU prüfen",ok:"repariert",ng:"Stecker/ECU-Masse"}]
    },
    "pullup-pulldown":{
-    anl:["Stecker am Sensor/Schalter trennen und klären, welche Seite zum Steuergerät geht.",
-         "Zündung an, Signalpin gegen Sensor-Masse messen.",
-         "Liegt 5 V/12 V an, kann das ein Pull-up sein. Liegt 0 V an, kann Pull-down oder Kurzschluss vorliegen.",
-         "Sensor/Schalter wieder anstecken und Änderung beobachten.",
-         "Bei getakteten oder schnellen Signalen mit Oszi prüfen."],
-    rt:{head:["Beobachtung","Mögliche Bedeutung","Bewertung"],rows:[
-      ["Signal offen bei 5 V","Pull-up wahrscheinlich","g"],["Signal offen bei 0 V","Pull-down oder Kurzschluss","w"],["Signal bleibt immer 5 V","Unterbrechung/Sensor offen","w"],["Signal bleibt immer 0 V","Kurzschluss Masse/Sensor zieht","b"]],
-      note:"Nur mit Schaltplan sicher beurteilen. Steuergeräte-Eingänge sind unterschiedlich aufgebaut."},
-    urs:[["Kurzschluss nach Masse","Signal permanent niedrig","h"],["Unterbrechung","Pull-up bleibt hoch","h"],["Sensor zieht nicht","keine Zustandsänderung","m"],["falsche Bezugsmasse","Fehlinterpretation","m"]],
-    fs:[{s:"1 Offen messen",do:"Sensor ab, Steuergeräteseite messen",ok:"definierter Pegel",ng:"Leitung/ECU prüfen"},
-        {s:"2 Anstecken",do:"Sensor anschließen und betätigen",ok:"Pegel ändert sich",ng:"Sensor/Leitung"},
-        {s:"3 Kurzschluss",do:"spannungsfrei gegen Masse/Plus prüfen",ok:"kein Schluss",ng:"Kabelbaum"}]
+    anl:["Stecker am Sensor/Schalter trennen und im Schaltplan klären, welche Steckerseite zum Steuergerät geht (Pinbelegung).",
+         "Zündung an. Steuergeräteseitigen Signalpin gegen <b>Sensor-Masse</b> messen – und denselben Pegel zur Kontrolle gegen <b>Batterieminus</b>. Weichen beide Werte deutlich voneinander ab, ist der Sensor-Masse-Pfad verdächtig (→ Prüfung Sensor-Masseversatz).",
+         "<b>Pegel deuten (offene Leitung):</b> ~5 V = Pull-up auf Sensorkreis (typisch, interner Widerstand oft 1–10 kΩ). ~12 V = Pull-up auf Schalterkreis (z.B. Türkontakt, massegeschaltet). ~0 V = Pull-down, Kurzschluss nach Masse ODER Leitungsunterbrechung – das Voltmeter kann diese drei Fälle NICHT unterscheiden.",
+         "<b>0-V-Fall klären:</b> Zündung aus, spannungsfrei. Widerstand der Leitung gegen Masse messen: niederohmig = Kurzschluss nach Masse. OL = Leitungsbruch möglich (Durchgang zum STG prüfen) oder Halbleiter-Pull-down im Steuergerät (nicht immer ohmisch messbar).",
+         "Sensor/Schalter wieder anstecken und betätigen: Der Pegel muss definiert wechseln (z.B. Türkontakt 12 V ↔ ~0 V, Hallgeber 5 V ↔ ~0,3 V).",
+         "<b>Zwischenpegel richtig deuten:</b> Feste Zwischenwerte (z.B. 2,5 V) können NORMAL sein – widerstandskodierte Schalter und Spannungsteiler-Eingänge zur Leitungsbruch-Überwachung (z.B. Bremslichtschalter-Kanäle) arbeiten bewusst so. Unerwartete, schwankende Zwischenwerte deuten dagegen auf Feuchtigkeit/Kriechstrom oder Übergangswiderstand im Stecker.",
+         "Manche Steuergeräte legen den Pull-up nur <b>getaktet</b> an (Stromsparen im Standby, z.B. Türkontakte, Haubenschalter) – das MM zeigt dann pulsierende oder mittlere Werte. Erst bei Zündung an bewerten, im Zweifel Oszilloskop.",
+         "<b>Open-Collector-Sensoren</b> (z.B. Hallgeber, viele Schaltausgänge) schalten nur nach Masse – den High-Pegel liefert allein der Pull-up des Steuergeräts. Liegt die Leitung dauerhaft auf 0 V, kann also auch der Pull-up/das Steuergerät fehlen, nicht nur der Sensor defekt sein."],
+    rt:{head:["Beobachtung (offen, Zündung an)","Mögliche Bedeutung","Bewertung"],rows:[
+      ["~5 V stabil","Pull-up Sensorkreis (typisch)","g"],
+      ["~12 V stabil","Pull-up Schalterkreis (z.B. Türkontakt)","g"],
+      ["~0 V","Pull-down ODER Schluss n. Masse ODER Leitungsbruch – per Ohm klären","w"],
+      ["fester Zwischenwert","Widerstandskodierung/Spannungsteiler möglich – Schaltplan!","w"],
+      ["schwankend/pulsierend","getakteter Pull-up (Standby) – bei Zündung an neu bewerten","w"],
+      ["nach Anstecken kein Wechsel","Sensor zieht nicht / Unterbrechung zum Sensor","b"],
+      ["dauerhaft ~0 V in jedem Zustand","Kurzschluss nach Masse","b"]],
+      note:"Nur mit Schaltplan sicher beurteilen – Eingänge sind unterschiedlich beschaltet (Pull-up 1–10 kΩ typ., Kodierung, Spannungsteiler). Pegel immer gegen Sensor-Masse UND Batterieminus vergleichen."},
+    urs:[["Kurzschluss nach Masse","Signal permanent niedrig, in jedem Zustand","h"],
+         ["Unterbrechung","offen 0 V statt Pull-up-Pegel bzw. Pegel wechselt nie","h"],
+         ["Sensor zieht nicht (Ausgang defekt)","keine Zustandsänderung trotz intaktem Pull-up","m"],
+         ["Feuchtigkeit/Kriechstrom im Stecker","undefinierte, schwankende Zwischenpegel","m"],
+         ["falsche Bezugsmasse","Fehlinterpretation – Gegenprobe Batterieminus","m"],
+         ["getakteter Pull-up fehlgedeutet","vermeintlich defekter Pegel im Standby","s"]],
+    fs:[{s:"1 Offen messen",do:"Sensor ab, STG-Seite gegen Sensor-Masse UND Batterieminus messen",ok:"definierter Pegel, beide gleich → weiter",ng:"Werte weichen ab → Sensor-Masse-Pfad prüfen"},
+        {s:"2 0-V-Fall klären",do:"Spannungsfrei: Ohm der Leitung gegen Masse",ok:"OL → Bruch/Pull-down möglich → Durchgang zum STG prüfen",ng:"niederohmig → Schluss nach Masse suchen"},
+        {s:"3 Anstecken & betätigen",do:"Sensor anschließen, Zustand wechseln",ok:"Pegel wechselt sauber → Eingang & Sensor ok",ng:"kein Wechsel → Sensor/Leitung"},
+        {s:"4 Zwischenpegel bewerten",do:"Schaltplan: Kodierung/Spannungsteiler vorgesehen?",ok:"plausibel → normal",ng:"unerwartet → Stecker auf Feuchtigkeit/Korrosion"},
+        {s:"5 Schnelle Signale",do:"Getaktete/schnelle Pegel mit Oszilloskop darstellen",ok:"sauber → ok",ng:"gestört → Leitung/STG"}]
    },
    "kurzschluss-plus-masse":{
     anl:["Batterie abklemmen oder Steuergerät/Verbraucher nach Vorgabe trennen, damit keine Elektronik parallel hängt.",
