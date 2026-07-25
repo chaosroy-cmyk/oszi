@@ -14,6 +14,20 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
+<!-- iOS-Splashscreens (Portrait, gängige iPhone-/iPad-Auflösungen) -->
+<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:667px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash-750x1334.png">
+<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash-828x1792.png">
+<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:736px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash-1242x2208.png">
+<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:812px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash-1125x2436.png">
+<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash-1242x2688.png">
+<link rel="apple-touch-startup-image" media="(device-width:390px) and (device-height:844px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash-1170x2532.png">
+<link rel="apple-touch-startup-image" media="(device-width:428px) and (device-height:926px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash-1284x2778.png">
+<link rel="apple-touch-startup-image" media="(device-width:393px) and (device-height:852px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash-1179x2556.png">
+<link rel="apple-touch-startup-image" media="(device-width:430px) and (device-height:932px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash-1290x2796.png">
+<link rel="apple-touch-startup-image" media="(device-width:810px) and (device-height:1080px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash-1620x2160.png">
+<link rel="apple-touch-startup-image" media="(device-width:820px) and (device-height:1180px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash-1640x2360.png">
+<link rel="apple-touch-startup-image" media="(device-width:834px) and (device-height:1194px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash-1668x2388.png">
+<link rel="apple-touch-startup-image" media="(device-width:1024px) and (device-height:1366px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash-2048x2732.png">
 <style>
 :root{
   --bg:#0d1117;
@@ -184,8 +198,23 @@ button:focus-visible,.tile:focus-visible,.search:focus-visible{outline:2px solid
   padding:7px 11px;font-size:13px;font-weight:700;display:flex;gap:6px;align-items:center;
 }
 .setbadge .k{color:var(--txt2);font-size:10px;text-transform:uppercase;letter-spacing:.5px}
-.setbadge .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
-.dot.red{background:var(--red)}.dot.black{background:#555;border:1px solid #888}
+/* Querverweis-Chips (antippbare "→ Prüfung:"-Verweise) */
+.xref{
+  display:inline-flex;align-items:center;gap:5px;vertical-align:middle;
+  background:rgba(255,176,0,.1);border:1px solid rgba(255,176,0,.45);
+  color:var(--acc);border-radius:999px;padding:3px 10px;margin:2px 3px 2px 0;
+  font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1.3;
+}
+.xref:active{transform:scale(.96)}
+/* Kategorie-Hinweis auf Kacheln bei aktiver Suche */
+.tile .tcat{font-size:9.5px;color:var(--txt2);font-weight:800;text-transform:uppercase;letter-spacing:.6px}
+/* Lösch-X im Suchfeld */
+.search-wrap{position:relative}
+.sclear{
+  position:absolute;right:24px;top:9px;width:30px;height:30px;border-radius:50%;
+  background:var(--card);border:1px solid var(--line);color:var(--txt2);
+  font-size:13px;cursor:pointer;display:none;align-items:center;justify-content:center;
+}
 /* probe diagram */
 .probe{
   background:var(--bg);border:1.5px solid var(--line);border-radius:11px;
@@ -295,11 +324,6 @@ body.beginner .beg-explain{display:block}
   border-radius:12px;padding:14px;font-size:15px;line-height:1.5;margin-bottom:9px;
 }
 .tree-res b{color:var(--grn)}
-.tree-back{
-  background:var(--card);border:1.5px solid var(--line);color:var(--txt2);
-  border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;margin-top:6px;
-}
-.hidden{display:none!important}
 /* ---- Fehlerursachen ---- */
 .urs-item{
   display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);align-items:flex-start;
@@ -375,11 +399,6 @@ body.beginner .beg-explain{display:block}
 .checkitem.ok .ci{background:rgba(63,185,80,.16);color:var(--grn)}
 .checkitem.no .ci{background:rgba(248,81,73,.16);color:var(--red)}
 .checkitem.warn .ci{background:rgba(210,153,34,.16);color:var(--warn)}
-.rank{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900;letter-spacing:.2px;border:1px solid var(--line);background:var(--bg);margin:2px 4px 4px 0}
-.rank.mm{color:var(--grn);border-color:rgba(63,185,80,.45)}
-.rank.lim{color:var(--warn);border-color:rgba(210,153,34,.55)}
-.rank.stop{color:var(--red);border-color:rgba(248,81,73,.55)}
-.micro{font-size:12px;color:var(--txt2);margin-top:7px;line-height:1.45}
 
 </style>
 </head>
@@ -412,6 +431,7 @@ body.beginner .beg-explain{display:block}
   </div>
   <div class="search-wrap">
     <input class="search" id="search" type="search" enterkeyhint="search" aria-label="Prüfung suchen" placeholder="Prüfung suchen … (z.B. NTC, Masse, Starter)" autocomplete="off">
+    <button id="searchClear" class="sclear" onclick="clearSearch()" aria-label="Suche löschen">✕</button>
   </div>
   <div class="cats" id="cats"></div>
 </header>
@@ -465,7 +485,7 @@ body.beginner .beg-explain{display:block}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '7.3-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '7.4-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -695,7 +715,8 @@ const TESTS = [
  limits:["ohne Kennlinie keine sichere Bewertung","Leitungs-/Steckerwiderstand geht mit ein"],
  table:{head:["Typ / Temperatur","Widerstand (typ.)","Bewertung"],rows:[
    ["PT1000, 0 °C","1000 Ω","g"],["PT1000, 20 °C","~1078 Ω","g"],["PT1000, 100 °C","~1385 Ω","g"],
-   ["PT200, 20 °C","~216 Ω","g"],["KTY81-1xx, 25 °C","~1000 Ω","g"],["Wert fällt bei Wärme","NTC! Typ klären","w"]]}
+   ["PT200, 20 °C","~216 Ω","g"],["KTY81-1xx, 25 °C","~1000 Ω","g"],["Wert fällt bei Wärme","NTC! Typ klären","w"]]},
+ syn:"KTY81 KTY83 PT1000 PT200 Platinfühler Platin-Messwiderstand"
 },
 {
  id:"poti-dk",cat:"sensor",ic:"🎚️",nm:"Drosselklappe / Pedalgeber",tag:"mm",
@@ -753,7 +774,9 @@ const TESTS = [
  bad:"Vorkat fest/träge = Sonde kalt/alt/Fehler. Nachkat pendelt wie Vorkat = Kat-Wirkung oder Sonde prüfen.",
  next:"Sprunggeschwindigkeit, Vorkat/Nachkat-Vergleich & Form sauber → Oszilloskop/Diagnose.",
  beg:"Die Vorkat-Sonde pendelt ständig. Die Nachkat-Sonde darf bei gutem Kat viel ruhiger sein – nicht beide gleich bewerten.",
- table:{head:["Zustand","Signal",""],rows:[["fett","~0,8–0,9 V","g"],["mager","~0,1–0,2 V","g"],["springt","schnell","g"]]}
+ table:{head:["Zustand","Signal",""],rows:[["fett","~0,8–0,9 V","g"],["mager","~0,1–0,2 V","g"],["springt","schnell","g"]]},
+ /* PRÜFEN: Suchbegriffe (Synonyme/DTC generisch nach SAE J2012) */
+ syn:"Sauerstoffsensor O2-Sensor Regelsonde Sprungsonde Vorkatsonde P0130 P0133 P0135"
 },
 {
  id:"lambda-breit",cat:"sensor",ic:"🫧",nm:"Breitband-Lambda",tag:"osz",
@@ -765,7 +788,9 @@ const TESTS = [
  bad:"Versorgung/Heizung fehlt.",
  next:"Funktion nur über Diagnosegerät/Oszilloskop sinnvoll beurteilbar.",
  beg:"Diese Sonde ist zu komplex fürs Multimeter. Nur Versorgung/Heizung grob prüfen – Rest über Diagnose.",
- warn:[["info","Breitband-Lambda: Funktionsbeurteilung praktisch nur per Diagnosegerät/Oszilloskop."]]
+ warn:[["info","Breitband-Lambda: Funktionsbeurteilung praktisch nur per Diagnosegerät/Oszilloskop."]],
+ /* PRÜFEN: Suchbegriffe (Synonyme) */
+ syn:"Sauerstoffsensor O2-Sensor Breitbandsonde LSU"
 },
 {
  id:"radsensor",cat:"sensor",ic:"🛞",nm:"Raddrehzahlsensor",tag:"osz",
@@ -788,7 +813,9 @@ const TESTS = [
  good:"Spulenwiderstand im Sollbereich. AC-Spannung steigt mit Drehzahl.",
  bad:"OL = Spule unterbrochen. Keine AC = kein Signal / Luftspalt zu groß.",
  next:"Signalform & Amplitude → Oszilloskop. Luftspalt & Polrad prüfen.",
- beg:"Der erzeugt seinen Strom selbst – wie ein Mini-Generator. Beim Drehen muss Wechselspannung kommen. Sonst Spule oder Abstand prüfen."
+ beg:"Der erzeugt seinen Strom selbst – wie ein Mini-Generator. Beim Drehen muss Wechselspannung kommen. Sonst Spule oder Abstand prüfen.",
+ /* PRÜFEN: Suchbegriffe (Synonyme/DTC generisch nach SAE J2012) */
+ syn:"Kurbelwellensensor Kurbelwellengeber OT-Geber CKP Drehzahlgeber P0335 P0336"
 },
 {
  id:"hall",cat:"sensor",ic:"🧲",nm:"Hall-Sensor (KW/NW)",tag:"osz",
@@ -800,7 +827,9 @@ const TESTS = [
  bad:"Fester Wert ohne Reaktion = kein Signal.",
  next:"Rechtecksignal & Aussetzer sauber → Oszilloskop nötig.",
  beg:"Hall = sauberes Ein/Aus-Signal. Multimeter mittelt das und zeigt eine Zwischenzahl. Für die echte Form braucht es ein Oszilloskop.",
- warn:[["info","Multimeter zeigt beim Hall-Signal nur den Mittelwert – Aussetzer & Flankenfehler nur per Oszilloskop."]]
+ warn:[["info","Multimeter zeigt beim Hall-Signal nur den Mittelwert – Aussetzer & Flankenfehler nur per Oszilloskop."]],
+ /* PRÜFEN: Suchbegriffe (Synonyme/DTC generisch nach SAE J2012) */
+ syn:"Nockenwellensensor Nockenwellengeber CMP P0340 P0341 P0342"
 },
 {
  id:"klopf",cat:"sensor",ic:"🔨",nm:"Klopfsensor",tag:"osz",
@@ -835,6 +864,24 @@ const TESTS = [
  bad:"Anschlagwert / keine Reaktion.",
  next:"5-V-Referenz & Masse prüfen, Livedaten vergleichen.",
  beg:"Wie andere Drucksensoren: Signalspannung folgt dem Druck. Bewegt sich nichts, prüfen."
+},
+/* PRÜFEN: neue Karte "oeldruck" – kompletter Fachinhalt zur Freigabe (siehe REVIEW.md) */
+{
+ id:"oeldruck",cat:"sensor",ic:"🛢️",nm:"Öldruckschalter / Öldrucksensor",tag:"mm",
+ was:"Öldruckschalter (Warnlampe) und analoge Öldrucksensoren elektrisch prüfen. Die Öldruckwarnung ist eine Motorschutz-Funktion – elektrische Prüfung ersetzt nie die mechanische Druckmessung.",
+ set:{mode:"Durchgang / DC Volt",buchse:"COM + V/Ω"},
+ probes:[["r","Schalter-/Signalpin"],["b","Masse (Motorblock) bzw. Sensor-Masse"]],
+ mess:"Bauart zuerst im Schaltplan klären (Öffner/Schließer, Schalter oder Sensor). Üblicher Warnlampen-Schalter: massegeschaltet – Motor aus: Durchgang gegen Masse (Lampe an bei Zündung ein), Motor läuft: öffnet (Lampe aus). Der Schaltdruck ist meist auf dem Schalter aufgedruckt. Sensor (3-Draht): Versorgung, Masse und Signal nach Schaltplan – Signal folgt dem Druck.",
+ good:"Schalter wechselt sauber zwischen Motor aus/läuft. Sensorsignal plausibel und folgt der Drehzahl-/Druckänderung.",
+ bad:"Kein Wechsel = Schalter/Zuleitung defekt. Lampe an bei laufendem Motor: NIE wegdiskutieren – erst den echten Öldruck prüfen.",
+ next:"Elektrik in Ordnung, Lampe trotzdem an → mechanischen Öldruck mit Manometer prüfen, BEVOR der Motor weiter betrieben wird. Ölstand und Ölzustand immer zuerst.",
+ beg:"Die Öldrucklampe ist die letzte Warnung vor dem Motorschaden. Elektrisch prüfen ist erlaubt – aber leuchtet sie bei laufendem Motor, zählt nur die Manometer-Messung, nicht die Hoffnung auf einen 'kaputten Schalter'.",
+ quality:"MM sehr gut für Schalter/Signal",risk:"mittel",
+ requires:["Bauart laut Schaltplan geklärt (Öffner/Schließer, Schalter oder Sensor)","Ölstand vorher geprüft"],
+ limits:["zeigt nur die Elektrik – den echten Öldruck misst nur ein Manometer"],
+ dont:["Motor nicht weiterlaufen lassen, solange die Öldruckwarnung leuchtet"],
+ warn:[["danger","Öldruckwarnung bei laufendem Motor = Motor sofort abstellen. Erst mechanischer Öldrucktest mit Manometer – ein 'weggemessener' Schalter rettet keinen Motor."]],
+ syn:"Öldruck Öldruckschalter Öldrucksensor Ölkontrollleuchte Öldrucklampe Öldruckgeber"
 },
 {
  id:"agt",cat:"sensor",ic:"🔥",nm:"Abgastemperatursensor",tag:"mm",
@@ -1590,6 +1637,30 @@ const DEEP = {
      {s:"2 Klima an",do:"Signal bei laufender Klima beobachten",ok:"ändert sich → ok",ng:"fest → Sensor/Füllmenge"},
      {s:"3 Referenz & Druck",do:"5 V prüfen, ggf. Manometer vergleichen",ok:"stimmt → ok",ng:"Abweichung → Füllmenge/Sensor"}]
 },
+/* PRÜFEN: DEEP "oeldruck" – kompletter Fachinhalt zur Freigabe (siehe REVIEW.md) */
+"oeldruck":{
+ anl:["Bauart im Schaltplan klären: einfacher Warnschalter (2-polig, meist massegeschaltet), Kombischalter oder analoger Drucksensor (3-Draht: Versorgung/Masse/Signal).",
+   "Ölstand und Ölzustand IMMER zuerst prüfen – die häufigste Ursache für eine Öldruckwarnung ist kein Elektrikfehler.",
+   "Warnschalter, Motor aus, Zündung ein: Lampe muss leuchten. Stecker abziehen: Lampe muss ausgehen (bei massegeschaltetem Schließer). Verhält es sich anders, Bauart im Schaltplan gegenprüfen.",
+   "Durchgangsprüfung am abgezogenen Schalter gegen Motormasse: Motor aus = Durchgang, Motor läuft = offen. Der Schaltdruck steht meist auf dem Schalter aufgedruckt – mit Herstellerangabe vergleichen.",
+   "Analoger Sensor: Versorgung und Sensor-Masse prüfen, dann Signal bei Leerlauf und erhöhter Drehzahl beobachten – es muss sich mit dem Druck ändern. Mit Livedaten vergleichen.",
+   "Bleibt die Warnung bei laufendem Motor an: Motor abstellen und Öldruck mit Manometer am Ölkanal messen (Herstellerwerte). Erst danach über Schalter-/Sensortausch entscheiden."],
+ rt:{head:["Prüfung","Erwartung","Bewertung"],rows:[
+   ["Warnschalter, Motor aus","Durchgang gegen Masse (Lampe an bei Zündung ein)","g"],
+   ["Warnschalter, Motor läuft","offen – Lampe aus","g"],
+   ["Sensorsignal","folgt Druck/Drehzahl, plausibel zu Livedaten","g"],
+   ["Lampe an bei laufendem Motor","STOPP – Manometer-Messung, nicht weiterfahren","b"],
+   ["kein Wechsel beim Start","Schalter/Leitung prüfen","b"]],
+   note:"Schaltdruck und Öldruck-Sollwerte sind motorspezifisch (Herstellerangaben/Aufdruck auf dem Schalter). Diese Karte prüft die Elektrik – die Druckmessung selbst erfolgt mechanisch mit Manometer."},
+ urs:[["Öldruck tatsächlich zu niedrig (Ölstand, Pumpe, Lager)","Warnung berechtigt – Motorschaden droht","h"],
+      ["Schalter undicht/verschlissen","Fehlwarnung oder keine Warnung","h"],
+      ["Leitung Schluss nach Masse","Lampe dauerhaft an","m"],
+      ["Sensor driftet","unplausible Druckanzeige","m"]],
+ fs:[{s:"1 Ölstand",do:"Ölstand/Zustand prüfen",ok:"in Ordnung → weiter",ng:"korrigieren, dann neu bewerten"},
+     {s:"2 Lampenlogik",do:"Zündung ein/Motor aus: Lampe an? Stecker ab: Lampe aus?",ok:"Logik stimmt → weiter",ng:"Leitung/Kombiinstrument prüfen"},
+     {s:"3 Schalter/Sensor",do:"Durchgang bzw. Signal bei Motor aus/läuft vergleichen",ok:"wechselt → Elektrik ok",ng:"kein Wechsel → Schalter/Sensor tauschen"},
+     {s:"4 Manometer",do:"Bleibt die Warnung: mechanischen Öldruck messen",ok:"Druck im Soll → Elektrik weiter eingrenzen",ng:"Druck zu niedrig → Mechanik instandsetzen"}]
+},
 "agt":{
  rt:{head:["Temperatur","Widerstand (typ.)",""],rows:[
    ["20 °C","je nach Typ (PTC oft niedrig)","g"],["Hohe Temp","steigt (PTC) bzw. fällt (NTC)","g"],
@@ -1960,7 +2031,7 @@ const GLOSS = [
  ["CAN","Schneller Zweidraht-Datenbus (High/Low)."],
  ["LIN","Langsamer einadriger Datenbus."],
  ["Ruhestrom","Stromverbrauch im abgestellten Zustand."],
- ["Backprobing","Messen am Stecker von hinten, ohne Isolierung zu durchstechen."],
+ ["Backprobing","Messen am gesteckten Stecker von der Kabelseite mit dünner Prüfspitze – ohne Isolierung zu durchstechen und ohne den Kontakt aufzubiegen (auch 'Backprobe' genannt)."],
  ["Pin-Fit","Klemmkraft eines Steckkontakts – aufgeweitet = schlechter Kontakt."],
  ["Lastprüfung","Messung mit eingeschaltetem/belastetem Verbraucher."],
  ["Prüflampe","Einfaches Lastprüfmittel – belastet die Leitung, zeigt echte Last."],
@@ -2102,10 +2173,70 @@ window.setCat=setCat;
 function tileHTML(t){
   const tag=t.tag==='mm'?'<span class="tg mm">MM</span>':t.tag==='osz'?'<span class="tg osz">OSZ</span>':'<span class="tg gef">⚠</span>';
   const faved=favs.includes(t.id)?'faved':'';
+  // Bei aktiver Suche fehlt die Kategoriegruppierung -> Bereich auf der Kachel anzeigen
+  const tcat=query.trim()?`<span class="tcat">${(CATS.find(c=>c.id===t.cat)||{}).name||''}</span>`:'';
   return `<button type="button" class="tile ${faved}" onclick="openDetail('${t.id}')">
-    ${tag}<span class="ic" aria-hidden="true">${t.ic}</span><span class="nm">${t.nm}</span>
+    ${tag}<span class="ic" aria-hidden="true">${t.ic}</span><span class="nm">${t.nm}</span>${tcat}
     <span class="fav" aria-hidden="true">★</span></button>`;
 }
+
+/* ============================================================
+   Querverweis-Chips: "→ Prüfung: X" / "→ Entscheidungsbaum: X"
+   werden beim Rendern in antippbare Buttons umgewandelt.
+   Lookup gegen TESTS[].nm und TREES[].title – Datentexte bleiben unverändert.
+   ============================================================ */
+let XREF_LOOKUP=null;
+function xrefNorm(s){
+  return s.toLowerCase()
+    .replace(/\([^)]*\)/g,'')                                  // Klammerzusätze weg
+    .replace(/\s*\/\s*/g,'/')                                  // Spaces um Slashes
+    .replace(/\b(prüfen|prüfung|messen|finden|verwenden)\b/g,'')// Verb-Endungen
+    .replace(/\s+/g,' ').trim();
+}
+function buildXrefLookup(){
+  XREF_LOOKUP={test:{},tree:{}};
+  TESTS.forEach(t=>{
+    const full=xrefNorm(t.nm);
+    XREF_LOOKUP.test[full]=t.id;
+    full.split('/').forEach(p=>{p=p.trim();if(p&&XREF_LOOKUP.test[p]===undefined)XREF_LOOKUP.test[p]=t.id;});
+  });
+  Object.keys(TREES).forEach(k=>{XREF_LOOKUP.tree[xrefNorm(TREES[k].title)]=k;});
+}
+function xrefResolve(name,preferTree){
+  const n=xrefNorm(name);
+  if(!n)return null;
+  if(preferTree&&XREF_LOOKUP.tree[n]!==undefined)return{kind:'tree',key:XREF_LOOKUP.tree[n]};
+  if(XREF_LOOKUP.test[n]!==undefined)return{kind:'test',key:XREF_LOOKUP.test[n]};
+  if(XREF_LOOKUP.tree[n]!==undefined)return{kind:'tree',key:XREF_LOOKUP.tree[n]};
+  return null;
+}
+function xrefChip(target,label){
+  return target.kind==='tree'
+    ?`<button type="button" class="xref" onclick="xrefOpenTree('${target.key}')">🌳 ${label.trim()}</button>`
+    :`<button type="button" class="xref" onclick="openDetail('${target.key}')">🔎 ${label.trim()}</button>`;
+}
+function linkifyRefs(html){
+  if(!XREF_LOOKUP)buildXrefLookup();
+  return html.replace(/→\s*(Entscheidungsbaum\s*\/\s*Prüfung|Entscheidungsbaum|Prüfung)\s*:\s*([^.<!]+)/g,(m,kindTxt,names)=>{
+    const preferTree=/Entscheidungsbaum/.test(kindTxt);
+    const whole=xrefResolve(names,preferTree);
+    if(whole)return '→ '+xrefChip(whole,names);
+    // Sammelverweis "A / B": Teile einzeln auflösen; Unauffindbares bleibt Text
+    const parts=names.split('/');
+    if(parts.length>1){
+      let any=false;
+      const out=parts.map(p=>{
+        const r=xrefResolve(p,preferTree);
+        if(r){any=true;return xrefChip(r,p);}
+        return p.trim();
+      }).join(' / ');
+      if(any)return '→ '+out;
+    }
+    return m; // nichts auflösbar -> Originaltext, kein toter Chip
+  });
+}
+function xrefOpenTree(k){openOverlay(treeOv);startTree(k);}
+window.xrefOpenTree=xrefOpenTree;
 
 function filterTests(){
   return TESTS.filter(t=>{
@@ -2159,11 +2290,28 @@ function openOverlay(el){
     lastFocus=document.activeElement;
     try{history.pushState({ov:1},'');}catch(e){}
   }
+  // Nur ein Overlay sichtbar: andere schließen (gleicher z-index, DOM-Reihenfolge
+  // würde sonst z.B. ein über einem Diagnosebaum geöffnetes Detail verdecken)
+  [ov,glossOv,treeOv].forEach(o=>{if(o!==el)o.classList.remove('open');});
   el.scrollTop=0;
   el.classList.add('open');
   const bk=el.querySelector('.back');
   if(bk)bk.focus();
 }
+/* Fokus-Trap: Tab bleibt im offenen Overlay */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Tab')return;
+  const oe=[ov,glossOv,treeOv].find(o=>o.classList.contains('open'));
+  if(!oe)return;
+  const f=Array.from(oe.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])'));
+  if(!f.length)return;
+  const first=f[0],last=f[f.length-1],a=document.activeElement;
+  if(e.shiftKey){
+    if(a===first||!oe.contains(a)){e.preventDefault();last.focus();}
+  }else{
+    if(a===last||!oe.contains(a)){e.preventDefault();first.focus();}
+  }
+});
 function requestClose(){
   if(history.state&&history.state.ov)history.back();
   else doCloseOverlays();
@@ -2253,7 +2401,7 @@ const FUSE_R = [
   {v:"50 A (Maxi)",r:2.1}
 ];
 function calcHTML(){
-  let opts=FUSE_R.map((f,i)=>`<option value="${f.r}"${i===4?' selected':''}>${f.v}</option>`).join('');
+  let opts=FUSE_R.map((f,i)=>`<option value="${f.r}" data-nom="${parseFloat(f.v.replace(',','.'))}"${i===4?' selected':''}>${f.v}</option>`).join('');
   return `<div class="calc">
     <h4>🔢 mV-Drop Rechner</h4>
     <div class="calc-row">
@@ -2281,14 +2429,21 @@ function calcMvDrop(){
   // I = U / R; mV/mΩ kürzt sich zu A (10⁻³V / 10⁻³Ω = V/Ω)
   const amps = mv / r; // A
   const ma = amps*1000;
+  // Plausibilität gegen den Nennstrom: Strom über Nennwert hätte die Sicherung ausgelöst
+  const nom=parseFloat((fEl.selectedOptions&&fEl.selectedOptions[0]&&fEl.selectedOptions[0].dataset.nom)||'NaN');
   let cls='calc-out',hint='';
+  if(!isNaN(nom)&&amps>nom){
+    out.className='calc-out warnval';
+    out.innerHTML=`<div class="big">unplausibel</div><div class="sub">≈ ${amps.toFixed(1).replace('.',',')} A liegt über dem Nennstrom (${nom} A) – die Sicherung hätte ausgelöst. Messwert, Einheit (mV!) und Sicherungswahl prüfen.</div>`;
+    return;
+  }
   if(ma<5){cls='calc-out goodval';hint='sehr gering – unauffällig';}
   else if(ma<50){cls='calc-out';hint='im normalen Ruhestrom-Bereich';}
   else if(ma<200){cls='calc-out warnval';hint='erhöht – Kreis genauer prüfen';}
   else{cls='calc-out warnval';hint='hoch – Verbraucher in diesem Kreis aktiv';}
   out.className=cls;
-  const disp = ma>=1000?(amps.toFixed(2)+' A'):(ma.toFixed(ma<10?1:0)+' mA');
-  out.innerHTML=`<div class="big">≈ ${disp}</div><div class="sub">${hint} · R≈${r} mΩ</div>`;
+  const disp = (ma>=1000?(amps.toFixed(2)+' A'):(ma.toFixed(ma<10?1:0)+' mA')).replace('.',',');
+  out.innerHTML=`<div class="big">≈ ${disp}</div><div class="sub">${hint} · R≈${String(r).replace('.',',')} mΩ</div>`;
 }
 window.calcMvDrop=calcMvDrop;
 
@@ -2336,7 +2491,7 @@ function openDetail(id){
   h+=`<div class="step next"><div class="lbl"><span class="num">→</span>Nächster Schritt</div><div class="body">${t.next}</div></div>`;
   // disclaimer
   h+=`<div class="disc">⚠️ Alle Werte sind <b>typische Richtwerte</b> und teils marken-/modellabhängig. Fahrzeugspezifische Schaltpläne, Hersteller- und Diagnoseinformationen haben immer Vorrang.</div>`;
-  document.getElementById('ovbody').innerHTML=h;
+  document.getElementById('ovbody').innerHTML=linkifyRefs(h);
   if(t.calc==='mvdrop')calcMvDrop();
   openOverlay(ov);
 }
@@ -2403,20 +2558,29 @@ function openTreeMenu(){
   openOverlay(treeOv);
 }
 window.openTreeMenu=openTreeMenu;
-function startTree(k){treeKey=k;renderNode(TREES[k].start,[]);}
+let treePath=[]; // Pfad-Stack für "Ein Schritt zurück"
+function startTree(k){treeKey=k;treePath=[];renderNode(TREES[k].start);}
 window.startTree=startTree;
-function renderNode(idx,path){
+function treeStepBack(){
+  if(treePath.length>1){treePath.pop();renderNode(treePath[treePath.length-1],true);}
+}
+window.treeStepBack=treeStepBack;
+function renderNode(idx,isBack){
   const tree=TREES[treeKey];
   const node=tree.nodes[idx];
+  if(!isBack)treePath.push(idx);
   document.getElementById('treeTitle').textContent=tree.title;
   let h='';
+  const backBtn=treePath.length>1?`<button class="tree-opt" onclick="treeStepBack()">← Ein Schritt zurück<span class="ar"></span></button>`:'';
   if(node.r){
-    h+=`<div class="tree-res"><b>Ergebnis:</b><br>${node.r}</div>`;
+    h+=`<div class="tree-res"><b>Ergebnis:</b><br>${linkifyRefs(node.r)}</div>`;
+    h+=backBtn;
     h+=`<button class="tree-opt" onclick="startTree('${treeKey}')">↺ Nochmal von vorn<span class="ar"></span></button>`;
     h+=`<button class="tree-opt" onclick="openTreeMenu()">← Anderes Fehlerbild<span class="ar"></span></button>`;
   }else{
     h+=`<div class="tree-q">${node.q}</div>`;
     h+=node.opts.map(o=>`<button class="tree-opt" onclick="renderNode(${o.go})">${o.t}<span class="ar">→</span></button>`).join('');
+    h+=backBtn;
     h+=`<button class="tree-opt" onclick="openTreeMenu()" style="color:var(--txt2);margin-top:6px">← Zurück zur Auswahl<span class="ar"></span></button>`;
   }
   document.getElementById('treeBody').innerHTML=h;
@@ -2451,8 +2615,27 @@ function toggleBeginner(){
 window.toggleBeginner=toggleBeginner;
 try{if(localStorage.getItem('mm_beginner')==='1')applyBeginner(true);}catch(e){}
 
-/* search */
-searchEl.addEventListener('input',e=>{query=e.target.value;if(view==='fav'){activeCat='alle';renderCats();}renderHome();});
+/* search: entprellt (130 ms), mit Lösch-X */
+let searchTimer=null;
+searchEl.addEventListener('input',e=>{
+  const v=e.target.value;
+  const x=document.getElementById('searchClear');
+  if(x)x.style.display=v?'flex':'none';
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(()=>{
+    query=v;
+    if(view==='fav'){activeCat='alle';renderCats();}
+    renderHome();
+  },130);
+});
+function clearSearch(){
+  clearTimeout(searchTimer);
+  searchEl.value='';query='';
+  const x=document.getElementById('searchClear');
+  if(x)x.style.display='none';
+  renderHome();searchEl.focus();
+}
+window.clearSearch=clearSearch;
 
 /* Geräte-Zurück (Hardware/Geste) schließt offene Overlays */
 window.addEventListener('popstate',()=>{doCloseOverlays();});
@@ -2492,7 +2675,38 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
     "ruhestrom-fuse":{quality:"MM sehr gut zum Eingrenzen",risk:"niedrig",requires:["mV-Auflösung","Fahrzeug eingeschlafen"],limits:["Sicherungswiderstand variiert"]},
     "radsensor":{quality:"MM nur grob",risk:"mittel",requires:["Sensortyp über Schaltplan klären"],limits:["Encoder-Aussetzer nur Oszi/Livedaten"]},
     "lambda-breit":{quality:"MM kaum geeignet",risk:"mittel",requires:["Versorgung/Heizung prüfen"],limits:["Funktion über Diagnose/Pumpstrom"]},
-    "nox":{quality:"MM nur Versorgung",risk:"mittel",requires:["Diagnosegerät"],limits:["Sensorfunktion nicht direkt messbar"]}
+    "nox":{quality:"MM nur Versorgung",risk:"mittel",requires:["Diagnosegerät"],limits:["Sensorfunktion nicht direkt messbar"]},
+    /* PRÜFEN: v7.4 – Meta-Felder für bisher ungepflegte Karten. Methodisch aus den
+       vorhandenen Kartentexten abgeleitet, keine neuen Zahlenwerte. Freigabe: REVIEW.md */
+    "ntc-kts":{quality:"MM sehr gut",risk:"niedrig",requires:["spannungsfrei für Ohm-Messung","Referenztemperatur bekannt"],limits:["sporadische Aussetzer im Fahrbetrieb nicht sichtbar"],dont:["nicht bei angestecktem Stecker Ohm messen"]},
+    "ntc-ats":{quality:"MM sehr gut",risk:"niedrig",requires:["spannungsfrei für Ohm-Messung","Umgebungstemperatur als Referenz"],limits:["reagiert träge – langsame Drift schwer erkennbar"],dont:["nicht bei angestecktem Stecker Ohm messen"]},
+    "poti-dk":{quality:"MM gut, Oszi bei Aussetzern",risk:"niedrig",requires:["Zündung an","Stellweg langsam und vollständig durchfahren"],limits:["kurze Aussetzer nur per Oszilloskop sicher sichtbar"],dont:["Signalleitung nicht mit Prüflampe belasten"]},
+    "map":{quality:"MM gut",risk:"niedrig",requires:["Zündung an bzw. Motor läuft","5-V-Referenz und Sensor-Masse geprüft"],limits:["mechanische Fehler (Schlauch, Dichtung) nicht elektrisch erkennbar"],dont:["Sensorelektronik nicht mit Ohm durchmessen"]},
+    "lmm-a":{quality:"MM gut für Grundprüfung",risk:"niedrig",requires:["Motor läuft","Livedaten zum Vergleich"],limits:["Verschmutzung zeigt sich oft erst bei Volllast"],dont:["Messelement nicht berühren oder mit Sprühmitteln fluten"]},
+    "lmm-d":{quality:"MM mit Hz-Funktion",risk:"niedrig",requires:["Frequenzmessbereich am MM","Motor läuft"],limits:["Signalqualität/Aussetzer nur per Oszilloskop"],dont:["Messelement nicht berühren"]},
+    "lambda-sprung":{quality:"MM gut für Grundprüfung",risk:"mittel",requires:["Motor betriebswarm","Sonde regelbereit"],limits:["Regelgeschwindigkeit nur grob beurteilbar"],dont:["heiße Abgasteile nicht berühren","Signal nicht mit Prüflampe belasten"]},
+    "kw-ind":{quality:"MM gut für Ohm/AC-Grobtest",risk:"niedrig",requires:["spannungsfrei für Ohm","Anlasser für AC-Test drehen lassen"],limits:["fehlende einzelne Zähne nur per Oszilloskop sichtbar"],dont:["Geberrad/Luftspalt nicht ohne Vorgabe verändern"]},
+    "hall":{quality:"MM nur Mittelwert",risk:"niedrig",requires:["Versorgung und Masse zuerst prüfen"],limits:["Flanken und Aussetzer nur per Oszilloskop"],dont:["Signalleitung nicht mit Prüflampe belasten"]},
+    "klopf":{quality:"MM kaum geeignet",risk:"mittel",requires:["Anzugsmoment nach Herstellervorgabe"],limits:["Funktion mit MM nicht beweisbar"],dont:["Sensor nicht ohne Drehmomentschlüssel montieren"]},
+    "raildruck":{quality:"MM gut für Signalprüfung",risk:"hoch",requires:["5-V-Referenz und Sensor-Masse geprüft"],limits:["zeigt das elektrische Signal, nicht den echten Druck"],dont:["Hochdruckseite niemals bei laufendem Motor öffnen"]},
+    "klimadruck":{quality:"MM gut für Signalprüfung",risk:"mittel",requires:["Zündung an","Systemzustand (Klima an/aus) beachten"],limits:["Kältemittelmenge nicht elektrisch messbar"],dont:["Kältemittelkreis nicht ohne Klimaservicegerät öffnen"]},
+    "agt":{quality:"MM gut, Typ beachten",risk:"mittel",requires:["Typ NTC/PTC über Sollwerte geklärt","Abgasstrang abgekühlt"],limits:["Drift bei hohen Temperaturen kalt nicht erkennbar"],dont:["nicht am heißen Abgasstrang arbeiten"]},
+    "dpf-diff":{quality:"MM gut für Signalprüfung",risk:"niedrig",requires:["Zündung an, Schläuche drucklos für Ruhewert"],limits:["tatsächliche Asche-/Rußmasse nur per Diagnose"],dont:["Druckschläuche nicht vertauschen"]},
+    "tankgeber":{quality:"MM sehr gut",risk:"mittel",requires:["spannungsfrei","Zugang zum Geber"],limits:["Kontaktfehler nur über den ganzen Schwimmerweg sichtbar"],dont:["keine Funken/Zündquellen am offenen Tank – Explosionsgefahr"]},
+    "schalter":{quality:"MM sehr gut",risk:"niedrig",requires:["Schalter betätigbar","Bauart (Öffner/Schließer) bekannt"],limits:["Prellen/Übergangswiderstand unter Last zeigt der Piepton nicht"],dont:["nicht nur den Piepton werten – wichtige Kreise unter Last gegenprüfen"]},
+    "magnetventil":{quality:"MM sehr gut für Spule",risk:"niedrig",requires:["spannungsfrei für Ohm","Schaltplan: plus- oder massegeschaltet"],limits:["mechanisches Klemmen elektrisch nicht sichtbar"],dont:["Ventil nicht ohne Herstellervorgabe dauerbestromen"]},
+    "taktventil":{quality:"MM für Spule, Oszi für PWM",risk:"niedrig",requires:["spannungsfrei für Ohm","Duty-/Hz-Funktion für Ansteuerung"],limits:["PWM-Form und Flanken nur per Oszilloskop"],dont:["Ventil nicht ohne Herstellervorgabe dauerbestromen"]},
+    "injektor-benzin":{quality:"MM nur Spulen-Grundprüfung",risk:"mittel",requires:["spannungsfrei","alle Injektoren im Vergleich messen"],limits:["Ohm-Wert sagt nichts über Spritzbild und Menge"],dont:["Direkteinspritzer-Ansteuerung nicht brücken oder fremdbestromen"]},
+    "injektor-diesel":{quality:"MM nur bei Magnet-Injektor",risk:"hoch",requires:["Typ Magnet/Piezo sicher geklärt","Herstellersollwerte"],limits:["Mengenstreuung nur per Diagnose/Rücklaufmessung"],dont:["Piezo-Injektoren niemals mit MM oder Fremdspannung prüfen","Hochdruckbereich nicht öffnen"]},
+    "zuendspule":{quality:"MM nur Primär-Grundprüfung",risk:"hoch",requires:["Kl.15-Versorgung und Masse geprüft"],limits:["Zündbild/Sekundärseite nur per Oszilloskop"],dont:["nicht in die offene Sekundärseite bei laufendem Motor greifen"]},
+    "gluehkerze":{quality:"MM gut, Stromzange besser",risk:"mittel",requires:["spannungsfrei","Eigenwiderstand der Messspitzen abgezogen"],limits:["Ohm-Wert sagt wenig über die reale Glühleistung"],dont:["Niedervolt-Kerzen (4,4/7 V) nie direkt an 12 V legen"]},
+    "luefter":{quality:"MM gut für Versorgung/Masse",risk:"hoch",requires:["Lüfter gegen unvermitteltes Anlaufen gesichert"],limits:["LIN-/Modul-Lüfter nur begrenzt direkt prüfbar"],dont:["nicht bei drehendem oder unabgesichertem Lüfter messen","Lüfterrad nicht blockieren"]},
+    "kraftstoffpumpe":{quality:"MM gut, Stromzange fürs Detail",risk:"mittel",requires:["Ansteuerlogik bekannt (Relais oder Pumpensteuergerät)"],limits:["Förderdruck und -menge nicht elektrisch messbar"],dont:["Pumpe nicht trocken dauerbestromen","keine Funken am Kraftstoffsystem"]},
+    "stellmotor":{quality:"MM für Wicklung/Poti",risk:"niedrig",requires:["spannungsfrei für Ohm"],limits:["H-Brücken-Ansteuerung nur per Oszilloskop/Stellgliedtest"],dont:["Klappe nicht mit Gewalt von Hand bewegen – Getriebeschaden"]},
+    "ventil-tank":{quality:"MM sehr gut für Spule",risk:"niedrig",requires:["spannungsfrei für Ohm"],limits:["Dichtheit nur mechanisch/per Diagnose prüfbar"],dont:["Ventil nicht ohne Herstellervorgabe dauerbestromen"]},
+    "motor-allg":{quality:"MM gut für Versorgung/Masse",risk:"niedrig",requires:["Betätigung/Ansteuerung auslösbar"],limits:["Schwergängigkeit nur über die Stromaufnahme erkennbar"],dont:["Motor nicht gegen den Anschlag dauerbestromen"]},
+    "hupe":{quality:"MM sehr gut",risk:"niedrig",requires:["unter Last messen (Verbraucher eingeschaltet)"],limits:["LED-Leuchten mit eigener Elektronik täuschen einfache Spannungsprüfung"],dont:["LED-/CAN-gesteuerte Leuchten nicht mit Prüflampe testen"]},
+    "leitung":{quality:"MM sehr gut",risk:"niedrig",requires:["spannungsfrei für Ohm/Durchgang","beide Leitungsenden identifiziert"],limits:["Übergangswiderstand zeigt sich sicher erst unter Last"],dont:["Isolierung nicht unnötig durchstechen – Korrosionsgefahr"]}
   };
   Object.keys(metaDefaults).forEach(id=>addMeta(id,metaDefaults[id]));
 
@@ -2703,6 +2917,36 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
   }];
 
   newTests.forEach(t=>{if(!TESTS.some(x=>x.id===t.id)) TESTS.push(t);});
+
+  /* PRÜFEN: v7.4 – fehlende "Nicht machen"-Felder (dont). Methodisch aus den
+     vorhandenen Warnungen/Texten abgeleitet, keine neuen Zahlenwerte. Freigabe: REVIEW.md */
+  const metaDont={
+    "spannung":["nicht gegen einen zweifelhaften Massepunkt als einzige Referenz messen"],
+    "durchgang":["nie an spannungsführenden Leitungen Durchgang prüfen"],
+    "spannungsabfall":["nicht ohne eingeschalteten Verbraucher bewerten – ohne Last ist der Wert immer 0"],
+    "batterie":["Pole nicht mit Werkzeug überbrücken – Kurzschluss- und Funkengefahr"],
+    "generator":["Batterie niemals bei laufendem Motor abklemmen – Spannungsspitzen zerstören Elektronik"],
+    "starter":["beim Startversuch nicht in den Riemen-/Lüfterbereich greifen"],
+    "sicherung":["Sicherung nie durch höheren Nennwert oder Draht ersetzen"],
+    "masse":["Massepunkte nicht nur optisch beurteilen – unter Last messen"],
+    "pwm":["getaktete Steuerausgänge nicht mit Prüflampe belasten"],
+    "lambda-breit":["Pumpstromkreis nicht mit dem Multimeter belasten"],
+    "radsensor":["aktive Sensoren nicht blind auf Ohm messen"],
+    "nox":["Sensormodul nicht öffnen und nicht mit Ohm durchmessen"],
+    "can":["keine Prüflampe und keine Ohm-Messung am aktiven Bus"],
+    "lin":["keine Prüflampe an die LIN-Leitung"],
+    "ruhestrom":["Messgerät im A-Bereich niemals parallel anklemmen"],
+    "ruhestrom-fuse":["Sicherungen während der Messung nicht ziehen – das weckt das Fahrzeug"],
+    "klemmen":["Klemmenbelegung nicht raten – immer Schaltplan verwenden"],
+    "sensor-masseversatz":["Sensor-Masse nicht mit Zusatzkabel 'verbessern', ohne die Ursache zu klären"],
+    "pullup-pulldown":["den Ruhepegel nicht mit einer Prüflampe herunterziehen"],
+    "stromzange-dc":["nicht Plus- und Minusleiter gemeinsam umfassen – Felder heben sich auf"],
+    "starter-drop-profi":["nicht ohne gesichertes Fahrzeug starten (Parkstellung/Neutral, Feststellbremse)"],
+    "generator-lin-bsd":["Batterie niemals bei laufendem Motor abklemmen"],
+    "ecu-nicht-erreichbar":["Steuergerät nicht auf Verdacht tauschen, bevor Versorgung/Masse/Bus geprüft sind"],
+    "messprotokoll":["keine Messwerte ohne Zustand, Bezugspunkt und Lastangabe notieren"]
+  };
+  Object.keys(metaDont).forEach(id=>{const t=byId(id);if(t&&!t.dont)t.dont=metaDont[id];});
 
   Object.assign(DEEP,{
    "sicherheitscheck":{
@@ -2940,7 +3184,6 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
     ["Sicherheitsregel A-Buchse","Wenn die rote Messleitung im Ampere-Anschluss steckt, ist das Messgerät intern fast ein Kurzschluss. Danach niemals Spannung parallel messen, bevor die Leitung wieder in V/Ω steckt."],
     ["Messbezug","Der Punkt, gegen den gemessen wird. Eine Spannung gegen Batterieminus kann anders aussehen als gegen Sensor-Masse. Darum Messbezug immer notieren."],
     ["Unter Last","Der Verbraucher ist eingeschaltet und Strom fließt. Viele schlechte Kontakte fallen erst dann auf."],
-    ["Backprobe","Messen am gesteckten Stecker von der Kabelseite mit dünner Prüfspitze, ohne den Kontakt aufzubiegen."],
     ["Wake-up","Aufwachsignal oder Busaktivität, die ein Steuergerät aus dem Schlaf holt. Fehlt Wake-up, ist ein Steuergerät trotz guter Dauerplusversorgung nicht erreichbar."]
   );
 
@@ -3024,20 +3267,23 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
     if(t.calc==='mvdrop')h+=`<div class="step set"><div class="lbl"><span class="num">🧮</span>Rechner</div><div class="body">${calcHTML()}</div></div>`;
     h+=`<div class="step next"><div class="lbl"><span class="num">→</span>Nächster Schritt</div><div class="body">${t.next}</div></div>`;
     h+=`<div class="disc">⚠️ Alle Werte sind <b>typische Richtwerte</b> und teils marken-/modellabhängig. Fahrzeugspezifische Schaltpläne, Hersteller- und Diagnoseinformationen haben immer Vorrang. Dieses Tool ersetzt keine HV-, SRS- oder herstellerspezifische Freigabe.</div>`;
-    document.getElementById('ovbody').innerHTML=h;
+    document.getElementById('ovbody').innerHTML=linkifyRefs(h);
     if(t.calc==='mvdrop')calcMvDrop();
     openOverlay(ov);
   };
   window.openDetail=openDetail;
 
-  // Tile-Suche durchsucht jetzt auch neue Meta-/Grenzen-Texte
+  // Tile-Suche: Mehrwortsuche (alle Begriffe, Reihenfolge egal) über Name,
+  // Beschreibung, Mess-/Folgetexte, Meta-Felder und Synonyme (syn)
   filterTests=function(){
+    const q=query.trim().toLowerCase();
+    const toks=q.split(/\s+/).filter(Boolean);
     return TESTS.filter(t=>{
       const okCat=activeCat==='alle'||t.cat===activeCat;
-      const q=query.trim().toLowerCase();
-      const hay=[t.nm,t.was,t.id,t.quality,t.risk,(t.requires||[]).join(' '),(t.limits||[]).join(' '),(t.dont||[]).join(' ')].join(' ').toLowerCase();
-      const okQ=!q||hay.includes(q);
-      return okCat&&okQ;
+      if(!okCat)return false;
+      if(!toks.length)return true;
+      const hay=[t.nm,t.was,t.id,t.mess,t.next,t.syn,t.quality,t.risk,(t.requires||[]).join(' '),(t.limits||[]).join(' '),(t.dont||[]).join(' ')].join(' ').toLowerCase();
+      return toks.every(tk=>hay.includes(tk));
     });
   };
 })();

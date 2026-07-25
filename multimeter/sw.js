@@ -1,7 +1,7 @@
 /* KFZ Multimeter Profi – Service Worker
    Precache der App-Shell, network-first für Navigationen (frische index.html),
    cache-first für Assets. CACHE_NAME bei jedem Release erhöhen (passend zu APP_VERSION). */
-const CACHE_NAME = 'kfz-multimeter-profi-v7-3';
+const CACHE_NAME = 'kfz-multimeter-profi-v7-4';
 const ASSETS = [
   './',
   './index.html',
@@ -10,7 +10,20 @@ const ASSETS = [
   './icon-180.png',
   './icon-192.png',
   './icon-512.png',
-  './icon-maskable-512.png'
+  './icon-maskable-512.png',
+  './splash-750x1334.png',
+  './splash-828x1792.png',
+  './splash-1242x2208.png',
+  './splash-1125x2436.png',
+  './splash-1242x2688.png',
+  './splash-1170x2532.png',
+  './splash-1284x2778.png',
+  './splash-1179x2556.png',
+  './splash-1290x2796.png',
+  './splash-1620x2160.png',
+  './splash-1640x2360.png',
+  './splash-1668x2388.png',
+  './splash-2048x2732.png'
 ];
 
 self.addEventListener('install', event => {

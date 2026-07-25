@@ -1,5 +1,52 @@
 # Prüfbericht: „KFZ Multimeter Profi" PWA (v6 → v7)
 
+---
+
+## v7.4 – Neu formulierte Fachinhalte ZUR FREIGABE
+
+Alle folgenden Inhalte sind im Code mit `/* PRÜFEN */` markiert. Der Fachautor
+gibt sie einzeln frei. Es wurden **keine neuen Zahlenwerte erfunden** –
+Ausnahmen sind unten explizit benannt und mit Quelle/Begründung versehen.
+
+### Neue Prüfkarte „oeldruck" (Öldruckschalter / Öldrucksensor)
+Kompletter Kartentext + DEEP-Eintrag (Anleitung, Erwartungstabelle, Ursachen,
+Fehlersuche). Bewusst ohne Schaltdruck-Zahlenwerte – verweist auf Aufdruck/
+Herstellerangabe und auf die Manometer-Messung. Sicherheitskern: „Lampe an
+bei laufendem Motor = Motor sofort abstellen, Manometer vor Bauteiltausch."
+
+### Such-Synonyme mit Fehlercodes (generische OBD-II-Codes nach SAE J2012)
+- `lambda-sprung`: Sauerstoffsensor, O2-Sensor, Regelsonde, Sprungsonde, P0130, P0133, P0135
+- `lambda-breit`: Sauerstoffsensor, O2-Sensor, Breitbandsonde, LSU
+- `hall`: Nockenwellensensor, CMP, P0340, P0341, P0342
+- `kw-ind`: Kurbelwellensensor, OT-Geber, CKP, P0335, P0336
+- `ptc-sensor`: KTY81, KTY83, PT1000, PT200 (bereits vorhandene Begriffe der Karte)
+- `oeldruck`: Öldruck, Öldruckschalter, Öldrucksensor, Ölkontrollleuchte
+
+### Meta-Felder für 29 bisher ungepflegte Karten
+(`ntc-kts, ntc-ats, poti-dk, map, lmm-a, lmm-d, lambda-sprung, kw-ind, hall,
+klopf, raildruck, klimadruck, agt, dpf-diff, tankgeber, schalter, magnetventil,
+taktventil, injektor-benzin, injektor-diesel, zuendspule, gluehkerze, luefter,
+kraftstoffpumpe, stellmotor, ventil-tank, motor-allg, hupe, leitung`)
+Jeweils `quality`, `risk`, `requires`, `limits`, `dont` – methodisch aus den
+vorhandenen Kartentexten und Warnungen abgeleitet, keine neuen Sollwerte.
+Sicherheitsrelevante `dont`-Kerne: Tankgeber (Ex-Gefahr am offenen Tank),
+Kraftstoffpumpe (keine Funken), Lüfter (Nachlauf), Piezo-Injektoren (kein MM),
+Raildruck (Hochdruckseite nie öffnen), Klimakreis (nur mit Servicegerät).
+
+### „Nicht machen"-Felder für 24 weitere Karten
+(`spannung, durchgang, spannungsabfall, batterie, generator, starter,
+sicherung, masse, pwm, lambda-breit, radsensor, nox, can, lin, ruhestrom,
+ruhestrom-fuse, klemmen, sensor-masseversatz, pullup-pulldown, stromzange-dc,
+starter-drop-profi, generator-lin-bsd, ecu-nicht-erreichbar, messprotokoll`)
+Kernaussagen u.a.: Batterie nie bei laufendem Motor abklemmen (Generator),
+Sicherung nie durch höheren Nennwert ersetzen, keine Prüflampe an Bus-/
+Signalleitungen, A-Bereich nie parallel.
+
+### Rechner: Plausibilitätsprüfung gegen den Nennstrom
+Neue Logik (keine neuen Messwerte): Ergibt die Umrechnung einen Strom über dem
+Nennwert der gewählten Sicherung, meldet der Rechner „unplausibel" statt eines
+Scheinergebnisses – eine intakte Sicherung hätte bei diesem Strom ausgelöst.
+
 > **Nachtrag v7.1:** Prüfkarte „Pull-up / Pull-down Signal" fachlich
 > vervollständigt: 0-V-Mehrdeutigkeit (Pull-down vs. Masseschluss vs.
 > Leitungsbruch, Klärung per Ohm-Messung), Gegenprobe gegen Batterieminus,
