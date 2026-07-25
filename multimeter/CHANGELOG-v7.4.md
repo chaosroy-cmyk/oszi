@@ -1,3 +1,24 @@
+# CHANGELOG v7.4 / v7.5
+
+## v7.5 — FUSE_R-Konflikt behoben (Datenblatt-Verifikation)
+
+Der unter „Entscheidungen bei Widersprüchen" offen gelassene Punkt ist
+geklärt. Prüfung gegen die Original-Datenblätter (Littelfuse ATOF 287
+Rev. 02/2025, MAXI 299 Rev. 01/2025, Abgleich MINI 297) ergab: **die bis v7.4
+hinterlegten Widerstände waren zu hoch**, die Erwartung des Auftrags war
+korrekt. `FUSE_R` enthält jetzt die exakten Datenblattwerte
+(10 A: 11 → **7,70 mΩ**, 20 A: 5,8 → **3,38 mΩ**, vollständige Tabelle in
+REVIEW.md). Der Rechner hatte dadurch Ruheströme um Faktor ~1,4 zu niedrig
+ausgewiesen — ein 100-mA-Verbraucher erschien als 70 mA und damit als
+unauffällig.
+
+Ebenfalls angepasst: Richtwerttabelle „≈ mV pro 100 mA" in der Karte
+„Ruhestrom über Sicherung"; die Regression in `validate.js` prüft jetzt den
+festen Sollwert 0,77 mV @ 10 A = 100 mA **und** die Datenblatttreue von
+`FUSE_R`. Version 7.5-Profi ↔ Cache v7-5.
+
+---
+
 # CHANGELOG v7.4 (Auftrag „v7.2 → v7.3", ausgeführt auf Basis v7.3)
 
 ## Versionshinweis (Abweichung vom Auftragstext)

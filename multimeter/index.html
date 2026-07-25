@@ -485,7 +485,7 @@ body.beginner .beg-explain{display:block}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '7.4-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '7.5-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -1974,14 +1974,14 @@ const DEEP = {
    "Im Belegungsplan nachsehen, welcher Verbraucher zur verdächtigen Sicherung gehört, und diesen gezielt prüfen.",
    "Vorteil: kein Auftrennen, kein Reset der Einschlafzeit, kein Funke. Nachteil: nur zum <b>Eingrenzen</b> – für genaue Werte zusätzlich in Reihe oder mit Stromzange messen."],
  rt:{head:["Sicherung","≈ mV pro 100 mA","Hinweis"],rows:[
-   ["Mini/Standard 3 A","~ 4–5 mV","g"],
-   ["Mini/Standard 5 A","~ 2–2,5 mV","g"],
-   ["Standard 10 A","~ 1,0–1,2 mV","g"],
-   ["Standard 15 A","~ 0,7–0,8 mV","g"],
-   ["Standard 20 A","~ 0,5–0,6 mV","w"],
-   ["Standard 25–30 A","~ 0,35–0,45 mV","w"],
-   ["Hochstrom > 30 A","unter ~0,3 mV, ungenau","b"]],
-   note:"Richtwerte auf Basis typischer Kalt-Innenwiderstände von KFZ-Flachsicherungen (z.B. 10 A ≈ 11 mΩ, 20 A ≈ 6 mΩ). Der Innenwiderstand variiert je Hersteller, Bauform (Mini/Standard/Maxi) und Temperatur. Kleine Ruheströme (< 20 mA) erzeugen oft nur Hundertstel-mV – dafür ist ein MM mit 0,01-mV-Auflösung nötig. Faustregel: je kleiner der Nennwert, desto höher der mV-Wert pro mA und desto besser messbar."},
+   ["Mini/Standard 3 A","~ 3 mV","g"],
+   ["Mini/Standard 5 A","~ 1,8 mV","g"],
+   ["Standard 10 A","~ 0,8 mV","g"],
+   ["Standard 15 A","~ 0,5 mV","g"],
+   ["Standard 20 A","~ 0,3–0,35 mV","w"],
+   ["Standard 25–30 A","~ 0,2–0,25 mV","w"],
+   ["Maxi 40–50 A","~ 0,1–0,15 mV, kaum messbar","b"]],
+   note:"Richtwerte direkt aus den Littelfuse-Datenblättern (ATOF 287 / MINI 297 / MAXI 299), z.B. 10 A ≈ 7,7 mΩ, 20 A ≈ 3,4 mΩ; Mini und Standard liegen innerhalb ~5 %. Der Innenwiderstand steigt mit der Temperatur und variiert je Hersteller. Kleine Ruheströme (< 20 mA) erzeugen nur Hundertstel-mV – dafür ist ein MM mit 0,01-mV-Auflösung nötig. Faustregel: je kleiner der Nennwert, desto höher der mV-Wert pro mA und desto besser messbar."},
  urs:[["Ein Kreis mit hohem mV-Wert","Verbraucher in diesem Kreis aktiv","h"],
       ["Nachrüstgerät an abgesichertem Dauerplus","Radio/Verstärker/Tracker","h"],
       ["Steuergerät im Kreis schläft nicht ein","hängender Aufwach-Zustand","m"],
@@ -2386,19 +2386,21 @@ function fsHTML(fs){
 
 /* mV-Drop Rechner:
    Sicherung hat kleinen Innenwiderstand R (mΩ). Strom I = U / R.
-   Typische KALT-Innenwiderstände gängiger KFZ-Flachsicherungen
-   (Richtwerte in mΩ, angelehnt an Herstellerdaten ATO/Mini, z.B. Littelfuse). */
+   Typische KALT-Innenwiderstände (mΩ) direkt aus den Littelfuse-Datenblättern:
+   ATOF 287 (Standard, Rev. 02/2025); MINI 297 liegt innerhalb ~5 % davon
+   (z.B. 10 A: 7,42 vs. 7,70 mΩ); 40/50 A aus MAXI 299 (Rev. 01/2025).
+   Quellenangaben in REVIEW.md. NICHT ohne Datenblattbeleg ändern. */
 const FUSE_R = [
-  {v:"3 A (Mini/Std)",r:45},
-  {v:"5 A (Mini/Std)",r:24},
-  {v:"7,5 A",r:16},
-  {v:"10 A",r:11},
-  {v:"15 A",r:7.6},
-  {v:"20 A",r:5.8},
-  {v:"25 A",r:4.6},
-  {v:"30 A",r:3.9},
-  {v:"40 A (Maxi)",r:2.6},
-  {v:"50 A (Maxi)",r:2.1}
+  {v:"3 A (Mini/Std)",r:31.1},
+  {v:"5 A (Mini/Std)",r:17.85},
+  {v:"7,5 A",r:10.91},
+  {v:"10 A",r:7.70},
+  {v:"15 A",r:4.80},
+  {v:"20 A",r:3.38},
+  {v:"25 A",r:2.52},
+  {v:"30 A",r:1.97},
+  {v:"40 A (Maxi)",r:1.4},
+  {v:"50 A (Maxi)",r:1.1}
 ];
 function calcHTML(){
   let opts=FUSE_R.map((f,i)=>`<option value="${f.r}" data-nom="${parseFloat(f.v.replace(',','.'))}"${i===4?' selected':''}>${f.v}</option>`).join('');

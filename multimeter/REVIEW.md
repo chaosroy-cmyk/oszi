@@ -2,6 +2,41 @@
 
 ---
 
+## v7.5 – FUSE_R gegen Original-Datenblätter verifiziert (Konflikt gelöst)
+
+Der in v7.4 dokumentierte Konflikt („Auftrag erwartet 0,77 mV @ 10 A ≈ 100 mA,
+Tabelle liefert 70 mA") ist **zugunsten des Auftrags geklärt**: Die Prüfung
+gegen die Original-Datenblätter zeigt, dass die bis v7.4 hinterlegten Werte
+**zu hoch** waren. `FUSE_R` enthält jetzt die exakten Datenblattwerte.
+
+| Nennstrom | v7.4 (mΩ) | v7.5 (mΩ) | Quelle |
+|---|---|---|---|
+| 3 A | 45 | **31,1** | ATOF 287 |
+| 5 A | 24 | **17,85** | ATOF 287 |
+| 7,5 A | 16 | **10,91** | ATOF 287 |
+| 10 A | 11 | **7,70** | ATOF 287 |
+| 15 A | 7,6 | **4,80** | ATOF 287 |
+| 20 A | 5,8 | **3,38** | ATOF 287 |
+| 25 A | 4,6 | **2,52** | ATOF 287 |
+| 30 A | 3,9 | **1,97** | ATOF 287 |
+| 40 A | 2,6 | **1,4** | MAXI 299 |
+| 50 A | 2,1 | **1,1** | MAXI 299 |
+
+Quellen (Spalte „Typ. Cold Resistance (mΩ)" der Ratings-Tabelle):
+- Littelfuse **ATOF® Series 287**, Blade Fuses Rated 32 V, Rev. 02/04/2025
+- Littelfuse **MAXI® Series 299**, Blade Fuses Rated 32 V, Rev. 01/06/2025
+- Abgleich **MINI® Series 297**: liegt innerhalb ~5 % der ATOF-Werte
+  (10 A: 7,42 vs. 7,70 mΩ) – eine getrennte Tabelle je Bauform ist für die
+  Eingrenzmessung nicht erforderlich, der Hinweis dazu steht in der Karte.
+
+**Auswirkung auf die Praxis:** Der Rechner zeigte bisher **zu niedrige**
+Ströme (Faktor ~1,4). Ein realer 100-mA-Verbraucher an einer 10-A-Sicherung
+(0,77 mV) wurde als 70 mA ausgewiesen und damit als „normaler Ruhestrom"
+eingestuft, statt als auffällig. Ebenfalls angepasst: die Tabelle
+„≈ mV pro 100 mA" in der Karte „Ruhestrom über Sicherung".
+
+---
+
 ## v7.4 – Neu formulierte Fachinhalte ZUR FREIGABE
 
 Alle folgenden Inhalte sind im Code mit `/* PRÜFEN */` markiert. Der Fachautor

@@ -128,8 +128,10 @@ const w = dom.window, d = w.document;
   const run = v => { mEl.value = v; w.calcMvDrop(); return out.textContent; };
   pick("10 A");
   const r10 = parseFloat(fEl.value);
-  const exp = Math.round(0.77 / r10 * 1000);
-  ok("0,77 mV an 10 A ergibt ≈ " + exp + " mA (konsistent zu FUSE_R=" + r10 + " mΩ)", run("0,77").includes(exp + " mA"), out.textContent);
+  // Fester Sollwert laut Abnahmebedingung: 0,77 mV an 10 A = 100 mA.
+  // Deckt sich mit dem Littelfuse-Datenblatt (ATOF 287: 10 A = 7,70 mΩ).
+  ok("0,77 mV an 10 A ergibt ≈ 100 mA", run("0,77").includes("100 mA"), out.textContent);
+  ok("FUSE_R 10 A entspricht dem Datenblatt (7,70 mΩ)", Math.abs(r10 - 7.70) < 0.01, "ist: " + r10);
   ok("Komma und Punkt liefern dasselbe Ergebnis", run("2,4") === run("2.4"));
   ok("unplausibler Wert über Nennstrom wird abgefangen", run("200").includes("unplausibel"), out.textContent);
   ok("leere/ungültige Eingabe sauber behandelt", run("").includes("Wert in mV eingeben"));
