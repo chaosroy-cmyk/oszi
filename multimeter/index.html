@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+  KFZ Multimeter Profi – Prüf-Tool für elektrische KFZ-Messungen
+  © 2026 Roy Sperlich – Alle Rechte vorbehalten.
+  Alle Werte sind typische Richtwerte. Fahrzeugspezifische Schaltpläne,
+  Hersteller- und Diagnoseinformationen haben immer Vorrang.
+-->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -7,6 +13,8 @@
 <meta name="description" content="Profi-Prüfguide für elektrische KFZ-Messungen mit Multimeter, Spannungsabfall, Sicherheitslogik, Diagnosebäumen und Oszilloskop-Grenzen.">
 <meta name="theme-color" content="#0d1117">
 <meta name="color-scheme" content="dark">
+<meta name="author" content="Roy Sperlich">
+<meta name="copyright" content="© 2026 Roy Sperlich – Alle Rechte vorbehalten.">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -254,6 +262,32 @@ tr:last-child td{border-bottom:none}
 /* beginner toggle area */
 .beg-explain{display:none}
 body.beginner .beg-explain{display:block}
+/* Sichtbare Rückmeldung, dass der Einsteiger-Modus aktiv ist */
+.beg-banner{
+  display:none;align-items:center;gap:9px;margin:0 0 14px;
+  background:rgba(163,113,247,.1);border:1.5px solid rgba(163,113,247,.45);
+  border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.45;color:#c8a8ff;font-weight:600;
+}
+body.beginner .beg-banner{display:flex}
+.beg-banner .bb-ic{font-size:17px;flex:0 0 auto}
+.beg-banner b{color:#d9c2ff}
+/* Kurzmeldung (Toast) beim Umschalten */
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%) translateY(12px);
+  bottom:calc(78px + env(safe-area-inset-bottom));z-index:120;
+  background:var(--card2);border:1.5px solid var(--line);color:var(--txt);
+  border-radius:12px;padding:11px 16px;font-size:14px;font-weight:700;
+  box-shadow:0 6px 22px rgba(0,0,0,.55);opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s;max-width:88vw;text-align:center;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.beg{border-color:rgba(163,113,247,.6);color:#d9c2ff}
+/* Copyright-Fußzeile */
+.copy{
+  text-align:center;font-size:11.5px;color:var(--txt2);line-height:1.6;
+  padding:18px 14px 10px;border-top:1px solid var(--line);margin-top:22px;
+}
+.copy b{color:var(--txt2);font-weight:700}
 .beg-explain .step{border-left-color:#a371f7;background:rgba(163,113,247,.07)}
 .beg-explain .step .lbl,.beg-explain .step .lbl .num{color:#c8a8ff}
 .beg-explain .step .lbl .num{background:#a371f7;color:#1a0a33}
@@ -437,6 +471,7 @@ body.beginner .beg-explain{display:block}
 </header>
 
 <main id="main"></main>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 <noscript><div style="padding:40px 20px;text-align:center;font-size:15px">Diese App benötigt JavaScript. Bitte JavaScript aktivieren.</div></noscript>
 
 <!-- Detail Overlay -->
@@ -485,7 +520,7 @@ body.beginner .beg-explain{display:block}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '7.5-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '7.6-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -2247,13 +2282,18 @@ function filterTests(){
   });
 }
 
+/* Einsteiger-Hinweis (nur sichtbar, wenn body.beginner gesetzt ist) und
+   Copyright-Fußzeile – auf jeder Listenansicht gleich. */
+const BEG_BANNER=`<div class="beg-banner"><span class="bb-ic" aria-hidden="true">🎓</span><span><b>Einsteiger-Modus aktiv.</b> In jeder Prüfung steht oben ein Block „Einfach erklärt". Zum Ausschalten unten erneut auf 🎓 Einsteiger tippen.</span></div>`;
+const COPY_FOOTER=`<div class="copy">© 2026 <b>Roy Sperlich</b> – Alle Rechte vorbehalten.<br>KFZ Multimeter Profi ${APP_VERSION} · Richtwerte ohne Gewähr, Herstellerangaben haben Vorrang.</div>`;
+
 function renderHome(){
   view="home";
   setNav('navHome');
   const list=filterTests();
-  if(!list.length){main.innerHTML=`<div class="empty"><div class="be">🔍</div>Keine Prüfung gefunden.<br>Anderen Suchbegriff probieren.</div>`;return;}
+  if(!list.length){main.innerHTML=BEG_BANNER+`<div class="empty"><div class="be">🔍</div>Keine Prüfung gefunden.<br>Anderen Suchbegriff probieren.</div>`+COPY_FOOTER;return;}
   // group by category for nicer layout when 'alle'
-  let html='';
+  let html=BEG_BANNER;
   if(activeCat==='alle'&&!query){
     CATS.slice(1).forEach(c=>{
       const items=list.filter(t=>t.cat===c.id);
@@ -2261,16 +2301,27 @@ function renderHome(){
       html+=`<div class="section-title">${c.name}<span class="ln"></span></div><div class="grid">${items.map(tileHTML).join('')}</div>`;
     });
   }else{
-    html=`<div class="grid">${list.map(tileHTML).join('')}</div>`;
+    html+=`<div class="grid">${list.map(tileHTML).join('')}</div>`;
   }
-  main.innerHTML=html;
+  main.innerHTML=html+COPY_FOOTER;
 }
 
 function renderFavs(){
   view="fav";setNav('navFav');
   const list=TESTS.filter(t=>favs.includes(t.id));
-  if(!list.length){main.innerHTML=`<div class="empty"><div class="be">⭐</div>Noch keine Favoriten.<br>In einer Prüfung oben auf ☆ tippen.</div>`;return;}
-  main.innerHTML=`<div class="section-title">Merkliste<span class="ln"></span></div><div class="grid">${list.map(tileHTML).join('')}</div>`;
+  if(!list.length){main.innerHTML=BEG_BANNER+`<div class="empty"><div class="be">⭐</div>Noch keine Favoriten.<br>In einer Prüfung oben auf ☆ tippen.</div>`+COPY_FOOTER;return;}
+  main.innerHTML=BEG_BANNER+`<div class="section-title">Merkliste<span class="ln"></span></div><div class="grid">${list.map(tileHTML).join('')}</div>`+COPY_FOOTER;
+}
+
+/* Kurzmeldung für Zustandswechsel (Einsteiger-Modus) */
+let toastTimer=null;
+function showToast(msg,cls){
+  const el=document.getElementById('toast');
+  if(!el)return;
+  el.textContent=msg;
+  el.className='toast show'+(cls?' '+cls:'');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{el.className='toast'+(cls?' '+cls:'');},2600);
 }
 
 /* ---------- Detail ---------- */
@@ -2524,7 +2575,7 @@ function openGloss(){
     <button onclick="checkUpdates()" style="background:var(--blu);color:#031024;border:none;border-radius:9px;padding:9px 13px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Nach Updates suchen</button>
   </div>`;
   document.getElementById('glossBody').innerHTML=verRow+GLOSS.map(g=>
-    `<details class="gloss"><summary>${g[0]}<span class="ar">▶</span></summary><div class="gc">${g[1]}</div></details>`).join('');
+    `<details class="gloss"><summary>${g[0]}<span class="ar">▶</span></summary><div class="gc">${g[1]}</div></details>`).join('')+COPY_FOOTER;
   openOverlay(glossOv);
 }
 window.openGloss=openGloss;
@@ -2613,6 +2664,13 @@ function toggleBeginner(){
   const on=!document.body.classList.contains('beginner');
   applyBeginner(on);
   try{localStorage.setItem('mm_beginner',on?'1':'0')}catch(e){}
+  // Sichtbare Rückmeldung: ohne sie wirkt der Schalter funktionslos,
+  // weil der Einsteiger-Text erst in der Detailansicht sichtbar wird.
+  showToast(on?'🎓 Einsteiger-Modus AN – „Einfach erklärt" wird angezeigt':'Einsteiger-Modus AUS','beg');
+  // Ist gerade eine Prüfung offen, sofort mit/ohne Einsteiger-Block neu aufbauen
+  if(ov.classList.contains('open')&&currentId){
+    const y=ov.scrollTop;openDetail(currentId);ov.scrollTop=y;
+  }
 }
 window.toggleBeginner=toggleBeginner;
 try{if(localStorage.getItem('mm_beginner')==='1')applyBeginner(true);}catch(e){}

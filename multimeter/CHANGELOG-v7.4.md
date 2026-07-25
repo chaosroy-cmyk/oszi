@@ -1,4 +1,32 @@
-# CHANGELOG v7.4 / v7.5
+# CHANGELOG v7.4 / v7.5 / v7.6
+
+## v7.6 — Einsteiger-Modus mit Rückmeldung, Copyright
+
+**Einsteiger-Schalter wirkte funktionslos.** Technisch war er in Ordnung
+(der Block „Einfach erklärt" erschien in der Detailansicht), aber beim
+Antippen auf der Startseite passierte sichtbar **nichts** – der Einsteiger-
+Text steht erst eine Ebene tiefer. Für den Nutzer war der Schalter damit
+tot. Behoben durch drei Ergänzungen:
+
+1. **Kurzmeldung (Toast)** beim Umschalten: „Einsteiger-Modus AN – ‚Einfach
+   erklärt' wird angezeigt" bzw. „AUS".
+2. **Sichtbarer Hinweisbalken** auf Start- und Merklisten-Ansicht, solange
+   der Modus aktiv ist (erklärt, wo der Text erscheint und wie man ihn
+   wieder ausschaltet).
+3. **Sofortwirkung bei offener Prüfung:** Wird während einer geöffneten
+   Detailansicht umgeschaltet, wird diese neu aufgebaut (Scrollposition
+   bleibt erhalten) – vorher musste man die Karte erst schließen und neu
+   öffnen.
+
+**Copyright ergänzt** (© 2026 Roy Sperlich – Alle Rechte vorbehalten):
+Fußzeile auf Start-, Merklisten- und Glossaransicht (mit Versionsangabe und
+Richtwert-Hinweis), Kommentarkopf in `index.html` und `sw.js`, Meta-Tags
+`author` und `copyright`.
+
+Version 7.6-Profi ↔ Cache v7-6. Validierung: 25/25 bestanden.
+
+---
+
 
 ## v7.5 — FUSE_R-Konflikt behoben (Datenblatt-Verifikation)
 
