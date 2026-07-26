@@ -264,6 +264,19 @@ tr:last-child td{border-bottom:none}
   font-size:12px;color:var(--txt2);background:var(--bg2);border:1px solid var(--line);
   border-radius:10px;padding:11px 13px;margin:6px 0 14px;line-height:1.5;
 }
+/* Ausführliche Anleitung: einklappbar. Im Einsteiger-Modus offen,
+   im Profi-Modus zugeklappt – der Sollwert bleibt so ohne Scrollen erreichbar. */
+.anlbox summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.anlbox summary::-webkit-details-marker{display:none}
+.anlbox summary .lbl{margin-bottom:0}
+.anlbox .ahint{
+  flex:0 0 auto;font-size:11px;font-weight:800;color:var(--txt2);
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
+}
+.anlbox .ahint .arr{color:var(--acc);transition:transform .2s;display:inline-block}
+.anlbox[open] .ahint .arr{transform:rotate(90deg)}
+.anlbox[open] summary{margin-bottom:10px}
+.anlbox .abody{font-size:15px;line-height:1.5}
 /* beginner toggle area */
 .beg-explain{display:none}
 body.beginner .beg-explain{display:block}
@@ -525,7 +538,7 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '7.8-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '7.9-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -552,7 +565,7 @@ const TESTS = [
  good:"Erwartete Spannung steht an (z.B. ~12 V Batterie, ~5 V Referenz).",
  bad:"0 V = keine Versorgung/Unterbrechung. Zu niedrig = Spannungsabfall davor.",
  next:"Spannung da → Masse & Last prüfen. Spannung fehlt → rückwärts zur Quelle (Sicherung/Relais).",
- beg:"Du misst wie viel 'Druck' auf der Leitung ist. Schwarz an Masse, rot an den Punkt. Zahl muss zum Schaltplan passen.",
+ beg:"Spannung ist wie Wasserdruck: Sie sagt, wie stark der Strom getrieben wird. Wichtig ist, dass Spannung nie an einem einzelnen Punkt existiert, sondern immer zwischen zweien – deshalb hast du zwei Messspitzen. Die schwarze legst du an deinen Bezugspunkt, meist direkt an den Batterie-Minuspol, die rote an die Stelle, die dich interessiert. Merke dir zwei Dinge: Erstens gehört zu jedem Messwert der Zustand (Zündung aus, an, Motor läuft) – dieselbe Leitung hat sonst scheinbar widersprüchliche Werte. Zweitens beweist eine schöne Spannung ohne eingeschalteten Verbraucher gar nichts: Das Multimeter zieht fast keinen Strom, deshalb zeigt auch eine fast durchgescheuerte Leitung noch volle 12 V. Erst mit Last trennt sich gut von schlecht.",
  table:{head:["Zustand","Wert","Bewertung"],rows:[
    ["Motor aus","12,5–12,8 V","g"],["Schwach","unter 12,2 V","w"],
    ["Beim Starten","nicht dauerhaft < 9,6–10 V","w"],["Motor läuft","13,5–14,8 V","g"]]}
@@ -566,7 +579,7 @@ const TESTS = [
  good:"Wert liegt im Sollbereich des Bauteils.",
  bad:"OL/unendlich = Unterbrechung. Sehr hoch = Übergangswiderstand/Korrosion. Fast 0 Ω = Durchgang (aber kein Lastbeweis!).",
  next:"Wert ok, Fehler bleibt → unter Last per Spannungsabfall prüfen.",
- beg:"Misst den 'Engpass' im Bauteil. Immer Stecker ab und Strom aus! Sonst falsche Werte oder kaputtes Messgerät.",
+ beg:"Der Widerstand ist der Engpass im Stromkreis – je größer er ist, desto weniger Strom kommt durch. Damit dein Multimeter ihn messen kann, schickt es aus der eigenen Batterie einen winzigen Prüfstrom durch das Bauteil. Genau daraus folgen die beiden Regeln, die du dir merken musst: Erstens niemals messen, solange noch Spannung anliegt – die Fremdspannung überlagert den Prüfstrom, der Wert ist falsch und das Gerät kann kaputtgehen. Zweitens das Bauteil mindestens einseitig abklemmen, sonst misst du alles mit, was daneben im Kreis hängt, und hältst ein gutes Teil für defekt. Und halte vor jeder Messung kurz die Spitzen zusammen: Die 0,1 bis 0,5 Ω, die dann stehen, sind deine Messkabel und nicht das Auto.",
  warn:[["danger","Niemals an spannungsführenden Stromkreisen Ohm messen – Multimeter & Bauteil können Schaden nehmen."],
        ["caution","Steuergeräte und empfindliche Sensoren nicht wahllos mit Ohm prüfen."]]
 },
@@ -579,7 +592,7 @@ const TESTS = [
  good:"Piepton / nahe 0 Ω = durchgehend verbunden.",
  bad:"Kein Ton / OL = Unterbrechung.",
  next:"Durchgang ok, Fehler bleibt unter Last → Spannungsabfall messen! Durchgang erkennt schlechte Kontakte unter Last NICHT.",
- beg:"Piept = Draht ist durchgehend. Aber: piept auch bei dünnem, schlechtem Kontakt. Für belastete Leitungen reicht das nicht.",
+ beg:"Der Durchgangsprüfer ist nur ein Ohmmeter mit Summer: Er piept, sobald der Widerstand unter einer bestimmten Schwelle liegt – je nach Gerät bis 20 oder sogar 70 Ω. Der Ton heißt also „hier besteht irgendeine Verbindung“, nicht „die Verbindung ist gut“. Stell dir eine Leitung vor, von der nur noch eine einzige Litze übrig ist: Sie piept einwandfrei und brennt beim Einschalten des Scheinwerfers durch. Deshalb zwei Gewohnheiten: Halte immer erst die Messspitzen zusammen – piept es nicht, ist dein Messkabel defekt und nicht das Auto. Und lies neben dem Ton auch den Ohm-Wert mit. Bei Leitungen, die richtig Strom tragen müssen, prüfst du danach zusätzlich unter Last.",
  warn:[["info","Durchgang allein ist oft nicht genug: 0 Ω heißt nicht belastbar. Immer zusätzlich unter Last prüfen."]]
 },
 {
@@ -674,7 +687,7 @@ const TESTS = [
  good:"Beide Sicherungsseiten gleiche Spannung. Relais schaltet, Kl.87 bekommt Spannung.",
  bad:"Spannung nur auf einer Seite = Sicherung offen/Haarriss. Relais klickt, aber Kl.87 ohne Spannung = Kontakt verbrannt.",
  next:"Relais-Kontakt-Spannungsabfall prüfen (Kl.30→87 unter Last). Sicherungskasten-Kontakt prüfen.",
- beg:"Sicherung kann gut aussehen und trotzdem unterbrochen sein. Auf beiden Seiten messen: gleiche Spannung = ok.",
+ beg:"Eine Sicherung ist eine gewollte Schwachstelle: Sie brennt durch, bevor die Leitung schmort. Sie kann von oben völlig heil aussehen und trotzdem einen Haarriss haben – deshalb misst du statt hinzuschauen. Am einfachsten mit gesteckter Sicherung: schwarze Spitze an Masse, rote nacheinander auf die beiden kleinen Prüföffnungen oben. Gleiche Spannung auf beiden Seiten heißt, sie leitet. Nur auf einer Seite Spannung heißt, sie ist offen. Auf beiden Seiten 0 V heißt, dass schon davor nichts ankommt – dann bringt Tauschen gar nichts. Ein Relais ist der große Bruder davon: ein kleiner Steuerstrom durch die Spule (Klemmen 85/86) schaltet den dicken Kontakt (30 auf 87). Es kann hörbar klicken und der Kontakt ist trotzdem abgebrannt – das merkst du nur, wenn der Verbraucher eingeschaltet ist. Und ganz wichtig: nie eine stärkere Sicherung einsetzen, die schützt die Leitung nicht mehr.",
  table:{head:["Relais-Klemme","Funktion",""],rows:[
    ["30","Dauerplus","g"],["87","Ausgang (geschaltet)","g"],["85 / 86","Spule (Ansteuerung)","w"]]}
 },
@@ -697,7 +710,7 @@ const TESTS = [
  set:{mode:"DC Volt (V⎓)",buchse:"COM + V/Ω"},
  probes:[["r","Sensor Versorgungspin"],["b","Sensor-Masse"]],
  mess:"5 V am Sensor prüfen. Fehlt sie: Sensoren nacheinander abstecken. Kommt 5 V zurück → zuletzt abgesteckter verdächtig.",
- /* PRÜFEN: Toleranz auf 4,9–5,1 V vereinheitlicht (war 4,8–5,1 V) – Vorgabe Fachautor */
+ /* PRÜFEN: Toleranz auf 4,9–5,1 V vereinheitlicht (war 4,9–5,1 V) – Vorgabe Fachautor */
  good:"4,9–5,1 V stabil.",
  bad:"0 V oder eingebrochen = Kurzschluss nach Masse/Plus oder Versorgung defekt.",
  next:"Auf Schluss nach Masse UND nach Plus prüfen. Sensorversorgung NICHT belasten.",
@@ -1299,9 +1312,19 @@ const TESTS = [
 const DEEP = {
 /* ===== GRUNDMESSUNGEN ===== */
 "spannung":{
+ /* PRÜFEN: Lern-Anleitung v7.9 – keine neuen Zahlenwerte, Werte aus rt übernommen */
+ anl:["<b>1 · Verstehen, was du misst.</b> Spannung ist kein Wert, den eine Leitung „hat“ – sie besteht immer <b>zwischen zwei Punkten</b>. Das Multimeter zeigt die Differenz zwischen roter und schwarzer Spitze. Deshalb ist die Frage „wie viel Spannung hat die Leitung?“ unvollständig; richtig ist „wie viel Spannung liegt zwischen diesem Punkt und meinem Bezugspunkt?“.",
+   "<b>2 · Bezugspunkt bewusst wählen.</b> Für Versorgungsprüfungen die schwarze Spitze direkt an den <b>Batterie-Minuspol</b> legen, nicht an irgendeine Karosseriestelle. Eine schlechte Karosseriemasse verfälscht jede Messung – der Fehler sieht dann nach einem Versorgungsproblem aus, obwohl die Masse schuld ist. Bei Sensoren dagegen gegen die <b>Sensor-Masse</b> messen, sonst bewertest du einen Masseversatz als Sensorfehler.",
+   "<b>3 · Messgerät einstellen.</b> DC Volt (V⎓), rote Leitung in V/Ω, schwarze in COM. Kontrolle vor jeder Messung: Steckt die rote Leitung noch in der Ampere-Buchse, ist die nächste Spannungsmessung ein Kurzschluss.",
+   "<b>4 · Erst den Sollwert, dann messen.</b> Schlage im Schaltplan nach, welcher Wert an diesem Punkt in diesem Zustand anliegen muss, und schreibe ihn auf, <b>bevor</b> du misst. Wer erst misst und dann sucht, was passen könnte, redet sich jeden Wert schön. Beispiele aus der Tabelle unten: Batterie in Ruhe 12,6–12,8 V, Klemme 15 ≈ Batteriespannung, Sensorreferenz 4,9–5,1 V.",
+   "<b>5 · Zustand herstellen.</b> Notiere, in welchem Zustand du misst: Zündung aus, Zündung ein, Motor läuft, Startvorgang. Dieselbe Leitung hat je nach Zustand völlig unterschiedliche Sollwerte – ohne Zustandsangabe ist ein Messwert wertlos.",
+   "<b>6 · Messen und bewerten.</b> Rote Spitze an den Prüfpunkt, Wert ablesen und mit dem Sollwert aus Schritt 4 vergleichen. 0 V = keine Versorgung oder Unterbrechung davor. Deutlich zu niedrig = Spannungsabfall auf dem Weg dorthin.",
+   "<b>7 · Bei 0 V rückwärts zur Quelle.</b> Punkt für Punkt Richtung Sicherung und Relais messen, bis Spannung anliegt. Der letzte spannungslose Abschnitt enthält die Fehlerstelle. Das ist systematisch und schneller als Bauteile auf Verdacht zu tauschen.",
+   "<b>8 · Unter Last gegenprüfen – der Schritt, der am häufigsten fehlt.</b> Eine Leitung kann ohne Last volle Spannung zeigen und unter Last zusammenbrechen, weil das Multimeter praktisch keinen Strom zieht. Verbraucher einschalten und erneut messen: Bricht der Wert ein, liegt ein Übergangswiderstand vor.",
+   "<b>Merksatz:</b> Spannung ohne Last beweist nur, dass etwas ankommt – nicht, dass es belastbar ist."],
  rt:{head:["Punkt","Sollwert","Bewertung"],rows:[
    ["Batterie Ruhe","12,6–12,8 V","g"],["Zündungsplus Kl.15","≈ Batteriespannung","g"],
-   ["5-V-Referenz","4,8–5,1 V","g"],["Sensor-Versorgung 12 V","≈ Bordspannung","g"],
+   ["5-V-Referenz","4,9–5,1 V","g"],["Sensor-Versorgung 12 V","≈ Bordspannung","g"],
    ["Motor läuft (Laden)","13,5–14,8 V","g"],["Spannung < 11 V im Betrieb","Versorgungsproblem","b"]],
    note:"VAG: Kl.15 oft über Klemmensteuergerät geschaltet (Aufweck-/Nachlauflogik). BMW: viele Verbraucher über FRM/Body-Domain – Kl.15 nicht überall gleich."},
  urs:[["Sicherung/Relais offen","Spannung bricht hinter dem Schaltpunkt weg","h"],
@@ -1315,6 +1338,17 @@ const DEEP = {
      {s:"4 Unter Last gegenprüfen",do:"Verbraucher einschalten, Spannung erneut messen",ok:"Bleibt stabil → ok",ng:"Bricht ein → Spannungsabfall messen"}]
 },
 "widerstand":{
+ /* PRÜFEN: Lern-Anleitung v7.9 – Werte (0,1–0,5 Ω) aus bestehender rt übernommen */
+ anl:["<b>1 · Verstehen, wie das Ohmmeter arbeitet.</b> Es schickt aus der eigenen Batterie einen kleinen Prüfstrom durch das Bauteil und misst, wie viel Spannung dabei abfällt. Genau deshalb darf im Kreis <b>keine Fremdspannung</b> anliegen: Sie überlagert den Prüfstrom, das Ergebnis ist Unsinn, und das Messgerät kann Schaden nehmen.",
+   "<b>2 · Spannungsfrei machen.</b> Zündung aus, Stecker abziehen. Bei Steuergeräten die Herstellervorgabe beachten – manche Module dürfen nicht unter Spannung getrennt werden.",
+   "<b>3 · Bauteil isolieren.</b> Mindestens einseitig abklemmen. Bleibt das Bauteil im Kreis, messen parallel liegende Bauteile mit und täuschen einen zu niedrigen Wert vor. Klassische Falle: eine Spule scheint „durchgeschlagen“, weil in Wahrheit ein Widerstand daneben mitmisst.",
+   "<b>4 · Nullabgleich.</b> Messspitzen fest zusammenhalten. Die angezeigten 0,1–0,5 Ω sind der Eigenwiderstand deiner Messleitungen. Bei niederohmigen Bauteilen wie Glühkerzen oder Massebändern ist dieser Wert größer als das Messobjekt – ohne Abzug misst du überwiegend deine eigenen Kabel.",
+   "<b>5 · Messen.</b> Beide Bauteilanschlüsse sauber kontaktieren, notfalls Kontaktflächen blank machen. Bei Autorange kurz warten, bis der Wert steht.",
+   "<b>6 · Temperatur mitdenken.</b> Spulen, NTC und PTC ändern ihren Widerstand mit der Temperatur. Ein Sollwert gilt immer für eine bestimmte Bauteiltemperatur – ein warmer Motor liefert andere Werte als ein kalter. Ohne Temperaturangabe ist ein Ohm-Sollwert nur eine grobe Orientierung.",
+   "<b>7 · Mit dem Sollwert vergleichen.</b> OL bzw. unendlich = Unterbrechung. Deutlich über Soll = Übergangswiderstand oder Korrosion. Deutlich unter Soll = Windungsschluss. Immer den Eigenwiderstand aus Schritt 4 abziehen.",
+   "<b>8 · Wackeltest.</b> Während der Messung Kabel und Stecker bewegen. Ein springender Wert entlarvt einen Teilbruch oder lockeren Crimp, der bei ruhiger Messung unauffällig bleibt.",
+   "<b>9 · Grenze der Methode kennen.</b> Ein Wert nahe 0 Ω beweist nur eine Verbindung, nicht deren Belastbarkeit: Auch eine einzelne verbliebene Litze zeigt 0 Ω und brennt unter Last durch. Wenn der Fehler trotz gutem Ohm-Wert bleibt, unter Last per Spannungsabfall weitermessen.",
+   "<b>Merksatz:</b> Ohm nur spannungsfrei, nur isoliert, und nie als Belastbarkeitsnachweis."],
  rt:{head:["Befund","Wert","Bedeutung"],rows:[
    ["Eigenwiderstand Messspitzen","0,1–0,5 Ω","g"],["Guter Durchgang","nahe 0 Ω (nach Abzug)","g"],
    ["Übergangswiderstand","einige Ω bis kΩ","w"],["Unterbrechung","OL / ∞","b"],
@@ -1331,6 +1365,15 @@ const DEEP = {
      {s:"5 Lastgegenprobe",do:"Wert ok, Fehler bleibt → Spannungsabfall unter Last messen",ok:"",ng:"0 Ω ist KEIN Lastbeweis"}]
 },
 "durchgang":{
+ /* PRÜFEN: Lern-Anleitung v7.9 – Piepschwelle 20–70 Ω bereits in der rt-Note belegt */
+ anl:["<b>1 · Verstehen, was der Piepton bedeutet.</b> Der Durchgangsprüfer ist ein Ohmmeter mit Summer: Er piept, sobald der Widerstand unter einer geräteabhängigen Schwelle liegt – je nach Multimeter irgendwo zwischen 20 und 70 Ω. Der Ton sagt also nur „es ist eine Verbindung da“, nicht „die Verbindung ist gut“. Deshalb parallel immer den angezeigten Ohm-Wert lesen, nicht nur auf das Piepen hören.",
+   "<b>2 · Spannungsfrei arbeiten.</b> Zündung aus, beide Leitungsenden abziehen. Wie bei jeder Ohm-Messung gilt: Fremdspannung verfälscht das Ergebnis und gefährdet das Messgerät.",
+   "<b>3 · Messgerät selbst prüfen.</b> Beide Spitzen zusammenhalten – das Gerät muss piepen und nahe 0 Ω anzeigen. Tut es das nicht, ist die Messleitung gebrochen oder die Batterie des Messgeräts leer. Dieser Zehn-Sekunden-Test verhindert die häufigste Fehldiagnose überhaupt: eine intakte Leitung, die für unterbrochen gehalten wird.",
+   "<b>4 · Beide Enden sicher kontaktieren.</b> Bei langen Leitungen im Fahrzeug ein Hilfskabel zum entfernten Ende legen oder mit einer zweiten Person arbeiten. Wichtig: Auf beiden Seiten die richtige Ader erwischen – Aderfarben wiederholen sich im Kabelbaum, verlass dich auf Pin-Nummern.",
+   "<b>5 · Messen und bewerten.</b> Piepton und nahe 0 Ω = durchgehend verbunden. Kein Ton und OL = Unterbrechung. Schwacher, aussetzender Ton oder einige Ohm = Übergangswiderstand; das ist bereits ein Befund, auch wenn es piept.",
+   "<b>6 · Wackeltest.</b> Während die Spitzen anliegen, Kabel und Stecker abschnittsweise bewegen. Ein aussetzender Ton lokalisiert einen Teilbruch, der bei ruhiger Leitung nicht messbar ist – typisch an Türübergängen und Heckklappenscharnieren.",
+   "<b>7 · Grenze kennen und den nächsten Schritt wählen.</b> Für Signal- und Steuerleitungen mit kleinen Strömen reicht die Durchgangsprüfung meist aus. Für belastete Leitungen (Licht, Motoren, Starter, Masseband) reicht sie <b>nicht</b>: Eine korrodierte Klemme piept sauber und verheizt unter Last trotzdem die halbe Spannung. Dort immer zusätzlich den Spannungsabfall unter Last messen.",
+   "<b>Merksatz:</b> Der Piepton beweist eine Verbindung, nicht ihre Belastbarkeit."],
  rt:{head:["Befund","Anzeige","Bedeutung"],rows:[
    ["Durchgehend","Piepton / ~0 Ω","g"],["Hoher Übergang","Ton schwach / einige Ω","w"],
    ["Unterbrechung","kein Ton / OL","b"]],
@@ -1482,6 +1525,17 @@ const DEEP = {
      {s:"5 Bewertung",do:"Spannung & Ansteuerung gut, dreht trotzdem lahm",ok:"Leitungen ok",ng:"Starter intern (Kohlen/Lager) defekt"}]
 },
 "sicherung":{
+ /* PRÜFEN: Lern-Anleitung v7.9 – Werte (< 0,2 V, 60–120 Ω) aus bestehender rt übernommen */
+ anl:["<b>1 · Optisch prüfen reicht nicht.</b> Ein Schmelzleiter kann einen Haarriss haben, der von oben aussieht wie ein intakter Bügel. Umgekehrt sagt eine sichtbar durchgebrannte Sicherung nur, <b>dass</b> etwas zu viel Strom gezogen hat – nicht warum. Beides macht die Messung unverzichtbar.",
+   "<b>2 · Sicherung gesteckt lassen und Spannung messen.</b> Die meisten KFZ-Flachsicherungen haben oben zwei kleine Prüföffnungen. Schwarze Spitze an Masse, rote nacheinander auf beide Öffnungen. Vorteil: Der Kreis bleibt geschlossen, kein Steuergerät wird geweckt.",
+   "<b>3 · Zustand beachten.</b> Vorher klären, ob die Sicherung an Dauerplus (Klemme 30) oder an Zündungsplus (Klemme 15) hängt. Eine Kl.-15-Sicherung ist bei ausgeschalteter Zündung völlig zu Recht spannungslos – das ist kein Fehler, sondern der falsche Zustand.",
+   "<b>4 · Ergebnis bewerten.</b> Beide Seiten gleiche Spannung = Sicherung leitet. Nur eine Seite Spannung = Sicherung offen. Beide Seiten 0 V = die Versorgung fehlt schon davor, dann rückwärts weitersuchen statt die Sicherung zu tauschen.",
+   "<b>5 · Sicherung unter Last bewerten.</b> Verbraucher einschalten und die Spannung über der Sicherung selbst messen (eine Spitze je Prüföffnung). Ein nennenswerter Abfall bedeutet Übergangswiderstand am Sicherungskontakt – oft durch Korrosion im Sicherungskasten. Die Sicherung ist dann elektrisch „ganz“, aber trotzdem die Fehlerquelle.",
+   "<b>6 · Relais verstehen, bevor du misst.</b> Vier Klemmen mit klarer Aufgabe: <b>30</b> Dauerplus zum Kontakt, <b>87</b> geschalteter Ausgang, <b>85/86</b> die Steuerspule. Die Spule ist der schwache Stromkreis, der den starken Kontakt schaltet.",
+   "<b>7 · Relais in zwei Schritten prüfen.</b> Erstens Ansteuerung: Hört man beim Schalten ein Klicken? Kein Klick = Spule oder deren Ansteuerung (85/86) prüfen, Spulenwiderstand typisch 60–120 Ω. Zweitens Kontakt: Liegt bei geschaltetem Relais an Klemme 87 Spannung an – <b>unter Last</b>?",
+   "<b>8 · Den verbrannten Kontakt entlarven.</b> Ein Relais kann hörbar klicken und trotzdem defekt sein, wenn der Kontakt abgebrannt ist. Nachweis: Spannungsabfall zwischen Klemme 30 und 87 bei eingeschaltetem Verbraucher messen – Zielwert unter 0,2 V. Ohne Last ist dieser Fehler unsichtbar.",
+   "<b>9 · Fliegt die Sicherung erneut, nicht stärker absichern.</b> Der Nennwert ist auf den Leitungsquerschnitt ausgelegt; eine größere Sicherung schützt die Leitung nicht mehr und kann einen Kabelbrand auslösen. Stattdessen die Ursache suchen – meist ein Kurzschluss nach Masse oder ein schwergängiger Verbraucher.",
+   "<b>Merksatz:</b> Sicherung und Relaiskontakt beweisen ihre Funktion erst unter Last."],
  rt:{head:["Messung","Befund","Bewertung"],rows:[
    ["Beide Seiten Sicherung","gleiche Spannung","g"],["Nur eine Seite Spannung","Sicherung offen","b"],
    ["Abfall über Relaiskontakt 30→87","< 0,2 V","g"],["Abfall Kontakt unter Last","> 0,5 V","b"],
@@ -1523,20 +1577,20 @@ const DEEP = {
 "ref5v":{
  anl:["MM auf <b>DC Volt</b>. Zündung an (Steuergerät muss versorgt sein), Motor aus reicht meist.",
    "Am betroffenen Sensorstecker den <b>Versorgungspin</b> (Referenz) und die <b>Sensor-Masse</b> identifizieren (Schaltplan). Per <b>Backprobing</b> von hinten kontaktieren, nicht durchstechen.",
-   "Rote Spitze an Referenz, schwarze an Sensor-Masse. Sollwert 4,8–5,1 V.",
+   "Rote Spitze an Referenz, schwarze an Sensor-Masse. Sollwert 4,9–5,1 V.",
    "Fehlt die Spannung oder ist sie eingebrochen: prüfen, ob <b>mehrere</b> Sensoren betroffen sind (sie teilen sich oft eine Referenz).",
    "Verdächtige Sensoren <b>nacheinander abstecken</b>. Kommt die 5 V zurück, sobald ein bestimmter Sensor getrennt ist, ist dieser Sensor (oder seine Signalleitung) der Verursacher – meist interner Schluss.",
    "Bleibt die Referenz auch ohne Sensoren weg: Versorgungsleitung <b>spannungsfrei</b> gegen Masse und gegen Plus auf Kurzschluss prüfen; sonst Steuergeräte-Ausgang.",
    "Wichtig: die Referenz <b>niemals mit einer Prüflampe</b> belasten – das kann das Steuergerät stören oder beschädigen."],
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
-   ["Referenz am Sensor","4,8–5,1 V","g"],["Referenz eingebrochen","< 4,5 V","b"],
+   ["Referenz am Sensor","4,9–5,1 V","g"],["Referenz eingebrochen","< 4,5 V","b"],
    ["Referenz 0 V","Schluss n. Masse / Versorgung weg","b"],["Referenz > 5,2 V","Schluss n. Plus / STG-Fehler","b"]],
    note:"Mehrere Sensoren teilen sich oft EINE Referenz – ein Schluss zieht mehrere Codes. NIE mit Prüflampe belasten."},
  urs:[["Sensor mit internem Schluss","zieht Referenz runter, mehrere Codes","h"],
       ["Signalleitung Schluss n. Masse/Plus","Referenz bricht ein","h"],
       ["Scheuerstelle im Kabelbaum","Schluss gegen Karosserie","m"],
       ["Steuergeräte-Ausgang defekt","Referenz fehlt trotz intakter Sensoren","s"]],
- fs:[{s:"1 Referenz messen",do:"5 V am betroffenen Sensor prüfen",ok:"4,8–5,1 V → Referenz ok, Signal prüfen",ng:"weg/eingebrochen → weiter"},
+ fs:[{s:"1 Referenz messen",do:"5 V am betroffenen Sensor prüfen",ok:"4,9–5,1 V → Referenz ok, Signal prüfen",ng:"weg/eingebrochen → weiter"},
      {s:"2 Mehrere betroffen?",do:"Andere 5-V-Sensoren mitprüfen",ok:"nur einer → Sensor/Leitung dieses Sensors",ng:"mehrere → gemeinsame Referenz"},
      {s:"3 Sensoren einzeln abstecken",do:"Nacheinander trennen, Referenz beobachten",ok:"kommt zurück → letzter Sensor/Leitung schuldig",ng:"bleibt weg → weiter"},
      {s:"4 Schluss lokalisieren",do:"Spannungsfrei Leitung gegen Masse & Plus prüfen",ok:"Schluss gefunden → reparieren",ng:"kein Schluss → STG-Ausgang prüfen"}]
@@ -2335,7 +2389,7 @@ const TREES = {
  ]},
  "sensor-unplausibel":{title:"Sensorwert unplausibel",start:0,nodes:[
    {q:"Ist die Sensorversorgung (z.B. 5 V) vorhanden?",opts:[
-     {t:"Nein / eingebrochen",go:1},{t:"Ja, 4,8–5,1 V",go:2}]},
+     {t:"Nein / eingebrochen",go:1},{t:"Ja, 4,9–5,1 V",go:2}]},
    {r:"→ Entscheidungsbaum / Prüfung: 5-V-Referenz fehlt."},
    {q:"Ist die Sensor-Masse gut (unter Last nahe 0 V)?",opts:[
      {t:"Nein, Masseversatz",go:3},{t:"Ja",go:4}]},
@@ -2518,7 +2572,7 @@ function filterTests(){
 
 /* Einsteiger-Hinweis (nur sichtbar, wenn body.beginner gesetzt ist) und
    Copyright-Fußzeile – auf jeder Listenansicht gleich. */
-const BEG_BANNER=`<div class="beg-banner"><span class="bb-ic" aria-hidden="true">🎓</span><span><b>Einsteiger-Modus aktiv.</b> In jeder Prüfung steht oben ein Block „Einfach erklärt". Zum Ausschalten unten erneut auf 🎓 Einsteiger tippen.</span></div>`;
+const BEG_BANNER=`<div class="beg-banner"><span class="bb-ic" aria-hidden="true">🎓</span><span><b>Einsteiger-Modus aktiv.</b> In jeder Prüfung steht oben ein Block „Einfach erklärt“. Zum Ausschalten unten erneut auf 🎓 Einsteiger tippen.</span></div>`;
 const COPY_FOOTER=`<div class="copy">© 2026 <b>Roy Sperlich</b> – Alle Rechte vorbehalten.<br>KFZ Multimeter Profi ${APP_VERSION} · Richtwerte ohne Gewähr, Herstellerangaben haben Vorrang.</div>`;
 
 function renderHome(){
@@ -2742,6 +2796,15 @@ function anlHTML(anl){
   return `<ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.55">`+
     anl.map(x=>`<li style="margin-bottom:7px">${x}</li>`).join('')+`</ol>`;
 }
+/* Anleitung als einklappbarer Block: im Einsteiger-Modus offen, sonst zu.
+   So bleibt die Lerntiefe erhalten, ohne dass der Profi daran vorbeiscrollen muss. */
+function anlBoxHTML(anl){
+  const open=document.body.classList.contains('beginner')?' open':'';
+  return `<div class="step"><details class="anlbox"${open}>`+
+    `<summary><span class="lbl"><span class="num">📋</span>Ausführliche Anleitung</span>`+
+    `<span class="ahint">${anl.length} Schritte <span class="arr">▶</span></span></summary>`+
+    `<div class="abody">${anlHTML(anl)}</div></details></div>`;
+}
 
 function openDetail(id){
   currentId=id;
@@ -2762,7 +2825,7 @@ function openDetail(id){
   // 3 Messspitzen
   h+=`<div class="step set"><div class="lbl"><span class="num">📍</span>Messspitzen anhalten</div><div class="body">${probeHTML(t)}<div style="margin-top:9px">${t.mess}</div></div></div>`;
   // Ausführliche Anleitung (falls vorhanden)
-  if(d&&d.anl)h+=`<div class="step"><div class="lbl"><span class="num">📋</span>Ausführliche Anleitung</div><div class="body">${anlHTML(d.anl)}</div></div>`;
+  if(d&&d.anl)h+=anlBoxHTML(d.anl);
   // remaining warnings
   if(t.warn){t.warn.filter(w=>w[0]!=='danger').forEach(w=>h+=warnHTML(w));}
   // 4 Gutwert
@@ -2906,7 +2969,7 @@ function toggleBeginner(){
   try{localStorage.setItem('mm_beginner',on?'1':'0')}catch(e){}
   // Sichtbare Rückmeldung: ohne sie wirkt der Schalter funktionslos,
   // weil der Einsteiger-Text erst in der Detailansicht sichtbar wird.
-  showToast(on?'🎓 Einsteiger-Modus AN – „Einfach erklärt" wird angezeigt':'Einsteiger-Modus AUS','beg');
+  showToast(on?'🎓 Einsteiger-Modus AN – „Einfach erklärt“ wird angezeigt':'Einsteiger-Modus AUS','beg');
   // Ist gerade eine Prüfung offen, sofort mit/ohne Einsteiger-Block neu aufbauen
   if(ov.classList.contains('open')&&currentId){
     const y=ov.scrollTop;openDetail(currentId);ov.scrollTop=y;
@@ -3556,7 +3619,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
     h+=`<div class="step set"><div class="lbl"><span class="num">⚙</span>Multimeter einstellen</div><div class="body">${settingBadges(t)}</div></div>`;
     const d=DEEP[t.id];
     h+=`<div class="step set"><div class="lbl"><span class="num">📍</span>Messspitzen anhalten</div><div class="body">${probeHTML(t)}<div style="margin-top:9px">${t.mess}</div></div></div>`;
-    if(d&&d.anl)h+=`<div class="step"><div class="lbl"><span class="num">📋</span>Ausführliche Anleitung</div><div class="body">${anlHTML(d.anl)}</div></div>`;
+    if(d&&d.anl)h+=anlBoxHTML(d.anl);
     if(t.warn){t.warn.filter(w=>w[0]!=='danger').forEach(w=>h+=warnHTML(w));}
     h+=`<div class="step good"><div class="lbl"><span class="num">✓</span>Guter Wert</div><div class="body">${t.good}</div></div>`;
     h+=`<div class="step bad"><div class="lbl"><span class="num">✗</span>Schlechter Wert</div><div class="body">${t.bad}</div></div>`;

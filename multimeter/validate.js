@@ -67,6 +67,21 @@ const w = dom.window, d = w.document;
   });
   const rt2Count = Object.keys(DEEP).filter(k => DEEP[k].rt2).length;
   ok("alle " + rt2Count + " Zweittabellen (rt2) werden tatsächlich gerendert", rt2Missing.length === 0, rt2Missing.join(","));
+
+  // Einklapp-Mechanik der Anleitung: im Profi-Modus zu, im Einsteiger-Modus offen,
+  // Inhalt in beiden Fällen im DOM (sonst wäre er für die Suche/Screenreader weg).
+  const anlIds = Object.keys(DEEP).filter(k => DEEP[k].anl);
+  const anlMissing = anlIds.filter(k => { w.openDetail(k); return !d.querySelector("#ovbody details.anlbox"); });
+  ok("alle " + anlIds.length + " Anleitungen als einklappbarer Block gerendert", anlMissing.length === 0, anlMissing.join(","));
+  w.applyBeginner(false); w.openDetail("leitung");
+  const proClosed = !d.querySelector("#ovbody details.anlbox").open;
+  const contentPresent = d.getElementById("ovbody").innerHTML.includes("Nullabgleich");
+  w.applyBeginner(true); w.openDetail("leitung");
+  const begOpen = d.querySelector("#ovbody details.anlbox").open;
+  w.applyBeginner(false);
+  ok("Profi-Modus: Anleitung zugeklappt, Inhalt trotzdem im DOM", proClosed && contentPresent,
+     JSON.stringify({ proClosed, contentPresent }));
+  ok("Einsteiger-Modus: Anleitung automatisch offen", begOpen);
   w.doCloseOverlays();
 
   section("4 · Konventionen (gegen Renderer geprüft)");

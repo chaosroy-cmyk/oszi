@@ -1,4 +1,47 @@
-# CHANGELOG v7.4 – v7.8
+# CHANGELOG v7.4 – v7.9
+
+## v7.9 — Stufe A: Lernkarten für die Methodenkarten + Einklapp-Mechanik
+
+**Einklappbare Anleitung.** Die ausführliche Anleitung wurde bisher jedem
+angezeigt – auch dem Meister, der nur den Sollwert sucht. Sie liegt jetzt in
+einem `<details>`-Block: im **Einsteiger-Modus automatisch offen**, im
+Profi-Modus zugeklappt auf eine Zeile mit Schrittzähler („10 Schritte ▶").
+Der Inhalt bleibt im DOM (Suche, Screenreader, Drucken unberührt). Damit
+bekommt der Einsteiger-Modus echtes Gewicht, ohne die Werkstattnutzung zu
+verlangsamen.
+
+**Vier fehlende Anleitungen ergänzt** – die auffälligste Lücke des Tools:
+`spannung`, `widerstand`, `durchgang` und `sicherung` hatten keine, während
+Randthemen wie „Messprotokoll führen" eine hatten. Jeder Schritt erklärt
+zusätzlich das *Warum*:
+
+- **Spannung messen** (8 Schritte + Merksatz): Spannung besteht immer zwischen
+  zwei Punkten; Bezugspunkt bewusst wählen; Sollwert **vor** der Messung
+  notieren; Zustand dokumentieren; unter Last gegenprüfen.
+- **Widerstand messen** (9 + Merksatz): wie das Ohmmeter arbeitet und warum
+  daraus „nur spannungsfrei" und „Bauteil isolieren" zwingend folgen;
+  Nullabgleich; Temperaturabhängigkeit; 0 Ω ist kein Belastbarkeitsnachweis.
+- **Durchgang prüfen** (7 + Merksatz): Piepschwelle 20–70 Ω je Gerät;
+  Selbsttest der Messleitungen; wann Durchgang genügt und wann nicht.
+- **Sicherung/Relais** (10 + Merksatz): Haarriss-Problematik; Messung an der
+  gesteckten Sicherung; Klemmenlogik 30/87/85/86; der klickende, aber
+  abgebrannte Relaiskontakt; niemals höher absichern.
+
+**Einsteiger-Texte** dieser vier Karten von Stichworten auf didaktische
+Erklärungen ausgebaut (je 600–900 Zeichen, Niveau der `leitung`-Karte).
+
+**Nebenbefund behoben:** Die 5-V-Toleranz stand an sechs Stellen, die
+Vereinheitlichung in v7.7 hatte nur eine erwischt. Jetzt durchgängig
+4,9–5,1 V (Karte `ref5v`, DEEP `spannung`, DEEP `ref5v` in drei Feldern,
+Diagnosebaum `sensor-unplausibel`).
+
+`validate.js` prüft jetzt zusätzlich, dass jede Anleitung als einklappbarer
+Block erscheint, im Profi-Modus zu und im Einsteiger-Modus offen ist und der
+Inhalt in beiden Fällen im DOM liegt.
+
+Version 7.9-Profi ↔ Cache v7-9. Validierung: 29/29 bestanden.
+
+---
 
 ## v7.8 — Karte „Leitung prüfen" zur Lernkarte ausgebaut
 
