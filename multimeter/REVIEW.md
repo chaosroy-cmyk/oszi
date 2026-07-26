@@ -2,6 +2,37 @@
 
 ---
 
+## v7.7 – Kartensatz „5-V-Referenz Kurzschluss" ZUR FREIGABE
+
+Neue Kategorie **5-V-Referenz** mit vier Karten, einem Diagnosebaum und
+`/* PRÜFEN */`-Markierung. Alle Zahlenwerte stammen aus der Vorgabe des
+Fachautors, es wurde nichts interpoliert.
+
+| Karte | Inhalt |
+|---|---|
+| `ref5v-basis` | Sollwert **4,9–5,1 V**, Messpunkt Sensorstecker (nicht ECU), Abweichungsrichtung als Pfad-Weiche |
+| `ref5v-masseschluss` | Symptom ~0 V, Ohm-Prüfung hochohmig (kΩ–MΩ) vs. **~0 Ω**, Eingrenzungstabelle Sensor-für-Sensor, Halbierungsmethode, Klopf-/Wackeltest, typische Fundorte |
+| `ref5v-plusschluss` | Symptom Richtung Bordspannung, Erstmessung bei Zündung AUS (Dauerplus-Nachweis), Ohm gegen Verdachtsleitung, Parallelverlegung, Folgeschadenprüfung |
+| `ref5v-vergleich` | Gegenüberstellung Spannungsverhalten / Häufigkeit / Gefahr / Prüfmethode |
+
+**Freigabepflichtige Einzelwerte:**
+1. **Sollwert 4,9–5,1 V.** Die bestehende Karte `ref5v` führte bisher
+   **4,8–5,1 V**. Zur Vermeidung zweier widersprüchlicher Toleranzen in einer
+   App wurde sie auf 4,9–5,1 V vereinheitlicht (`/* PRÜFEN */` markiert).
+   **Falls 4,8 V belegt ist, bitte beide Stellen zurückstellen.**
+2. **Widerstandsschwellen:** hochohmig kΩ–MΩ / OL = kein Schluss, nahe 0 Ω =
+   harter Schluss, dazwischen (einige 100 Ω bis kΩ) = Teilschluss/Kriechstrom.
+   Der Zwischenbereich ist aus der Vorgabe abgeleitet, nicht wörtlich genannt.
+
+**Farbcodierung – bewusste Abweichung von der Vorgabe:** Angefragt war
+„rot = Masse, blau = Plus". Im Tool codieren Rot/Blau/Gelb bereits den
+**Schweregrad** (`danger`/`info`/`caution`). Da der Plusschluss laut Vorgabe
+der gefährlichere Fall ist, hätte Blau ihn optisch verharmlost. Die Typ-
+Unterscheidung erfolgt deshalb über Icon (⏚ Masse / ➕ Plus) und Kartennamen,
+die Farbe bleibt Schweregrad-Semantik. Rückmeldung erbeten.
+
+---
+
 ## v7.5 – FUSE_R gegen Original-Datenblätter verifiziert (Konflikt gelöst)
 
 Der in v7.4 dokumentierte Konflikt („Auftrag erwartet 0,77 mV @ 10 A ≈ 100 mA,

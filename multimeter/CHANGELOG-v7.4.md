@@ -1,3 +1,32 @@
+# CHANGELOG v7.4 – v7.7
+
+## v7.7 — Kartensatz „5-V-Referenz Kurzschluss"
+
+Neue Kategorie **5-V-Referenz** (`CATS`, nach „Sensoren") mit vier Karten,
+vier DEEP-Blöcken und dem Diagnosebaum `5v-kurzschluss` (11 Knoten):
+`ref5v-basis`, `ref5v-masseschluss`, `ref5v-plusschluss`, `ref5v-vergleich`.
+Inhalt und freigabepflichtige Werte: siehe REVIEW.md.
+
+Zwei Renderer-Ergänzungen waren dafür nötig:
+
+- **`DEEP.rt2`** (optionale Zweittabelle): Konvention 6 (`DEEP.rt` verdrängt
+  `TESTS.table`) hätte die geforderte Eingrenzungstabelle „Sensor abgesteckt →
+  Schluss weg/bleibt" unsichtbar gemacht. Statt die Konvention zu umgehen,
+  rendert `openDetail` jetzt zusätzlich ein `rt2` mit eigener Überschrift.
+- **Horizontal scrollbare Tabellen** (`.tbl-wrap`): Die dreispaltige
+  Vergleichstabelle wurde am Displayrand abgeschnitten. Alle Tabellen liegen
+  jetzt in einem `overflow-x`-Container, dreispaltige ohne Bewertungsspalte
+  bekommen zusätzlich eine Mindestbreite.
+
+`validate.js` erweitert: prüft `rt2`-Spaltenkonsistenz und meldet als
+**Hinweis** (kein Fehler), wo `TESTS.table` unter einem `DEEP.rt` liegt und
+deshalb nie gerendert wird — aktuell 12 Altkarten.
+
+Version 7.7-Profi ↔ Cache v7-7. Validierung: 25/25 bestanden, 70 Karten,
+14 Diagnosebäume.
+
+---
+
 # CHANGELOG v7.4 / v7.5 / v7.6
 
 ## v7.6 — Einsteiger-Modus mit Rückmeldung, Copyright

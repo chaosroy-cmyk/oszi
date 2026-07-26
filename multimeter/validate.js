@@ -15,6 +15,8 @@ function ok(name, cond, detail) {
   else { failed++; console.log("  ✗ " + name + (detail ? "  → " + detail : "")); }
 }
 function section(t) { console.log("\n== " + t + " =="); }
+const notes = [];
+function note(msg) { notes.push(msg); }
 
 const jsdomErrors = [];
 const vc = new VirtualConsole();
@@ -68,6 +70,10 @@ const w = dom.window, d = w.document;
   Object.entries(DEEP).forEach(([k,dd]) => {
     (dd.urs || []).forEach((u,i) => { if (!["h","m","s"].includes(u[2])) e4.push("DEEP " + k + " urs " + i + ":" + u[2]); });
     if (dd.rt) dd.rt.rows.forEach((r,i) => { if (r.length !== dd.rt.head.length) e4.push("DEEP " + k + " rt Zeile " + i); });
+    if (dd.rt2) dd.rt2.rows.forEach((r,i) => { if (r.length !== dd.rt2.head.length) e4.push("DEEP " + k + " rt2 Zeile " + i); });
+    // Konvention 6: DEEP.rt verdrängt TESTS.table. Beides gleichzeitig ist die
+    // etablierte Fallback-Schreibweise des Tools – kein Fehler, aber tote Daten.
+    { const t = TESTS.find(x => x.id === k); if (t && t.table && dd.rt) note("DEEP " + k + ": TESTS.table wird von rt verdeckt"); }
     (dd.fs || []).forEach((f,i) => { if (!f.s || !f.do) e4.push("DEEP " + k + " fs " + i + " ohne s/do"); });
   });
   ok("Warn-Typen, urs-Gewichte, Tabellen-Spalten, fs-Pflichtfelder", e4.length === 0, e4.slice(0,5).join(" ; "));
@@ -185,6 +191,12 @@ const w = dom.window, d = w.document;
   ok("Tab am Ende springt zum Anfang, Shift+Tab am Anfang zum Ende", wrapped && wrappedBack,
      JSON.stringify({wrapped, wrappedBack}));
   w.doCloseOverlays();
+
+  if (notes.length) {
+    section("Hinweise (kein Fehler)");
+    console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");
+    console.log("    betroffen: " + notes.map(n => n.split(":")[0].replace("DEEP ", "")).join(", "));
+  }
 
   console.log("\n================================");
   console.log(failed === 0 ? "ALLE PRÜFUNGEN BESTANDEN (" + passed + ")" : "FEHLGESCHLAGEN: " + failed + " von " + (passed + failed));

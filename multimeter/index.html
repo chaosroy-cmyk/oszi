@@ -246,6 +246,11 @@ button:focus-visible,.tile:focus-visible,.search:focus-visible{outline:2px solid
 .warn.caution{background:rgba(210,153,34,.12);border:1.5px solid rgba(210,153,34,.4);color:#f0d28a}
 .warn.info{background:rgba(88,166,255,.1);border:1.5px solid rgba(88,166,255,.35);color:#add1ff}
 /* value tables */
+/* Breite Tabellen (z.B. dreispaltige Vergleiche) horizontal scrollen lassen,
+   statt sie am Displayrand abzuschneiden. */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:8px}
+.tbl-wrap table{margin-top:0;min-width:100%}
+.tbl-wrap.wide table{min-width:520px}
 table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
 th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line)}
 th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--txt2);font-weight:700}
@@ -520,13 +525,14 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '7.6-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '7.7-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
   {id:"strom", name:"Strom/Versorgung"},
   {id:"motor", name:"Batterie/Lade/Start"},
   {id:"sensor",name:"Sensoren"},
+  {id:"ref5v", name:"5-V-Referenz"},
   {id:"aktor", name:"Aktuatoren"},
   {id:"bus",   name:"Bus/Signal"},
   {id:"leit",  name:"Leitung/Masse"},
@@ -691,11 +697,84 @@ const TESTS = [
  set:{mode:"DC Volt (V⎓)",buchse:"COM + V/Ω"},
  probes:[["r","Sensor Versorgungspin"],["b","Sensor-Masse"]],
  mess:"5 V am Sensor prüfen. Fehlt sie: Sensoren nacheinander abstecken. Kommt 5 V zurück → zuletzt abgesteckter verdächtig.",
- good:"4,8–5,1 V stabil.",
+ /* PRÜFEN: Toleranz auf 4,9–5,1 V vereinheitlicht (war 4,8–5,1 V) – Vorgabe Fachautor */
+ good:"4,9–5,1 V stabil.",
  bad:"0 V oder eingebrochen = Kurzschluss nach Masse/Plus oder Versorgung defekt.",
  next:"Auf Schluss nach Masse UND nach Plus prüfen. Sensorversorgung NICHT belasten.",
  beg:"Mehrere Sensoren hängen an derselben 5-V-Leitung. Ein kaputter zieht alle runter → wirkt wie viele Defekte. Einzeln absteckmethode.",
  warn:[["danger","NIE mit Prüflampe auf 5-V-Referenz! Die Lampe belastet die empfindliche Versorgung und kann Sensorwerte/Steuergerät stören."]]
+},
+/* ---------- 5-V-REFERENZ: KURZSCHLUSS-DIAGNOSE ----------
+   PRÜFEN: Kartensatz nach Vorgabe Fachautor (Sollwert 4,9–5,1 V,
+   Widerstandsschwellen hochohmig kΩ–MΩ vs. ~0 Ω). Siehe REVIEW.md. */
+{
+ id:"ref5v-basis",cat:"ref5v",ic:"5️⃣",nm:"5-V-Referenz Grundprüfung",tag:"mm",
+ was:"Sollwert der Sensorreferenz am Steckerpin bestimmen und über die Abweichungsrichtung in den passenden Fehlerpfad einsteigen.",
+ set:{mode:"DC Volt (V⎓)",buchse:"COM + V/Ω"},
+ probes:[["r","Referenzpin am SENSORSTECKER (Backprobing)"],["b","Sensor-Masse am selben Stecker"]],
+ mess:"Zündung an, Sensor angesteckt. Am Steckerpin messen, nicht am Steuergerät – nur so liegen Leitung, Kontakt und Steckverbindung im Messpfad. Gegenprobe gegen Batterieminus: Differenz zur Messung gegen Sensor-Masse = Masseversatz.",
+ good:"4,9–5,1 V stabil, unverändert bei Wackeltest und Lastwechsel.",
+ bad:"Richtung 0 V = Masseschluss oder Überlast. Über 5,1 V Richtung Bordspannung = Plusschluss. Schwankend = Kontakt-/Masseproblem, kein Kurzschluss.",
+ next:"Zu niedrig → Prüfung: Kurzschluss nach Masse. Zu hoch → Prüfung: Kurzschluss nach Plus. Gegenüberstellung → Prüfung: Vergleich Masseschluss / Plusschluss.",
+ beg:"Die 5 V kommen vom Steuergerät und versorgen mehrere Sensoren. Miss immer am Sensorstecker, nicht am Steuergerät – sonst prüfst du die Leitung dazwischen gar nicht mit. Zu wenig Spannung zieht nach Masse, zu viel kommt von Plus.",
+ quality:"MM sehr gut",risk:"mittel",
+ requires:["Zündung an","Pinbelegung aus dem Schaltplan","Backprobing ohne Pin-Aufweitung"],
+ limits:["unterscheidet nicht zwischen Schluss und Überlast durch einen defekten Sensor","sagt nichts über sporadische Fehler ohne Wackeltest"],
+ dont:["Referenz nicht mit Prüflampe belasten","Referenz nicht gegen Karosserie statt Sensor-Masse bewerten"],
+ warn:[["danger","NIE mit Prüflampe auf die 5-V-Referenz: Die Last bricht die Versorgung ein und kann den Steuergeräteausgang beschädigen."],
+       ["info","Ein Referenzfehler zieht meist mehrere Sensoren gleichzeitig – mehrere unlogische Fehlercodes sind ein Indiz, kein Beweis für mehrere defekte Sensoren."]],
+ syn:"Referenzspannung Sensorversorgung 5V Referenz Kurzschluss"
+},
+{
+ id:"ref5v-masseschluss",cat:"ref5v",ic:"⏚",nm:"Kurzschluss nach Masse (5-V-Referenz)",tag:"mm",
+ was:"Referenz liegt nahe 0 V: Schluss der Referenzleitung gegen Masse lokalisieren – Sensor, Leitung oder Steuergeräteausgang.",
+ set:{mode:"Ohm (Ω) – spannungsfrei",buchse:"COM + V/Ω"},
+ probes:[["r","Referenzleitung (steuergeräteseitig abgezogen)"],["b","Batterieminus / blanke Karosseriemasse"]],
+ mess:"Zündung aus, Steuergerätestecker nach Herstellervorgabe abziehen. Widerstand der Referenzleitung gegen Masse messen. Hochohmig (kΩ bis MΩ oder OL) = kein Schluss. Nahe 0 Ω = Kurzschluss. Werte dazwischen = Teilschluss/Kriechstrom, meist Feuchtigkeit.",
+ good:"Hochohmig gegen Masse (kΩ–MΩ / OL) bei abgezogenen Sensoren.",
+ bad:"Nahe 0 Ω = harter Masseschluss. Einige 100 Ω bis kΩ = Teilschluss durch Feuchtigkeit oder angescheuerte Isolierung.",
+ next:"Sensoren einzeln abstecken und Widerstand beobachten. Bleibt der Schluss ohne alle Sensoren, liegt er im Kabelbaum → Halbierungsmethode. → Prüfung: Vergleich Masseschluss / Plusschluss.",
+ beg:"Die 5-V-Leitung berührt irgendwo Masse und wird dadurch auf 0 V gezogen. Erst alle Sensoren abstecken: Ist der Schluss dann weg, war es ein Sensor. Bleibt er, liegt es am Kabel.",
+ quality:"MM sehr gut – nur spannungsfrei",risk:"mittel",
+ requires:["spannungsfrei, Steuergerätestecker getrennt","Sensoren einzeln abziehbar","Kabelbaumverlauf aus dem Schaltplan"],
+ limits:["parallel angeschlossene Sensoren täuschen niedrige Werte vor","sporadischer Schluss nur unter Klopf-/Wackeltest sichtbar"],
+ dont:["nicht ohmisch in den aktiven Steuergeräteausgang messen","Kabelbaum nicht blind auftrennen"],
+ warn:[["caution","Solange Sensoren angesteckt sind, messen deren Innenwiderstände parallel mit. Ein niedriger Wert ist erst nach dem Abstecken aussagekräftig."]],
+ syn:"Masseschluss Kurzschluss nach Masse Scheuerstelle 5V"
+},
+{
+ id:"ref5v-plusschluss",cat:"ref5v",ic:"➕",nm:"Kurzschluss nach Plus (5-V-Referenz)",tag:"gef",
+ was:"Referenz liegt über 5,1 V Richtung Bordspannung: Fremdspannung auf der Referenzleitung finden – seltener als der Masseschluss, aber mit Schadenspotenzial für Sensor und Steuergerät.",
+ set:{mode:"DC Volt, dann Ohm spannungsfrei",buchse:"COM + V/Ω"},
+ probes:[["r","Referenzleitung / Referenzpin"],["b","Batterieminus"]],
+ mess:"Erst spannungsführend: Referenz gegen Masse bei AUSGESCHALTETER Zündung messen. Liegt hier bereits Spannung an, speist eine Dauerplus-Leitung ein. Dann spannungsfrei: Widerstand zwischen Referenzleitung und der verdächtigen Plusleitung messen – niederohmig = Schluss.",
+ good:"Zündung aus: 0 V auf der Referenzleitung. Spannungsfrei: hochohmig gegen alle benachbarten Plusleitungen.",
+ bad:"Spannung bei ausgeschalteter Zündung = Dauerplus-Schluss. Niederohmig gegen eine Verbraucherleitung = Schluss durch Scheuerstelle oder Wassereintritt im Stecker.",
+ next:"Eingrenzung wie beim Masseschluss (Sensoren einzeln, dann Halbierung). Zusätzlich Leitungen prüfen, die parallel zur Referenz verlaufen. Nach der Reparatur Sensor und Steuergerät auf Folgeschaden kontrollieren.",
+ beg:"Hier drückt eine fremde Plusleitung auf die 5-V-Leitung. Das kommt seltener vor als ein Masseschluss, kann aber Sensor und Steuergerät zerstören – deshalb zuerst die Fremdspannung abstellen, dann suchen.",
+ quality:"MM gut – Spannung und Ohm kombiniert",risk:"hoch",
+ requires:["Messung bei ausgeschalteter Zündung als Erstschritt","Schaltplan mit Leitungsverlauf und Nachbaradern","spannungsfrei für alle Ohm-Messungen"],
+ limits:["zeigt nicht, wie lange die Fremdspannung schon anlag – Folgeschaden bleibt möglich","Schluss nur gegen geschaltetes Plus tritt erst im Betriebszustand auf"],
+ dont:["Fahrzeug nicht mit bekanntem Plusschluss weiterbetreiben","Sensoren nicht auf Verdacht tauschen, bevor die Fremdspannung weg ist"],
+ warn:[["danger","Fremdspannung auf der 5-V-Referenz kann Sensor UND Steuergeräteausgang zerstören. Vor jeder weiteren Diagnose die einspeisende Leitung stromlos machen."],
+       ["caution","Typische Quelle: Parallelverlegung mit Verbraucherleitungen – Lüfter, Beleuchtung, Relaisausgänge. Schluss gegen geschaltetes Plus zeigt sich nur, wenn dieser Verbraucher aktiv ist."],
+       ["info","Nach der Reparatur: Referenz erneut messen, Fehlerspeicher löschen, Livedaten aller Sensoren an dieser Referenz auf Plausibilität prüfen – ein still beschädigter Sensor bleibt sonst unentdeckt."]],
+ syn:"Plusschluss Kurzschluss nach Plus Fremdspannung Überspannung 5V"
+},
+{
+ id:"ref5v-vergleich",cat:"ref5v",ic:"⚖️",nm:"Vergleich Masseschluss / Plusschluss",tag:"mm",
+ was:"Beide Fehlerbilder der 5-V-Referenz direkt gegenübergestellt: Spannungsverhalten, Häufigkeit, Gefahr für das Steuergerät und passende Prüfmethode.",
+ set:{mode:"Nachschlagen",buchse:"–"},
+ probes:[["r","siehe jeweilige Prüfkarte"],["b","siehe jeweilige Prüfkarte"]],
+ mess:"Vergleichsübersicht zur schnellen Zuordnung. Für die eigentliche Messung die jeweilige Karte verwenden.",
+ good:"Fehlerbild eindeutig einem der beiden Pfade zugeordnet.",
+ bad:"Messwert weder nahe 0 V noch erhöht: kein Kurzschluss, sondern Überlast, Kontaktproblem oder Masseversatz.",
+ next:"Zuordnung getroffen → Prüfung: Kurzschluss nach Masse bzw. → Prüfung: Kurzschluss nach Plus. Unklarer Ausgangswert → Prüfung: 5-V-Referenz Grundprüfung.",
+ beg:"Diese Karte ist nur zum Nachschlagen: Sie zeigt auf einen Blick, woran man die beiden Kurzschlussarten unterscheidet und wie gefährlich sie sind.",
+ quality:"Nachschlagekarte",risk:"niedrig",
+ requires:["Ausgangsmesswert der Referenz aus der Grundprüfung"],
+ limits:["ersetzt keine Messung – nur Zuordnungshilfe"],
+ syn:"Vergleich Masseschluss Plusschluss Übersicht Kurzschlussarten"
 },
 {
  id:"pwm",cat:"aktor",ic:"📶",nm:"PWM / Taktung prüfen",tag:"osz",
@@ -1460,6 +1539,116 @@ const DEEP = {
      {s:"3 Sensoren einzeln abstecken",do:"Nacheinander trennen, Referenz beobachten",ok:"kommt zurück → letzter Sensor/Leitung schuldig",ng:"bleibt weg → weiter"},
      {s:"4 Schluss lokalisieren",do:"Spannungsfrei Leitung gegen Masse & Plus prüfen",ok:"Schluss gefunden → reparieren",ng:"kein Schluss → STG-Ausgang prüfen"}]
 },
+/* PRÜFEN: DEEP-Blöcke zum 5-V-Kurzschluss-Kartensatz (Vorgabe Fachautor) */
+"ref5v-basis":{
+ anl:["Schaltplan öffnen: Referenzpin, Sensor-Masse und alle Sensoren an derselben Referenz identifizieren.",
+   "MM auf DC Volt. Zündung an, Sensor angesteckt, per Backprobing von der Kabelseite an Referenzpin und Sensor-Masse.",
+   "Am <b>Sensorstecker</b> messen, nicht am Steuergerät: nur so liegen Leitung, Steckkontakt und Übergangswiderstand mit im Messpfad. Ein am ECU sauberer Wert schließt einen Leitungsfehler nicht aus.",
+   "Gegenprobe: Referenz zusätzlich gegen Batterieminus messen. Weicht der Wert von der Messung gegen Sensor-Masse ab, liegt ein Masseversatz vor – dann zuerst den Sensor-Massepfad instand setzen.",
+   "Wackel- und Klopftest an Stecker und Kabelbaum, während der Wert beobachtet wird. Springt die Spannung, ist es ein Kontaktfehler, kein Kurzschluss.",
+   "Abweichungsrichtung entscheidet über den Pfad: Richtung 0 V = Masseschluss oder Überlast, über 5,1 V = Plusschluss.",
+   "Vor dem Sensortausch prüfen, ob mehrere Sensoren an derselben Referenz betroffen sind – dann liegt der Fehler in der Versorgung, nicht im einzelnen Sensor."],
+ rt:{head:["Zustand","Messwert","Bewertung"],rows:[
+   ["Referenz am Steckerpin","4,9–5,1 V","g"],
+   ["Referenz eingebrochen","unter 4,9 V","w"],
+   ["Referenz zusammengebrochen","~0 V","b"],
+   ["Referenz erhöht","über 5,1 V","b"],
+   ["Masseversatz (Sensor-Masse ↔ Bat−)","möglichst nahe 0 mV","g"]],
+   note:"Messpunkt ist der Sensorstecker, nicht das Steuergerät. Mehrere Sensoren teilen sich in der Regel eine Referenz – ein Versorgungsfehler erzeugt mehrere unplausible Werte gleichzeitig."},
+ urs:[["Sensor mit internem Schluss","zieht die gemeinsame Referenz herunter","h"],
+      ["Scheuerstelle im Kabelbaum","Schluss gegen Karosserie","h"],
+      ["Übergangswiderstand im Stecker","Wert leicht zu niedrig, schwankend","m"],
+      ["Masseversatz im Sensor-Massepfad","Referenz scheinbar falsch, Versorgung intakt","m"],
+      ["Steuergeräte-Ausgang defekt","Referenz fehlt trotz intakter Peripherie","s"]],
+ fs:[{s:"1 Am Steckerpin messen",do:"Zündung an, Referenz gegen Sensor-Masse",ok:"4,9–5,1 V → Referenz ok, Signalpfad prüfen",ng:"Abweichung → weiter"},
+     {s:"2 Bezug absichern",do:"Gegenprobe gegen Batterieminus",ok:"gleicher Wert → Bezug sauber",ng:"Differenz → Sensor-Masse instand setzen"},
+     {s:"3 Richtung bestimmen",do:"Liegt der Wert unter oder über dem Sollbereich?",ok:"unter 4,9 V → Masseschluss-Pfad",ng:"über 5,1 V → Plusschluss-Pfad"},
+     {s:"4 Umfang klären",do:"Weitere Sensoren an derselben Referenz messen",ok:"nur einer betroffen → Sensor/Stichleitung",ng:"mehrere betroffen → gemeinsame Versorgung"},
+     {s:"5 Wackeltest",do:"Stecker und Kabelbaum bewegen, Wert beobachten",ok:"stabil → fester Fehler",ng:"springt → Kontaktfehler statt Kurzschluss"}]
+},
+"ref5v-masseschluss":{
+ anl:["Zündung aus. Steuergerätestecker nach Herstellervorgabe trennen, damit der interne Ausgang nicht parallel misst.",
+   "MM auf Ohm. Referenzleitung gegen Batterieminus bzw. blanke Karosseriemasse messen. Erwartung ohne Fehler: hochohmig (kΩ bis MΩ) oder OL.",
+   "Nahe 0 Ω = harter Masseschluss. Einige 100 Ω bis kΩ = Teilschluss, typisch für Feuchtigkeit im Stecker oder angescheuerte Isolierung.",
+   "<b>Sensoren einzeln abstecken</b> und nach jedem Schritt erneut messen. Verschwindet der Schluss nach dem Trennen eines bestimmten Sensors, ist dieser Sensor intern kurzgeschlossen. Bleibt er auch ohne alle Sensoren bestehen, liegt er im Kabelbaum.",
+   "<b>Halbierungsmethode:</b> Kabelbaum an einer mittig gelegenen Trennstelle (Zwischenstecker, Durchführung, Verteiler) auftrennen und beide Hälften getrennt messen. Die Hälfte mit dem Schluss weiter halbieren, bis der Abschnitt wenige Zentimeter lang ist. Jede Halbierung viertelt im Mittel die Suchzeit gegenüber dem abschnittsweisen Durchmessen.",
+   "<b>Klopf- und Wackeltest:</b> Im verdächtigen Abschnitt am Kabelbaum klopfen und ziehen, während das MM auf Ohm steht. Ein springender Wert bestätigt die Stelle – wichtig bei sporadischen Fehlern, die im Stand nicht messbar sind.",
+   "<b>Typische Fundorte:</b> Scheuerstellen an Karosseriekanten und Halterungen, Gummidurchführungen zwischen Motorraum und Innenraum sowie Tür-/Heckklappenübergänge, Vibrationsbereiche am Motor und Getriebe, Bereiche nahe Auspuff und Hitzeschilden, Stecker mit Wassereintritt.",
+   "Fundstelle instand setzen (Leitung ersetzen oder fachgerecht verbinden und abdichten), Scheuerschutz ergänzen, danach Referenz erneut unter Zündung messen."],
+ rt:{head:["Messung (spannungsfrei)","Befund","Bewertung"],rows:[
+   ["Referenz ↔ Masse, Sensoren ab","hochohmig (kΩ–MΩ) / OL","g"],
+   ["Referenz ↔ Masse","nahe 0 Ω","b"],
+   ["Referenz ↔ Masse","einige 100 Ω bis kΩ","w"],
+   ["nach Abstecken eines Sensors","Schluss verschwindet","b"],
+   ["ohne alle Sensoren","Schluss bleibt","b"]],
+   note:"Angesteckte Sensoren messen mit ihrem Innenwiderstand parallel mit – ein niedriger Wert ist erst nach dem Abstecken belastbar. Teilschlüsse im kΩ-Bereich sind fast immer Feuchtigkeit oder angescheuerte Isolierung."},
+ rt2:{title:"Eingrenzung: Sensoren einzeln abstecken",head:["Sensor abgesteckt","Messwert Referenz ↔ Masse","Schlussfolgerung"],rows:[
+   ["keiner","nahe 0 Ω","Schluss vorhanden – weiter eingrenzen"],
+   ["Sensor X","Schluss weg (hochohmig)","Sensor X defekt – interner Schluss"],
+   ["Sensor X","Schluss bleibt","Sensor X unverdächtig – nächsten trennen"],
+   ["alle Sensoren","Schluss bleibt","Kabelbaum oder Steuergeräteausgang"],
+   ["alle Sensoren + ECU-Stecker","Schluss bleibt","Kabelbaum – Halbierungsmethode anwenden"]],
+   note:"Nach jedem Abstecken erneut messen und den Zustand notieren. Reihenfolge beibehalten, damit ein zwischenzeitlich wieder angesteckter Sensor das Ergebnis nicht verfälscht."},
+ urs:[["Scheuerstelle gegen Karosserie/Halterung","Schluss gegen Masse, oft an Durchführungen","h"],
+      ["Sensor mit internem Schluss","Schluss verschwindet beim Abstecken","h"],
+      ["Wasser/Grünspan im Stecker","Teilschluss im kΩ-Bereich, wetterabhängig","h"],
+      ["Quetschstelle nach Vorarbeit","Schluss nach Reparatur/Nachrüstung entstanden","m"],
+      ["Steuergeräte-Ausgang durchlegiert","Schluss auch bei komplett getrennter Peripherie","s"]],
+ fs:[{s:"1 Spannungsfrei trennen",do:"Zündung aus, ECU-Stecker nach Vorgabe ab",ok:"weiter",ng:"nie ohmisch in den aktiven Ausgang messen"},
+     {s:"2 Schluss bestätigen",do:"Ohm Referenzleitung ↔ Masse",ok:"hochohmig → kein Masseschluss",ng:"nahe 0 Ω → Schluss vorhanden"},
+     {s:"3 Sensoren einzeln trennen",do:"Nacheinander abstecken, nach jedem Schritt messen",ok:"Schluss weg → dieser Sensor defekt",ng:"Schluss bleibt → Kabelbaum"},
+     {s:"4 Halbieren",do:"Kabelbaum an mittiger Trennstelle teilen, beide Hälften messen",ok:"Fehlerhälfte gefunden → erneut halbieren",ng:"bis Abschnitt wenige cm lang ist"},
+     {s:"5 Klopf-/Wackeltest",do:"Im Verdachtsabschnitt klopfen und ziehen, Ohm beobachten",ok:"Wert springt → Stelle bestätigt",ng:"stabil → Abschnitt weiter eingrenzen"},
+     {s:"6 Instand setzen",do:"Leitung reparieren, abdichten, Scheuerschutz ergänzen",ok:"Referenz wieder 4,9–5,1 V",ng:"Wert weiterhin niedrig → Sensorlast/ECU prüfen"}]
+},
+"ref5v-plusschluss":{
+ anl:["<b>Zuerst spannungsführend prüfen:</b> Zündung AUS, MM auf DC Volt, Referenzleitung gegen Batterieminus messen. Jede messbare Spannung in diesem Zustand beweist eine Einspeisung aus einer Dauerplus-Leitung.",
+   "Liegt bei Zündung aus keine Spannung an, den Verdacht auf geschaltetes Plus richten: Verbraucher der Reihe nach einschalten (Lüfter, Beleuchtung, Relaisausgänge) und die Referenz dabei beobachten. Steigt sie beim Einschalten eines bestimmten Verbrauchers, ist dessen Leitung die Quelle.",
+   "Einspeisende Leitung stromlos machen (Sicherung ziehen, Verbraucher trennen), bevor weiter diagnostiziert wird – Fremdspannung auf der Referenz schädigt Sensoren und den Steuergeräteausgang.",
+   "<b>Dann spannungsfrei:</b> Widerstand zwischen Referenzleitung und der verdächtigen Plusleitung messen. Niederohmig = Schluss zwischen beiden Adern.",
+   "Eingrenzung wie beim Masseschluss: Sensoren einzeln abstecken, danach Kabelbaum halbieren, Klopf- und Wackeltest im Verdachtsabschnitt.",
+   "<b>Parallelverlegung beachten:</b> Der Schluss entsteht fast immer dort, wo die Referenz über eine längere Strecke gemeinsam mit Verbraucherleitungen verlegt ist – Lüfter, Beleuchtung, Relais- und Motorleitungen. Bevorzugt an Scheuerstellen, Quetschungen und in feuchten Steckern suchen.",
+   "<b>Nach der Reparatur:</b> Referenz erneut unter Zündung messen (4,9–5,1 V), Fehlerspeicher löschen und die Livedaten ALLER Sensoren an dieser Referenz auf Plausibilität prüfen. Ein vorgeschädigter Sensor oder ein beschädigter Steuergeräteausgang zeigt sich sonst erst später im Fahrbetrieb."],
+ rt:{head:["Prüfschritt","Befund","Bewertung"],rows:[
+   ["Zündung aus: Referenz ↔ Masse","0 V","g"],
+   ["Zündung aus: Referenz ↔ Masse","Spannung liegt an","b"],
+   ["Verbraucher einschalten","Referenz steigt mit","b"],
+   ["Spannungsfrei: Referenz ↔ Verdachtsleitung","hochohmig","g"],
+   ["Spannungsfrei: Referenz ↔ Verdachtsleitung","niederohmig","b"],
+   ["Nach Reparatur: Referenz, Zündung an","4,9–5,1 V","g"]],
+   note:"Seltener als der Masseschluss, aber mit Schadenspotenzial: Fremdspannung kann Sensor und Steuergeräteausgang zerstören. Schluss gegen geschaltetes Plus wird nur sichtbar, wenn der betreffende Verbraucher aktiv ist – deshalb Verbraucher gezielt durchschalten."},
+ urs:[["Scheuerstelle zu parallel verlegter Verbraucherleitung","Lüfter, Beleuchtung, Relaisausgang","h"],
+      ["Wasser/Grünspan im gemeinsamen Stecker","Brücke zwischen Referenz und Plusader","h"],
+      ["Fehlerhafte Nachrüstung/Reparaturverbinder","Plus auf die falsche Ader gelegt","m"],
+      ["Quetschstelle an Halterung oder Durchführung","Isolierung beider Adern durchgerieben","m"],
+      ["Sensor intern gegen Versorgung durchlegiert","Referenz steigt bei angestecktem Sensor","s"]],
+ fs:[{s:"1 Zündung aus messen",do:"Spannung Referenz ↔ Masse ohne Zündung",ok:"0 V → kein Dauerplus-Schluss, weiter mit Schritt 2",ng:"Spannung liegt an → Dauerplus-Schluss, Quelle stromlos machen"},
+     {s:"2 Geschaltetes Plus prüfen",do:"Verbraucher einzeln einschalten, Referenz beobachten",ok:"Wert bleibt → kein geschalteter Schluss",ng:"Wert steigt → Leitung dieses Verbrauchers verfolgen"},
+     {s:"3 Spannungsfrei gegenmessen",do:"Ohm Referenz ↔ Verdachtsleitung",ok:"hochohmig → anderen Verdacht prüfen",ng:"niederohmig → Schluss bestätigt"},
+     {s:"4 Eingrenzen",do:"Sensoren einzeln trennen, dann Kabelbaum halbieren",ok:"Abschnitt gefunden",ng:"Klopf-/Wackeltest im Verdachtsbereich"},
+     {s:"5 Instand setzen",do:"Adern trennen und abdichten, Scheuerschutz ergänzen",ok:"Referenz wieder 4,9–5,1 V",ng:"weiterhin erhöht → ECU-Ausgang prüfen"},
+     {s:"6 Folgeschaden prüfen",do:"Fehlerspeicher löschen, Livedaten aller Sensoren dieser Referenz bewerten",ok:"alle plausibel → abgeschlossen",ng:"Ausreißer → Sensor bzw. Steuergerät weiter prüfen"}]
+},
+"ref5v-vergleich":{
+ rt:{head:["Kriterium","Masseschluss","Plusschluss"],rows:[
+   ["Spannung an der Referenz","Richtung 0 V","über 5,1 V bis Bordspannung"],
+   ["Häufigkeit","häufig","selten"],
+   ["Gefahr für Sensor/Steuergerät","gering – Ausgang schaltet meist ab","hoch – Bauteilschaden möglich"],
+   ["Sofortmaßnahme","keine","einspeisende Leitung stromlos machen"],
+   ["Erstmessung","Ohm Referenz ↔ Masse, spannungsfrei","Spannung Referenz ↔ Masse bei Zündung AUS"],
+   ["Befund bei Schluss","nahe 0 Ω","Spannung ohne Zündung vorhanden"],
+   ["Eingrenzung","Sensoren einzeln, dann Halbierung","identisch, zusätzlich Verbraucher durchschalten"],
+   ["Typische Quelle","Scheuerstelle gegen Karosserie, Sensor intern","Parallelverlegung zu Verbraucher-/Relaisleitung"],
+   ["Nacharbeit","Referenz erneut messen","zusätzlich Sensor und ECU auf Folgeschaden prüfen"]],
+   note:"Beide Fehlerbilder betreffen meist mehrere Sensoren gleichzeitig, weil sich diese eine Referenz teilen. Weder nahe 0 V noch erhöht: dann liegt kein Kurzschluss vor, sondern Überlast, Kontaktproblem oder Masseversatz."},
+ urs:[["Referenz nahe 0 V","Masseschluss oder interner Sensorschluss","h"],
+      ["Referenz erhöht","Fremdspannung aus Verbraucherleitung","m"],
+      ["Referenz schwankend","Übergangswiderstand oder Masseversatz, kein Schluss","h"],
+      ["Referenz leicht zu niedrig","Überlast durch zusätzlichen Verbraucher an der Referenz","m"]],
+ fs:[{s:"1 Ausgangswert zuordnen",do:"Referenzwert aus der Grundprüfung einordnen",ok:"Richtung 0 V → Masseschluss-Pfad",ng:"über 5,1 V → Plusschluss-Pfad"},
+     {s:"2 Dringlichkeit klären",do:"Bei Plusschluss zuerst Fremdspannung abstellen",ok:"stromlos → Diagnose fortsetzen",ng:"nicht weiterbetreiben"},
+     {s:"3 Passende Karte öffnen",do:"Prüfschritte der jeweiligen Kurzschlusskarte abarbeiten",ok:"Fehlerstelle gefunden",ng:"kein Schluss messbar → Überlast/Kontakt/Masseversatz prüfen"}]
+},
 "pwm":{
  rt:{head:["Größe","Anzeige MM","Bewertung"],rows:[
    ["Mittelwert 50 % @12 V","≈ 6 V","g"],["Duty-Cycle","%-Wert ändert sich mit Last","g"],
@@ -2128,6 +2317,23 @@ const TREES = {
    {r:"Sensor verdächtig oder Signalleitung gestört. Wackeltest + Signalleitung prüfen. → Prüfung: jeweiliger Sensor."},
    {r:"Mechanik/Medium prüfen (z.B. Schlauch ab, Verschmutzung). Erst messen, dann tauschen."},
  ]},
+ "5v-kurzschluss":{title:"5-V-Referenz: Masse- oder Plusschluss",start:0,nodes:[
+   {q:"Referenz am Sensorstecker messen (Zündung an) – welcher Wert steht an?",opts:[
+     {t:"4,9–5,1 V",go:1},{t:"Richtung 0 V",go:2},{t:"über 5,1 V Richtung Bordspannung",go:3},{t:"schwankend / leicht zu niedrig",go:4}]},
+   {r:"Referenz in Ordnung. Fehler im Signalpfad oder im Sensor selbst weitersuchen. → Prüfung: 5-V-Referenz Grundprüfung."},
+   {q:"Spannungsfrei, alle Sensoren abgesteckt: Ohm Referenz ↔ Masse?",opts:[
+     {t:"nahe 0 Ω",go:5},{t:"hochohmig (kΩ–MΩ / OL)",go:6}]},
+   {q:"Zündung AUS: liegt auf der Referenzleitung Spannung an?",opts:[
+     {t:"Ja",go:7},{t:"Nein",go:8}]},
+   {r:"Kein Kurzschluss: Übergangswiderstand, Masseversatz oder Überlast an der Referenz. → Prüfung: Sensor-Masseversatz."},
+   {q:"Sensoren einzeln abstecken – verschwindet der Schluss bei einem bestimmten Sensor?",opts:[
+     {t:"Ja",go:9},{t:"Nein, Schluss bleibt",go:10}]},
+   {r:"Kein Masseschluss messbar. Ursache ist Überlast durch einen Sensor oder ein defekter Steuergeräteausgang. → Prüfung: 5-V-Referenz prüfen."},
+   {r:"Dauerplus-Schluss: Eine ungeschaltete Plusleitung speist ein. Einspeisende Leitung sofort stromlos machen, dann spannungsfrei gegen die Verdachtsleitung messen. → Prüfung: Kurzschluss nach Plus."},
+   {r:"Kein Dauerplus-Schluss. Verbraucher einzeln einschalten (Lüfter, Beleuchtung, Relais) und Referenz beobachten – Schluss gegen geschaltetes Plus zeigt sich nur im aktiven Zustand. → Prüfung: Kurzschluss nach Plus."},
+   {r:"Der zuletzt getrennte Sensor hat einen internen Schluss. Sensor ersetzen, danach Referenz erneut messen. → Prüfung: Kurzschluss nach Masse."},
+   {r:"Schluss liegt im Kabelbaum. Halbierungsmethode anwenden, Verdachtsabschnitt mit Klopf- und Wackeltest bestätigen. Typische Fundorte: Scheuerstellen an Karosseriekanten, Gummidurchführungen, Vibrationsbereiche. → Prüfung: Kurzschluss nach Masse."}
+ ]},
  "5v-fehlt":{title:"5-V-Referenz fehlt",start:0,nodes:[
    {q:"Fehlt 5 V nur an einem oder an mehreren Sensoren?",opts:[
      {t:"An mehreren",go:1},{t:"Nur an einem",go:2}]},
@@ -2391,18 +2597,22 @@ function probeHTML(t){
   ).join('')+`</div>`;
 }
 function tableHTML(tb){
-  return `<table><thead><tr>${tb.head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`+
+  return `<div class="tbl-wrap"><table><thead><tr>${tb.head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`+
     tb.rows.map(r=>{
       const cls=r[2]==='g'?'val-g':r[2]==='w'?'val-w':r[2]==='b'?'val-b':'';
       return `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="${cls}">${r[2]==='g'?'gut':r[2]==='w'?'beachten':r[2]==='b'?'schlecht':''}</td></tr>`;
-    }).join('')+`</tbody></table>`;
+    }).join('')+`</tbody></table></div>`;
 }
 function warnHTML(w){
   const icon=w[0]==='danger'?'⛔':w[0]==='caution'?'⚠️':'ℹ️';
   return `<div class="warn ${w[0]}"><span class="wi">${icon}</span><span>${w[1]}</span></div>`;
 }
 function deepTableHTML(rt){
-  let h=`<table><thead><tr>${rt.head.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>`;
+  // dreispaltige Tabellen ohne Bewertungsspalte (z.B. Vergleiche) brauchen mehr Breite
+  const firstLast=rt.rows.length?rt.rows[0][rt.rows[0].length-1]:'';
+  const hasRating=firstLast==='g'||firstLast==='w'||firstLast==='b';
+  const wide=(!hasRating&&rt.head.length>=3)?' wide':'';
+  let h=`<div class="tbl-wrap${wide}"><table><thead><tr>${rt.head.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>`;
   h+=rt.rows.map(r=>{
     const last=r[r.length-1];
     const isB=last==='g'||last==='w'||last==='b';
@@ -2413,7 +2623,7 @@ function deepTableHTML(rt){
     if(isB)row+=`<td class="${cls}">${txt}</td>`;
     return `<tr>${row}</tr>`;
   }).join('');
-  h+=`</tbody></table>`;
+  h+=`</tbody></table></div>`;
   if(rt.note)h+=`<div style="font-size:12px;color:var(--txt2);margin-top:9px;line-height:1.5">📌 ${rt.note}</div>`;
   return h;
 }
@@ -2534,6 +2744,8 @@ function openDetail(id){
   // Richtwert-Tabelle: bevorzugt detaillierte DEEP-Tabelle, sonst Kurz-Tabelle
   if(d&&d.rt)h+=`<div class="step"><div class="lbl"><span class="num">📊</span>Richtwerte (typisch)</div><div class="body">${deepTableHTML(d.rt)}</div></div>`;
   else if(t.table)h+=`<div class="step"><div class="lbl"><span class="num">📊</span>Richtwerte (typisch)</div><div class="body">${tableHTML(t.table)}</div></div>`;
+  // optionale Zweittabelle (z.B. Eingrenzungslogik) – wird zusätzlich zu rt gezeigt
+  if(d&&d.rt2)h+=`<div class="step set"><div class="lbl"><span class="num">🧩</span>${d.rt2.title||'Eingrenzung'}</div><div class="body">${deepTableHTML(d.rt2)}</div></div>`;
   // Fehlerursachen
   if(d&&d.urs)h+=`<div class="step"><div class="lbl"><span class="num">🔎</span>Häufige Fehlerursachen</div><div class="body">${ursHTML(d.urs)}</div></div>`;
   // Fehlersuche
