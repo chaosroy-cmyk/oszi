@@ -1,4 +1,34 @@
-# CHANGELOG v7.4 – v7.7
+# CHANGELOG v7.4 – v7.8
+
+## v7.8 — Karte „Leitung prüfen" zur Lernkarte ausgebaut
+
+Die Karte hatte bisher keinen Anleitungsblock (`DEEP.anl`) und beschrieb den
+Ablauf nur in einer Zeile. Für Auszubildende war daraus weder die Reihenfolge
+noch der Zweck der einzelnen Schritte ableitbar.
+
+- **12-stufige Anleitung** ergänzt: Auftrag klären → spannungsfrei →
+  Nullabgleich → Sichtprüfung → Pin-Fit → Unterbrechung → Schluss nach Masse →
+  nach Plus → gegen Nachbarader → Wackeltest → Spannungsabfall unter Last →
+  Reparatur nachweisen. Jeder Schritt erklärt zusätzlich das *Warum*.
+- **Einsteiger-Text** didaktisch ausgebaut (Gartenschlauch-Modell der vier
+  Fehlerarten statt Stichworten).
+- **Lernübersicht als Zweittabelle** (`rt2`): Fehlerart → Messbefund →
+  typisches Symptom am Fahrzeug, inklusive der Kernaussage, dass sich der
+  Übergangswiderstand nur unter Last nachweisen lässt.
+- **Fehlersuche** von 5 auf 10 Schritte erweitert, Schluss gegen Nachbarader
+  und Nullabgleich als eigene Schritte.
+- Zwei Merksatz-Hinweise ergänzt (Durchgang ≠ Belastbarkeit; Reihenfolge).
+
+**Dabei gefundener Fehler:** Der in v7.7 eingeführte `rt2`-Block wurde nur in
+der Basis-`openDetail` gerendert, nicht in der v6-Überschreibung – und die
+gewinnt. Beide Zweittabellen (5-V-Eingrenzung und Leitungs-Lernübersicht)
+waren dadurch unsichtbar. Hook in beiden Definitionen ergänzt; `validate.js`
+prüft jetzt zusätzlich, ob jede `rt2` im gerenderten DOM tatsächlich
+erscheint – ein stiller Inhaltsverlust dieser Art fällt künftig sofort auf.
+
+Version 7.8-Profi ↔ Cache v7-8. Validierung: 26/26 bestanden.
+
+---
 
 ## v7.7 — Kartensatz „5-V-Referenz Kurzschluss"
 

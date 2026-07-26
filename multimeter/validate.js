@@ -59,6 +59,14 @@ const w = dom.window, d = w.document;
     } catch (e) { renderBad.push(t.id + ":" + e.message); }
   });
   ok("alle " + TESTS.length + " Detailansichten fehlerfrei, ohne undefined/[object", renderBad.length === 0, renderBad.join(","));
+  // Deckt auf, wenn ein DEEP-Feld nur in der Basis-openDetail gerendert wird,
+  // die v6-Überschreibung es aber nicht kennt (stiller Inhaltsverlust).
+  const rt2Missing = Object.keys(DEEP).filter(k => DEEP[k].rt2).filter(k => {
+    w.openDetail(k);
+    return !d.getElementById("ovbody").innerHTML.includes(DEEP[k].rt2.head[0]);
+  });
+  const rt2Count = Object.keys(DEEP).filter(k => DEEP[k].rt2).length;
+  ok("alle " + rt2Count + " Zweittabellen (rt2) werden tatsächlich gerendert", rt2Missing.length === 0, rt2Missing.join(","));
   w.doCloseOverlays();
 
   section("4 · Konventionen (gegen Renderer geprüft)");

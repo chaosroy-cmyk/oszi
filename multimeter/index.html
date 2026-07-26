@@ -525,7 +525,7 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '7.7-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '7.8-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -1244,15 +1244,17 @@ const TESTS = [
 /* ---------- LEITUNG ---------- */
 {
  id:"leitung",cat:"leit",ic:"🧵",nm:"Leitung prüfen",tag:"mm",
- was:"Leitung systematisch auf Unterbrechung, Schluss & Kontaktfehler prüfen.",
- set:{mode:"Durchgang / DC V / Ohm",buchse:"COM + V/Ω"},
- probes:[["r","Leitungsende A"],["b","Leitungsende B / Masse / Plus"]],
- mess:"Sicht/Stecker/Pin-Fit. Durchgang. Schluss gegen Masse, gegen Plus, gegen Nachbarleitung. Wackeltest. Spannungsabfall unter Last.",
- good:"Durchgang ok, kein Schluss, geringer Abfall unter Last, kein Wackelfehler.",
- bad:"OL = Bruch. Schluss zu Masse/Plus/Nachbar. Hoher Abfall = Korrosion/Kontakt.",
- next:"Backprobing statt Durchstechen! Falls durchstechen nötig: danach abdichten.",
- beg:"Schritt für Schritt: ist sie durchgehend, hat sie Schluss, hält sie unter Last? Wackeltest deckt lose Kontakte auf.",
- warn:[["caution","Stecker nicht blind durchstechen. Backprobing (von hinten) verwenden – sonst Korrosion durch undichte Stelle."]]
+ was:"Eine Leitung systematisch auf alle vier möglichen Fehler prüfen: Unterbrechung, Schluss nach Masse, Schluss nach Plus und Übergangswiderstand. Reihenfolge einhalten – jeder Schritt schließt eine Fehlerart aus.",
+ set:{mode:"Durchgang / Ohm (spannungsfrei) → DC V (unter Last)",buchse:"COM + V/Ω"},
+ probes:[["r","Leitungsende A (Stecker abgezogen)"],["b","Leitungsende B – bzw. Masse / Plus / Nachbarader je nach Prüfschritt"]],
+ mess:"Feste Reihenfolge: Sichtprüfung → Pin-Fit → Nullabgleich → Durchgang → Schluss gegen Masse → gegen Plus → gegen Nachbarader → Wackeltest → Spannungsabfall unter Last. Ohm-Schritte NUR spannungsfrei und bei beidseitig getrennter Leitung.",
+ good:"Durchgang nahe 0 Ω (nach Abzug der Messleitungen), kein Schluss gegen Masse/Plus/Nachbarader, stabiler Wert beim Wackeln, geringer Spannungsabfall unter Last.",
+ bad:"OL = Unterbrechung. Niederohmig gegen Masse/Plus/Nachbar = Schluss. Springender Wert = Wackelkontakt. Hoher Abfall unter Last = Übergangswiderstand trotz bestandener Durchgangsprüfung.",
+ next:"Backprobing statt Durchstechen! Falls durchstechen unvermeidbar: Stelle danach abdichten. Fehler gefunden → Prüfung: Kurzschluss gegen Plus/Masse. Kontaktverlust unter Last → Prüfung: Spannungsabfall messen.",
+ beg:"Stell dir die Leitung wie einen Gartenschlauch vor. Vier Dinge können kaputt sein: (1) Er ist durchtrennt – hinten kommt nichts an. (2) Er hat ein Loch nach unten – das Wasser läuft vorher ab, das ist der Schluss nach Masse. (3) Ein fremder Schlauch ist angeschlossen und drückt mit rein – das ist der Schluss nach Plus. (4) Er ist irgendwo gequetscht – hinten kommt etwas an, aber viel zu wenig. Genau diese vier Fälle prüfst du der Reihe nach durch. Der wichtigste Merksatz: Der Piepton beweist nur, dass überhaupt eine Verbindung da ist. Ob sie auch richtig Strom trägt, zeigt erst die Messung mit eingeschaltetem Verbraucher.",
+ warn:[["caution","Stecker nicht blind durchstechen. Backprobing (von hinten) verwenden – sonst Korrosion durch undichte Stelle."],
+       ["info","Merksatz für die Ausbildung: Durchgang beweist eine Verbindung, nicht deren Belastbarkeit. Erst der Spannungsabfall unter Last entscheidet, ob die Leitung ihre Aufgabe erfüllt."],
+       ["info","Reihenfolge einhalten: Erst spannungsfrei alle vier Ohm-Prüfungen (Unterbrechung, Masse, Plus, Nachbarader), danach unter Last. Wer mit dem Spannungsabfall beginnt, misst bei einer unterbrochenen Leitung ins Leere."]]
 },
 {
  id:"ruhestrom",cat:"strom",ic:"😴",nm:"Ruhestrom messen",tag:"gef",
@@ -2152,6 +2154,27 @@ const DEEP = {
 },
 /* ===== LEITUNG ===== */
 "leitung":{
+ /* PRÜFEN: ausführliche Lern-Anleitung ergänzt (v7.8). Enthält keine neuen
+    Zahlenwerte – 0,1–0,5 Ω und < 0,2 V stammen aus bestehenden Karten. */
+ anl:["<b>1 · Auftrag klären.</b> Schaltplan öffnen und beide Enden der Leitung eindeutig bestimmen: Steckerbezeichnung, Pin-Nummer, Aderfarbe. Wer nur nach Farbe sucht, misst früher oder später die falsche Ader – Farben wiederholen sich im Kabelbaum.",
+   "<b>2 · Spannungsfrei machen.</b> Zündung aus, Leitung an <b>beiden</b> Enden abziehen. Grund: Solange noch Steuergeräte, Sensoren oder Verbraucher angeschlossen sind, misst du deren Innenwiderstand parallel mit und erhältst zu niedrige Werte. Ohm- und Durchgangsmessung niemals an spannungsführenden Leitungen.",
+   "<b>3 · Nullabgleich – der wichtigste Anfängerschritt.</b> Messgerät auf Ohm, beide Messspitzen fest zusammenhalten. Angezeigt werden typisch 0,1–0,5 Ω: das ist der Eigenwiderstand deiner Messleitungen, nicht der des Fahrzeugs. Diesen Wert merken und später abziehen. Springt der Wert beim Biegen der Messleitung, ist dein Messkabel defekt – tausche es, bevor du weitermisst.",
+   "<b>4 · Sichtprüfung.</b> Leitung über die ganze Länge abfahren: Scheuerstellen an Karosseriekanten, Quetschungen unter Halterungen, verhärtete oder verfärbte Isolierung (Hitze), Marderbiss, Grünspan und Feuchtigkeit im Stecker, angeschmorte Pins. Sehr viele Leitungsfehler sind sichtbar, bevor man überhaupt misst.",
+   "<b>5 · Pin-Fit prüfen.</b> Passenden Gegenpin oder eine Prüfnadel vorsichtig in die Kontaktbuchse stecken und wieder herausziehen. Der Widerstand beim Ziehen muss spürbar sein. Rutscht der Pin ohne Kraft heraus, ist die Kontaktfeder aufgeweitet – die Verbindung hält im Stand, fällt aber unter Last oder Vibration aus. Das ist ein Fehler, den keine Ohm-Messung findet.",
+   "<b>6 · Fehler 1: Unterbrechung.</b> Eine Messspitze an Ende A, die andere an Ende B. Ergebnis nahe 0 Ω (nach Abzug aus Schritt 3) = Leitung ist durchgehend. OL bzw. kein Piepton = Unterbrechung. Bei langen Leitungen im Fahrzeug: Verlängerungskabel oder zweite Person nutzen, damit man beide Enden erreicht.",
+   "<b>7 · Fehler 2: Schluss nach Masse.</b> Eine Spitze an ein Leitungsende, die andere an blanke Karosseriemasse oder Batterieminus. Erwartung: OL bzw. hochohmig. Niederohmig = die Leitung berührt irgendwo Masse. Typische Ursache ist eine durchgescheuerte Isolierung – dieser Fehler lässt Sicherungen fliegen.",
+   "<b>8 · Fehler 3: Schluss nach Plus.</b> Gleiche Messung gegen eine Plusleitung bzw. Batterieplus. Vorsicht: Diese Prüfung nur an der getrennten, spannungsfreien Leitung durchführen. Niederohmig = Fremdeinspeisung aus einer benachbarten Ader.",
+   "<b>9 · Fehler 4: Schluss gegen Nachbarader – wird am häufigsten vergessen.</b> Im selben Kabelbaum jede benachbarte Ader gegen die Prüfader messen. Zwei durchgescheuerte Adern, die sich berühren, erzeugen unlogische Fehlerbilder: Ein Verbraucher schaltet mit, ein Sensorwert springt beim Betätigen eines ganz anderen Bauteils.",
+   "<b>10 · Wackeltest.</b> Messgerät auf Durchgang am Leitungsende lassen und dabei den Kabelbaum abschnittsweise bewegen, biegen und daran klopfen – besonders an Türübergängen, Heckklappenscharnieren und am Übergang Motor/Karosserie. Ein springender Wert oder aussetzender Piepton lokalisiert einen Teilbruch, der im Ruhezustand nicht messbar ist.",
+   "<b>11 · Der eigentliche Beweis: Spannungsabfall unter Last.</b> Leitung wieder anschließen, Verbraucher einschalten. Rote Spitze an den Anfang der Leitung, schwarze an das Ende – gemessen wird der Verlust auf genau dieser Strecke, Zielwert unter 0,2 V. Nur dieser Schritt entlarvt einen Übergangswiderstand: Eine korrodierte Klemme kann im Durchgangstest sauber piepen und trotzdem unter Last die halbe Spannung verheizen.",
+   "<b>12 · Reparieren und dokumentieren.</b> Schadstelle großzügig freilegen, Leitung fachgerecht verbinden (Crimpverbinder mit Schrumpfschlauch, Querschnitt beibehalten) und gegen erneutes Scheuern schützen. Danach denselben Spannungsabfall erneut messen und mit dem Wert von vorher vergleichen – erst dann ist die Reparatur belegt."],
+ rt2:{title:"Lernübersicht: die vier Leitungsfehler",head:["Fehlerart","Messbefund","Typisches Symptom am Fahrzeug"],rows:[
+   ["Unterbrechung","OL / kein Piepton zwischen A und B","Verbraucher tot, Sensor meldet Anschlagwert"],
+   ["Schluss nach Masse","niederohmig gegen Karosserie/Bat−","Sicherung fliegt, Signal hängt auf 0 V"],
+   ["Schluss nach Plus","niederohmig gegen Plusleitung","Verbraucher läuft dauerhaft, Signal zu hoch"],
+   ["Schluss gegen Nachbarader","niederohmig zwischen zwei Adern","zwei Funktionen beeinflussen sich gegenseitig"],
+   ["Übergangswiderstand","Durchgang ok, aber Abfall unter Last hoch","funktioniert schwach, wird warm, fällt sporadisch aus"]],
+   note:"Die ersten vier Fehler findet man spannungsfrei mit Ohm. Der fünfte – der Übergangswiderstand – ist der häufigste in der Praxis und lässt sich NUR unter Last nachweisen. Deshalb endet die Prüfung nie beim Piepton."},
  rt:{head:["Prüfung","Befund OK","Fehlerbild"],rows:[
    ["Durchgang","~0 Ω","OL = Bruch"],["Schluss gegen Masse","OL (kein Schluss)","niederohmig = Schluss"],
    ["Schluss gegen Plus","kein Schluss","Spannung wo keine sein soll"],
@@ -2162,11 +2185,16 @@ const DEEP = {
       ["Korrosion/Wassereintritt im Stecker","Übergangswiderstand","h"],
       ["Aufgeweiteter Pin (Pin-Fit)","Wackelkontakt unter Last","h"],
       ["Marderbiss","sichtbare Beschädigung","m"]],
- fs:[{s:"1 Sichtprüfung",do:"Stecker, Scheuerstellen, Korrosion, Marder",ok:"sauber → weiter",ng:"Schaden → reparieren"},
-     {s:"2 Pin-Fit",do:"Steckkontakt auf Klemmkraft prüfen",ok:"fest → weiter",ng:"aufgeweitet → Kontakt erneuern"},
-     {s:"3 Durchgang & Schluss",do:"Spannungsfrei: Durchgang, Schluss gg. Masse/Plus/Nachbar",ok:"ok → weiter",ng:"Bruch/Schluss → orten"},
-     {s:"4 Spannungsabfall",do:"Unter Last messen",ok:"< 0,2 V → ok",ng:"hoch → Korrosion/Kontakt"},
-     {s:"5 Wackeltest",do:"Beim Messen Leitung bewegen (Bereiche)",ok:"stabil → ok",ng:"Aussetzer → Stelle eingrenzen"}]
+ fs:[{s:"1 Vorbereiten",do:"Schaltplan: beide Enden nach Stecker und Pin bestimmen, Zündung aus, beidseitig abziehen",ok:"Leitung isoliert → weiter",ng:"Enden unklar → nicht messen, erst Schaltplan"},
+     {s:"2 Nullabgleich",do:"Messspitzen zusammenhalten, Eigenwiderstand (0,1–0,5 Ω) merken",ok:"Wert stabil → weiter",ng:"springt beim Biegen → Messleitung defekt, tauschen"},
+     {s:"3 Sichtprüfung & Pin-Fit",do:"Scheuerstellen, Quetschung, Hitze, Grünspan; Klemmkraft der Kontakte prüfen",ok:"sauber und fest → weiter",ng:"Schaden/aufgeweiteter Pin → instand setzen"},
+     {s:"4 Unterbrechung",do:"Durchgang Ende A ↔ Ende B",ok:"nahe 0 Ω → durchgehend",ng:"OL → Bruch orten (Wackeltest, Abschnitte halbieren)"},
+     {s:"5 Schluss gegen Masse",do:"Ohm Leitung ↔ Karosseriemasse/Bat−",ok:"hochohmig → kein Masseschluss",ng:"niederohmig → Scheuerstelle suchen"},
+     {s:"6 Schluss gegen Plus",do:"Ohm Leitung ↔ Plusleitung, spannungsfrei",ok:"hochohmig → kein Plusschluss",ng:"niederohmig → Fremdeinspeisung orten"},
+     {s:"7 Schluss gegen Nachbarader",do:"Jede benachbarte Ader im selben Strang gegenmessen",ok:"hochohmig → sauber getrennt",ng:"niederohmig → beide Adern durchgescheuert"},
+     {s:"8 Wackeltest",do:"Auf Durchgang messen und Kabelbaum abschnittsweise bewegen/klopfen",ok:"Wert stabil → kein Teilbruch",ng:"Aussetzer → Stelle eingrenzen"},
+     {s:"9 Spannungsabfall unter Last",do:"Leitung anschließen, Verbraucher ein, Verlust über die Strecke messen",ok:"< 0,2 V → belastbar",ng:"hoch → Übergangswiderstand trotz Durchgang"},
+     {s:"10 Nachweisen",do:"Nach der Reparatur denselben Spannungsabfall erneut messen",ok:"Wert deutlich gefallen → behoben",ng:"unverändert → Fehlerstelle nicht getroffen"}]
 },
 "ruhestrom":{
  anl:["Alle Verbraucher aus, Zündung aus, Schlüssel raus. Motorhaube ggf. über einen Magnet-/Ersatzschalter „geschlossen“ simulieren, damit die Haubenbeleuchtung/Alarm den Wert nicht verfälscht.",
@@ -3534,6 +3562,8 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
     h+=`<div class="step bad"><div class="lbl"><span class="num">✗</span>Schlechter Wert</div><div class="body">${t.bad}</div></div>`;
     if(d&&d.rt)h+=`<div class="step"><div class="lbl"><span class="num">📊</span>Richtwerte (typisch)</div><div class="body">${deepTableHTML(d.rt)}</div></div>`;
     else if(t.table)h+=`<div class="step"><div class="lbl"><span class="num">📊</span>Richtwerte (typisch)</div><div class="body">${tableHTML(t.table)}</div></div>`;
+    // optionale Zweittabelle (Eingrenzungslogik / Lernübersicht) zusätzlich zu rt
+    if(d&&d.rt2)h+=`<div class="step set"><div class="lbl"><span class="num">🧩</span>${d.rt2.title||'Eingrenzung'}</div><div class="body">${deepTableHTML(d.rt2)}</div></div>`;
     if(d&&d.urs)h+=`<div class="step"><div class="lbl"><span class="num">🔎</span>Häufige Fehlerursachen</div><div class="body">${ursHTML(d.urs)}</div></div>`;
     if(d&&d.fs)h+=`<div class="step next"><div class="lbl"><span class="num">🧭</span>Fehlersuche Schritt für Schritt</div><div class="body">${fsHTML(d.fs)}</div></div>`;
     if(t.calc==='mvdrop')h+=`<div class="step set"><div class="lbl"><span class="num">🧮</span>Rechner</div><div class="body">${calcHTML()}</div></div>`;
