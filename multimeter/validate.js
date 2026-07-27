@@ -153,14 +153,16 @@ const w = dom.window, d = w.document;
   section("7 · Rechner-Regression");
   w.openDetail("ruhestrom-fuse");
   const fEl = d.getElementById("cFuse"), mEl = d.getElementById("cMv"), out = d.getElementById("cOut");
+  const tEl = d.getElementById("cType");
+  const pickType = k => { tEl.value = k; w.onFuseTypeChange(); };
   const pick = label => { fEl.selectedIndex = [...fEl.options].findIndex(o => o.text.startsWith(label)); };
   const run = v => { mEl.value = v; w.calcMvDrop(); return out.textContent; };
-  pick("10 A");
+  pickType("atof"); pick("10 A");
   const r10 = parseFloat(fEl.value);
   // Fester Sollwert laut Abnahmebedingung: 0,77 mV an 10 A = 100 mA.
   // Deckt sich mit dem Littelfuse-Datenblatt (ATOF 287: 10 A = 7,70 mΩ).
   ok("0,77 mV an 10 A ergibt ≈ 100 mA", run("0,77").includes("100 mA"), out.textContent);
-  ok("FUSE_R 10 A entspricht dem Datenblatt (7,70 mΩ)", Math.abs(r10 - 7.70) < 0.01, "ist: " + r10);
+  ok("ATOF 10 A entspricht dem Datenblatt (7,70 mΩ)", Math.abs(r10 - 7.70) < 0.01, "ist: " + r10);
   ok("Komma und Punkt liefern dasselbe Ergebnis", run("2,4") === run("2.4"));
   ok("unplausibler Wert über Nennstrom wird abgefangen", run("200").includes("unplausibel"), out.textContent);
   ok("leere/ungültige Eingabe sauber behandelt", run("").includes("Wert in mV eingeben"));
@@ -214,6 +216,110 @@ const w = dom.window, d = w.document;
   ok("Tab am Ende springt zum Anfang, Shift+Tab am Anfang zum Ende", wrapped && wrappedBack,
      JSON.stringify({wrapped, wrappedBack}));
   w.doCloseOverlays();
+
+
+  section("12 · Semantik: keine universellen Festgrenzen");
+  const src = HTML;
+  // Aktive Diagnosepfade = alles ausserhalb von /* ... */-Kommentaren
+  const active = src.replace(/\/\*[\s\S]*?\*\//g, "");
+  const forbid = [
+    [/unter\s*4,9\s*V/i, "unter 4,9 V"],
+    [/über\s*5,1\s*V/i, "über 5,1 V"],
+    [/>\s*5,2\s*V/i, "> 5,2 V"],
+    [/4,9–5,1\s*V/i, "4,9–5,1 V"]
+  ];
+  const hits = forbid.filter(([re]) => re.test(active)).map(([, n]) => n);
+  ok("keine festen 5-V-Grenzen in aktiven Diagnosepfaden", hits.length === 0, hits.join(", "));
+
+  // 4,75–5,25 V darf nur als gekennzeichnetes Beispiel auftreten, nie als Entscheidungsgrenze
+  const beispielKontext = /(Beispiel|beispielhaft|nicht allgemeingültig|OEM)/;
+  const rangeLines = active.split("\n").filter(l => /4,75–5,25|4,7–5,3/.test(l));
+  const badRange = rangeLines.filter(l => !beispielKontext.test(l));
+  ok("4,75–5,25 V nur als gekennzeichnetes Beispiel, nicht als Entscheidungsgrenze",
+     badRange.length === 0, badRange.map(l => l.trim().slice(0, 60)).join(" | "));
+
+  // Generatorbaum startet mit der Systemart
+  const genStart = TREES["generator-laedt-nicht"].nodes[TREES["generator-laedt-nicht"].start];
+  ok("Generatorbaum beginnt mit der Ladesystemart, nicht mit einer Spannung",
+     /Ladesystemart/i.test(genStart.q || "") && !/\d+,\d+\s*V/.test(genStart.q || ""), genStart.q);
+
+  // 5-V-Baum beginnt mit der OEM-Sollwertfrage
+  const refStart = TREES["5v-kurzschluss"].nodes[TREES["5v-kurzschluss"].start];
+  ok("5-V-Baum beginnt mit der Frage nach dem OEM-Sollbereich",
+     /OEM-Sollbereich/i.test(refStart.q || ""), refStart.q);
+
+  // Gefahrkarten korrekt klassifiziert
+  ["batterie", "raildruck"].forEach(id => {
+    const t = TESTS.find(x => x.id === id);
+    const hasDanger = (t.warn || []).some(x => x[0] === "danger");
+    ok(id + ": sichtbarer Gefahrblock, tag=gef, Risiko hoch",
+       hasDanger && t.tag === "gef" && t.risk === "hoch",
+       JSON.stringify({ danger: hasDanger, tag: t.tag, risk: t.risk }));
+  });
+
+  // MAP ohne universellen KOEO-Spannungswert
+  const mapAll = JSON.stringify(TESTS.find(x => x.id === "map")) + JSON.stringify(DEEP["map"]);
+  ok("MAP enthält keinen universellen KOEO-Spannungswert",
+     !/3,5–4,5\s*V/.test(mapAll), "3,5–4,5 V gefunden");
+
+  // Kein Teiletausch ohne vorgelagerten Bestätigungsschritt
+  const swapBad = [];
+  Object.entries(DEEP).forEach(([k, dd]) => (dd.fs || []).forEach((f, i) => {
+    const txt = (f.ok || "") + " " + (f.ng || "");
+    if (/\btauschen\b/.test(txt) && !/(Gegenprobe|ausschließen|bestätigt|belegt|plausibilisieren|erst)/i.test(txt))
+      swapBad.push(k + " fs#" + (i + 1));
+  }));
+  ok("kein Teiletausch ohne vorherigen Bestätigungsschritt", swapBad.length === 0, swapBad.join(", "));
+
+  // Gefahrenmatrix: danger-Warnungen erscheinen vor der Arbeitsanweisung
+  w.applyBeginner(true);
+  const orderBad = TESTS.filter(t => (t.warn || []).some(x => x[0] === "danger")).filter(t => {
+    w.openDetail(t.id);
+    const html = d.getElementById("ovbody").innerHTML;
+    const iDanger = html.indexOf("warn danger");
+    const iSteps = html.indexOf("Messspitzen anhalten");
+    return iDanger === -1 || (iSteps !== -1 && iDanger > iSteps);
+  }).map(t => t.id);
+  w.applyBeginner(false);
+  ok("alle danger-Warnungen stehen vor der Arbeitsanweisung (auch im Einsteiger-Modus)",
+     orderBad.length === 0, orderBad.join(", "));
+
+  section("13 · Service Worker & Cache-Isolation");
+  const sw = SW;
+  ok("SW löscht nur Caches mit eigenem Präfix", /CACHE_PREFIX/.test(sw) && /startsWith\(CACHE_PREFIX\)/.test(sw));
+  const rootSw = fs.existsSync(path.join(__dirname, "..", "sw.js"))
+    ? fs.readFileSync(path.join(__dirname, "..", "sw.js"), "utf8") : "";
+  ok("Nachbar-App auf demselben Origin löscht ebenfalls präfix-gefiltert",
+     !rootSw || /CACHE_PREFIX/.test(rootSw));
+  const splashInSw = [...HTML.matchAll(/href="(splash-[^"]+)"/g)].map(m => m[1]);
+  ok("alle " + splashInSw.length + " Splash-Assets (Hoch- und Querformat) im Precache",
+     splashInSw.every(f => sw.includes(f)));
+
+  section("14 · Accessibility-Semantik");
+  w.openDetail("masse");
+  const bgInert = ["header", "main", ".botnav"].every(sel => {
+    const el = d.querySelector(sel); return el && el.hasAttribute("inert");
+  });
+  ok("Dialoghintergrund wird inert geschaltet", bgInert);
+  w.doCloseOverlays();
+  const bgLive = ["header", "main", ".botnav"].every(sel => {
+    const el = d.querySelector(sel); return el && !el.hasAttribute("inert");
+  });
+  ok("Hintergrund nach Dialogschluss wieder bedienbar", bgLive);
+  ok("aktive Navigation trägt aria-current", !!d.querySelector(".botnav button[aria-current='page']"));
+  ok("Kategorie-Chips tragen aria-pressed", !!d.querySelector(".chip[aria-pressed]"));
+  const emojiBad = [...d.querySelectorAll(".botnav .bi, .logo")].filter(e => !e.hasAttribute("aria-hidden"));
+  ok("dekorative Emoji sind aria-hidden", emojiBad.length === 0);
+  // Touchziele: Mindestmasse aus dem Stylesheet (jsdom rendert keine Layoutmasse)
+  const cssMin = /\.favbtn\{[^}]*min-width:44px/.test(HTML) && /\.favbtn\{[^}]*min-height:44px/.test(HTML);
+  const backMin = /\.back\{[\s\S]*?width:44px;height:44px/.test(HTML);
+  const navMin = /\.botnav button\{[\s\S]*?min-height:44px/.test(HTML);
+  ok("wesentliche Touchziele mindestens 44x44 CSS-Pixel (WCAG 2.2 SC 2.5.8)",
+     cssMin && backMin && navMin, JSON.stringify({ fav: cssMin, back: backMin, nav: navMin }));
+
+  section("15 · Licht-/Dunkelschema");
+  ok("systemabhängiges helles Farbschema vorhanden",
+     /@media \(prefers-color-scheme: light\)/.test(HTML));
 
   if (notes.length) {
     section("Hinweise (kein Fehler)");

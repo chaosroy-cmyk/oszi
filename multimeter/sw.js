@@ -2,7 +2,7 @@
    © 2026 R.S. – Alle Rechte vorbehalten.
    Precache der App-Shell, network-first für Navigationen (frische index.html),
    cache-first für Assets. CACHE_NAME bei jedem Release erhöhen (passend zu APP_VERSION). */
-const CACHE_NAME = 'kfz-multimeter-profi-v8-0';
+const CACHE_NAME = 'kfz-multimeter-profi-v8-1';
 const ASSETS = [
   './',
   './index.html',
@@ -24,13 +24,39 @@ const ASSETS = [
   './splash-1620x2160.png',
   './splash-1640x2360.png',
   './splash-1668x2388.png',
-  './splash-2048x2732.png'
+  './splash-2048x2732.png',
+  './splash-1334x750.png',
+  './splash-1792x828.png',
+  './splash-2208x1242.png',
+  './splash-2436x1125.png',
+  './splash-2688x1242.png',
+  './splash-2532x1170.png',
+  './splash-2778x1284.png',
+  './splash-2556x1179.png',
+  './splash-2796x1290.png',
+  './splash-2160x1620.png',
+  './splash-2360x1640.png',
+  './splash-2388x1668.png',
+  './splash-2732x2048.png'
 ];
+
+// Kernumfang: muss vollständig gecacht werden, sonst ist die App nicht offlinefähig.
+// Optionale Assets (Splashscreens) werden best effort geladen – cache.addAll ist atomar,
+// ein einziges fehlendes Bild würde sonst die komplette Installation und damit die
+// Offline-Fähigkeit verhindern.
+const CORE_ASSETS = ASSETS.filter(u => !u.includes('splash-'));
+const OPTIONAL_ASSETS = ASSETS.filter(u => u.includes('splash-'));
 
 self.addEventListener('install', event => {
   // Kein skipWaiting hier: der neue Worker wartet, bis der Nutzer das Update
   // im Banner bestätigt (SKIP_WAITING-Message) – kein erzwungener Reload mitten in der Arbeit.
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache =>
+      cache.addAll(CORE_ASSETS).then(() =>
+        Promise.all(OPTIONAL_ASSETS.map(u => cache.add(u).catch(() => {})))
+      )
+    )
+  );
 });
 
 // Cache Storage ist ORIGIN-weit, nicht Scope-weit: Auf einem gemeinsamen Origin
