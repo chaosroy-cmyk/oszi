@@ -4,6 +4,10 @@
 "use strict";
 
 var CACHE = "kfzoszi-v2-2026-07-16";
+// Cache Storage ist ORIGIN-weit, nicht Scope-weit: Unter "/multimeter/" liegt eine
+// zweite App auf demselben Origin. Beim Aufräumen darf deshalb nur gelöscht werden,
+// was zu dieser App gehört – sonst löschen sich beide gegenseitig den Offline-Cache.
+var CACHE_PREFIX = "kfzoszi-";
 var ASSETS = [
   "./",
   "./index.html",
@@ -26,7 +30,9 @@ self.addEventListener("activate", function (e) {
   e.waitUntil(
     caches.keys()
       .then(function (keys) {
-        return Promise.all(keys.filter(function (k) { return k !== CACHE; })
+        return Promise.all(keys.filter(function (k) {
+                                 return k.indexOf(CACHE_PREFIX) === 0 && k !== CACHE;
+                               })
                               .map(function (k) { return caches.delete(k); }));
       })
       .then(function () { return self.clients.claim(); })

@@ -2,7 +2,7 @@
    © 2026 Roy Sperlich – Alle Rechte vorbehalten.
    Precache der App-Shell, network-first für Navigationen (frische index.html),
    cache-first für Assets. CACHE_NAME bei jedem Release erhöhen (passend zu APP_VERSION). */
-const CACHE_NAME = 'kfz-multimeter-profi-v7-9';
+const CACHE_NAME = 'kfz-multimeter-profi-v8-0';
 const ASSETS = [
   './',
   './index.html',
@@ -33,9 +33,19 @@ self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
 });
 
+// Cache Storage ist ORIGIN-weit, nicht Scope-weit: Auf einem gemeinsamen Origin
+// (hier liegt zusätzlich das Oszi-Kompendium unter "/") darf beim Aufräumen nur
+// gelöscht werden, was zu dieser App gehört – sonst löschen sich die Apps
+// gegenseitig den Offline-Cache.
+const CACHE_PREFIX = 'kfz-multimeter-profi-';
+
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k.startsWith(CACHE_PREFIX) && k !== CACHE_NAME)
+            .map(k => caches.delete(k))
+      ))
       .then(() => self.clients.claim())
   );
 });

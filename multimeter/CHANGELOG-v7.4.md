@@ -1,3 +1,66 @@
+# CHANGELOG v7.4 – v8.0
+
+## v8.0 — Externe Fachprüfung: fünf kritische Befunde behoben
+
+Eine unabhängige Prüfung (Gesamtbewertung 6,8/10, „technisch funktionsfähig,
+aber noch nicht fachlich freigabereif") meldete fünf kritische Punkte. Alle
+fünf wurden gegengeprüft, bestätigt und behoben.
+
+### 1 · 5-V-Referenz: Sollbereich zu eng und fälschlich universal
+**4,9–5,1 V** stammte aus einer Vorgabe und war in v7.7/v7.9 über die ganze
+App vereinheitlicht worden (damals als freigabepflichtig markiert).
+Herstellerstrategien lassen typisch **±5 % (4,75–5,25 V)** zu, teils bis
+4,7–5,3 V. Ein zu enger Bereich erklärt intakte Systeme für defekt und führt
+zu unnötigem Sensortausch.
+→ Alle 18 Fundstellen geweitet; die Karten benennen jetzt ausdrücklich die
+Herstellerabhängigkeit und stellen Stabilität und Abweichungsrichtung über
+die zweite Nachkommastelle. Quelle: Ford Diagnostic-Strategie (DOBDSM1701).
+
+### 2 · MAP: universeller Spannungswert entfernt
+„≈ Umgebungsdruck (~3,5–4,5 V)" galt unabhängig vom Sensortyp. Ein
+1-bar-Saugmotorsensor und ein 2,5/3-bar-Ladedrucksensor zeigen bei gleichem
+Druck völlig verschiedene Spannungen – der Wert konnte intakte Varianten als
+defekt erscheinen lassen.
+→ Tabelle auf **Verhalten** umgestellt (fällt im Leerlauf, steigt unter
+Last), Absolutwert nur noch im Vergleich mit Messbereich und
+Fahrzeugvorgabe. Einsteigertext erklärt den Zusammenhang.
+Quelle: Bosch PS-AA Datenblatt.
+
+### 3 · Generator: Widerspruch zur eigenen Profi-Karte aufgelöst
+Die Basiskarte bewertete „≈12 V → lädt nicht", während `generator-lin-bsd`
+variable Spannungen bei intelligentem Lademanagement korrekt als normal
+beschreibt. Die Fehlersuche konnte zum Tausch einer intakten Lichtmaschine
+führen.
+→ Neuer Schritt 0 „Regelungsart klären"; feste Sollwerte gelten ausdrücklich
+nur für konventionell geregelte Generatoren; bei intelligenter Regelung wird
+gegen die Soll-/Ist-Vorgabe der Diagnose bewertet. Querverweis auf die
+Profi-Karte ergänzt. Quelle: HELLA Techworld.
+
+### 4 · Fehlende Gefahrenwarnungen bei Batterie und Raildruck
+Beide Karten hatten keine rot dargestellte `danger`-Warnung.
+→ **Batterie:** Knallgas- und Säuregefahr, Schutzbrille, kein Funke,
+Metallschmuck ablegen (Kurzschluss über Pluspol und Karosserie), Reihenfolge
+beim Ab-/Anklemmen. **Raildruck:** Hochdruck-Injektionsverletzung – der
+Strahl durchdringt Haut und Handschuhe, ein solcher Verdacht gehört sofort
+ins Krankenhaus; nie unter Restdruck öffnen.
+Karten mit `danger`-Warnung: 17 → 19.
+Quellen: GS Yuasa Battery Safety, DENSO Common-Rail-Diagnose.
+
+### 5 · Service Worker löschte fremde Caches (beide Apps betroffen)
+Cache Storage ist **origin-weit, nicht scope-weit**. Beide Service Worker
+löschten beim Aktivieren alles außer dem eigenen Cache. Da das
+Oszi-Kompendium unter „/" und die Multimeter-App unter „/multimeter/" auf
+demselben Origin liegen, zerstörten sich die Apps gegenseitig den
+Offline-Cache – bei jedem Update verlor die jeweils andere App ihre
+Offline-Fähigkeit.
+→ Beide Service Worker löschen nur noch Caches mit eigenem Präfix
+(`kfz-multimeter-profi-` bzw. `kfzoszi-`). Betrifft auch `/sw.js` im
+Wurzelverzeichnis des Repos.
+
+Version 8.0-Profi ↔ Cache v8-0. Validierung: 29/29 bestanden.
+
+---
+
 # CHANGELOG v7.4 – v7.9
 
 ## v7.9 — Stufe A: Lernkarten für die Methodenkarten + Einklapp-Mechanik

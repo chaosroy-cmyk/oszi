@@ -538,7 +538,7 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '7.9-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '8.0-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -650,7 +650,9 @@ const TESTS = [
  good:"Ruhe 12,7 V voll. Laden 13,5–14,8 V. Start nicht unter ~9,6–10 V.",
  bad:"< 12,2 V schwach. Start bricht stark ein = Batterie/Verbindung schwach.",
  next:"Multimeter ersetzt keinen Lasttest! Bei Verdacht → Batterietester/Leitwerttester.",
- beg:"Drei Werte: in Ruhe, beim Starten, beim Laufen. Sacken die Werte stark ab, ist die Batterie oder eine Klemme schwach.",
+ beg:"Drei Werte: in Ruhe, beim Starten, beim Laufen. Sacken die Werte stark ab, ist die Batterie oder eine Klemme schwach. Sicherheit geht vor: Eine Batterie gast beim Laden Wasserstoff aus – das ist explosiv. Kein offenes Feuer, kein Funke, und Ringe und Armbanduhr vorher ablegen: Ein Werkzeug oder Metallschmuck zwischen Pluspol und Karosserie erzeugt sofort einen Kurzschluss mit mehreren hundert Ampere.",
+ warn:[["danger","Batteriesäure ist ätzend und ausgasender Wasserstoff explosiv: Schutzbrille tragen, keine Funken oder offenen Flammen in Batterienähe, Fahrzeug beim Laden belüften. Metallschmuck ablegen – ein Kurzschluss über Pluspol und Karosserie führt zu Verbrennungen und kann die Batterie bersten lassen."],
+       ["caution","Beim Abklemmen zuerst Minus, beim Anklemmen zuletzt Minus. Vor dem Trennen Radio-Code, Fensterheber-/Schiebedach-Normierung und Adaptionen klären."]],
  table:{head:["Ruhespannung","Ladung",""],rows:[
    ["12,7 V","voll","g"],["12,4 V","mittel","w"],["12,2 V","schwach","w"],["< 12,0 V","stark entladen","b"],["Start < 9,6–10 V","kritisch","b"]]}
 },
@@ -660,10 +662,10 @@ const TESTS = [
  set:{mode:"DC Volt / dann AC Volt",buchse:"COM + V/Ω"},
  probes:[["r","Batterie Pluspol"],["b","Batterie Minuspol"]],
  mess:"Ladespannung im Leerlauf und mit Verbrauchern prüfen. AC-Ripple am Multimeter nur als Grobtest bewerten.",
- good:"Ladespannung meist 13,5–14,8 V, je nach intelligenter Regelung auch variabel. AC-Anteil niedrig und plausibel.",
- bad:"Keine Erhöhung beim Start = lädt nicht. Deutlich erhöhter AC-Anteil ist verdächtig, aber MM-abhängig.",
- next:"Plus- & Massespannungsabfall Generator→Batterie prüfen. Moderne Regelung läuft über LIN/BSD – BMS beachten.",
- beg:"Motor an = Spannung muss steigen (Richtung 14 V). Bleibt sie bei 12 V, lädt die Lichtmaschine nicht richtig.",
+ good:"Konventionell geregelt: 13,5–14,8 V. Bei intelligentem Lademanagement (LIN/BSD/BMS) ist eine bewusst schwankende Spannung normal – entscheidend ist, dass sie der Vorgabe des Steuergeräts folgt. AC-Anteil niedrig und plausibel.",
+ bad:"Keine Erhöhung gegenüber der Ruhespannung UND kein Regelbedarf laut Diagnose = lädt nicht. Dauerhaft über ~15 V = Überladung. Deutlich erhöhter AC-Anteil ist verdächtig, aber MM-abhängig.",
+ next:"Vor jeder Defektbewertung klären, ob das Fahrzeug intelligent regelt: Dann Soll-/Ist-Vorgabe und Batteriesensor per Diagnose prüfen, nicht nach fester Spannung urteilen. → Prüfung: Generator LIN/BSD-Regelung. Danach Plus- & Massespannungsabfall Generator→Batterie messen.",
+ beg:"Bei älteren Fahrzeugen gilt einfach: Motor an, Spannung muss auf etwa 14 V steigen. Bei neueren Fahrzeugen stimmt diese Regel nicht mehr – dort entscheidet das Steuergerät je nach Ladezustand, Temperatur und Fahrsituation, wie viel geladen wird. Im Schubbetrieb sind über 15 V normal, bei voller Batterie kann die Spannung bewusst auf Bordspannungsniveau fallen. Deshalb: Erst herausfinden, welche Art von Ladesystem vor dir steht – sonst tauschst du eine intakte Lichtmaschine.",
  warn:[["info","AC-Ripple mit dem Multimeter ist nur ein Grobtest. Viele MM zeigen bei Gleichspannung/Regler-PWM falsche AC-Werte. Sichere Dioden-/Ripplebewertung: Oszilloskop. Intelligente Generatorregelung (BMS/LIN/BSD) kann absichtlich variieren."]]
 },
 {
@@ -710,15 +712,16 @@ const TESTS = [
  set:{mode:"DC Volt (V⎓)",buchse:"COM + V/Ω"},
  probes:[["r","Sensor Versorgungspin"],["b","Sensor-Masse"]],
  mess:"5 V am Sensor prüfen. Fehlt sie: Sensoren nacheinander abstecken. Kommt 5 V zurück → zuletzt abgesteckter verdächtig.",
- /* PRÜFEN: Toleranz auf 4,9–5,1 V vereinheitlicht (war 4,9–5,1 V) – Vorgabe Fachautor */
- good:"4,9–5,1 V stabil.",
+ /* Toleranz herstellerabhängig: typ. ±5 % (4,75–5,25 V), teils bis 4,7–5,3 V.
+    Ein engerer Bereich (z.B. 4,9–5,1 V) erklärt intakte Systeme fälschlich für defekt. */
+ good:"Stabil im Sollbereich des Herstellers – typisch 4,75–5,25 V, je nach Vorgabe auch 4,7–5,3 V.",
  bad:"0 V oder eingebrochen = Kurzschluss nach Masse/Plus oder Versorgung defekt.",
  next:"Auf Schluss nach Masse UND nach Plus prüfen. Sensorversorgung NICHT belasten.",
  beg:"Mehrere Sensoren hängen an derselben 5-V-Leitung. Ein kaputter zieht alle runter → wirkt wie viele Defekte. Einzeln absteckmethode.",
  warn:[["danger","NIE mit Prüflampe auf 5-V-Referenz! Die Lampe belastet die empfindliche Versorgung und kann Sensorwerte/Steuergerät stören."]]
 },
 /* ---------- 5-V-REFERENZ: KURZSCHLUSS-DIAGNOSE ----------
-   PRÜFEN: Kartensatz nach Vorgabe Fachautor (Sollwert 4,9–5,1 V,
+   PRÜFEN: Kartensatz nach Vorgabe Fachautor (Sollwert 4,75–5,25 V,
    Widerstandsschwellen hochohmig kΩ–MΩ vs. ~0 Ω). Siehe REVIEW.md. */
 {
  id:"ref5v-basis",cat:"ref5v",ic:"5️⃣",nm:"5-V-Referenz Grundprüfung",tag:"mm",
@@ -726,7 +729,7 @@ const TESTS = [
  set:{mode:"DC Volt (V⎓)",buchse:"COM + V/Ω"},
  probes:[["r","Referenzpin am SENSORSTECKER (Backprobing)"],["b","Sensor-Masse am selben Stecker"]],
  mess:"Zündung an, Sensor angesteckt. Am Steckerpin messen, nicht am Steuergerät – nur so liegen Leitung, Kontakt und Steckverbindung im Messpfad. Gegenprobe gegen Batterieminus: Differenz zur Messung gegen Sensor-Masse = Masseversatz.",
- good:"4,9–5,1 V stabil, unverändert bei Wackeltest und Lastwechsel.",
+ good:"Wert liegt im Sollbereich des Herstellers (typisch 4,75–5,25 V, teils 4,7–5,3 V) und bleibt bei Wackeltest und Lastwechsel stabil.",
  bad:"Richtung 0 V = Masseschluss oder Überlast. Über 5,1 V Richtung Bordspannung = Plusschluss. Schwankend = Kontakt-/Masseproblem, kein Kurzschluss.",
  next:"Zu niedrig → Prüfung: Kurzschluss nach Masse. Zu hoch → Prüfung: Kurzschluss nach Plus. Gegenüberstellung → Prüfung: Vergleich Masseschluss / Plusschluss.",
  beg:"Die 5 V kommen vom Steuergerät und versorgen mehrere Sensoren. Miss immer am Sensorstecker, nicht am Steuergerät – sonst prüfst du die Leitung dazwischen gar nicht mit. Zu wenig Spannung zieht nach Masse, zu viel kommt von Plus.",
@@ -757,7 +760,7 @@ const TESTS = [
 },
 {
  id:"ref5v-plusschluss",cat:"ref5v",ic:"➕",nm:"Kurzschluss nach Plus (5-V-Referenz)",tag:"gef",
- was:"Referenz liegt über 5,1 V Richtung Bordspannung: Fremdspannung auf der Referenzleitung finden – seltener als der Masseschluss, aber mit Schadenspotenzial für Sensor und Steuergerät.",
+ was:"Referenz liegt über der Fahrzeugvorgabe, Richtung Bordspannung: Fremdspannung auf der Referenzleitung finden – seltener als der Masseschluss, aber mit Schadenspotenzial für Sensor und Steuergerät.",
  set:{mode:"DC Volt, dann Ohm spannungsfrei",buchse:"COM + V/Ω"},
  probes:[["r","Referenzleitung / Referenzpin"],["b","Batterieminus"]],
  mess:"Erst spannungsführend: Referenz gegen Masse bei AUSGESCHALTETER Zündung messen. Liegt hier bereits Spannung an, speist eine Dauerplus-Leitung ein. Dann spannungsfrei: Widerstand zwischen Referenzleitung und der verdächtigen Plusleitung messen – niederohmig = Schluss.",
@@ -863,10 +866,10 @@ const TESTS = [
  set:{mode:"DC Volt (V⎓)",buchse:"COM + V/Ω"},
  probes:[["r","Signalpin"],["b","Sensor-Masse"]],
  mess:"Zündung an: Signal bei Umgebungsdruck. Motor läuft: Signal bei Unterdruck/Last beobachten.",
- good:"Plausibler Wert zum Druck, ändert sich mit Last/Drehzahl.",
- bad:"Fester Wert ohne Reaktion = defekt/Schlauch ab. 0 V/5 V Anschlag = Schluss.",
- next:"5-V-Referenz & Masse prüfen. Unterdruckschlauch checken.",
- beg:"Signal muss sich bewegen, wenn der Motordruck sich ändert. Steht es fest, stimmt was nicht (Sensor oder Schlauch)."
+ good:"Signal folgt dem Druck: fällt im Leerlauf, steigt unter Last. Absolutwert passend zum Messbereich des Sensors und zur Fahrzeugvorgabe.",
+ bad:"Fester Wert ohne Reaktion = defekt/Schlauch ab. Anschlag bei 0 V oder Versorgungsspannung = Schluss/Bruch.",
+ next:"5-V-Referenz & Masse prüfen. Unterdruckschlauch checken. Messbereich des Sensors klären (1 bar Saugmotor vs. 2,5/3 bar Ladedruck), bevor ein Absolutwert bewertet wird.",
+ beg:"Das Signal muss sich bewegen, wenn sich der Druck im Saugrohr ändert – im Leerlauf runter, unter Last hoch. Wichtig: Es gibt keine allgemeingültige Volt-Zahl. Ein Sensor für einen Saugmotor und einer für einen Turbomotor zeigen beim selben Druck völlig verschiedene Spannungen, weil sie unterschiedliche Messbereiche haben. Steht der Wert dagegen fest, stimmt etwas nicht – Sensor oder Schlauch."
 },
 {
  id:"lmm-a",cat:"sensor",ic:"🌀",nm:"Luftmassenmesser (analog)",tag:"mm",
@@ -979,7 +982,9 @@ const TESTS = [
  good:"Plausibles Ruhesignal, steigt mit Druck.",
  bad:"Anschlag 0 V/5 V = Schluss/Unterbrechung. Fester Wert = klemmt.",
  next:"5-V-Referenz & Masse prüfen. Mit Livedaten vergleichen.",
- beg:"Mehr Druck = höhere Signalspannung. In Ruhe niedrig, beim Laufen höher. Klebt der Wert am Anschlag, ist was kaputt."
+ beg:"Mehr Druck = höhere Signalspannung. In Ruhe niedrig, beim Laufen höher. Klebt der Wert am Anschlag, ist was kaputt. Ganz wichtig: Du misst hier nur die Elektrik. Am Hochdruckteil selbst wird nichts geöffnet oder gelöst – der Kraftstoff steht dort unter extremem Druck und kann durch die Haut ins Gewebe eindringen, ohne dass man zunächst mehr als einen kleinen Einstich sieht.",
+ warn:[["danger","Common-Rail-Hochdruck: Niemals Leitungen, Verschraubungen oder Injektoren bei laufendem Motor oder unter Restdruck öffnen. Der austretende Strahl durchdringt Haut und Handschuhe und verursacht schwere, zunächst harmlos wirkende Gewebeverletzungen – ein solcher Verdacht gehört sofort ins Krankenhaus. Vor Arbeiten am Hochdruckteil Druckabbau nach Herstellervorgabe abwarten."],
+       ["caution","Diese Prüfung bewertet ausschließlich das elektrische Sensorsignal. Ein plausibles Signal beweist keinen korrekten Raildruck – die Druckmessung selbst erfolgt über Livedaten bzw. nach Herstellerprozedur."]]
 },
 {
  id:"klimadruck",cat:"sensor",ic:"❄️",nm:"Klimadrucksensor",tag:"mm",
@@ -1316,7 +1321,7 @@ const DEEP = {
  anl:["<b>1 · Verstehen, was du misst.</b> Spannung ist kein Wert, den eine Leitung „hat“ – sie besteht immer <b>zwischen zwei Punkten</b>. Das Multimeter zeigt die Differenz zwischen roter und schwarzer Spitze. Deshalb ist die Frage „wie viel Spannung hat die Leitung?“ unvollständig; richtig ist „wie viel Spannung liegt zwischen diesem Punkt und meinem Bezugspunkt?“.",
    "<b>2 · Bezugspunkt bewusst wählen.</b> Für Versorgungsprüfungen die schwarze Spitze direkt an den <b>Batterie-Minuspol</b> legen, nicht an irgendeine Karosseriestelle. Eine schlechte Karosseriemasse verfälscht jede Messung – der Fehler sieht dann nach einem Versorgungsproblem aus, obwohl die Masse schuld ist. Bei Sensoren dagegen gegen die <b>Sensor-Masse</b> messen, sonst bewertest du einen Masseversatz als Sensorfehler.",
    "<b>3 · Messgerät einstellen.</b> DC Volt (V⎓), rote Leitung in V/Ω, schwarze in COM. Kontrolle vor jeder Messung: Steckt die rote Leitung noch in der Ampere-Buchse, ist die nächste Spannungsmessung ein Kurzschluss.",
-   "<b>4 · Erst den Sollwert, dann messen.</b> Schlage im Schaltplan nach, welcher Wert an diesem Punkt in diesem Zustand anliegen muss, und schreibe ihn auf, <b>bevor</b> du misst. Wer erst misst und dann sucht, was passen könnte, redet sich jeden Wert schön. Beispiele aus der Tabelle unten: Batterie in Ruhe 12,6–12,8 V, Klemme 15 ≈ Batteriespannung, Sensorreferenz 4,9–5,1 V.",
+   "<b>4 · Erst den Sollwert, dann messen.</b> Schlage im Schaltplan nach, welcher Wert an diesem Punkt in diesem Zustand anliegen muss, und schreibe ihn auf, <b>bevor</b> du misst. Wer erst misst und dann sucht, was passen könnte, redet sich jeden Wert schön. Beispiele aus der Tabelle unten: Batterie in Ruhe 12,6–12,8 V, Klemme 15 ≈ Batteriespannung, Sensorreferenz 4,75–5,25 V.",
    "<b>5 · Zustand herstellen.</b> Notiere, in welchem Zustand du misst: Zündung aus, Zündung ein, Motor läuft, Startvorgang. Dieselbe Leitung hat je nach Zustand völlig unterschiedliche Sollwerte – ohne Zustandsangabe ist ein Messwert wertlos.",
    "<b>6 · Messen und bewerten.</b> Rote Spitze an den Prüfpunkt, Wert ablesen und mit dem Sollwert aus Schritt 4 vergleichen. 0 V = keine Versorgung oder Unterbrechung davor. Deutlich zu niedrig = Spannungsabfall auf dem Weg dorthin.",
    "<b>7 · Bei 0 V rückwärts zur Quelle.</b> Punkt für Punkt Richtung Sicherung und Relais messen, bis Spannung anliegt. Der letzte spannungslose Abschnitt enthält die Fehlerstelle. Das ist systematisch und schneller als Bauteile auf Verdacht zu tauschen.",
@@ -1324,7 +1329,7 @@ const DEEP = {
    "<b>Merksatz:</b> Spannung ohne Last beweist nur, dass etwas ankommt – nicht, dass es belastbar ist."],
  rt:{head:["Punkt","Sollwert","Bewertung"],rows:[
    ["Batterie Ruhe","12,6–12,8 V","g"],["Zündungsplus Kl.15","≈ Batteriespannung","g"],
-   ["5-V-Referenz","4,9–5,1 V","g"],["Sensor-Versorgung 12 V","≈ Bordspannung","g"],
+   ["5-V-Referenz","4,75–5,25 V","g"],["Sensor-Versorgung 12 V","≈ Bordspannung","g"],
    ["Motor läuft (Laden)","13,5–14,8 V","g"],["Spannung < 11 V im Betrieb","Versorgungsproblem","b"]],
    note:"VAG: Kl.15 oft über Klemmensteuergerät geschaltet (Aufweck-/Nachlauflogik). BMW: viele Verbraucher über FRM/Body-Domain – Kl.15 nicht überall gleich."},
  urs:[["Sicherung/Relais offen","Spannung bricht hinter dem Schaltpunkt weg","h"],
@@ -1488,13 +1493,14 @@ const DEEP = {
    ["Laden Leerlauf","13,5–14,8 V","g"],["Laden + Verbraucher","fällt nicht unter ~13,2 V","g"],
    ["AC-Ripple (AC-V)","niedrig / stabil","g"],["AC-Ripple erhöht","> 100–200 mV verdächtig (MM-abhängig)","b"],
    ["Abfall B+ → Batterie+","< 0,3 V","g"],["Abfall Gehäuse → Bat−","< 0,2 V","g"]],
-   note:"VAG/BMW: intelligente Regelung über LIN/BSD – Spannung schwankt absichtlich (Rekuperation). Nicht jede niedrige Spannung = Defekt. AC-Ripple per MM nur grob; im Fehlerfall Livedaten/Sollwertvorgabe und Oszilloskop prüfen."},
+   note:"Die Werte 13,5–14,8 V gelten für KONVENTIONELL geregelte Generatoren. Bei intelligentem Lademanagement (VAG/BMW u.a. über LIN/BSD mit Batteriesensor) regelt das Steuergerät bewusst variabel: im Schub höher, bei voller Batterie bis auf Bordspannungsniveau herunter. Eine niedrige Spannung ist dort erst dann ein Defekt, wenn sie der Sollwertvorgabe widerspricht – diese steht nur in den Livedaten. AC-Ripple per MM nur grob; im Fehlerfall Oszilloskop."},
  urs:[["Reglerdefekt","keine/zu hohe Ladespannung","h"],
       ["Diodenplatte defekt","erhöhter AC-Ripple, Batterie leer","m"],
       ["LIN-Ansteuerung gestört","Generator regelt nicht (BMS/IBS)","m"],
       ["Keilrippenriemen rutscht","Spannung bricht bei Last ein","m"],
       ["Schlechte B+/Masseleitung","hoher Spannungsabfall","m"]],
- fs:[{s:"1 Ladespannung Leerlauf",do:"DC-V an Batterie, Motor läuft",ok:"13,5–14,8 V → weiter",ng:"≈12 V → Erregung/LIN prüfen"},
+ fs:[{s:"0 Regelungsart klären",do:"Konventioneller Regler oder intelligentes Lademanagement (LIN/BSD, Batteriesensor)?",ok:"konventionell → feste Sollwerte gelten",ng:"intelligent → nur gegen Soll-/Ist-Vorgabe der Diagnose bewerten"},
+     {s:"1 Ladespannung Leerlauf",do:"DC-V an Batterie, Motor läuft",ok:"13,5–14,8 V (konventionell) bzw. plausibel zur STG-Vorgabe → weiter",ng:"≈12 V OHNE Regelvorgabe → Erregung/LIN prüfen; mit Regelvorgabe kein Fehler"},
      {s:"2 Unter Last",do:"Licht/Heckscheibe/Gebläse an",ok:"bleibt stabil → ok",ng:"Bricht ein → Riemen/Regler/Leitung"},
      {s:"3 AC-Ripple",do:"Auf AC-V umschalten, Batterie messen",ok:"niedrig/stabil → unauffällig",ng:"hoch → Dioden/Regler verdächtig; Oszilloskop zur Bestätigung"},
      {s:"4 Leitungsabfall",do:"Spannungsabfall B+→Bat+ und Gehäuse→Bat− unter Last",ok:"niedrig → Leitung ok",ng:"Hoch → Leitung/Masse"},
@@ -1577,20 +1583,20 @@ const DEEP = {
 "ref5v":{
  anl:["MM auf <b>DC Volt</b>. Zündung an (Steuergerät muss versorgt sein), Motor aus reicht meist.",
    "Am betroffenen Sensorstecker den <b>Versorgungspin</b> (Referenz) und die <b>Sensor-Masse</b> identifizieren (Schaltplan). Per <b>Backprobing</b> von hinten kontaktieren, nicht durchstechen.",
-   "Rote Spitze an Referenz, schwarze an Sensor-Masse. Sollwert 4,9–5,1 V.",
+   "Rote Spitze an Referenz, schwarze an Sensor-Masse. Sollwert 4,75–5,25 V.",
    "Fehlt die Spannung oder ist sie eingebrochen: prüfen, ob <b>mehrere</b> Sensoren betroffen sind (sie teilen sich oft eine Referenz).",
    "Verdächtige Sensoren <b>nacheinander abstecken</b>. Kommt die 5 V zurück, sobald ein bestimmter Sensor getrennt ist, ist dieser Sensor (oder seine Signalleitung) der Verursacher – meist interner Schluss.",
    "Bleibt die Referenz auch ohne Sensoren weg: Versorgungsleitung <b>spannungsfrei</b> gegen Masse und gegen Plus auf Kurzschluss prüfen; sonst Steuergeräte-Ausgang.",
    "Wichtig: die Referenz <b>niemals mit einer Prüflampe</b> belasten – das kann das Steuergerät stören oder beschädigen."],
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
-   ["Referenz am Sensor","4,9–5,1 V","g"],["Referenz eingebrochen","< 4,5 V","b"],
+   ["Referenz am Sensor","4,75–5,25 V","g"],["Referenz eingebrochen","< 4,5 V","b"],
    ["Referenz 0 V","Schluss n. Masse / Versorgung weg","b"],["Referenz > 5,2 V","Schluss n. Plus / STG-Fehler","b"]],
    note:"Mehrere Sensoren teilen sich oft EINE Referenz – ein Schluss zieht mehrere Codes. NIE mit Prüflampe belasten."},
  urs:[["Sensor mit internem Schluss","zieht Referenz runter, mehrere Codes","h"],
       ["Signalleitung Schluss n. Masse/Plus","Referenz bricht ein","h"],
       ["Scheuerstelle im Kabelbaum","Schluss gegen Karosserie","m"],
       ["Steuergeräte-Ausgang defekt","Referenz fehlt trotz intakter Sensoren","s"]],
- fs:[{s:"1 Referenz messen",do:"5 V am betroffenen Sensor prüfen",ok:"4,9–5,1 V → Referenz ok, Signal prüfen",ng:"weg/eingebrochen → weiter"},
+ fs:[{s:"1 Referenz messen",do:"5 V am betroffenen Sensor prüfen",ok:"4,75–5,25 V → Referenz ok, Signal prüfen",ng:"weg/eingebrochen → weiter"},
      {s:"2 Mehrere betroffen?",do:"Andere 5-V-Sensoren mitprüfen",ok:"nur einer → Sensor/Leitung dieses Sensors",ng:"mehrere → gemeinsame Referenz"},
      {s:"3 Sensoren einzeln abstecken",do:"Nacheinander trennen, Referenz beobachten",ok:"kommt zurück → letzter Sensor/Leitung schuldig",ng:"bleibt weg → weiter"},
      {s:"4 Schluss lokalisieren",do:"Spannungsfrei Leitung gegen Masse & Plus prüfen",ok:"Schluss gefunden → reparieren",ng:"kein Schluss → STG-Ausgang prüfen"}]
@@ -1605,18 +1611,18 @@ const DEEP = {
    "Abweichungsrichtung entscheidet über den Pfad: Richtung 0 V = Masseschluss oder Überlast, über 5,1 V = Plusschluss.",
    "Vor dem Sensortausch prüfen, ob mehrere Sensoren an derselben Referenz betroffen sind – dann liegt der Fehler in der Versorgung, nicht im einzelnen Sensor."],
  rt:{head:["Zustand","Messwert","Bewertung"],rows:[
-   ["Referenz am Steckerpin","4,9–5,1 V","g"],
+   ["Referenz am Steckerpin","im Herstellersollwert (typ. 4,75–5,25 V)","g"],
    ["Referenz eingebrochen","unter 4,9 V","w"],
    ["Referenz zusammengebrochen","~0 V","b"],
    ["Referenz erhöht","über 5,1 V","b"],
    ["Masseversatz (Sensor-Masse ↔ Bat−)","möglichst nahe 0 mV","g"]],
-   note:"Messpunkt ist der Sensorstecker, nicht das Steuergerät. Mehrere Sensoren teilen sich in der Regel eine Referenz – ein Versorgungsfehler erzeugt mehrere unplausible Werte gleichzeitig."},
+   note:"Der Sollbereich ist herstellerabhängig: Verbreitet ist 5 V ±5 % (4,75–5,25 V), manche Vorgaben lassen 4,7–5,3 V zu. Bewerte deshalb nie die zweite Nachkommastelle, sondern Stabilität und Abweichungsrichtung – und ziehe im Zweifel die Fahrzeugvorgabe heran. Messpunkt ist der Sensorstecker, nicht das Steuergerät. Mehrere Sensoren teilen sich in der Regel eine Referenz – ein Versorgungsfehler erzeugt mehrere unplausible Werte gleichzeitig."},
  urs:[["Sensor mit internem Schluss","zieht die gemeinsame Referenz herunter","h"],
       ["Scheuerstelle im Kabelbaum","Schluss gegen Karosserie","h"],
       ["Übergangswiderstand im Stecker","Wert leicht zu niedrig, schwankend","m"],
       ["Masseversatz im Sensor-Massepfad","Referenz scheinbar falsch, Versorgung intakt","m"],
       ["Steuergeräte-Ausgang defekt","Referenz fehlt trotz intakter Peripherie","s"]],
- fs:[{s:"1 Am Steckerpin messen",do:"Zündung an, Referenz gegen Sensor-Masse",ok:"4,9–5,1 V → Referenz ok, Signalpfad prüfen",ng:"Abweichung → weiter"},
+ fs:[{s:"1 Am Steckerpin messen",do:"Zündung an, Referenz gegen Sensor-Masse",ok:"4,75–5,25 V → Referenz ok, Signalpfad prüfen",ng:"Abweichung → weiter"},
      {s:"2 Bezug absichern",do:"Gegenprobe gegen Batterieminus",ok:"gleicher Wert → Bezug sauber",ng:"Differenz → Sensor-Masse instand setzen"},
      {s:"3 Richtung bestimmen",do:"Liegt der Wert unter oder über dem Sollbereich?",ok:"unter 4,9 V → Masseschluss-Pfad",ng:"über 5,1 V → Plusschluss-Pfad"},
      {s:"4 Umfang klären",do:"Weitere Sensoren an derselben Referenz messen",ok:"nur einer betroffen → Sensor/Stichleitung",ng:"mehrere betroffen → gemeinsame Versorgung"},
@@ -1655,7 +1661,7 @@ const DEEP = {
      {s:"3 Sensoren einzeln trennen",do:"Nacheinander abstecken, nach jedem Schritt messen",ok:"Schluss weg → dieser Sensor defekt",ng:"Schluss bleibt → Kabelbaum"},
      {s:"4 Halbieren",do:"Kabelbaum an mittiger Trennstelle teilen, beide Hälften messen",ok:"Fehlerhälfte gefunden → erneut halbieren",ng:"bis Abschnitt wenige cm lang ist"},
      {s:"5 Klopf-/Wackeltest",do:"Im Verdachtsabschnitt klopfen und ziehen, Ohm beobachten",ok:"Wert springt → Stelle bestätigt",ng:"stabil → Abschnitt weiter eingrenzen"},
-     {s:"6 Instand setzen",do:"Leitung reparieren, abdichten, Scheuerschutz ergänzen",ok:"Referenz wieder 4,9–5,1 V",ng:"Wert weiterhin niedrig → Sensorlast/ECU prüfen"}]
+     {s:"6 Instand setzen",do:"Leitung reparieren, abdichten, Scheuerschutz ergänzen",ok:"Referenz wieder 4,75–5,25 V",ng:"Wert weiterhin niedrig → Sensorlast/ECU prüfen"}]
 },
 "ref5v-plusschluss":{
  anl:["<b>Zuerst spannungsführend prüfen:</b> Zündung AUS, MM auf DC Volt, Referenzleitung gegen Batterieminus messen. Jede messbare Spannung in diesem Zustand beweist eine Einspeisung aus einer Dauerplus-Leitung.",
@@ -1664,14 +1670,14 @@ const DEEP = {
    "<b>Dann spannungsfrei:</b> Widerstand zwischen Referenzleitung und der verdächtigen Plusleitung messen. Niederohmig = Schluss zwischen beiden Adern.",
    "Eingrenzung wie beim Masseschluss: Sensoren einzeln abstecken, danach Kabelbaum halbieren, Klopf- und Wackeltest im Verdachtsabschnitt.",
    "<b>Parallelverlegung beachten:</b> Der Schluss entsteht fast immer dort, wo die Referenz über eine längere Strecke gemeinsam mit Verbraucherleitungen verlegt ist – Lüfter, Beleuchtung, Relais- und Motorleitungen. Bevorzugt an Scheuerstellen, Quetschungen und in feuchten Steckern suchen.",
-   "<b>Nach der Reparatur:</b> Referenz erneut unter Zündung messen (4,9–5,1 V), Fehlerspeicher löschen und die Livedaten ALLER Sensoren an dieser Referenz auf Plausibilität prüfen. Ein vorgeschädigter Sensor oder ein beschädigter Steuergeräteausgang zeigt sich sonst erst später im Fahrbetrieb."],
+   "<b>Nach der Reparatur:</b> Referenz erneut unter Zündung messen (4,75–5,25 V), Fehlerspeicher löschen und die Livedaten ALLER Sensoren an dieser Referenz auf Plausibilität prüfen. Ein vorgeschädigter Sensor oder ein beschädigter Steuergeräteausgang zeigt sich sonst erst später im Fahrbetrieb."],
  rt:{head:["Prüfschritt","Befund","Bewertung"],rows:[
    ["Zündung aus: Referenz ↔ Masse","0 V","g"],
    ["Zündung aus: Referenz ↔ Masse","Spannung liegt an","b"],
    ["Verbraucher einschalten","Referenz steigt mit","b"],
    ["Spannungsfrei: Referenz ↔ Verdachtsleitung","hochohmig","g"],
    ["Spannungsfrei: Referenz ↔ Verdachtsleitung","niederohmig","b"],
-   ["Nach Reparatur: Referenz, Zündung an","4,9–5,1 V","g"]],
+   ["Nach Reparatur: Referenz, Zündung an","4,75–5,25 V","g"]],
    note:"Seltener als der Masseschluss, aber mit Schadenspotenzial: Fremdspannung kann Sensor und Steuergeräteausgang zerstören. Schluss gegen geschaltetes Plus wird nur sichtbar, wenn der betreffende Verbraucher aktiv ist – deshalb Verbraucher gezielt durchschalten."},
  urs:[["Scheuerstelle zu parallel verlegter Verbraucherleitung","Lüfter, Beleuchtung, Relaisausgang","h"],
       ["Wasser/Grünspan im gemeinsamen Stecker","Brücke zwischen Referenz und Plusader","h"],
@@ -1682,7 +1688,7 @@ const DEEP = {
      {s:"2 Geschaltetes Plus prüfen",do:"Verbraucher einzeln einschalten, Referenz beobachten",ok:"Wert bleibt → kein geschalteter Schluss",ng:"Wert steigt → Leitung dieses Verbrauchers verfolgen"},
      {s:"3 Spannungsfrei gegenmessen",do:"Ohm Referenz ↔ Verdachtsleitung",ok:"hochohmig → anderen Verdacht prüfen",ng:"niederohmig → Schluss bestätigt"},
      {s:"4 Eingrenzen",do:"Sensoren einzeln trennen, dann Kabelbaum halbieren",ok:"Abschnitt gefunden",ng:"Klopf-/Wackeltest im Verdachtsbereich"},
-     {s:"5 Instand setzen",do:"Adern trennen und abdichten, Scheuerschutz ergänzen",ok:"Referenz wieder 4,9–5,1 V",ng:"weiterhin erhöht → ECU-Ausgang prüfen"},
+     {s:"5 Instand setzen",do:"Adern trennen und abdichten, Scheuerschutz ergänzen",ok:"Referenz wieder 4,75–5,25 V",ng:"weiterhin erhöht → ECU-Ausgang prüfen"},
      {s:"6 Folgeschaden prüfen",do:"Fehlerspeicher löschen, Livedaten aller Sensoren dieser Referenz bewerten",ok:"alle plausibel → abgeschlossen",ng:"Ausreißer → Sensor bzw. Steuergerät weiter prüfen"}]
 },
 "ref5v-vergleich":{
@@ -1783,11 +1789,13 @@ const DEEP = {
      {s:"4 Wackeltest",do:"Stecker/Kabel bewegen",ok:"stabil → ok",ng:"Aussetzer → Kontakt/Leitung"}]
 },
 "map":{
- rt:{head:["Zustand","Signal (typ.)","Bewertung"],rows:[
-   ["Zündung an, Motor aus","≈ Umgebungsdruck (~3,5–4,5 V abh. STG)","g"],
-   ["Leerlauf (Unterdruck)","niedriger","g"],["Volllast/Ladedruck","hoch (Richtung 4,5 V)","g"],
-   ["0 V / 5 V Anschlag","Schluss/Bruch","b"]],
-   note:"VAG TFSI/TSI: MAP oft als Lade-/Saugrohrdruck kombiniert mit Temp. Schlauch/Dichtung häufige Fehlerquelle."},
+ rt:{head:["Zustand","Erwartetes Verhalten","Bewertung"],rows:[
+   ["Zündung an, Motor aus","Signal entspricht dem Umgebungsdruck – Absolutwert je nach Messbereich des Sensors","g"],
+   ["Leerlauf (Unterdruck)","fällt deutlich ab","g"],
+   ["Volllast / Ladedruck","steigt deutlich an","g"],
+   ["Signal ändert sich nicht mit der Last","Sensor/Schlauch prüfen","b"],
+   ["0 V oder Versorgungsspannung als Anschlag","Schluss/Bruch","b"]],
+   note:"KEIN universeller Spannungswert: Der Absolutwert hängt vom Messbereich des Sensors ab. Ein 1-bar-Sensor (Saugmotor) zeigt bei Umgebungsdruck nahe dem oberen Ende seiner Kennlinie, ein 2,5- oder 3-bar-Ladedrucksensor bei demselben Druck deutlich weniger – beides ist korrekt. Bewerte deshalb den VERLAUF (fällt im Leerlauf, steigt unter Last) und vergleiche den Absolutwert mit der Fahrzeugvorgabe oder dem Barometerwert in den Livedaten. VAG TFSI/TSI: MAP oft mit Temperatursensor kombiniert; Schlauch/Dichtung häufige Fehlerquelle."},
  urs:[["Unterdruck-/Druckschlauch ab oder rissig","Signal reagiert nicht","h"],
       ["Sensor verschmutzt (Öl)","träge/falsch","m"],["Referenz/Masse-Problem","verschoben","m"],
       ["Signalleitung Schluss/Bruch","Anschlagwert","m"]],
@@ -2389,7 +2397,7 @@ const TREES = {
  ]},
  "sensor-unplausibel":{title:"Sensorwert unplausibel",start:0,nodes:[
    {q:"Ist die Sensorversorgung (z.B. 5 V) vorhanden?",opts:[
-     {t:"Nein / eingebrochen",go:1},{t:"Ja, 4,9–5,1 V",go:2}]},
+     {t:"Nein / eingebrochen",go:1},{t:"Ja, 4,75–5,25 V",go:2}]},
    {r:"→ Entscheidungsbaum / Prüfung: 5-V-Referenz fehlt."},
    {q:"Ist die Sensor-Masse gut (unter Last nahe 0 V)?",opts:[
      {t:"Nein, Masseversatz",go:3},{t:"Ja",go:4}]},
@@ -2401,7 +2409,7 @@ const TREES = {
  ]},
  "5v-kurzschluss":{title:"5-V-Referenz: Masse- oder Plusschluss",start:0,nodes:[
    {q:"Referenz am Sensorstecker messen (Zündung an) – welcher Wert steht an?",opts:[
-     {t:"4,9–5,1 V",go:1},{t:"Richtung 0 V",go:2},{t:"über 5,1 V Richtung Bordspannung",go:3},{t:"schwankend / leicht zu niedrig",go:4}]},
+     {t:"4,75–5,25 V",go:1},{t:"Richtung 0 V",go:2},{t:"über der Fahrzeugvorgabe, Richtung Bordspannung",go:3},{t:"schwankend / leicht zu niedrig",go:4}]},
    {r:"Referenz in Ordnung. Fehler im Signalpfad oder im Sensor selbst weitersuchen. → Prüfung: 5-V-Referenz Grundprüfung."},
    {q:"Spannungsfrei, alle Sensoren abgesteckt: Ohm Referenz ↔ Masse?",opts:[
      {t:"nahe 0 Ω",go:5},{t:"hochohmig (kΩ–MΩ / OL)",go:6}]},
