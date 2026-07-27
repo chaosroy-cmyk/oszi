@@ -2,7 +2,7 @@
    © 2026 R.S. – Alle Rechte vorbehalten.
    Precache der App-Shell, network-first für Navigationen (frische index.html),
    cache-first für Assets. CACHE_NAME bei jedem Release erhöhen (passend zu APP_VERSION). */
-const CACHE_NAME = 'kfz-multimeter-profi-v8-1';
+const CACHE_NAME = 'kfz-multimeter-profi-v8-2-1';
 const ASSETS = [
   './',
   './index.html',
@@ -78,6 +78,12 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('message', event => {
   const d = event.data;
+  if (d && d.type === 'GET_VERSION') {
+    const reply = { type: 'VERSION', cacheName: CACHE_NAME };
+    if (event.ports && event.ports[0]) event.ports[0].postMessage(reply);
+    else if (event.source) event.source.postMessage(reply);
+    return;
+  }
   if (d === 'SKIP_WAITING' || (d && d.type === 'SKIP_WAITING')) self.skipWaiting();
 });
 

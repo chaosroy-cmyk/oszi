@@ -78,26 +78,6 @@ body{
   min-height:100vh;
 }
 
-/* ---------- Helles Farbschema (systemabhängig) ---------- */
-@media (prefers-color-scheme: light){
-  :root{
-    --bg:#f6f7f9; --bg2:#ffffff; --card:#ffffff; --card2:#eef1f5;
-    --line:#c9d1dc; --txt:#14181f; --txt2:#4d5766;
-    --acc:#8a5a00; --acc2:#a06600;
-    --grn:#1a7f37; --red:#b3261e; --blu:#0b5fbf; --warn:#8a6100;
-  }
-  body{background:var(--bg);color:var(--txt)}
-  header{background:linear-gradient(180deg,#ffffff 70%,rgba(255,255,255,.96))}
-  .tile{background:linear-gradient(145deg,#ffffff,#f2f4f7)}
-  .logo,.ib-ic{background:linear-gradient(135deg,#ffb000,#ff8a00)}
-  .chip.active{background:var(--acc);color:#fff;border-color:var(--acc)}
-  .step .lbl .num{color:#fff}
-  .warn.danger{background:#fdecea;border-color:#e5a29c;color:#7d1a14}
-  .warn.caution{background:#fdf3e0;border-color:#e0c48a;color:#6b4b00}
-  .warn.info{background:#e8f1fd;border-color:#a8c8ee;color:#0a3f7d}
-  .beg-explain .step{background:#f3edff}
-  .toast{background:#ffffff;color:var(--txt)}
-}
 /* ---------- Header ---------- */
 header{
   position:sticky;top:0;z-index:50;
@@ -490,6 +470,38 @@ body.beginner .beg-banner{display:flex}
 .checkitem.no .ci{background:rgba(248,81,73,.16);color:var(--red)}
 .checkitem.warn .ci{background:rgba(210,153,34,.16);color:var(--warn)}
 
+/* ---------- Helles Farbschema: absichtlich als letzter CSS-Block ----------
+   Die Basisregeln stehen weiter oben. Dadurch kann die Kaskade diese
+   Kontrastregeln nicht erneut überschreiben. */
+@media (prefers-color-scheme: light){
+  :root{
+    color-scheme:light;
+    --bg:#f4f6f8;--bg2:#ffffff;--card:#ffffff;--card2:#e9edf2;
+    --line:#b8c1ce;--txt:#151a21;--txt2:#4c5868;
+    --acc:#754800;--acc2:#934f00;
+    --grn:#12652b;--red:#a31d17;--blu:#075a9f;--warn:#744d00;
+  }
+  body{background:var(--bg);color:var(--txt)}
+  header{
+    background:linear-gradient(180deg,#ffffff 70%,rgba(255,255,255,.98));
+    box-shadow:0 2px 14px rgba(25,35,48,.16);
+  }
+  .tile{background:linear-gradient(145deg,#ffffff,#eef2f6)}
+  .logo,.ib-ic{background:linear-gradient(135deg,#ffb000,#e87900)}
+  .chip.active,.step .lbl .num,.ib-btn{background:var(--acc);color:#fff;border-color:var(--acc)}
+  .step.set .lbl .num,.update-banner .ib-btn{background:var(--blu);color:#fff}
+  .beg-explain .step{background:#f3edff}
+  .beg-explain .step .lbl,.beg-explain .step .lbl .num,.beg-banner,.beg-banner b{color:#5a299c}
+  .beg-explain .step .lbl .num{background:#6f42c1;color:#fff}
+  .toast{background:#ffffff;color:var(--txt);box-shadow:0 6px 22px rgba(25,35,48,.18)}
+  .toast.beg{color:#5a299c}
+  .warn.danger{background:#fdecea;border-color:#d99a95;color:#761712}
+  .warn.caution{background:#fff3dd;border-color:#d5b879;color:#644400}
+  .warn.info{background:#e8f1fd;border-color:#9dbfe7;color:#083d70}
+  .install-banner{box-shadow:0 6px 22px rgba(25,35,48,.18)}
+  .xref{background:#fff4dc;border-color:#b77a13}
+}
+
 </style>
 </head>
 <body>
@@ -576,7 +588,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.1-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '8.2.1-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-2-1';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -687,10 +700,10 @@ const TESTS = [
  set:{mode:"DC Volt / dann AC Volt",buchse:"COM + V/Ω"},
  probes:[["r","Batterie Pluspol"],["b","Batterie Minuspol"]],
  mess:"Ladespannung im Leerlauf und mit Verbrauchern prüfen. AC-Ripple am Multimeter nur als Grobtest bewerten.",
- good:"Konventionell geregelt: 13,5–14,8 V. Bei intelligentem Lademanagement (LIN/BSD/BMS) ist eine bewusst schwankende Spannung normal – entscheidend ist, dass sie der Vorgabe des Steuergeräts folgt. AC-Anteil niedrig und plausibel.",
- bad:"Keine Erhöhung gegenüber der Ruhespannung UND kein Regelbedarf laut Diagnose = lädt nicht. Dauerhaft über ~15 V = Überladung. Deutlich erhöhter AC-Anteil ist verdächtig, aber MM-abhängig.",
+ good:"Konventionell geregelt: Spannung hält den fahrzeugspezifischen Sollbereich. Bei intelligentem Lademanagement (LIN/BSD/BMS) ist eine bewusst schwankende Spannung normal – entscheidend ist, dass Istwert, Anforderung, Batteriestrom, Temperatur und Ladezustand zusammenpassen. AC-Anteil niedrig und stabil.",
+ bad:"Istwert folgt der Anforderung nicht, die Batterie wird trotz bestätigtem Ladebedarf nicht geladen oder der OEM-Überladungsgrenzwert wird überschritten. Ein erhöhter AC-Anteil ist nur ein Diodenverdacht und muss mit dem Oszilloskop bestätigt werden.",
  next:"Vor jeder Defektbewertung klären, ob das Fahrzeug intelligent regelt: Dann Soll-/Ist-Vorgabe und Batteriesensor per Diagnose prüfen, nicht nach fester Spannung urteilen. → Prüfung: Generator LIN/BSD-Regelung. Danach Plus- & Massespannungsabfall Generator→Batterie messen.",
- beg:"Bei älteren Fahrzeugen gilt einfach: Motor an, Spannung muss auf etwa 14 V steigen. Bei neueren Fahrzeugen stimmt diese Regel nicht mehr – dort entscheidet das Steuergerät je nach Ladezustand, Temperatur und Fahrsituation, wie viel geladen wird. Im Schubbetrieb sind über 15 V normal, bei voller Batterie kann die Spannung bewusst auf Bordspannungsniveau fallen. Deshalb: Erst herausfinden, welche Art von Ladesystem vor dir steht – sonst tauschst du eine intakte Lichtmaschine.",
+ beg:"Bei konventionellen Systemen steigt die Spannung bei laufendem Motor typischerweise über die Ruhespannung. Bei intelligent geregelten Fahrzeugen reicht diese Faustregel nicht: Das Steuergerät entscheidet nach Ladezustand, Temperatur und Fahrsituation. Deshalb zuerst Systemart und Sollanforderung klären – sonst tauschst du eine intakte Lichtmaschine.",
  warn:[["info","AC-Ripple mit dem Multimeter ist nur ein Grobtest. Viele MM zeigen bei Gleichspannung/Regler-PWM falsche AC-Werte. Sichere Dioden-/Ripplebewertung: Oszilloskop. Intelligente Generatorregelung (BMS/LIN/BSD) kann absichtlich variieren."]]
 },
 {
@@ -1429,10 +1442,10 @@ const DEEP = {
    "Bei unbekannter Höhe immer im <b>größten Bereich</b> (10 A) beginnen und erst dann herunterschalten.",
    "Nach der Messung die rote Leitung <b>sofort zurück in die V/Ω-Buchse</b> stecken – sonst droht beim nächsten Spannungsmessen ein Kurzschluss.",
    "Für hohe oder Dauerströme besser eine <b>Stromzange</b> verwenden: kein Auftrennen, kein Sicherungsrisiko."],
- rt:{head:["Messung","Richtwert","Bewertung"],rows:[
-   ["Ruhestrom (Schlaf)","20–50 mA","g"],["Kurz nach Abstellen","bis mehrere A, fällt ab","w"],
-   ["Dauerhaft > 80 mA","verdächtig","b"],["MM-Sicherung A-Bereich","10–20 A typ.","g"]],
-   note:"VAG: Einschlafzeit oft 15–45 min (Gateway/Komfort). BMW: teils > 30 min, einzelne Bus-Weckzyklen möglich."},
+ rt:{head:["Messung","Einordnung","Bewertung"],rows:[
+   ["Ruhestrom nach bestätigtem Schlaf","mit OEM-Soll bzw. dokumentiertem Fahrzeug-Basiswert vergleichen","g"],["Kurz nach Abstellen","hoher und fallender Strom kann durch aktive Steuergeräte normal sein","w"],
+   ["Dauerhaft über OEM-Soll","Verbraucher oder wiederkehrenden Wake-up suchen","b"],["MM-Sicherung A-Bereich","Nennwert am Messgerät prüfen; nicht überschreiten","w"]],
+   note:"20–50 mA wird bei vielen einfachen 12-V-Fahrzeugen als Orientierung genannt, ist aber keine universelle Freigabegrenze. Einschlafzeit und Wake-up-Zyklen sind fahrzeugspezifisch; Herstellerdiagnose hat Vorrang."},
  urs:[["Verbraucher bleibt aktiv","Steuergerät schläft nicht ein","h"],
       ["Nachrüstgerät (Radio, Tracker, Dashcam)","Dauerplus-Abgriff","h"],
       ["Defektes Steuergerät / hängender Bus","weckt das Netz immer wieder","m"],
@@ -1501,9 +1514,9 @@ const DEEP = {
    "Wichtig: Moderne Generatoren (VAG/BMW) regeln über LIN/BSD bewusst variabel (Rekuperation). Eine schwankende Spannung ist nicht automatisch ein Defekt – im Zweifel Soll-/Ist-Vorgabe per Diagnose prüfen."],
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
    ["Laden Leerlauf, konventionell","deutlich über Ruhespannung (Beispiel konventionell geregelter Systeme, keine allgemeingültige Grenze)","g"],["Laden + Verbraucher","hält die angeforderte Spannung","g"],["geregeltes System","Ist folgt der STG-Anforderung","g"],
-   ["AC-Ripple (AC-V)","niedrig / stabil","g"],["AC-Ripple erhöht","> 100–200 mV verdächtig (MM-abhängig)","b"],
-   ["Abfall B+ → Batterie+","< 0,3 V","g"],["Abfall Gehäuse → Bat−","< 0,2 V","g"]],
-   note:"Die Werte 13,5–14,8 V gelten für KONVENTIONELL geregelte Generatoren. Bei intelligentem Lademanagement (VAG/BMW u.a. über LIN/BSD mit Batteriesensor) regelt das Steuergerät bewusst variabel: im Schub höher, bei voller Batterie bis auf Bordspannungsniveau herunter. Eine niedrige Spannung ist dort erst dann ein Defekt, wenn sie der Sollwertvorgabe widerspricht – diese steht nur in den Livedaten. AC-Ripple per MM nur grob; im Fehlerfall Oszilloskop."},
+   ["AC-Ripple (AC-V)","niedrig / stabil; MM nur als Trend verwenden","w"],["Ripple-/Diodenverdacht","mit Oszilloskop und OEM-Prüfbild bestätigen","w"],
+   ["Abfall B+ → Batterie+","mit OEM-Grenze unter definierter Last vergleichen","g"],["Abfall Gehäuse → Bat−","mit OEM-Grenze unter definierter Last vergleichen","g"]],
+   note:"Konventionelle und intelligent geregelte Systeme dürfen nicht mit derselben Spannungsgrenze bewertet werden. HELLA dokumentiert für einzelne Smart-Charge-Systeme 14,8 V und zeitweise höhere Werte; das ist ein Systembeispiel, keine Universalgrenze. AC-Ripple per MM nur grob, Diodenbefund per Oszilloskop."},
  urs:[["Reglerdefekt","keine/zu hohe Ladespannung","h"],
       ["Diodenplatte defekt","erhöhter AC-Ripple, Batterie leer","m"],
       ["LIN-Ansteuerung gestört","Generator regelt nicht (BMS/IBS)","m"],
@@ -1570,22 +1583,22 @@ const DEEP = {
 "masse":{
  anl:["MM auf <b>DC Volt</b>, kleiner Bereich. Den betroffenen Verbraucher <b>einschalten</b> – Massefehler zeigen sich nur unter Last.",
    "Rote Spitze an den <b>Masseanschluss des Verbrauchers</b> (oder den fraglichen Massepunkt), schwarze Spitze direkt an <b>Batterie-Minus</b>.",
-   "Der angezeigte Wert ist der Spannungsabfall über dem Massepfad. Ziel: nahe 0 V (unter 0,2 V).",
+   "Der angezeigte Wert ist der Spannungsabfall über dem Massepfad. Ziel ist ein möglichst kleiner Wert; die Freigabegrenze kommt aus dem fahrzeugspezifischen Prüfplan.",
    "Ist der Wert zu hoch, den Messpunkt schrittweise Richtung Batterie-Minus verschieben. Wo der Wert <b>abrupt kleiner</b> wird, liegt die schlechte Verbindung dahinter.",
    "Bei Sensorproblemen: <b>Sensor-Masse getrennt</b> von der Leistungsmasse prüfen – ein kleiner Masseversatz (wenige 10 mV) verschiebt bereits Sensorsignale.",
    "Massepunkt lösen, Kontaktflächen blank machen, fetten, fest verschrauben. Danach unter Last erneut messen.",
    "Typische Stellen: Massebänder Motor↔Karosserie, zentrale Massepunkte hinter Verkleidungen, Massepins in Steckern."],
- rt:{head:["Massepfad","Zielwert (unter Last)","Bewertung"],rows:[
-   ["Sensor-Masse → Bat−","< 0,1 V","g"],["Verbraucher-Masse → Bat−","< 0,2 V","g"],
-   ["Masseband Motor→Karosserie","< 0,1–0,2 V","g"],["> 0,3 V","schlechte Masse","b"],
-   ["Masseversatz (Signalbezug)","wenige 10 mV","w"]],
-   note:"Sensor-/Signalmasse niemals mit Leistungsmasse verwechseln. VAG: zentrale Massepunkte oft hinter Kotflügel/Innenraum, gern korrodiert. BMW: Massebänder am Getriebe/Karosserie prüfen."},
+ rt:{head:["Massepfad","Ziel unter Last","Bewertung"],rows:[
+   ["Sensor-Masse → Bat−","möglichst nahe 0 V; mit OEM-Signalbezug vergleichen","g"],["Verbraucher-Masse → Bat−","OEM-Grenze für Kreis und Last verwenden","g"],
+   ["Masseband Motor→Karosserie","Plus- und Masseseite sowie Teilstrecken vergleichen","g"],["auffällige Teilstrecke","Messstrecke halbieren und Kontaktstelle lokalisieren","b"],
+   ["Masseversatz (Signalbezug)","Signal gegen Sensor-Masse und Batterieminus gegenprüfen","w"]],
+   note:"Sensor-/Signalmasse niemals mit Leistungsmasse verwechseln. Die zulässige Abweichung hängt von Signalauflösung, Strom und Messzustand ab; deshalb keine universelle mV-Grenze verwenden."},
  urs:[["Korrodierter Massepunkt","mehrere unlogische Fehler gleichzeitig","h"],
       ["Lockeres Masseband","Starterprobleme + Sensorfehler","h"],
       ["Masseversatz durch Last","Sensorwerte verschoben","m"],
       ["Rückspeisung über Fremdmasse","Lampe glimmt, falsche Signale","m"]],
  fs:[{s:"1 Verbraucher einschalten",do:"Massepfad muss belastet sein",ok:"weiter",ng:"Ohne Last keine Aussage"},
-     {s:"2 Masseabfall messen",do:"Rot an Verbraucher-Masse, Schwarz an Bat−",ok:"< 0,2 V → Masse ok",ng:"> 0,3 V → schlechte Masse"},
+     {s:"2 Masseabfall messen",do:"Rot an Verbraucher-Masse, Schwarz an Bat−",ok:"innerhalb OEM-Grenze → weiter",ng:"außerhalb OEM-Grenze oder auffälliger Seitenvergleich → Massepfad teilen"},
      {s:"3 Punkt einkreisen",do:"Messpunkt Richtung Massepunkt verschieben",ok:"Wertsprung = Fehlerstelle",ng:""},
      {s:"4 Sensor vs. Leistung",do:"Bei Sensorfehlern Sensor-Masse separat prüfen",ok:"niedrig → ok",ng:"Versatz → Sensormasse-Pfad reinigen"},
      {s:"5 Reinigen",do:"Massepunkt blank machen, fetten, nachziehen",ok:"Wert fällt → behoben",ng:"Band/Leitung erneuern"}]
@@ -2286,10 +2299,10 @@ const DEEP = {
    "Wenn der Strom auf den Normalbereich (20–50 mA) gefallen ist: Wert notieren. Bleibt er hoch → Verbraucher aktiv.",
    "Zum Eingrenzen <b>Sicherungen einzeln ziehen</b> und beobachten, bei welcher der Strom fällt. Tipp: ein <b>Sicherungs-Adapter</b> erleichtert das Einschleifen einzelner Kreise.",
    "Achtung: Jedes Trennen der Hauptverbindung startet die Einschlafzeit neu. Alternativ die mV-Drop-Methode (eigene Prüfung) nutzen, die den Schlaf nicht stört."],
- rt:{head:["Phase","Richtwert","Bewertung"],rows:[
-   ["Direkt nach Abstellen","bis mehrere A","w"],["Nach Einschlafzeit","20–50 mA","g"],
-   ["Dauerhaft > 80 mA","verdächtig","b"],["Einzelkreis-Anstieg","Verbraucher in diesem Kreis","b"]],
-   note:"VAG: Einschlafzeit 15–45 min (Gateway). BMW: teils länger, Bus-Weckzyklen. Türen/Hauben simuliert verriegeln, Innenlicht aus."},
+ rt:{head:["Phase","Einordnung","Bewertung"],rows:[
+   ["Direkt nach Abstellen","Steuergeräte aktiv; fallender Verlauf beobachten","w"],["Nach bestätigter Einschlafzeit","mit OEM-Soll oder dokumentiertem Fahrzeug-Basiswert vergleichen","g"],
+   ["Dauerhaft über OEM-Soll","Verbraucher oder Wake-up eingrenzen","b"],["Einzelkreis-Abfall","Verbraucher in diesem Kreis wahrscheinlich","w"]],
+   note:"20–50 mA ist bei vielen einfachen 12-V-Fahrzeugen nur ein Orientierungsbereich. Vernetzte Fahrzeuge können andere Sollwerte, längere Einschlafzeiten und periodische Wake-up-Zyklen haben."},
  urs:[["Steuergerät schläft nicht ein","hängender Bus, weckt Netz","h"],
       ["Nachrüstung am Dauerplus","Radio/Tracker/Dashcam/Verstärker","h"],
       ["Defekter Schalter/Kontakt","Innenlicht/Kofferraum bleibt aktiv","m"],
@@ -2461,8 +2474,8 @@ const TREES = {
    {r:"Steuergerät-Versorgungsausgang oder Hauptleitung – Schluss nach Masse/Plus weiter suchen. → Prüfung: 5-V-Referenz."},
  ]},
  "ruhestrom-hoch":{title:"Ruhestrom zu hoch",start:0,nodes:[
-   {q:"Auto 'eingeschlafen' (Wartezeit) – Strom immer noch hoch?",opts:[
-     {t:"Ja, dauerhaft > 80 mA",go:1},{t:"Fällt nach Wartezeit",go:2}]},
+   {q:"Auto nach Herstellervorgabe eingeschlafen – Strom weiterhin über OEM-Soll oder dokumentiertem Basiswert?",opts:[
+     {t:"Ja, dauerhaft oberhalb Soll/Basis",go:1},{t:"Nein, fällt in den Soll-/Basisbereich",go:2}]},
    {q:"Sicherungen einzeln ziehen – fällt der Strom bei einer?",opts:[
      {t:"Ja, bei einer Sicherung",go:3},{t:"Nein, ändert sich nicht",go:4}]},
    {r:"Normal – moderne Fahrzeuge brauchen Zeit zum Einschlafen. Kein Fehler."},
@@ -2546,7 +2559,7 @@ function tileHTML(t){
   const faved=favs.includes(t.id)?'faved':'';
   // Bei aktiver Suche fehlt die Kategoriegruppierung -> Bereich auf der Kachel anzeigen
   const tcat=query.trim()?`<span class="tcat">${(CATS.find(c=>c.id===t.cat)||{}).name||''}</span>`:'';
-  return `<button type="button" class="tile ${faved}" onclick="openDetail('${t.id}')">
+  return `<button type="button" class="tile ${faved}" data-card-id="${t.id}" onclick="openDetail('${t.id}')">
     ${tag}<span class="ic" aria-hidden="true">${t.ic}</span><span class="nm">${t.nm}</span>${tcat}
     <span class="fav" aria-hidden="true">★</span></button>`;
 }
@@ -2684,7 +2697,12 @@ function setBackgroundInert(on){
 }
 function openOverlay(el){
   if(!anyOverlayOpen()){
-    lastFocus=document.activeElement;
+    const active=document.activeElement;
+    lastFocus={
+      element:active,
+      id:active&&active.id?active.id:'',
+      cardId:active&&active.dataset?active.dataset.cardId||'':''
+    };
     try{history.pushState({ov:1},'');}catch(e){}
   }
   // Nur ein Overlay sichtbar: andere schließen (gleicher z-index, DOM-Reihenfolge
@@ -2720,7 +2738,15 @@ function doCloseOverlays(){
   setBackgroundInert(false);
   setNav(view==='fav'?'navFav':'navHome');
   renderCurrent(); // Favoriten-Sterne der Kacheln aktualisieren
-  if(lastFocus&&document.contains(lastFocus)){try{lastFocus.focus();}catch(e){}}
+  let target=null;
+  if(lastFocus){
+    if(lastFocus.cardId){
+      target=Array.from(document.querySelectorAll('[data-card-id]')).find(el=>el.dataset.cardId===lastFocus.cardId)||null;
+    }
+    if(!target&&lastFocus.id)target=document.getElementById(lastFocus.id);
+    if(!target&&lastFocus.element&&document.contains(lastFocus.element))target=lastFocus.element;
+  }
+  if(target){try{target.focus({preventScroll:true});}catch(e){try{target.focus();}catch(_){} }}
   lastFocus=null;
 }
 function renderCurrent(){if(view==='fav')renderFavs();else renderHome();}
@@ -2742,8 +2768,8 @@ function tableHTML(tb){
   return `<div class="tbl-wrap"><table><thead><tr>${tb.head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`+
     tb.rows.map(r=>{
       const cls=r[2]==='g'?'val-g':r[2]==='w'?'val-w':r[2]==='b'?'val-b':'';
-      return `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="${cls}">${r[2]==='g'?'gut':r[2]==='w'?'beachten':r[2]==='b'?'schlecht':''}</td></tr>`;
-    }).join('')+`</tbody></table></div>`;
+      return `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="${cls}">${r[2]==='g'?'plausibel':r[2]==='w'?'prüfen':r[2]==='b'?'auffällig':''}</td></tr>`;
+    }).join('')+`</tbody></table></div><div class="disc">Ampelfarben zeigen die <b>Prüfpriorität</b>, keine allgemeingültige Freigabegrenze. Zahlenwerte nur mit Bauteilkennlinie oder OEM-Prüfplan als Sollwert verwenden.</div>`;
 }
 function warnHTML(w){
   const icon=w[0]==='danger'?'⛔':w[0]==='caution'?'⚠️':'ℹ️';
@@ -2760,13 +2786,14 @@ function deepTableHTML(rt){
     const isB=last==='g'||last==='w'||last==='b';
     const cells=isB?r.slice(0,-1):r;
     const cls=last==='g'?'val-g':last==='w'?'val-w':last==='b'?'val-b':'';
-    const txt=last==='g'?'gut':last==='w'?'beachten':last==='b'?'kritisch':'';
+    const txt=last==='g'?'plausibel':last==='w'?'prüfen':last==='b'?'auffällig':'';
     let row=cells.map(c=>`<td>${c}</td>`).join('');
     if(isB)row+=`<td class="${cls}">${txt}</td>`;
     return `<tr>${row}</tr>`;
   }).join('');
   h+=`</tbody></table></div>`;
   if(rt.note)h+=`<div style="font-size:12px;color:var(--txt2);margin-top:9px;line-height:1.5">📌 ${rt.note}</div>`;
+  h+=`<div class="disc">Ampelfarben zeigen die <b>Prüfpriorität</b>, keine allgemeingültige Freigabegrenze. Zahlenwerte nur mit Bauteilkennlinie oder OEM-Prüfplan als Sollwert verwenden.</div>`;
   return h;
 }
 function ursHTML(urs){
@@ -2835,6 +2862,10 @@ function calcHTML(){
       <label>Gemessener Spannungsabfall</label>
       <input id="cMv" type="text" inputmode="decimal" autocomplete="off" aria-label="Gemessener Spannungsabfall in Millivolt" placeholder="z.B. 2,4" oninput="calcMvDrop()">
     </div>
+    <div class="calc-row">
+      <label>Optional: gemessener Gesamt-Ruhestrom in mA</label>
+      <input id="cTotal" type="text" inputmode="decimal" autocomplete="off" aria-label="Gemessener Gesamt-Ruhestrom in Milliampere" placeholder="z.B. 45" oninput="calcMvDrop()">
+    </div>
     <div class="calc-out" id="cOut">
       <div class="big">– mA</div>
       <div class="sub">Wert in mV eingeben</div>
@@ -2860,10 +2891,19 @@ function calcMvDrop(){
     out.innerHTML=`<div class="big">unplausibel</div><div class="sub">≈ ${amps.toFixed(1).replace('.',',')} A liegt über dem Nennstrom (${nom} A) – die Sicherung hätte ausgelöst. Messwert, Einheit (mV!) und Sicherungswahl prüfen.</div>`;
     return;
   }
-  if(ma<5){cls='calc-out goodval';hint='sehr gering – unauffällig';}
-  else if(ma<50){cls='calc-out';hint='im normalen Ruhestrom-Bereich';}
-  else if(ma<200){cls='calc-out warnval';hint='erhöht – Kreis genauer prüfen';}
-  else{cls='calc-out warnval';hint='hoch – Verbraucher in diesem Kreis aktiv';}
+  // Orientierung ohne erfundene Schwellen: Anteil am tatsächlich gemessenen
+  // Gesamt-Ruhestrom. Das ordnet den Kreis ein, ohne eine Universalgrenze zu setzen.
+  const totRaw=document.getElementById('cTotal');
+  const tot=totRaw?parseFloat(String(totRaw.value).replace(',','.')):NaN;
+  if(!isNaN(tot)&&tot>0){
+    const anteil=ma/tot*100;
+    hint=(anteil>100
+      ? 'rechnerisch über dem eingegebenen Gesamtstrom – Messwert, Bauform und Bezugsmessung prüfen'
+      : 'entspricht ≈ '+anteil.toFixed(0)+' % des gemessenen Gesamt-Ruhestroms ('+tot.toFixed(0).replace('.',',')+' mA)')
+      +' · Bewertung gegen fahrzeugspezifisches Ruhestrom-Soll';
+  } else {
+    hint='mit gemessenem Gesamt-Ruhestrom und fahrzeugspezifischem Soll vergleichen – Gesamtstrom oben eintragen für den Anteil';
+  }
   out.className=cls;
   const disp = (ma>=1000?(amps.toFixed(2)+' A'):(ma.toFixed(ma<10?1:0)+' mA')).replace('.',',');
   out.innerHTML=`<div class="big">≈ ${disp}</div><div class="sub">${hint} · R≈${String(r).replace('.',',')} mΩ</div>`;
@@ -3253,7 +3293,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
    set:{mode:"DC mV / DC V",buchse:"COM + V/Ω"},
    probes:[["r","Sensor-Masse am Sensor"],["b","Batterieminus oder ECU-Masse"]],
    mess:"Sensor angeschlossen lassen, Zündung/Motor im Fehlerzustand. Spannung zwischen Sensor-Masse und Batterieminus messen.",
-   good:"Nahe 0 mV, bei empfindlichen Sensoren möglichst <50 mV.",
+   good:"Möglichst nahe 0 mV und innerhalb der OEM-Grenze. Vor allem müssen Signalbewertung gegen Sensor-Masse und Batterieminus übereinstimmen.",
    bad:"Deutlicher mV/V-Wert = Masseversatz. Sensorwert wird verfälscht, obwohl Sensor selbst gut sein kann.",
    next:"Sensor-Masseleitung zur ECU prüfen, Steckkontakte und gemeinsame Massepunkte kontrollieren.",
    beg:"Wenn die Masse des Sensors nicht wirklich Masse ist, lügt der Sensor. Darum nicht nur Signal prüfen, sondern auch Sensor-Masse.",
@@ -3482,11 +3522,11 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
          "Zündung an oder Motor laufen lassen – je nachdem, wann der Fehler auftritt.",
          "mV-Wert beobachten und gleichzeitig am Kabel/Stecker wackeln.",
          "Wenn Masseversatz vorhanden ist, Signalleitung nicht sofort als Sensorfehler bewerten."],
-    rt:{head:["Masseversatz","Bewertung","Hinweis"],rows:[
-      ["0–20 mV","sehr gut","g"],["20–50 mV","meist ok","g"],["50–100 mV","prüfen","w"],[">100 mV","verdächtig","b"],[">300 mV","klarer Fehler","b"]],
-      note:"Bei empfindlichen analogen Sensoren können schon kleine Massefehler die Plausibilität verschieben."},
+    rt:{head:["Beobachtung","Bewertung","Hinweis"],rows:[
+      ["nahe 0 mV und stabil","plausibel","g"],["Signal gegen beide Bezüge gleich","plausibel","g"],["Wert verändert sich mit Last/Wackeln","Massepfad prüfen","w"],["Signalbewertung hängt vom Bezugspunkt ab","Masseversatz nachweisen","b"],["außerhalb OEM-Grenze","Teilstrecken und Steckkontakte prüfen","b"]],
+      note:"Bei empfindlichen analogen Sensoren können bereits kleine Massefehler die Plausibilität verschieben. Eine feste Universalgrenze wäre deshalb irreführend; OEM-Prüfplan und Seitenvergleich entscheiden."},
     urs:[["Sensor-Masseleitung korrodiert","Signalwert verschoben","h"],["gemeinsame Masse überlastet","mehrere Sensoren unplausibel","m"],["ECU-Stecker Feuchtigkeit","Masse/Signal instabil","m"],["falscher Messbezug","Diagnosefehler","h"]],
-    fs:[{s:"1 Sensor-Masse messen",do:"Sensor-Masse gegen Batterieminus im Betrieb",ok:"<50 mV → weiter",ng:"Massepfad prüfen"},
+    fs:[{s:"1 Sensor-Masse messen",do:"Sensor-Masse gegen Batterieminus im Betrieb",ok:"innerhalb OEM-Grenze und stabil → weiter",ng:"auffällig/lastabhängig → Massepfad teilen"},
         {s:"2 Signal prüfen",do:"Signal gegen Sensor-Masse und gegen Batterie-Minus vergleichen",ok:"gleich",ng:"Masseversatz beeinflusst Signal"},
         {s:"3 Leitung",do:"Masseleitung zur ECU prüfen",ok:"repariert",ng:"Stecker/ECU-Masse"}]
    },
@@ -3586,7 +3626,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
          "CAN-Terminierung nur spannungsfrei messen. CAN-H/CAN-L auf Kurzschluss gegen Plus/Masse prüfen.",
          "Stecker auf Wasser, Grünspan, Pinrückzug und aufgeweitete Kontakte prüfen."],
     rt:{head:["Prüfung","Soll grob","Bewertung"],rows:[
-      ["Kl.30 am ECU","Batteriespannung","g"],["Masseabfall unter Last","<0,1–0,2 V","g"],["CAN-H gegen CAN-L spannungsfrei","~60 Ω am Gesamtbus","w"],["CAN gegen Masse/Plus","kein harter Schluss","g"],["Versorgung fehlt","kein ECU-Tausch","b"]],
+      ["Kl.30 am ECU","Batteriespannung im definierten Zustand","g"],["Masseabfall unter Last","OEM-Grenze und Seitenvergleich verwenden","g"],["CAN-H gegen CAN-L spannungsfrei","~60 Ω nur bei klassischem Bus mit zwei 120-Ω-Abschlüssen","w"],["CAN gegen Masse/Plus","kein harter Schluss","g"],["Versorgung fehlt","kein ECU-Tausch","b"]],
       note:"60 Ω gilt für klassisch terminierte CAN-Busse mit zwei 120-Ω-Abschlüssen. Abweichungen je Topologie möglich."},
     urs:[["Sicherung unter Last offen","Spannung bricht ein","h"],["Massepin korrodiert","Tester erreicht ECU nicht","h"],["Wake-up fehlt","ECU schläft","m"],["CAN kurzgeschlossen","mehrere Steuergeräte offline","m"],["Wasser im ECU-Stecker","Pin-/Busfehler","m"]],
     fs:[{s:"1 Versorgung",do:"Kl.30/15 am Steuergerät",ok:"da",ng:"Sicherung/Relais/Leitung"},
@@ -3609,6 +3649,254 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
         {s:"2 Messung",do:"rot/schwarz/Zustand/Soll/Ist",ok:"vollständig",ng:"ergänzen"},
         {s:"3 Danach",do:"gleiche Messung nach Reparatur",ok:"Verbesserung belegt",ng:"Diagnose offen"}]
    }
+  });
+
+  /* Vollversion v8.2: Jede der 70 Karten besitzt eine konkrete Anleitung.
+     Die folgenden Abläufe ergänzen genau die Karten, die in der Pilotversion noch keinen
+     DEEP.anl-Block hatten. Keine Anleitung führt neue Universalgrenzen ein. */
+  const FULL_GUIDES={
+    "ref5v-vergleich":[
+      "Zuerst die 5-V-Grundprüfung am Sensorstecker durchführen und den OEM-Sollbereich, den Bezugspunkt sowie den Fahrzeugzustand dokumentieren.",
+      "Liegt die Referenz unterhalb des Solls, kontrolliert Sensoren derselben Referenz einzeln trennen. Eine Erholung zeigt nur den belasteten Zweig, noch nicht automatisch einen defekten Sensor.",
+      "Liegt die Referenz oberhalb des Solls, Zündung ausschalten und auf Fremdspannung prüfen. Erst danach Verbraucher-/Relaiskreise nach Schaltplan abschnittsweise isolieren.",
+      "Ein Kurzschluss gilt erst als belegt, wenn die Leitung beziehungsweise der Zweig isoliert und der Fehler spannungsfrei nachgewiesen ist. Zwischenwerte und Schwankungen sprechen eher für Last-, Kontakt- oder Masseprobleme.",
+      "Nach der Reparatur Referenz gegen Sensor-Masse und Batterieminus erneut messen, alle Sensoren anstecken und Fehlercodes sowie Livedaten plausibilisieren."
+    ],
+    "pwm":[
+      "Schaltplan prüfen: Versorgung, geschaltete Seite, Grundfrequenz und erwartete Ansteuerungsbedingung bestimmen. Massegeschaltete und plusgeschaltete PWM nicht verwechseln.",
+      "Multimeter auf DC Volt stellen und zuerst Versorgung sowie Masse unter Last prüfen. Ein fehlender Mittelwert ist ohne intakte Basisversorgung kein PWM-Befund.",
+      "Falls vorhanden Duty-/Hz-Funktion verwenden und Messpolarität notieren. Bei massegeschalteter Last kann die Anzeige zum Steuergeräte-Sollwert invertiert sein.",
+      "Ansteuerung gezielt verändern, etwa per Stellgliedtest oder Lastanforderung. Mittelwert, Frequenz oder Tastgrad müssen reproduzierbar reagieren.",
+      "Feste, sporadische oder unplausible Anzeigen mit dem Oszilloskop bestätigen; nur dort sind Flanken, Aussetzer, Rückschläge und tatsächliche Signalform sichtbar."
+    ],
+    "ntc-kts":[
+      "Sensorbauart und Kennlinie über Teilenummer oder OEM-Prüfplan klären. Einen NTC nicht mit PTC/KTY verwechseln.",
+      "Für die Widerstandsmessung Zündung ausschalten, Stecker trennen und Fremdspannung ausschließen. Eigenwiderstand der Messleitungen berücksichtigen.",
+      "Reale Sensortemperatur mit einem geeigneten Referenzthermometer erfassen und Widerstand mit genau dieser Kennlinie vergleichen.",
+      "Sensor langsam erwärmen oder abkühlen und auf einen gleichmäßigen Verlauf achten. Gleichzeitig Stecker und Leitung bewegen, um Unterbrechungen sichtbar zu machen.",
+      "Anschließend angesteckt Signalspannung und Diagnose-Livedaten vergleichen. Erst Versorgung, Sensor-Masse und Leitung ausschließen, bevor der Sensor ersetzt wird."
+    ],
+    "ntc-ats":[
+      "Ansaugluftsensor identifizieren und prüfen, ob er separat oder im Luftmassen-/Ladedrucksensor integriert ist. Kennlinie aus Herstellerdaten beschaffen.",
+      "Fahrzeug und Sensor auf Umgebungstemperatur kommen lassen; Wärme vom Motorraum verfälscht den Kaltvergleich.",
+      "Spannungsfrei den Widerstand messen und zusammen mit der tatsächlich gemessenen Lufttemperatur dokumentieren.",
+      "Sensor kontrolliert mit Luft erwärmen, nicht mit offener Flamme oder Heißluft überlasten. Der Widerstand muss ohne Sprünge abnehmen.",
+      "Angesteckt Versorgung, Sensor-Masse, Signalspannung und Livedaten gegen die reale Lufttemperatur vergleichen; Leitungsfehler vor Sensortausch ausschließen."
+    ],
+    "poti-dk":[
+      "Pinbelegung, Versorgung, Sensor-Masse und die meist zwei gegensinnig oder unterschiedlich skalierten Signalkanäle im Schaltplan identifizieren.",
+      "Zündung einschalten und Versorgung sowie Sensor-Masse prüfen. Nicht an Motorpins oder H-Brücken-Ausgänge geraten.",
+      "Beide Signale per Backprobe messen und Pedal beziehungsweise Klappe sehr langsam über den gesamten freigegebenen Weg bewegen.",
+      "Auf gleichmäßigen Verlauf, reproduzierbare Endpunkte und die OEM-Plausibilitätsbeziehung beider Kanäle achten. Kurze Sprünge mit Wackeltest provozieren.",
+      "Bei Aussetzern oder elektronisch angesteuerter Drosselklappe Oszilloskop und Diagnose-Livedaten verwenden; keine Klappe gegen das Getriebe gewaltsam bewegen."
+    ],
+    "map":[
+      "Teilenummer, Druckbereich, Ausgangsart und Kennlinie klären. Ein 1-bar-Sensor darf nicht mit einem Lade-/Absolutdrucksensor anderer Skalierung verglichen werden.",
+      "Zündung an: Versorgung, Sensor-Masse und Masseversatz prüfen. Den Diagnose-Druck mit einem plausiblen barometrischen Referenzwert vergleichen.",
+      "Signal am angeschlossenen Sensor messen und gleichzeitig den Diagnosewert beobachten. Spannung allein ohne Kennlinie ist kein Druckwert.",
+      "Motor starten beziehungsweise definierten Druck/Unterdruck anlegen. Signal und Livedaten müssen der Druckänderung gleichmäßig und reproduzierbar folgen.",
+      "Bei Abweichung zuerst Schlauch, Anschluss, Dichtung, Verstopfung und Signalleitung prüfen; erst danach Sensor anhand seiner konkreten Kennlinie bewerten."
+    ],
+    "lmm-a":[
+      "LMM-Bauart, Pinbelegung und OEM-Sollwerte klären; integrierte Temperaturfühler und separate Versorgungspins berücksichtigen.",
+      "Versorgung und Masse unter Betriebsbedingungen prüfen, bevor das Analogsignal bewertet wird.",
+      "Signal im Leerlauf, bei definierter Drehzahlanhebung und unter reproduzierbarer Last messen; gleichzeitig Diagnose-Luftmasse protokollieren.",
+      "Auf glatten, lastabhängigen Verlauf und Wackelreaktionen achten. Ein plausibler Leerlaufwert schließt einen Messfehler bei hoher Luftmasse nicht aus.",
+      "Ansaugtrakt auf Falschluft, Filter, Verschmutzung und mechanische Ursachen prüfen; Signalabweichungen mit OEM-Kennlinie und gegebenenfalls Oszilloskop bestätigen."
+    ],
+    "lmm-d":[
+      "Über Schaltplan prüfen, ob das Ausgangssignal Frequenz, PWM, SENT oder ein anderes digitales Protokoll ist. Nur ein echtes Frequenzsignal mit der Hz-Funktion bewerten.",
+      "Versorgung und Masse unter Last prüfen, anschließend Signalpin per Backprobe anschließen.",
+      "Frequenz bei definierten Betriebszuständen messen und parallel die Diagnose-Luftmasse beobachten.",
+      "Drehzahl beziehungsweise Last reproduzierbar verändern; Frequenz und Livedaten müssen ohne unerklärliche Sprünge reagieren.",
+      "Bei Aussetzern oder falscher Skalierung Oszilloskop verwenden. Das Multimeter zeigt Frequenz, aber weder Pegelqualität noch einzelne fehlende Impulse."
+    ],
+    "lambda-sprung":[
+      "Sondenposition und Bauart klären: Vorkat-Regelsonde, Nachkat-Diagnosesonde oder keine klassische Sprungsonde. Breitbandsonden nicht nach dieser Anleitung prüfen.",
+      "Motor und Sonde auf Regeltemperatur bringen; Heizung, Versorgung und Masse prüfen. Eine kalte Sonde ist nicht beurteilbar.",
+      "Signal hochohmig per Backprobe messen und gleichzeitig Lambda-Regelstatus sowie Gemischkorrekturen im Tester beobachten.",
+      "Definierte Gemischänderungen nur nach sicherer Werkstattprozedur auslösen. Die Vorkatsonde muss dynamisch reagieren; Nachkat wird relativ zur Vorkatsonde bewertet.",
+      "Trägheit, Aussetzer und Katalysatorvergleich mit Oszilloskop/Diagnose bestätigen. Abgasleck, Kraftstoff- und Zündfehler vor Sondentausch ausschließen."
+    ],
+    "lambda-breit":[
+      "Exakte Sonden- und Steuergerätebauart im Schaltplan bestimmen. Pumpstrom-, Referenz- und Heizerleitungen nicht mit einer Sprungsonde gleichsetzen.",
+      "Nur freigegebene Basisprüfungen durchführen: Versorgung, Masse, Heizerkreis und Leitungskontinuität nach Herstellerprozedur.",
+      "Keine Widerstands- oder Spannungsprüfung an Pumpzelle beziehungsweise Referenzzelle durchführen und keine Fremdspannung einspeisen.",
+      "Regelbereitschaft, Lambda, Pumpstrom und Heizerstatus ausschließlich mit geeigneter Diagnose und den OEM-Sollwerten beurteilen.",
+      "Bei Leitungs- oder Versorgungsfehlern zuerst Kabel/Stecker reparieren; die eigentliche Sondenfunktion nur mit Diagnosegerät und gegebenenfalls Oszilloskop freigeben."
+    ],
+    "radsensor":[
+      "Sensortyp anhand Schaltplan und Teilenummer klären. Zwei Pins beweisen weder einen passiven noch einen aktiven Sensor.",
+      "Passiver Sensor: spannungsfrei Wicklung nur nach OEM-Vorgabe prüfen; beim gleichmäßigen Drehen AC-Signal beobachten.",
+      "Aktiver Sensor: keine blinde Ohm-Messung. Versorgung beziehungsweise Stromsignal nach Schaltplan prüfen und Rad gleichmäßig drehen.",
+      "Alle vier Räder unter gleichen Bedingungen per Livedaten vergleichen; Luftspalt, Encoderseite, Radlager-Einbaulage und Verschmutzung kontrollieren.",
+      "Einzelne Encoderfehler und kurze Aussetzer mit Oszilloskop oder hochauflösenden Livedaten bestätigen, bevor Sensor oder Radlager ersetzt wird."
+    ],
+    "kw-ind":[
+      "Induktive Bauart und Sollwiderstand über Schaltplan/Teilenummer bestätigen; nicht mit Hall- oder aktivem Geber verwechseln.",
+      "Zündung aus, Sensor getrennt: Spulenwiderstand und Isolation nur nach OEM-Vorgabe messen.",
+      "Für den Dynamiktest Multimeter auf AC stellen, direkt zwischen den beiden Signalpins messen und den Motor sicher durchdrehen lassen.",
+      "Signal bei gleicher Anlassdrehzahl vergleichen und Kabel/Stecker bewegen. Amplitude hängt stark von Drehzahl und Luftspalt ab.",
+      "Fehlende Zähne, Polarität, Störimpulse und Synchronisation mit Nockenwellensignal ausschließlich per Oszilloskop beurteilen."
+    ],
+    "hall":[
+      "Pinbelegung und Signalpegel im Schaltplan klären; Versorgung kann je nach System unterschiedlich sein.",
+      "Sensor angesteckt lassen und Versorgung sowie Sensor-Masse zuerst prüfen. Signal nicht mit Prüflampe belasten.",
+      "Signal per Backprobe messen und Motor beziehungsweise Geberrad sicher bewegen. Ein Multimeter zeigt bei getaktetem Rechteck meist nur einen Mittelwert.",
+      "Auf reproduzierbare Änderung und Reaktion beim Wackeltest achten; ein fester Pegel kann Sensor, Leitung, fehlenden Pull-up oder stillstehenden Geber bedeuten.",
+      "Pegel, Flanken, einzelne Aussetzer und KW/NW-Synchronisation mit dem Oszilloskop bestätigen."
+    ],
+    "klopf":[
+      "Teilenummer, Schaltplan, Montageort und vorgeschriebenes Anzugsmoment klären. Montagefehler verändern die Empfindlichkeit.",
+      "Kabel, Schirmung und Stecker spannungsfrei nach OEM-Vorgabe prüfen; Sensor nicht pauschal auf Widerstand bewerten.",
+      "Eine grobe AC-Reaktion auf leichtes, kontrolliertes Anregen darf nur als Funktionshinweis gelten, nie als Freigabe.",
+      "Diagnose-Klopfregelung unter reproduzierbaren Bedingungen auswerten und mechanische Geräuschquellen ausschließen.",
+      "Empfindlichkeit und Frequenzverhalten mit geeignetem Oszilloskop-/Herstellerverfahren prüfen; Sensor anschließend mit korrektem Drehmoment montieren."
+    ],
+    "raildruck":[
+      "Common-Rail-Sicherheitsbereich nicht öffnen. Die elektrische Prüfung erfolgt ausschließlich am angeschlossenen Sensor beziehungsweise Steuergerät.",
+      "Teilenummer, Druckbereich, Ausgangsart und Kennlinie beschaffen; Versorgung und Sensor-Masse bei Zündung an kontrollieren.",
+      "Signal per Backprobe messen und gleichzeitig Soll-/Ist-Raildruck im Diagnosetester protokollieren.",
+      "Beim sicheren Start-/Betriebsversuch müssen elektrisches Signal und Diagnose-Istwert plausibel reagieren. Ein Anschlagwert ist nur ein Leitungs-/Sensorverdacht.",
+      "Versorgung, Masse, Signalleitung und Stecker nachweisen; reale Druckregelung nur über Livedaten und Herstellerprozedur beurteilen. Hochdruckteil niemals lösen."
+    ],
+    "klimadruck":[
+      "Sensorbauart, Kältemitteltyp, Druckbereich und Kennlinie über Fahrzeugdaten klären. Den Kältemittelkreis nicht öffnen.",
+      "Zündung an: Versorgung, Sensor-Masse und Signalleitung am angeschlossenen Sensor prüfen.",
+      "Signalspannung und Diagnose-Druck bei abgestellter Anlage dokumentieren und mit einem zulässigen Klimaservicegerät plausibilisieren.",
+      "Klimaanforderung einschalten und Signal-/Druckänderung beobachten; Außentemperatur, Lüfterfreigabe und Kompressorart berücksichtigen.",
+      "Bei Abweichung elektrische Seite, Livedaten und reale Druckmessung trennen. Sensor erst nach bestätigter Kennlinienabweichung ersetzen."
+    ],
+    "agt":[
+      "Sensorposition, Bauart und Kennlinie im Schaltplan identifizieren; NTC, PTC und aktive Sensoren verlangen unterschiedliche Prüfungen.",
+      "Abgasanlage vollständig abkühlen lassen. Passive Sensoren für Ohm-Messung spannungsfrei trennen, aktive Sensoren nicht blind durchmessen.",
+      "Kaltwerte mehrerer Abgastemperatursensoren mit Umgebungstemperatur und untereinander vergleichen.",
+      "Stecker, Hitzeschutz und Leitungsweg auf Schmelz-, Scheuer- und Abgasschäden prüfen; beim Messen einen Wackeltest durchführen.",
+      "Dynamik im warmen Betrieb über Diagnose-Livedaten und OEM-Kennlinie bewerten; Kaltvergleich allein erkennt keine Hochtemperaturdrift."
+    ],
+    "dpf-diff":[
+      "Schlauchzuordnung Hoch-/Niederdruckseite, Sensorbereich und OEM-Kennlinie klären. Schläuche nicht vertauschen.",
+      "Zündung an und beide Schläuche drucklos: Versorgung, Sensor-Masse, Signal und Diagnose-Nullpunkt vergleichen.",
+      "Beide Schläuche auf Riss, Kondensat, Knick, Verstopfung und korrekten Anschluss prüfen.",
+      "Motor unter definierten Bedingungen betreiben und Signal sowie Livedaten bei Drehzahl-/Laständerung beobachten.",
+      "Elektrischen Sensorfehler von verstopftem Druckpfad und tatsächlich hohem Filtergegendruck trennen; Beladung nur mit Diagnose-/Herstellerdaten bewerten."
+    ],
+    "nox":[
+      "Systemaufbau, Sensorsteuergerät, Versorgung, Masse, Heizung und Busanbindung im Schaltplan identifizieren.",
+      "Sicherungen sowie Versorgung und Masse am Sensormodul unter Betriebsbedingungen prüfen.",
+      "Kabel und Stecker auf Hitze, Wasser, Abgaskontakt und Pinprobleme untersuchen; Sensorzelle nicht mit Ohm durchmessen.",
+      "Kommunikation, Heizstatus, Freigabebedingungen und NOx-Wert mit dem Diagnosetester prüfen.",
+      "Abgasleck, SCR-/AdBlue-System, Temperaturfreigaben und Softwarestände berücksichtigen; Sensortausch erst nach Herstellerprüfplan."
+    ],
+    "tankgeber":[
+      "Explosionsschutz einhalten: keine Funken, Zündquellen oder ungeeigneten Prüfmittel am geöffneten Kraftstoffsystem.",
+      "Geberbauart und Sollkennlinie klären; bei Mehrfachgebern oder Satteltank beide Kreise berücksichtigen.",
+      "Spannungsfrei Stecker trennen und Widerstand über den gesamten zulässigen Schwimmerweg langsam messen.",
+      "Auf gleichmäßigen Verlauf, tote Stellen und Wackelreaktionen achten; Stecker- und Massepfad separat prüfen.",
+      "Widerstand, Anzeige und Diagnose-Livedaten bei bekannten Füllständen vergleichen. Mechanik/Schwimmer vor Instrumenten- oder Steuergerätetausch prüfen."
+    ],
+    "schalter":[
+      "Schalterfunktion, Öffner/Schließer, mögliche Widerstandskodierung und Steuergeräte-Pull-up im Schaltplan klären.",
+      "Spannungsfrei Durchgang beziehungsweise Widerstand in allen Schalterstellungen messen und nicht nur auf den Piepton achten.",
+      "Angesteckt Signalspannung per Backprobe beobachten; der Status muss reproduzierbar mit der Betätigung wechseln.",
+      "Stecker, Leitung und Mechanik während der Messung bewegen. Langsam schalten, um tote Punkte und Kontaktprellen zu erkennen.",
+      "Elektrischen Wert mit Diagnose-Livedaten vergleichen; bei lasttragenden Kontakten zusätzlich Spannungsabfall unter Last prüfen."
+    ],
+    "magnetventil":[
+      "Ventiltyp, Spulensollwert sowie plus- oder massegeschaltete Ansteuerung im Schaltplan klären.",
+      "Zündung aus, Ventil getrennt: Spulenwiderstand messen und mit OEM-Wert beziehungsweise identischem Bauteil vergleichen.",
+      "Versorgung und Masse am angeschlossenen Ventil unter Ansteuerung prüfen; fehlende Last kann eine ECU-Ausgangsdiagnose verfälschen.",
+      "Stellgliedtest ausführen und auf elektrisches Schalten sowie mechanische Reaktion achten. Klacken beweist keine Dichtheit oder Durchflussfunktion.",
+      "Bei getakteter Ansteuerung Duty/Signalform mit Oszilloskop prüfen; Ventil nicht ohne freigegebene Begrenzung dauerbestromen."
+    ],
+    "taktventil":[
+      "Teilenummer, Spulensollwert, Versorgung und Schaltseite im Schaltplan bestimmen; Modellbezeichnungen wie N75 sind keine universelle Kennlinie.",
+      "Spannungsfrei Spule messen und mit OEM-Wert oder baugleichen Ventilen vergleichen.",
+      "Versorgung unter Last prüfen, danach Duty/Frequenz während eines Stellgliedtests oder definierten Betriebszustands erfassen.",
+      "Messpolarität beachten: Bei Low-Side-Ansteuerung kann der Multimeter-Tastgrad invertiert erscheinen.",
+      "PWM-Form, Stromanstieg, Aussetzer und mechanisches Klemmen mit Oszilloskop beziehungsweise Funktionsprüfung trennen."
+    ],
+    "injektor-benzin":[
+      "Einspritzsystem und Injektortyp klären; Saugrohr-, Niederohm- und Direkteinspritzer dürfen nicht pauschal verglichen werden.",
+      "Zündung aus und Stecker getrennt: Widerstand mit geeignetem Messgerät und OEM-Sollwert prüfen; Messleitungswiderstand berücksichtigen.",
+      "Alle Injektoren bei gleicher Temperatur vergleichen und Stecker/Leitung auf Kontaktfehler untersuchen.",
+      "Versorgung und Ansteuerung nur mit freigegebenem Prüfaufbau messen; Direkteinspritzer nicht brücken oder fremdbestromen.",
+      "Spritzbild, Menge, Stromrampe und mechanische Dichtheit sind mit Ohm nicht bewiesen; Diagnose, Oszilloskop/Stromzange und Herstellerverfahren verwenden."
+    ],
+    "injektor-diesel":[
+      "Vor jeder Messung eindeutig Magnet- oder Piezo-Injektor bestimmen. Bei Piezo keine Multimeter- oder Fremdspannungsprüfung durchführen.",
+      "Common-Rail-Hochdrucksystem nicht öffnen; Restdruck und Herstellersicherheitsprozedur beachten.",
+      "Beim Magnetinjektor Widerstand nur mit geeigneter Niederohmtechnik und konkretem OEM-Sollwert vergleichen.",
+      "Versorgung, Ansteuerung und Stromverlauf mit dafür freigegebener Messtechnik prüfen; normale Multimeter-Mittelwerte sind nicht aussagekräftig.",
+      "Mengenabweichung über Korrekturwerte, Rücklauf-/Mengenprüfung und mechanische Diagnose belegen. Elektrische Grundprüfung allein rechtfertigt keinen Austausch."
+    ],
+    "zuendspule":[
+      "Zündspulentyp, Pinbelegung, Versorgung, Masse und Triggerart im Schaltplan bestimmen. Primärwiderstand ist bei integrierter Elektronik oft nicht direkt messbar.",
+      "Sicheren Abstand zur Sekundärseite herstellen und Zündung/Startbedingungen kontrollieren.",
+      "Versorgung und Masse unter Ansteuerung prüfen; Masseabfall separat messen.",
+      "Trigger beziehungsweise Primärstrom nur mit geeigneter Oszilloskop-/Stromzangenmethode beobachten. Keine Prüflampe an den Steuergeräteausgang.",
+      "Zündkerze, Sekundärweg, Kompression und Zylindertauschvergleich berücksichtigen; Spule erst nach reproduzierbarem Gegenbeweis ersetzen."
+    ],
+    "gluehkerze":[
+      "Kerzentyp und Nennspannung bestimmen; moderne Niedervolt- und Keramikglühkerzen niemals direkt an 12 V legen.",
+      "System spannungsfrei schalten, Anschluss trennen und Messleitungswiderstand durch Kurzschließen der Spitzen erfassen.",
+      "Widerstand jeder Kerze bei ähnlicher Temperatur messen und Eigenwiderstand abziehen; OEM-Soll und Zylindervergleich verwenden.",
+      "Versorgung, Steuergerät und Spannungsabfall während eines freigegebenen Glühzyklus prüfen; hohe Ströme besser mit DC-Stromzange messen.",
+      "Ohm-Wert und Stromaufnahme gemeinsam bewerten. Eine niederohmige Kerze kann thermisch dennoch unzureichend sein."
+    ],
+    "luefter":[
+      "Lüfter gegen unvermitteltes Anlaufen sichern; Nachlauf und Klimaanforderung können auch bei Zündung aus starten.",
+      "Systemart klären: Relaisstufen, Vorwiderstand, PWM, LIN oder integriertes Lüftermodul.",
+      "Versorgung und Masse direkt am Lüfter unter tatsächlicher Ansteuerung prüfen; Plus- und Masseabfall getrennt messen.",
+      "Stellgliedtest beziehungsweise definierte Temperatur-/Klimaanforderung auslösen und Stromaufnahme sowie Drehzahl beobachten.",
+      "PWM/LIN-Kommunikation, blockierte Mechanik und Modulfehler trennen; vor direkter Bestromung Pinplan und Strombegrenzung klären."
+    ],
+    "kraftstoffpumpe":[
+      "Zündquellen vermeiden und Ansteuerungsart über Schaltplan klären: Relais, PWM-Pumpenmodul oder bedarfsgeregeltes System.",
+      "Versorgung und Masse während der kurzen Vorförderphase beziehungsweise gezielten Stellgliedansteuerung direkt an der Pumpe messen.",
+      "Plus- und Masseabfall unter Last getrennt prüfen; eine unbelastete 12-V-Anzeige beweist keine belastbare Leitung.",
+      "Strom mit geeigneter DC-Zange und OEM-Vorgabe vergleichen; mechanische Blockade, Trockenlauf und niedrige Versorgung auseinanderhalten.",
+      "Förderdruck und -menge separat nach Herstellerverfahren messen. Ein normaler Stromwert beweist weder Druck noch Förderleistung."
+    ],
+    "stellmotor":[
+      "Stellmotor, H-Brücke, Endanschläge und Rückmeldesensoren anhand des Schaltplans identifizieren.",
+      "Spannungsfrei nur freigegebene Wicklungs- und Potiprüfungen durchführen; integrierte Elektronik nicht blind durchmessen.",
+      "Versorgung und Masse unter einem Diagnose-Stellgliedtest prüfen und Motorbewegung beobachten.",
+      "Beide Motorleitungen beziehungsweise H-Brücken-Signal mit Oszilloskop beurteilen; ein DC-Mittelwert kann Richtungswechsel verdecken.",
+      "Mechanik, Getriebe und Rückmeldepoti getrennt bewerten. Klappe nicht gewaltsam bewegen und Adaptions-/Anlernprozedur beachten."
+    ],
+    "ventil-tank":[
+      "AKF-Ventil, Leitungsführung und Schaltseite im Schaltplan bestimmen; Kraftstoffdämpfe und Zündquellen beachten.",
+      "Spannungsfrei Spulenwiderstand mit OEM-Wert beziehungsweise identischem Ventil vergleichen.",
+      "Versorgung unter Last und getaktete Ansteuerung während Stellgliedtest oder definiertem Betriebszustand prüfen.",
+      "Auf Klacken reagieren lassen, aber elektrische Betätigung nicht mit Dichtheit oder Durchfluss gleichsetzen.",
+      "PWM mit Oszilloskop, Dichtheit mit freigegebener Rauch-/Vakuumprüfung und Tankentlüftungssystem per Diagnose vollständig bewerten."
+    ],
+    "motor-allg":[
+      "Schaltplan, Endschalter, Steuergerät und Richtungsumkehr klären; Fensterheber/Wischer können elektronisch überwacht und strombegrenzt sein.",
+      "Versorgung und Masse direkt am Motor während der Betätigung messen; beide Drehrichtungen beziehungsweise Stufen prüfen.",
+      "Plus- und Masseabfall getrennt messen und Schalter-/Relaispfad abschnittsweise vergleichen.",
+      "Stromaufnahme mit DC-Zange beobachten. Hoher Strom kann Schwergängigkeit, Blockade oder Wicklungsfehler bedeuten; niedriger Strom eine Unterbrechung.",
+      "Mechanik entlasten und erneut prüfen. Motor nicht dauerhaft gegen den Anschlag bestromen; Steuergeräte-Lernfunktionen beachten."
+    ],
+    "hupe":[
+      "Kreisart klären: direkt geschaltet, Relais, Steuergerät, LED-Treiber oder Diagnoseausgang. Prüflampe nur an freigegebenen Lastkreisen verwenden.",
+      "Verbraucher einschalten und Spannung direkt zwischen Plus und Masse am Verbraucher messen.",
+      "Plusabfall Batterieplus bis Verbraucherplus und Masseabfall Verbraucher-Masse bis Batterieminus getrennt erfassen.",
+      "Relais, Sicherung, Schalter und Steckkontakte unter Last abschnittsweise prüfen; unbelastete Spannung nicht als Freigabe werten.",
+      "Bei LED-/CAN-gesteuerten Leuchten Strombegrenzung, PWM und Moduldiagnose beachten; Funktion nach Reparatur unter realer Last bestätigen."
+    ],
+    "lin":[
+      "Schaltplan prüfen: Master, Teilnehmer, Versorgung, Masse, Wake-up und LIN-Leitung identifizieren. Ruhepegel allein sagt nichts über gültige Frames.",
+      "Versorgung und Masse des Masters sowie der betroffenen Teilnehmer unter Betriebsbedingungen prüfen.",
+      "LIN-Leitung hochohmig gegen Masse messen. Dauer-Low oder ein ungewöhnlicher Mittelwert ist nur ein Verdacht; Buszustand und Schlafmodus berücksichtigen.",
+      "Teilnehmer nur nach Schaltplan kontrolliert trennen und beobachten, ob Kommunikation beziehungsweise Pegel zurückkehrt. Reihenfolge dokumentieren.",
+      "Break, Sync, Identifier, Response und Störungen mit Oszilloskop/Diagnose analysieren; keine Prüflampe und keine Widerstandsmessung am aktiven Bus."
+    ]
+  };
+  Object.entries(FULL_GUIDES).forEach(([id,guide])=>{
+    if(!DEEP[id])DEEP[id]={};
+    DEEP[id].anl=guide;
   });
 
   // Bestehende DEEP-Einträge mit Sicherheitszusätzen nachschärfen
@@ -3670,13 +3958,33 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
     const sym=type==="dont"?"!":type==="warn"?"?":"✓";
     return `<div class="checklist">`+items.map(x=>`<div class="checkitem ${cls}"><span class="ci">${sym}</span><span>${x}</span></div>`).join("")+`</div>`;
   }
+  const sourceRefs={
+    "sicherung":"Littelfuse ATOF 287 / MINI 297 / MAXI 299; ISO 8820-3",
+    "ruhestrom-fuse":"Littelfuse Kaltwiderstände der konkret gewählten Sicherungsbauform",
+    "ptc-sensor":"IEC 60751 für Pt100/Pt1000; NXP KTY81-Datenblatt nur für die jeweilige KTY-Type",
+    "ref5v":"OEM-Prüfplan; Ford-Servicebereich 4,7–5,3 V nur als Herstellerbeispiel",
+    "ref5v-basis":"OEM-Prüfplan; Ford-Servicebereich 4,7–5,3 V nur als Herstellerbeispiel",
+    "ref5v-masseschluss":"OEM-Schaltplan und Prüfplan der konkreten Sensorreferenz",
+    "ref5v-plusschluss":"OEM-Schaltplan und Prüfplan der konkreten Sensorreferenz",
+    "ref5v-vergleich":"OEM-Schaltplan und Prüfplan der konkreten Sensorreferenz",
+    "map":"Kennlinie/Teilenummer; Bosch Saugrohr-/Ladedrucksensor nur als Bauartbeispiel",
+    "raildruck":"Kennlinie/Teilenummer; Bosch High-pressure sensor als Bauartbeispiel",
+    "generator":"OEM-Ladestrategie; HELLA Generatorregler/Smart-Charge als Systembeispiel",
+    "generator-lin-bsd":"OEM-Ladestrategie; HELLA Ladesystem- und IBS-Unterlagen",
+    "batterie":"Batteriehersteller + OEM; GS Yuasa Ruhespannung/SOC nur unter definierten Bedingungen",
+    "can":"OEM-Netztopologie; ISO 11898 für klassischen High-Speed-CAN",
+    "lin":"OEM-Netztopologie; ISO 17987/LIN-Spezifikation",
+    "kty":"NXP-Datenblatt der konkreten KTY81/KTY82-Type"
+  };
+  Object.entries(sourceRefs).forEach(([id,sourceRef])=>{const t=byId(id);if(t)t.sourceRef=sourceRef;});
+
   function metaHTML(t){
     const riskCls=t.risk==="hoch"?"bad":t.risk==="mittel"?"warn":"good";
     const q=t.quality|| (t.tag==="mm"?"MM geeignet":t.tag==="osz"?"Oszi empfohlen":"Gefahrenprüfung");
     let h=`<div class="meta-grid"><div class="meta-card ${riskCls}"><b>Messampel:</b> ${q}<div class="meter">`;
     h+=`<span class="${t.tag==='mm'?'ok':t.tag==='osz'?'warn':'bad'}">${t.tag==='mm'?'Multimeter geeignet':t.tag==='osz'?'Oszi/Tester empfohlen':'Gefahr / nur gezielt'}</span>`;
     h+=`<span class="${riskCls==='bad'?'bad':riskCls==='warn'?'warn':'ok'}">Risiko: ${t.risk||'normal'}</span>`;
-    h+=`</div></div></div>`;
+    h+=`</div></div><div class="meta-card"><b>Sollwertquelle:</b> ${t.sourceRef||'Fahrzeug-/Bauteilhersteller. Zahlen in dieser Karte sind ohne konkrete Kennlinie nur Orientierung.'}</div></div>`;
     if(t.requires&&t.requires.length) h+=`<div class="step"><div class="lbl"><span class="num">✅</span>Voraussetzungen</div><div class="body">${listHTML(t.requires,"ok")}</div></div>`;
     if(t.limits&&t.limits.length) h+=`<div class="step next"><div class="lbl"><span class="num">⚖</span>Grenzen der Messung</div><div class="body">${listHTML(t.limits,"warn")}</div></div>`;
     if(t.dont&&t.dont.length) h+=`<div class="step bad"><div class="lbl"><span class="num">⛔</span>Nicht machen</div><div class="body">${listHTML(t.dont,"dont")}</div></div>`;
@@ -3744,6 +4052,12 @@ if('serviceWorker' in navigator){
   const ubClose=document.getElementById('ubClose');
   let waitingWorker=null;
 
+  function hideUpdate(){
+    waitingWorker=null;
+    if(ub)ub.style.display='none';
+    if(ubBtn){ubBtn.textContent='Aktualisieren';ubBtn.disabled=false;}
+  }
+
   function showUpdate(worker){
     waitingWorker=worker;
     // Install-Banner ausblenden, damit sich die Banner nicht überlagern
@@ -3752,31 +4066,70 @@ if('serviceWorker' in navigator){
     if(ub)ub.style.display='flex';
   }
 
+  function workerVersion(worker){
+    return new Promise(resolve=>{
+      if(!worker||typeof MessageChannel==='undefined'){resolve('');return;}
+      const channel=new MessageChannel();
+      let done=false;
+      const finish=value=>{if(done)return;done=true;clearTimeout(timer);resolve(value||'');};
+      const timer=setTimeout(()=>finish(''),700);
+      channel.port1.onmessage=e=>finish(e.data&&e.data.type==='VERSION'?e.data.cacheName:'');
+      try{worker.postMessage({type:'GET_VERSION'},[channel.port2]);}catch(e){finish('');}
+    });
+  }
+
+  async function considerUpdate(worker){
+    if(!worker||!navigator.serviceWorker.controller)return;
+    const candidate=await workerVersion(worker);
+    const current=await workerVersion(navigator.serviceWorker.controller);
+    // Gleiche Version = kein Update. Ein unbekannter wartender Alt-Worker darf
+    // einen bereits passenden v8.2-Controller nicht wieder herunterstufen.
+    if(candidate&&current&&candidate===current){hideUpdate();return;}
+    if(!candidate&&current===APP_CACHE_NAME){hideUpdate();return;}
+    showUpdate(worker);
+  }
+
   ubBtn&&ubBtn.addEventListener('click',()=>{
     // Muss zum Format im sw.js-message-Handler passen ({type:'SKIP_WAITING'})
-    if(waitingWorker){ubBtn.textContent='Lädt…';waitingWorker.postMessage({type:'SKIP_WAITING'});}
+    if(waitingWorker){
+      ubBtn.textContent='Lädt…';ubBtn.disabled=true;
+      if(ub)ub.style.display='none';
+      try{sessionStorage.setItem('kfz-update-applying',APP_VERSION);}catch(e){}
+      waitingWorker.postMessage({type:'SKIP_WAITING'});
+    }
   });
-  ubClose&&ubClose.addEventListener('click',()=>{if(ub)ub.style.display='none';});
+  ubClose&&ubClose.addEventListener('click',hideUpdate);
 
   // Wenn der neue Worker aktiv wird -> Seite neu laden (einmalig)
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(refreshing)return;refreshing=true;window.location.reload();
+    if(refreshing)return;
+    refreshing=true;
+    hideUpdate();
+    window.location.reload();
   });
 
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js').then((reg)=>{
+    navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then((reg)=>{
       // Schon ein wartender Worker vorhanden?
-      if(reg.waiting && navigator.serviceWorker.controller)showUpdate(reg.waiting);
+      if(reg.waiting && navigator.serviceWorker.controller)considerUpdate(reg.waiting);
       // Neuer Worker wird gefunden
       reg.addEventListener('updatefound',()=>{
         const nw=reg.installing;
         if(!nw)return;
         nw.addEventListener('statechange',()=>{
           if(nw.state==='installed' && navigator.serviceWorker.controller){
-            showUpdate(nw); // Update steht bereit
+            considerUpdate(nw); // Update steht bereit
           }
         });
       });
+      // Nach erfolgreicher Aktivierung darf kein altes Banner aus dem vorherigen
+      // Dokumentzustand stehen bleiben.
+      try{
+        if(sessionStorage.getItem('kfz-update-applying')===APP_VERSION){
+          sessionStorage.removeItem('kfz-update-applying');
+          workerVersion(navigator.serviceWorker.controller).then(v=>{if(v===APP_CACHE_NAME)hideUpdate();});
+        }
+      }catch(e){}
     }).catch(()=>{});
 
     // Periodisch auf Updates prüfen (z.B. wenn App lange offen ist)

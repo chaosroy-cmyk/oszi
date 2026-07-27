@@ -1,6 +1,6 @@
-/* validate.js – Abnahmevalidierung der KFZ-Multimeter-PWA (v7.4)
-   Aufruf:  cd multimeter && npm i --no-save jsdom && node validate.js
-   Prüft die 11 Abnahmepunkte des v7.4-Auftrags gegen die echte Render-Logik. */
+/* validate.js – Abnahmevalidierung der KFZ-Multimeter-PWA (v8.2)
+   Aufruf: npm ci && npm test
+   Prüft Daten, Renderlogik, Fachregeln, Fokus, Theme- und PWA-Regressionen. */
 "use strict";
 const fs = require("fs");
 const path = require("path");
@@ -8,6 +8,7 @@ const { JSDOM, VirtualConsole } = require("jsdom");
 
 const HTML = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
 const SW = fs.readFileSync(path.join(__dirname, "sw.js"), "utf8");
+const SOURCES = fs.readFileSync(path.join(__dirname, "SOURCES.md"), "utf8");
 
 let failed = 0, passed = 0;
 function ok(name, cond, detail) {
@@ -73,6 +74,10 @@ const w = dom.window, d = w.document;
   const anlIds = Object.keys(DEEP).filter(k => DEEP[k].anl);
   const anlMissing = anlIds.filter(k => { w.openDetail(k); return !d.querySelector("#ovbody details.anlbox"); });
   ok("alle " + anlIds.length + " Anleitungen als einklappbarer Block gerendert", anlMissing.length === 0, anlMissing.join(","));
+  const guideBad = TESTS.filter(t => !DEEP[t.id] || !Array.isArray(DEEP[t.id].anl) || DEEP[t.id].anl.length < 4)
+                        .map(t => t.id);
+  ok("alle " + TESTS.length + " Karten besitzen eine konkrete Anleitung mit mindestens 4 Schritten",
+     guideBad.length === 0, guideBad.join(", "));
   w.applyBeginner(false); w.openDetail("leitung");
   const proClosed = !d.querySelector("#ovbody details.anlbox").open;
   const contentPresent = d.getElementById("ovbody").innerHTML.includes("Nullabgleich");
@@ -199,11 +204,13 @@ const w = dom.window, d = w.document;
   const appV = (HTML.match(/APP_VERSION\s*=\s*'([^']+)'/) || [])[1] || "";
   const cacheV = (SW.match(/CACHE_NAME\s*=\s*'kfz-multimeter-profi-v([^']+)'/) || [])[1] || "";
   ok("APP_VERSION (" + appV + ") ↔ CACHE_NAME (v" + cacheV + ") synchron",
-     appV.replace("-Profi","").replace(".","-") === cacheV);
+     appV.replace("-Profi","").split(".").join("-") === cacheV);
   const missingPrecache = [...HTML.matchAll(/href="(splash-[^"]+)"/g)].map(m => m[1]).filter(f => !SW.includes(f));
   ok("alle Splash-Bilder im SW-Precache", missingPrecache.length === 0, missingPrecache.join(","));
 
   section("11 · Fokus-Trap");
+  const detailOpener = d.querySelector('[data-card-id="masse"]');
+  detailOpener.focus();
   w.openDetail("masse");
   const overlay = d.getElementById("overlay");
   const foci = [...overlay.querySelectorAll("button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex='-1'])")];
@@ -216,6 +223,9 @@ const w = dom.window, d = w.document;
   ok("Tab am Ende springt zum Anfang, Shift+Tab am Anfang zum Ende", wrapped && wrappedBack,
      JSON.stringify({wrapped, wrappedBack}));
   w.doCloseOverlays();
+  ok("Fokus kehrt nach Neurendern zur auslösenden Karte zurück",
+     d.activeElement && d.activeElement.dataset.cardId === "masse",
+     d.activeElement && (d.activeElement.id || d.activeElement.outerHTML.slice(0,80)));
 
 
   section("12 · Semantik: keine universellen Festgrenzen");
@@ -270,6 +280,12 @@ const w = dom.window, d = w.document;
       swapBad.push(k + " fs#" + (i + 1));
   }));
   ok("kein Teiletausch ohne vorherigen Bestätigungsschritt", swapBad.length === 0, swapBad.join(", "));
+  ok("Ruhestrom-Diagnose verwendet keine feste >80-mA-Entscheidungsgrenze",
+     !/>\s*80\s*mA/.test(active), ">80 mA gefunden");
+  ok("Sensor-Masseversatz verwendet keine feste <50-mV-Freigabegrenze",
+     !/<\s*50\s*mV/.test(JSON.stringify(TESTS.find(x=>x.id==="sensor-masseversatz"))+JSON.stringify(DEEP["sensor-masseversatz"])));
+  ok("Sicherungs-mV-Rechner klassifiziert Strom nicht mit festen 5/50/200-mA-Schwellen",
+     !/ma\s*<\s*(5|50|200)/.test(active));
 
   // Gefahrenmatrix: danger-Warnungen erscheinen vor der Arbeitsanweisung
   w.applyBeginner(true);
@@ -294,6 +310,16 @@ const w = dom.window, d = w.document;
   const splashInSw = [...HTML.matchAll(/href="(splash-[^"]+)"/g)].map(m => m[1]);
   ok("alle " + splashInSw.length + " Splash-Assets (Hoch- und Querformat) im Precache",
      splashInSw.every(f => sw.includes(f)));
+  const appCache = (HTML.match(/APP_CACHE_NAME\s*=\s*'([^']+)'/)||[])[1]||"";
+  const swCache = (SW.match(/CACHE_NAME\s*=\s*'([^']+)'/)||[])[1]||"";
+  ok("Seite und Service Worker verwenden denselben expliziten Cache-Namen",
+     appCache === swCache, JSON.stringify({appCache,swCache}));
+  ok("SW liefert seine Version über MessageChannel",
+     /GET_VERSION/.test(sw) && /cacheName:\s*CACHE_NAME/.test(sw));
+  ok("Registrierung umgeht veralteten HTTP-Cache für sw.js",
+     /register\('sw\.js',\{updateViaCache:'none'\}\)/.test(HTML));
+  ok("Updatebanner wird vor controllerchange-Reload zurückgesetzt",
+     /controllerchange[\s\S]*?hideUpdate\(\)[\s\S]*?location\.reload/.test(HTML));
 
   section("14 · Accessibility-Semantik");
   w.openDetail("masse");
@@ -314,12 +340,44 @@ const w = dom.window, d = w.document;
   const cssMin = /\.favbtn\{[^}]*min-width:44px/.test(HTML) && /\.favbtn\{[^}]*min-height:44px/.test(HTML);
   const backMin = /\.back\{[\s\S]*?width:44px;height:44px/.test(HTML);
   const navMin = /\.botnav button\{[\s\S]*?min-height:44px/.test(HTML);
-  ok("wesentliche Touchziele mindestens 44x44 CSS-Pixel (WCAG 2.2 SC 2.5.8)",
+  ok("wesentliche Touchziele mindestens 44x44 CSS-Pixel (WCAG 2.2 SC 2.5.5 Enhanced; über SC 2.5.8)",
      cssMin && backMin && navMin, JSON.stringify({ fav: cssMin, back: backMin, nav: navMin }));
 
   section("15 · Licht-/Dunkelschema");
   ok("systemabhängiges helles Farbschema vorhanden",
      /@media \(prefers-color-scheme: light\)/.test(HTML));
+  const cssEnd = HTML.indexOf("</style>");
+  const lightLast = HTML.lastIndexOf("@media (prefers-color-scheme: light)", cssEnd);
+  const lastBaseRule = Math.max(HTML.lastIndexOf(".checkitem.warn", cssEnd), HTML.lastIndexOf(".meta-card.warn", cssEnd));
+  ok("abschließender Hellmodus-Block steht nach allen Basisregeln",
+     lightLast > lastBaseRule && lightLast < cssEnd, JSON.stringify({lightLast,lastBaseRule,cssEnd}));
+  function lum(hex){
+    const c=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255)
+      .map(v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4));
+    return .2126*c[0]+.7152*c[1]+.0722*c[2];
+  }
+  function contrast(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);}
+  ok("weiße Schrift auf Light-Accent und Light-Blue erreicht mindestens 4,5:1",
+     contrast("#754800","#ffffff") >= 4.5 && contrast("#075a9f","#ffffff") >= 4.5,
+     JSON.stringify({accent:contrast("#754800","#ffffff"),blue:contrast("#075a9f","#ffffff")}));
+
+  section("16 · Quellen- und Grenzwerttransparenz");
+  ok("SOURCES.md ist auf die aktuelle Version datiert und enthält direkte URLs",
+     /v8\.2(\.\d+)?-Profi/.test(SOURCES) && (SOURCES.match(/https:\/\//g)||[]).length >= 12);
+  ok("WCAG-Zuordnung ist korrekt: 24 px SC 2.5.8, 44 px SC 2.5.5",
+     /24 × 24[\s\S]*SC 2\.5\.8/.test(SOURCES) && /44 × 44[\s\S]*SC 2\.5\.5/.test(SOURCES));
+  const missingSourceLabel = TESTS.filter(t=>{w.openDetail(t.id);return !/Sollwertquelle:/.test(d.getElementById("ovbody").textContent);}).map(t=>t.id);
+  ok("jede Detailansicht zeigt eine Sollwertquelle oder OEM-Pflicht",
+     missingSourceLabel.length === 0, missingSourceLabel.join(", "));
+
+  section("17 · Nachbesserungen v8.2.1");
+  ok("nur ein Hellmodus-Block (keine konkurrierende Definition)",
+     (HTML.match(/@media \(prefers-color-scheme: light\)/g) || []).length === 1,
+     "gefunden: " + (HTML.match(/@media \(prefers-color-scheme: light\)/g) || []).length);
+  ok("ISO 8820-3 nicht als veröffentlichte 2026-Norm zitiert",
+     !/ISO 8820-3:2026/.test(SOURCES) && /ISO\/FDIS 8820-3/.test(SOURCES) && /ISO 8820-3:2015/.test(SOURCES));
+  ok("Rechner bietet Einordnung über den gemessenen Gesamt-Ruhestrom",
+     /id="cTotal"/.test(HTML) && /Gesamt-Ruhestroms/.test(HTML));
 
   if (notes.length) {
     section("Hinweise (kein Fehler)");

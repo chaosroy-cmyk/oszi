@@ -1,6 +1,6 @@
 {
   "name": "kfz-multimeter-profi",
-  "version": "8.1.0",
+  "version": "8.2.1",
   "private": true,
   "description": "KFZ Multimeter Profi – Lern- und Diagnosehilfe als PWA. Die Produktions-App ist abhängigkeitsfrei; jsdom wird ausschliesslich für den Validator benötigt.",
   "scripts": {
