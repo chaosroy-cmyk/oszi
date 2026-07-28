@@ -1,6 +1,6 @@
 # SOURCES.md — Quellen- und Grenzwertmatrix
 
-Stand: **v8.2.1-Profi, geprüft am 27.07.2026**.
+Stand: **v8.3-Profi, geprüft am 28.07.2026**.
 
 Die Vollversion unterscheidet drei Evidenzstufen:
 
@@ -35,6 +35,7 @@ Ampelfarben in Tabellen zeigen deshalb die **Prüfpriorität**, nicht automatisc
 | Hochdruck-Flüssigkeitsstrahl/Injektionsverletzung | [UK HSE Safety Alert FOD 4-2014](https://www.hse.gov.uk/safetybulletins/hydraulic-injection-injury.htm) | 23.09.2014 | Allgemeiner Gefahrennachweis für Flüssigkeitsinjektion; am Fahrzeug gilt zusätzlich die OEM-Druckabbauprozedur |
 | Klassischer High-Speed-CAN, physikalische Schicht | [ISO 11898-2:2026](https://www.iso.org/standard/90697.html) | Edition 4, 2026-05 | Karte `can`; 60 Ω nur bei der klassischen Topologie mit zwei 120-Ω-Abschlüssen |
 | LIN-Protokoll | [ISO 17987-3:2025](https://www.iso.org/fr/standard/85127.html) und [LIN 2.2A](https://www.lin-cia.org/fileadmin/microsites/lin-cia.org/resources/documents/LIN_2.2A.pdf) | ISO Edition 2 / LIN Rev. 2.2A | Karte `lin`; Multimeter kann Frames nicht freigeben |
+| Klemmenbezeichnungen im Kfz (30, 85, 86, 87, 87a, 87b) | DIN 72552 – Klemmenbezeichnungen in Kraftfahrzeugen | Deutsche Norm, Klemmenverzeichnis | Karten `relais`, `relais-typen`, `klemmen`; die Norm regelt die Bezeichnung, nicht Sollwerte |
 | Touchziele 24 × 24 CSS-Pixel oder Abstand | [W3C WCAG 2.2 SC 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum) | WCAG 2.2, Level AA | Normatives Minimum |
 | Touchziele 44 × 44 CSS-Pixel | [W3C WCAG 2.2 SC 2.5.5](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced) | WCAG 2.2, Level AAA | Von der App bewusst erfülltes, strengeres Ziel |
 
@@ -52,6 +53,7 @@ dokumentierten Fahrzeug-Basiswert verglichen:
 - Spulenwiderstände von Relais, Magnetventilen und Injektoren
 - Stromaufnahme von Pumpen, Lüftern, Heizern und Stellmotoren
 - Klemme-50- und Steuergeräte-Massegrenzen
+- Relais-Spulenwiderstand und Kontaktabfall (in den Karten als Beispiele gekennzeichnet)
 
 Orientierungswerte können weiterhin erläutert werden, lösen aber ohne konkrete
 Sollwertquelle keine automatische Austausch- oder Freigabeentscheidung aus.

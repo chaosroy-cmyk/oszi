@@ -363,7 +363,7 @@ const w = dom.window, d = w.document;
 
   section("16 · Quellen- und Grenzwerttransparenz");
   ok("SOURCES.md ist auf die aktuelle Version datiert und enthält direkte URLs",
-     /v8\.2(\.\d+)?-Profi/.test(SOURCES) && (SOURCES.match(/https:\/\//g)||[]).length >= 12);
+     new RegExp("v"+(HTML.match(/APP_VERSION\s*=\s*'([^']+)'/)||[])[1].replace(/\./g,"\\.")).test(SOURCES) && (SOURCES.match(/https:\/\//g)||[]).length >= 12);
   ok("WCAG-Zuordnung ist korrekt: 24 px SC 2.5.8, 44 px SC 2.5.5",
      /24 × 24[\s\S]*SC 2\.5\.8/.test(SOURCES) && /44 × 44[\s\S]*SC 2\.5\.5/.test(SOURCES));
   const missingSourceLabel = TESTS.filter(t=>{w.openDetail(t.id);return !/Sollwertquelle:/.test(d.getElementById("ovbody").textContent);}).map(t=>t.id);
@@ -378,6 +378,47 @@ const w = dom.window, d = w.document;
      !/ISO 8820-3:2026/.test(SOURCES) && /ISO\/FDIS 8820-3/.test(SOURCES) && /ISO 8820-3:2015/.test(SOURCES));
   ok("Rechner bietet Einordnung über den gemessenen Gesamt-Ruhestrom",
      /id="cTotal"/.test(HTML) && /Gesamt-Ruhestroms/.test(HTML));
+
+  section("18 · Relais-Kartensatz (v8.3)");
+  const relayIds = ["relais", "relais-typen", "relais-leistung", "relais-elektronisch"];
+  const relayMissing = relayIds.filter(id => !TESTS.some(t => t.id === id));
+  ok("alle 4 Relaiskarten vorhanden", relayMissing.length === 0, relayMissing.join(", "));
+  const relayThin = relayIds.filter(id => !DEEP[id] || !Array.isArray(DEEP[id].anl) || DEEP[id].anl.length < 4);
+  ok("jede Relaiskarte hat eine Anleitung mit mindestens 4 Schritten", relayThin.length === 0, relayThin.join(", "));
+
+  // Entflechtung: die Sicherungskarte darf keine Relais-Prüfschritte mehr enthalten
+  const fuseCard = TESTS.find(t => t.id === "sicherung");
+  const fuseDeep = DEEP["sicherung"] || {};
+  const fuseSteps = JSON.stringify(fuseDeep.anl || []) + JSON.stringify(fuseDeep.fs || []) +
+                    JSON.stringify(fuseDeep.rt || {}) + JSON.stringify(fuseDeep.urs || []);
+  ok("Sicherungskarte heißt nicht mehr 'Sicherung / Relais'", !/Relais/.test(fuseCard.nm), fuseCard.nm);
+  ok("Sicherungskarte enthält keine Relais-Prüfschritte mehr",
+     !/(Klick|Kl\.87|30→87|Spulen?widerstand|85\/86)/.test(fuseSteps));
+
+  // Relaisbaum startet mit der Bauart, nicht mit einem Messwert
+  const relTree = TREES["relais-schaltet-nicht"];
+  ok("Diagnosebaum 'relais-schaltet-nicht' vorhanden", !!relTree);
+  if (relTree) {
+    const q = relTree.nodes[relTree.start].q || "";
+    ok("Relaisbaum beginnt mit der Bauart, nicht mit einem Messwert",
+       /Bauart/i.test(q) && !/\d+,\d+\s*V/.test(q), q);
+  }
+
+  // Leistungsrelais ist als Gefahrprüfung klassifiziert
+  const power = TESTS.find(t => t.id === "relais-leistung");
+  ok("relais-leistung: tag=gef, Risiko hoch, sichtbarer Gefahrblock",
+     power.tag === "gef" && power.risk === "hoch" && (power.warn || []).some(x => x[0] === "danger"),
+     JSON.stringify({ tag: power.tag, risk: power.risk }));
+
+  // Keine toten Verweise auf den alten Kartennamen
+  const allText = JSON.stringify(TESTS) + JSON.stringify(DEEP) + JSON.stringify(TREES);
+  ok("keine Verweise mehr auf die alte Karte 'Sicherung/Relais'",
+     !/Prüfung:\s*Sicherung\/Relais/.test(allText));
+
+  // Bauartunterscheidungen, die das Messverfahren ändern, sind abgedeckt
+  ["87a", "Doppelschließer", "Freilaufdiode", "Parallelwiderstand", "Halbleiter"].forEach(k => {
+    ok("Bauartmerkmal abgedeckt: " + k, allText.includes(k));
+  });
 
   if (notes.length) {
     section("Hinweise (kein Fehler)");
