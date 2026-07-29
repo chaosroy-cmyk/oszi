@@ -1,0 +1,70 @@
+name: willhaben-Watcher
+
+# Sucht regelmäßig auf willhaben und meldet neue Treffer per Telegram.
+# Einrichtung: willhaben-watcher/GITHUB.md
+#
+# Nötig sind zwei Repository-Secrets (Settings → Secrets and variables → Actions):
+#   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+
+on:
+  # Viertelstündlich, aber bewusst nicht zur vollen Stunde: GitHub verschiebt
+  # Läufe zu Stoßzeiten sonst gern um mehrere Minuten.
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  # Erlaubt den Knopf "Run workflow" zum sofortigen Ausprobieren.
+  workflow_dispatch:
+    inputs:
+      testlauf:
+        description: "Testlauf – nur suchen, nichts senden und nichts merken"
+        type: boolean
+        default: false
+
+# Zum Zurückschreiben des Merkzettels (state/watcher-state.json).
+permissions:
+  contents: write
+
+# Zwei gleichzeitige Läufe würden sich beim Merkzettel in die Quere kommen.
+concurrency:
+  group: willhaben-watcher
+  cancel-in-progress: false
+
+jobs:
+  suche:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: willhaben-watcher
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: willhaben-watcher/package-lock.json
+
+      - run: npm ci
+
+      - name: Suche ausführen
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DRY_RUN: ${{ inputs.testlauf }}
+        run: npm run watch:once
+
+      - name: Merkzettel sichern
+        if: ${{ inputs.testlauf != true }}
+        run: |
+          if [ -z "$(git status --porcelain state)" ]; then
+            echo "Keine Änderung am Merkzettel."
+            exit 0
+          fi
+          git config user.name "willhaben-watcher"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state
+          git commit -m "Watcher: Merkzettel aktualisiert [skip ci]"
+          # Falls zwischenzeitlich gepusht wurde, erst nachziehen.
+          git pull --rebase --autostash
+          git push

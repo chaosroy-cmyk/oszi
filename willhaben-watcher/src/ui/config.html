@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>willhaben-Watcher · Suchprofile</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --surface-2: #eef0f4;
+    --border: #d6dae1;
+    --text: #16191d;
+    --muted: #5c646f;
+    --accent: #0b63c5;
+    --accent-text: #ffffff;
+    --ok: #10743f;
+    --warn: #8a5a00;
+    --err: #b3261e;
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171c;
+      --surface: #1c2027;
+      --surface-2: #232833;
+      --border: #333a46;
+      --text: #e9ecf1;
+      --muted: #9aa4b2;
+      --accent: #4c9bf5;
+      --accent-text: #08121f;
+      --ok: #5fd694;
+      --warn: #f0c266;
+      --err: #ff8d84;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 0 5rem;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: .85rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+    align-items: center;
+  }
+  header h1 { font-size: 1.05rem; margin: 0; flex: 1 1 auto; }
+  header h1 small { display: block; font-weight: 400; color: var(--muted); font-size: .78rem; }
+  main { max-width: 60rem; margin: 0 auto; padding: 1rem; }
+  section.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  .profile-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    align-items: center;
+    margin-bottom: .9rem;
+  }
+  .profile-head input[type=text].name {
+    flex: 1 1 12rem;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: .75rem;
+  }
+  .grid .wide { grid-column: 1 / -1; }
+  label { display: block; font-size: .78rem; color: var(--muted); margin-bottom: .2rem; }
+  input, select, button, textarea {
+    font: inherit;
+    color: inherit;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    padding: .45rem .55rem;
+    width: 100%;
+  }
+  input:focus-visible, select:focus-visible, button:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  button {
+    width: auto;
+    cursor: pointer;
+    background: var(--surface-2);
+    white-space: nowrap;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled { opacity: .55; cursor: progress; }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  button.danger { color: var(--err); }
+  .switch { display: flex; align-items: center; gap: .35rem; font-size: .85rem; white-space: nowrap; }
+  .switch input { width: auto; }
+  .row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+  .spacer { flex: 1 1 auto; }
+  .hint { color: var(--muted); font-size: .78rem; margin: .35rem 0 0; }
+  .badge {
+    font-size: .72rem;
+    padding: .1rem .45rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.2rem;
+    transform: translate(-50%, 150%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: .6rem .9rem;
+    max-width: min(38rem, 92vw);
+    box-shadow: 0 8px 24px rgb(0 0 0 / .22);
+    transition: transform .22s ease;
+    z-index: 50;
+  }
+  #toast.show { transform: translate(-50%, 0); }
+  #toast.err { border-left-color: var(--err); }
+  #toast.ok { border-left-color: var(--ok); }
+  .results { margin-top: .8rem; border-top: 1px dashed var(--border); padding-top: .7rem; }
+  .results ol { margin: .4rem 0 0; padding-left: 1.2rem; }
+  .results li { margin-bottom: .3rem; font-size: .88rem; }
+  .results a { color: var(--accent); }
+  pre {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .6rem;
+    overflow-x: auto;
+    font-size: .78rem;
+    margin: 0;
+  }
+  .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: .5rem; }
+  .status-grid div { background: var(--surface-2); border-radius: 8px; padding: .5rem .6rem; }
+  .status-grid strong { display: block; font-size: 1.15rem; }
+  .status-grid span { font-size: .75rem; color: var(--muted); }
+  .err-text { color: var(--err); }
+</style>
+</head>
+<body>
+<header>
+  <h1>willhaben-Watcher <small id="subtitle">Suchprofile werden geladen …</small></h1>
+  <button id="btn-add">+ Profil</button>
+  <button id="btn-telegram">Telegram testen</button>
+  <button id="btn-run">Alle jetzt ausführen</button>
+  <button id="btn-save" class="primary">Speichern</button>
+</header>
+
+<main>
+  <section class="card" id="status-card">
+    <div class="row">
+      <strong>Letzter Lauf</strong>
+      <span class="spacer"></span>
+      <button id="btn-refresh">Aktualisieren</button>
+    </div>
+    <p class="hint" id="status-text">wird geladen …</p>
+    <div class="status-grid" id="status-grid" hidden></div>
+  </section>
+
+  <div id="profiles"></div>
+
+  <section class="card">
+    <strong>Hinweise</strong>
+    <p class="hint">
+      Der Cron-Job läuft alle 15 Minuten und liest die Profile bei jedem Lauf frisch aus KV –
+      Änderungen hier wirken also ohne erneutes Deployment.
+      Beim allerersten Lauf eines Profils werden alle aktuellen Treffer stillschweigend als
+      „bekannt“ markiert; gemeldet wird erst, was danach neu dazukommt.
+      Mit „Duplikate zurücksetzen“ wird dieser Zustand verworfen (nächster Lauf markiert erneut neu).
+      Das Tool ist für den privaten Gebrauch gedacht – bitte keine kürzeren Intervalle einstellen.
+    </p>
+  </section>
+</main>
+
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<template id="profile-template">
+  <section class="card profile">
+    <div class="profile-head">
+      <label class="switch"><input type="checkbox" data-field="enabled"> aktiv</label>
+      <input type="text" class="name" data-field="name" placeholder="Profilname" maxlength="80">
+      <span class="badge" data-role="id"></span>
+      <button data-action="test">Testlauf</button>
+      <button data-action="run">Jetzt ausführen</button>
+      <button data-action="reset">Duplikate zurücksetzen</button>
+      <button data-action="delete" class="danger">Löschen</button>
+    </div>
+    <div class="grid">
+      <div>
+        <label>Marke</label>
+        <select data-field="makeId"><option value="">alle Marken</option></select>
+      </div>
+      <div>
+        <label>Modell</label>
+        <select data-field="modelId"><option value="">alle Modelle</option></select>
+      </div>
+      <div>
+        <label>Bundesland</label>
+        <select data-field="areaId"></select>
+      </div>
+      <div>
+        <label>PLZ (Umkreis-Mittelpunkt)</label>
+        <input type="text" inputmode="numeric" pattern="\d{4}" maxlength="4" data-field="postcode" placeholder="z. B. 5020">
+      </div>
+      <div>
+        <label>Umkreis (km)</label>
+        <input type="number" min="1" max="1000" step="1" data-field="radiusKm" placeholder="z. B. 50">
+      </div>
+      <div>
+        <label>Preis von (€)</label>
+        <input type="number" min="0" step="100" data-field="priceFrom">
+      </div>
+      <div>
+        <label>Preis bis (€)</label>
+        <input type="number" min="0" step="100" data-field="priceTo" placeholder="z. B. 8000">
+      </div>
+      <div>
+        <label>Baujahr von</label>
+        <input type="number" min="1900" max="2100" step="1" data-field="yearFrom" placeholder="z. B. 2010">
+      </div>
+      <div>
+        <label>Baujahr bis</label>
+        <input type="number" min="1900" max="2100" step="1" data-field="yearTo">
+      </div>
+      <div>
+        <label>Kilometerstand max.</label>
+        <input type="number" min="0" step="1000" data-field="mileageTo" placeholder="z. B. 300000">
+      </div>
+      <div class="wide">
+        <label>Suchbegriff (wird von willhaben selbst gesucht, optional)</label>
+        <input type="text" data-field="keyword" maxlength="120" placeholder="z. B. S-Line">
+      </div>
+      <div class="wide">
+        <label>Stichwörter – mindestens eines muss in Titel/Beschreibung vorkommen (kommagetrennt)</label>
+        <input type="text" data-field="includeKeywords" placeholder="Getriebeschaden, Bastler, Defekt">
+      </div>
+      <div class="wide">
+        <label>Ausschluss-Stichwörter – keines darf vorkommen (kommagetrennt)</label>
+        <input type="text" data-field="excludeKeywords" placeholder="Export, Unfall">
+      </div>
+    </div>
+    <p class="hint" data-role="hint"></p>
+    <div class="results" data-role="results" hidden></div>
+  </section>
+</template>
+
+<script>
+(() => {
+  "use strict";
+
+  // Bundesland-IDs von willhaben. Der Server schickt dieselbe Liste mit,
+  // diese Kopie hält die Seite auch ohne API-Antwort bedienbar.
+  const FALLBACK_REGIONS = [
+    { id: "", name: "ganz Österreich" },
+    { id: "1", name: "Burgenland" },
+    { id: "2", name: "Kärnten" },
+    { id: "3", name: "Niederösterreich" },
+    { id: "4", name: "Oberösterreich" },
+    { id: "5", name: "Salzburg" },
+    { id: "6", name: "Steiermark" },
+    { id: "7", name: "Tirol" },
+    { id: "8", name: "Vorarlberg" },
+    { id: "900", name: "Wien" },
+    { id: "22000", name: "andere Länder" },
+  ];
+
+  const NUMBER_FIELDS = ["priceFrom", "priceTo", "yearFrom", "yearTo", "mileageFrom", "mileageTo", "radiusKm"];
+  const LIST_FIELDS = ["includeKeywords", "excludeKeywords"];
+
+  const state = {
+    profiles: [],
+    regions: FALLBACK_REGIONS,
+    makes: [],
+    modelsByMake: new Map(),
+    key: resolveKey(),
+    dirty: false,
+  };
+
+  const els = {
+    profiles: document.getElementById("profiles"),
+    template: document.getElementById("profile-template"),
+    subtitle: document.getElementById("subtitle"),
+    statusText: document.getElementById("status-text"),
+    statusGrid: document.getElementById("status-grid"),
+    toast: document.getElementById("toast"),
+  };
+
+  function resolveKey() {
+    const fromUrl = new URLSearchParams(location.search).get("key");
+    if (fromUrl) {
+      try { sessionStorage.setItem("wh-key", fromUrl); } catch { /* privater Modus */ }
+      return fromUrl;
+    }
+    try { return sessionStorage.getItem("wh-key") || ""; } catch { return ""; }
+  }
+
+  function api(path, options = {}) {
+    const url = new URL(path, location.origin);
+    if (state.key) url.searchParams.set("key", state.key);
+    return fetch(url, { credentials: "same-origin", ...options }).then(async (res) => {
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+      return body;
+    });
+  }
+
+  let toastTimer = 0;
+  function toast(message, kind = "") {
+    els.toast.textContent = message;
+    els.toast.className = kind;
+    els.toast.hidden = false;
+    requestAnimationFrame(() => els.toast.classList.add("show"));
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => els.toast.classList.remove("show"), kind === "err" ? 9000 : 4000);
+  }
+
+  async function busy(button, fn) {
+    const buttons = [...document.querySelectorAll("button")];
+    buttons.forEach((b) => (b.disabled = true));
+    try {
+      return await fn();
+    } catch (err) {
+      toast(err.message || String(err), "err");
+      return null;
+    } finally {
+      buttons.forEach((b) => (b.disabled = false));
+    }
+  }
+
+  function makeId() {
+    return `profil-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function emptyProfile() {
+    return {
+      id: makeId(),
+      name: "Neue Suche",
+      enabled: true,
+      areaId: "",
+      includeKeywords: [],
+      excludeKeywords: [],
+    };
+  }
+
+  function fillSelect(select, options, selected, placeholder) {
+    select.textContent = "";
+    if (placeholder !== undefined) select.append(new Option(placeholder, ""));
+    for (const option of options) {
+      select.append(new Option(option.label ?? option.name, option.id));
+    }
+    select.value = selected ?? "";
+    // Wert (noch) nicht in der Liste: als Platzhalter ergänzen, damit er nicht verloren geht.
+    if (selected && select.value !== selected) {
+      select.append(new Option(`ID ${selected}`, selected));
+      select.value = selected;
+    }
+  }
+
+  async function loadModels(makeIdValue) {
+    if (!makeIdValue) return [];
+    if (state.modelsByMake.has(makeIdValue)) return state.modelsByMake.get(makeIdValue);
+    const body = await api(`/api/models?make=${encodeURIComponent(makeIdValue)}`).catch((err) => {
+      toast(`Modelle nicht abrufbar: ${err.message}`, "err");
+      return { options: [] };
+    });
+    state.modelsByMake.set(makeIdValue, body.options || []);
+    return body.options || [];
+  }
+
+  function renderProfiles() {
+    els.profiles.textContent = "";
+    for (const profile of state.profiles) els.profiles.append(renderProfile(profile));
+    els.subtitle.textContent =
+      `${state.profiles.length} Profil(e), ${state.profiles.filter((p) => p.enabled).length} aktiv` +
+      (state.dirty ? " · ungespeicherte Änderungen" : "");
+  }
+
+  function renderProfile(profile) {
+    const node = els.template.content.firstElementChild.cloneNode(true);
+    node.dataset.id = profile.id;
+    node.querySelector('[data-role="id"]').textContent = profile.id;
+
+    const fields = node.querySelectorAll("[data-field]");
+    for (const field of fields) {
+      const name = field.dataset.field;
+      const value = profile[name];
+      if (field.type === "checkbox") field.checked = value !== false;
+      else if (LIST_FIELDS.includes(name)) field.value = (value || []).join(", ");
+      else field.value = value === undefined || value === null ? "" : value;
+
+      field.addEventListener("change", () => {
+        applyField(profile, name, field);
+        state.dirty = true;
+        els.subtitle.textContent = `${state.profiles.length} Profil(e) · ungespeicherte Änderungen`;
+      });
+    }
+
+    const makeSelect = node.querySelector('[data-field="makeId"]');
+    const modelSelect = node.querySelector('[data-field="modelId"]');
+    const areaSelect = node.querySelector('[data-field="areaId"]');
+
+    fillSelect(areaSelect, state.regions, profile.areaId || "");
+    fillSelect(makeSelect, state.makes, profile.makeId || "", "alle Marken");
+    loadModels(profile.makeId).then((models) =>
+      fillSelect(modelSelect, models, profile.modelId || "", "alle Modelle"),
+    );
+
+    makeSelect.addEventListener("change", async () => {
+      profile.makeLabel = makeSelect.selectedOptions[0]?.text || undefined;
+      profile.modelId = undefined;
+      profile.modelLabel = undefined;
+      fillSelect(modelSelect, await loadModels(profile.makeId), "", "alle Modelle");
+    });
+    modelSelect.addEventListener("change", () => {
+      profile.modelLabel = modelSelect.selectedOptions[0]?.text || undefined;
+    });
+
+    node.querySelector('[data-action="delete"]').addEventListener("click", () => {
+      if (!confirm(`Profil "${profile.name}" löschen?`)) return;
+      state.profiles = state.profiles.filter((p) => p !== profile);
+      state.dirty = true;
+      renderProfiles();
+    });
+
+    node.querySelector('[data-action="test"]').addEventListener("click", (event) =>
+      busy(event.target, () => runProfile(profile, node, true)),
+    );
+    node.querySelector('[data-action="run"]').addEventListener("click", (event) =>
+      busy(event.target, () => runProfile(profile, node, false)),
+    );
+    node.querySelector('[data-action="reset"]').addEventListener("click", (event) =>
+      busy(event.target, async () => {
+        if (!confirm(`Duplikatserkennung für "${profile.name}" zurücksetzen?`)) return;
+        const body = await api(`/api/reset-seen?profile=${encodeURIComponent(profile.id)}`, { method: "POST" });
+        toast(`${body.deleted} gemerkte Inserate gelöscht.`, "ok");
+      }),
+    );
+
+    updateHint(profile, node);
+    return node;
+  }
+
+  function applyField(profile, name, field) {
+    if (field.type === "checkbox") {
+      profile[name] = field.checked;
+    } else if (NUMBER_FIELDS.includes(name)) {
+      const n = Number.parseInt(field.value, 10);
+      profile[name] = Number.isFinite(n) ? n : undefined;
+    } else if (LIST_FIELDS.includes(name)) {
+      profile[name] = field.value.split(",").map((s) => s.trim()).filter(Boolean);
+    } else {
+      profile[name] = field.value.trim() || undefined;
+    }
+    updateHint(profile, field.closest(".profile"));
+  }
+
+  function updateHint(profile, node) {
+    const parts = [];
+    parts.push(profile.makeLabel || (profile.makeId ? `Marke ${profile.makeId}` : "alle Marken"));
+    if (profile.modelLabel || profile.modelId) parts.push(profile.modelLabel || profile.modelId);
+    if (profile.priceTo) parts.push(`bis € ${profile.priceTo.toLocaleString("de-AT")}`);
+    if (profile.yearFrom) parts.push(`ab BJ ${profile.yearFrom}`);
+    if (profile.mileageTo) parts.push(`max. ${profile.mileageTo.toLocaleString("de-AT")} km`);
+    if (profile.postcode && profile.radiusKm) parts.push(`${profile.radiusKm} km um ${profile.postcode}`);
+    const region = state.regions.find((r) => r.id === (profile.areaId || ""));
+    if (region && region.id) parts.push(region.name);
+    if (profile.includeKeywords?.length) parts.push(`Stichwörter: ${profile.includeKeywords.join(", ")}`);
+    node.querySelector('[data-role="hint"]').textContent = parts.join(" · ");
+  }
+
+  async function runProfile(profile, node, dryRun) {
+    if (state.dirty) {
+      toast("Erst speichern – ausgeführt wird immer der gespeicherte Stand.", "err");
+      return;
+    }
+    const query = new URLSearchParams({ profile: profile.id, all: "1" });
+    if (dryRun) query.set("dry", "1");
+    const summary = await api(`/api/run?${query}`, { method: "POST" });
+    showResults(node, summary.profiles?.[0], dryRun);
+  }
+
+  function showResults(node, result, dryRun) {
+    const box = node.querySelector('[data-role="results"]');
+    box.textContent = "";
+    box.hidden = false;
+
+    if (!result) {
+      box.append(el("p", "Kein Ergebnis – Profil nicht gefunden."));
+      return;
+    }
+    if (result.error) {
+      box.append(el("p", `Fehler: ${result.error}`, "err-text"));
+      return;
+    }
+
+    const head = dryRun
+      ? `Testlauf: ${result.fetched} Inserate geladen, ${result.matched} nach Filtern übrig (nichts gesendet, nichts gemerkt).`
+      : result.seeded
+        ? `Erstlauf: ${result.matched} Treffer als bekannt markiert – ab jetzt wird nur Neues gemeldet.`
+        : `${result.fetched} geladen · ${result.matched} passend · ${result.fresh} neu · ${result.notified} gesendet.`;
+    box.append(el("p", head));
+
+    const listings = result.listings || [];
+    if (listings.length === 0) return;
+
+    const list = document.createElement("ol");
+    for (const listing of listings.slice(0, 25)) {
+      const li = document.createElement("li");
+      const link = document.createElement("a");
+      link.href = listing.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = listing.title;
+      li.append(link);
+      const facts = [
+        listing.priceText,
+        listing.year ? `BJ ${listing.year}` : null,
+        listing.mileage !== null ? `${listing.mileage.toLocaleString("de-AT")} km` : null,
+        [listing.postcode, listing.location].filter(Boolean).join(" ") || null,
+        typeof listing.distanceKm === "number" ? `${Math.round(listing.distanceKm)} km entfernt` : null,
+      ].filter(Boolean);
+      if (facts.length) li.append(` — ${facts.join(" · ")}`);
+      list.append(li);
+    }
+    box.append(list);
+    if (listings.length > 25) box.append(el("p", `… und ${listings.length - 25} weitere.`, "hint"));
+  }
+
+  function el(tag, text, className) {
+    const node = document.createElement(tag);
+    node.textContent = text;
+    if (className) node.className = className;
+    return node;
+  }
+
+  function renderStatus(lastRun) {
+    if (!lastRun) {
+      els.statusText.textContent = "Noch kein Lauf aufgezeichnet.";
+      els.statusGrid.hidden = true;
+      return;
+    }
+    const when = new Date(lastRun.finishedAt);
+    els.statusText.textContent =
+      `${when.toLocaleString("de-AT")} · ${lastRun.trigger === "cron" ? "Cron" : "manuell"} · ` +
+      `${Math.round(lastRun.durationMs / 100) / 10} s` +
+      (lastRun.errors?.length ? ` · ${lastRun.errors.length} Fehler` : "");
+
+    els.statusGrid.textContent = "";
+    els.statusGrid.hidden = false;
+    for (const profile of lastRun.profiles || []) {
+      const box = document.createElement("div");
+      box.append(el("strong", profile.error ? "Fehler" : `${profile.notified}`));
+      box.append(
+        el(
+          "span",
+          profile.error
+            ? `${profile.profileName}: ${profile.error}`
+            : `${profile.profileName} · ${profile.matched} passend, ${profile.fresh} neu`,
+        ),
+      );
+      if (profile.error) box.classList.add("err-text");
+      els.statusGrid.append(box);
+    }
+  }
+
+  async function loadAll() {
+    const [configBody, makesBody, stateBody] = await Promise.all([
+      api("/api/config"),
+      api("/api/makes").catch(() => ({ options: [] })),
+      api("/api/state").catch(() => ({ lastRun: null })),
+    ]);
+    state.regions = configBody.regions?.length ? configBody.regions : FALLBACK_REGIONS;
+    state.profiles = configBody.config?.profiles ?? [];
+    state.makes = makesBody.options ?? [];
+    if (state.makes.length === 0) toast("Markenliste nicht abrufbar – IDs bleiben erhalten.", "err");
+    state.dirty = false;
+    renderProfiles();
+    renderStatus(stateBody.lastRun);
+  }
+
+  document.getElementById("btn-add").addEventListener("click", () => {
+    state.profiles.push(emptyProfile());
+    state.dirty = true;
+    renderProfiles();
+    els.profiles.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  document.getElementById("btn-save").addEventListener("click", (event) =>
+    busy(event.target, async () => {
+      const body = await api("/api/config", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ config: { version: 1, profiles: state.profiles } }),
+      });
+      state.profiles = body.config.profiles;
+      state.dirty = false;
+      renderProfiles();
+      toast("Gespeichert. Der nächste Cron-Lauf verwendet die neuen Kriterien.", "ok");
+    }),
+  );
+
+  document.getElementById("btn-run").addEventListener("click", (event) =>
+    busy(event.target, async () => {
+      if (state.dirty && !confirm("Es gibt ungespeicherte Änderungen. Trotzdem gespeicherten Stand ausführen?")) return;
+      const summary = await api("/api/run", { method: "POST" });
+      renderStatus(summary);
+      const sent = (summary.profiles || []).reduce((n, p) => n + p.notified, 0);
+      toast(`Lauf fertig: ${sent} Benachrichtigung(en), ${summary.errors.length} Fehler.`, summary.errors.length ? "err" : "ok");
+    }),
+  );
+
+  document.getElementById("btn-telegram").addEventListener("click", (event) =>
+    busy(event.target, async () => {
+      await api("/api/test-telegram", { method: "POST" });
+      toast("Testnachricht verschickt – schau in Telegram.", "ok");
+    }),
+  );
+
+  document.getElementById("btn-refresh").addEventListener("click", (event) =>
+    busy(event.target, async () => renderStatus((await api("/api/state")).lastRun)),
+  );
+
+  window.addEventListener("beforeunload", (event) => {
+    if (!state.dirty) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
+
+  busy(null, loadAll);
+})();
+</script>
+</body>
+</html>
