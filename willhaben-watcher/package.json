@@ -8,12 +8,15 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "build:single": "esbuild src/index.ts --bundle --format=esm --target=es2022 --loader:.html=text --outfile=dashboard/worker.js",
+    "watch:once": "esbuild src/node/run.ts --bundle --platform=node --format=esm --outfile=.build/run.mjs && node .build/run.mjs",
+    "watch:dry": "npm run watch:once -- --dry",
     "tail": "wrangler tail",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
     "kv:create": "wrangler kv namespace create WATCHER"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260722.1",
+    "@types/node": "^26.1.2",
     "esbuild": "^0.28.1",
     "typescript": "^5.6.3",
     "wrangler": "^4.115.0"

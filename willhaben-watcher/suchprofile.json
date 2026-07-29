@@ -1,0 +1,45 @@
+{
+  "_hinweis": "Hier stellst du ein, wonach gesucht wird. Nach dem Bearbeiten auf 'Commit changes' klicken - der nächste Lauf verwendet die neuen Werte. Feldbeschreibungen stehen in GITHUB.md. Marken- und Modellnummern findest du ebenfalls dort.",
+
+  "profiles": [
+    {
+      "id": "q7-umkreis",
+      "name": "Q7 im Umkreis",
+      "enabled": true,
+
+      "makeId": "1003",
+      "makeLabel": "Audi",
+      "modelId": "1031",
+      "modelLabel": "Q7",
+
+      "priceTo": 12000,
+      "postcode": "5020",
+      "radiusKm": 100,
+
+      "includeKeywords": [],
+      "excludeKeywords": []
+    },
+    {
+      "id": "q7-bastler",
+      "name": "Q7 Bastler / Getriebeschaden",
+      "enabled": true,
+
+      "makeId": "1003",
+      "makeLabel": "Audi",
+      "modelId": "1031",
+      "modelLabel": "Q7",
+
+      "priceTo": 12000,
+
+      "includeKeywords": [
+        "Getriebeschaden",
+        "Motorschaden",
+        "Bastler",
+        "Reparatur",
+        "Defekt",
+        "Schaden"
+      ],
+      "excludeKeywords": []
+    }
+  ]
+}

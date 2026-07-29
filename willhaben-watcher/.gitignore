@@ -5,3 +5,4 @@ dist/
 *.log
 AT.txt
 AT.zip
+.build/

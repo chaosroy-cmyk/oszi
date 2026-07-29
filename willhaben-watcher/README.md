@@ -29,6 +29,8 @@ Cron (*/15)  →  Suchprofile aus KV  →  willhaben-JSON-API  →  Filter  → 
 | `src/ui/config.html` | Konfigurationsoberfläche (einzelne Datei, ohne externe Abhängigkeiten) |
 | `SETUP.md` | Einrichtung Schritt für Schritt (Telegram + Cloudflare) |
 | `DASHBOARD.md`, `dashboard/worker.js` | Einrichtung ohne Terminal: eine Datei ins Cloudflare-Dashboard einfügen |
+| `GITHUB.md`, `suchprofile.json` | Betrieb ohne Cloudflare: als GitHub Action, Suchkriterien in einer Datei |
+| `src/node/` | Node-Variante des Watchers (Dateien statt KV) für die GitHub Action |
 
 ---
 
@@ -69,6 +71,9 @@ In der Antwort steht `"chat":{"id":123456789,…}` – das ist die Chat-ID.
 >
 > **Kein Terminal, nur Klicks?** [DASHBOARD.md](DASHBOARD.md) – dort fügst du
 > `dashboard/worker.js` als einzelne Datei im Cloudflare-Dashboard ein.
+>
+> **Ganz ohne Cloudflare?** [GITHUB.md](GITHUB.md) – der Watcher läuft dann als
+> GitHub Action in diesem Repository. Einzurichten sind nur zwei Secrets.
 
 Voraussetzung: Node.js ≥ 18 und ein Cloudflare-Account
 (`npx wrangler login` einmalig ausführen).
