@@ -24,7 +24,8 @@ id = "HIER_KV_NAMESPACE_ID_EINTRAGEN"
 # die werden über /config in KV gepflegt.
 [vars]
 # Wie viele Inserate pro Profil und Lauf von willhaben geholt werden.
-SEARCH_ROWS = "60"
+# Höhere Werte kosten CPU-Zeit (siehe SETUP.md, Abschnitt "Grenzen").
+SEARCH_ROWS = "30"
 # Obergrenze an Einzelnachrichten pro Profil und Lauf (Flutschutz).
 MAX_NOTIFY_PER_RUN = "10"
 # Wie lange eine gesehene Inserat-ID im KV bleibt.

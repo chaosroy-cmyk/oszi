@@ -27,6 +27,7 @@ Cron (*/15)  →  Suchprofile aus KV  →  willhaben-JSON-API  →  Filter  → 
 | `src/regions.ts` | Bundesland → willhaben-`areaId` |
 | `src/geo.ts`, `src/plz-data.ts` | PLZ-Koordinaten + Umkreisberechnung |
 | `src/ui/config.html` | Konfigurationsoberfläche (einzelne Datei, ohne externe Abhängigkeiten) |
+| `SETUP.md` | Einrichtung Schritt für Schritt (Telegram + Cloudflare) |
 
 ---
 
@@ -61,6 +62,9 @@ In der Antwort steht `"chat":{"id":123456789,…}` – das ist die Chat-ID.
 ---
 
 ## 2. Einrichten und deployen
+
+> **Ausführliche Anleitung mit jedem Schritt, Kontrollpunkten und einer
+> Fehlertabelle: [SETUP.md](SETUP.md).** Hier die Kurzfassung.
 
 Voraussetzung: Node.js ≥ 18 und ein Cloudflare-Account
 (`npx wrangler login` einmalig ausführen).
@@ -144,7 +148,7 @@ Salzburg" reicht PLZ `5020` + Umkreis `50` bei Bundesland „ganz Österreich".
 
 ### Erster Lauf eines Profils
 
-Damit ein neues Profil nicht sofort 60 Nachrichten auslöst, werden beim ersten
+Damit ein neues Profil nicht sofort dutzende Nachrichten auslöst, werden beim ersten
 Lauf **alle** aktuellen Treffer stillschweigend als bekannt markiert; es kommt
 nur eine kurze Info-Nachricht. Gemeldet wird ab dann, was neu dazukommt.
 Über „Duplikate zurücksetzen" lässt sich dieser Zustand pro Profil verwerfen.
@@ -218,7 +222,7 @@ Nur Technik, keine Suchkriterien – in `wrangler.toml` unter `[vars]`:
 
 | Variable | Standard | Bedeutung |
 |---|---|---|
-| `SEARCH_ROWS` | `60` | Inserate pro Profil und Lauf |
+| `SEARCH_ROWS` | `30` | Inserate pro Profil und Lauf; höhere Werte kosten CPU-Zeit (siehe [SETUP.md](SETUP.md)) |
 | `MAX_NOTIFY_PER_RUN` | `10` | Einzelnachrichten pro Profil und Lauf; darüber kommt eine Sammelmeldung |
 | `SEEN_TTL_DAYS` | `30` | wie lange eine Inserat-ID im KV bleibt |
 | `USER_AGENT` | Chrome-Desktop | überschreibbarer User-Agent |
@@ -243,7 +247,7 @@ kein HTML-Scraping:
 
 ```
 https://www.willhaben.at/webapi/iad/search/atz/seo/gebrauchtwagen/auto/gebrauchtwagenboerse
-    ?rows=60&page=1&sort=1
+    ?rows=30&page=1&sort=1
     &CAR_MODEL%2FMAKE=1003&CAR_MODEL%2FMODEL=1031
     &PRICE_TO=8000&YEAR_MODEL_FROM=2010&MILEAGE_TO=300000&areaId=5&keyword=…
 ```

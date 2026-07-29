@@ -7,7 +7,10 @@ const LAST_RUN_KEY = "state:last-run";
 const SEEDED_PREFIX = "state:seeded:";
 const SEEN_PREFIX = "seen:";
 
-const DEFAULT_ROWS = 60;
+// Bewusst niedrig: die Antwort enthält ~400 KB Filter-Metadaten plus ~9 KB je
+// Inserat, und JSON.parse zählt auf die CPU-Zeit des Workers. 30 neueste
+// Inserate je Profil sind bei 15-Minuten-Takt reichlich.
+const DEFAULT_ROWS = 30;
 const DEFAULT_MAX_NOTIFY = 10;
 const DEFAULT_SEEN_TTL_DAYS = 30;
 /** Kleine Pause zwischen Profilen – willhaben soll keine Bursts sehen. */
