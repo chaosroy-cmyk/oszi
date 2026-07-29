@@ -1,0 +1,39 @@
+name = "willhaben-watcher"
+main = "src/index.ts"
+compatibility_date = "2025-09-01"
+
+# Alle 15 Minuten suchen (willhaben nicht öfter abfragen).
+[triggers]
+crons = ["*/15 * * * *"]
+
+# Die Config-UI wird als Text-Modul eingebunden und bleibt dadurch eine
+# ganz normale, einzeln editierbare HTML-Datei.
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = true
+
+# KV für Suchprofile, gesehene Inserat-IDs und Laufstatus.
+# Namespace anlegen mit:  npx wrangler kv namespace create WATCHER
+# und die ausgegebene id hier eintragen.
+[[kv_namespaces]]
+binding = "WATCHER"
+id = "HIER_KV_NAMESPACE_ID_EINTRAGEN"
+
+# Betriebsparameter – Suchkriterien stehen bewusst NICHT hier,
+# die werden über /config in KV gepflegt.
+[vars]
+# Wie viele Inserate pro Profil und Lauf von willhaben geholt werden.
+SEARCH_ROWS = "60"
+# Obergrenze an Einzelnachrichten pro Profil und Lauf (Flutschutz).
+MAX_NOTIFY_PER_RUN = "10"
+# Wie lange eine gesehene Inserat-ID im KV bleibt.
+SEEN_TTL_DAYS = "30"
+
+# Secrets (nicht hier eintragen!):
+#   npx wrangler secret put TELEGRAM_BOT_TOKEN
+#   npx wrangler secret put TELEGRAM_CHAT_ID
+#   npx wrangler secret put CONFIG_PASSWORD
+
+[observability]
+enabled = true

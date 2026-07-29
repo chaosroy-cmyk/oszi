@@ -19,6 +19,7 @@ Für Smartphone optimiert, ohne externe Abhängigkeiten.
 | `tools/validate.js` | Datenvalidierung (headless, für CI) |
 | `DEPLOY.md` | Deployment über Cloudflare Pages |
 | `multimeter/` | Zweite, eigenständige PWA „KFZ Multimeter Profi" (s. u.) |
+| `willhaben-watcher/` | Eigenständiger Cloudflare Worker: willhaben-Gebrauchtwagensuche mit Telegram-Benachrichtigung (s. u.) |
 
 ## Zweite App: KFZ Multimeter Profi (`multimeter/`)
 
@@ -31,6 +32,15 @@ Prüfbericht und Änderungshistorie: `multimeter/REVIEW.md`.
 
 Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
 `CACHE_NAME` in `multimeter/sw.js` gemeinsam erhöhen.
+
+## Drittes Projekt: willhaben-Watcher (`willhaben-watcher/`)
+
+Kein Teil der PWAs, sondern ein eigenständiger Cloudflare Worker: Er durchsucht
+alle 15 Minuten die willhaben-Gebrauchtwagenbörse nach gespeicherten
+Suchprofilen und meldet neue Inserate per Telegram. Suchkriterien liegen in
+Cloudflare KV und sind über eine Weboberfläche unter `/config` änderbar –
+ohne Redeploy. Einrichtung, Telegram-Bot-Anleitung und rechtlicher Hinweis:
+`willhaben-watcher/README.md`.
 
 ## Nutzung
 
