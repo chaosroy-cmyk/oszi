@@ -28,6 +28,7 @@ Cron (*/15)  →  Suchprofile aus KV  →  willhaben-JSON-API  →  Filter  → 
 | `src/geo.ts`, `src/plz-data.ts` | PLZ-Koordinaten + Umkreisberechnung |
 | `src/ui/config.html` | Konfigurationsoberfläche (einzelne Datei, ohne externe Abhängigkeiten) |
 | `SETUP.md` | Einrichtung Schritt für Schritt (Telegram + Cloudflare) |
+| `DASHBOARD.md`, `dashboard/worker.js` | Einrichtung ohne Terminal: eine Datei ins Cloudflare-Dashboard einfügen |
 
 ---
 
@@ -65,6 +66,9 @@ In der Antwort steht `"chat":{"id":123456789,…}` – das ist die Chat-ID.
 
 > **Ausführliche Anleitung mit jedem Schritt, Kontrollpunkten und einer
 > Fehlertabelle: [SETUP.md](SETUP.md).** Hier die Kurzfassung.
+>
+> **Kein Terminal, nur Klicks?** [DASHBOARD.md](DASHBOARD.md) – dort fügst du
+> `dashboard/worker.js` als einzelne Datei im Cloudflare-Dashboard ein.
 
 Voraussetzung: Node.js ≥ 18 und ein Cloudflare-Account
 (`npx wrangler login` einmalig ausführen).
