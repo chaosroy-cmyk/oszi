@@ -1,6 +1,10 @@
 # SOURCES.md — Quellen- und Grenzwertmatrix
 
-Stand: **v8.3-Profi, geprüft am 28.07.2026**.
+Stand: **v8.4-Profi, geprüft am 09.08.2026**.
+
+Dieses Datum ist zugleich der in der App sichtbare **Inhaltsstand**
+(`DATA_STAND` in `index.html`, Fußzeile und Nutzungshinweis). Beide Angaben
+müssen übereinstimmen – der Validator prüft das.
 
 Die Vollversion unterscheidet drei Evidenzstufen:
 
@@ -36,6 +40,11 @@ Ampelfarben in Tabellen zeigen deshalb die **Prüfpriorität**, nicht automatisc
 | Klassischer High-Speed-CAN, physikalische Schicht | [ISO 11898-2:2026](https://www.iso.org/standard/90697.html) | Edition 4, 2026-05 | Karte `can`; 60 Ω nur bei der klassischen Topologie mit zwei 120-Ω-Abschlüssen |
 | LIN-Protokoll | [ISO 17987-3:2025](https://www.iso.org/fr/standard/85127.html) und [LIN 2.2A](https://www.lin-cia.org/fileadmin/microsites/lin-cia.org/resources/documents/LIN_2.2A.pdf) | ISO Edition 2 / LIN Rev. 2.2A | Karte `lin`; Multimeter kann Frames nicht freigeben |
 | Klemmenbezeichnungen im Kfz (30, 85, 86, 87, 87a, 87b) | DIN 72552 – Klemmenbezeichnungen in Kraftfahrzeugen | Deutsche Norm, Klemmenverzeichnis | Karten `relais`, `relais-typen`, `klemmen`; die Norm regelt die Bezeichnung, nicht Sollwerte |
+| Generische Diagnosecodes (P-, U-Codes) als Suchbegriffe | [SAE J2012 – Diagnostic Trouble Code Definitions](https://www.sae.org/standards/content/j2012_201612/) | SAE-Norm, Abruf 09.08.2026 | Nur als Synonym für die Suche. Codes benennen den betroffenen Kreis, **keinen Sollwert und keinen Bauteildefekt**. Herstellerspezifische Codes sind nicht abgedeckt. |
+| AGR-Positionsrückmeldung: Codes P0404, P0405, P0406 | generische SAE-J2012-Codes, Bedeutung „EGR Circuit Range/Performance", „EGR Sensor A Circuit Low", „EGR Sensor A Circuit High" | Abruf 09.08.2026 | Karte `agr-pos`; Kennlinie, Signalrichtung und Sollwerte bleiben zwingend OEM-Vorgabe |
+| Lenkwinkelsensor: Codes U0126, U0428 | generische SAE-J2012-Netzwerkcodes, Bedeutung „Lost Communication With Steering Angle Sensor Module" bzw. „Invalid Data Received From Steering Angle Sensor Module" | Abruf 09.08.2026 | Karte `lenkwinkel`; melden Kommunikations- bzw. Datenfehler, **nicht** einen defekten Sensor |
+| Batteriesensor (IBS): Aufbau, LIN-Anbindung, Rolle im Ladesystem | [HELLA Techworld – Service work on the charging system](https://www.hella.com/techworld/en/technical/car-electronics-and-electrics/starting-and-charging-system/service-work-on-the-charging-system/) | Hersteller-Fachinformation, Abruf 09.08.2026 | Karte `ibs`; Systembeispiel. **Für den Batteriesensor existiert kein generischer OBD-Code** – die Codes sind herstellerspezifisch, deshalb führt die Karte keine. |
+| LIN als Übertragungsweg des Batteriesensors | [ISO 17987-3:2025](https://www.iso.org/fr/standard/85127.html) | ISO Edition 2 | Karte `ibs`; das Multimeter zeigt nur den Mittelwert, keine Frames |
 | Touchziele 24 × 24 CSS-Pixel oder Abstand | [W3C WCAG 2.2 SC 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum) | WCAG 2.2, Level AA | Normatives Minimum |
 | Touchziele 44 × 44 CSS-Pixel | [W3C WCAG 2.2 SC 2.5.5](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced) | WCAG 2.2, Level AAA | Von der App bewusst erfülltes, strengeres Ziel |
 
@@ -54,6 +63,9 @@ dokumentierten Fahrzeug-Basiswert verglichen:
 - Stromaufnahme von Pumpen, Lüftern, Heizern und Stellmotoren
 - Klemme-50- und Steuergeräte-Massegrenzen
 - Relais-Spulenwiderstand und Kontaktabfall (in den Karten als Beispiele gekennzeichnet)
+- AGR-Positionssignal: Absolutwerte, Endlagen und Signalrichtung (herstellerabhängig invertierbar)
+- Lenkwinkelsensor: Versorgungs- und Buspegel sowie die Grundeinstellprozedur
+- Batteriesensor: zulässiger Spannungsabfall über die Klemmverbindung, Anlernprozedur nach Batteriewechsel
 
 Orientierungswerte können weiterhin erläutert werden, lösen aber ohne konkrete
 Sollwertquelle keine automatische Austausch- oder Freigabeentscheidung aus.

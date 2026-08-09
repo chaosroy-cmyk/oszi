@@ -1,0 +1,40 @@
+# Cloudflare Pages – Header-Regeln für KFZ Multimeter Profi
+#
+# Wirkt nur auf Cloudflare Pages. Auf anderen Hostern muss dieselbe Konfiguration
+# dort hinterlegt werden (z.B. Netlify _headers, nginx add_header, Apache .htaccess);
+# die Datei allein bewirkt dort nichts.
+#
+# Grundgedanke:
+#   - Alles, was den Update-Weg steuert (Service Worker, Manifest, Einstiegsseiten),
+#     darf niemals aus einem alten HTTP-Cache kommen. `updateViaCache:'none'` bei der
+#     Registrierung entschärft das für sw.js bereits programmatisch – die Serverseite
+#     wird hier zusätzlich abgesichert, weil sie auch für index.html und das Manifest gilt.
+#   - Bilder sind versionsstabil und dürfen lange und unveränderlich gecacht werden.
+#   - Sicherheitsheader gelten für alles.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  X-Frame-Options: DENY
+
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+  Service-Worker-Allowed: /
+
+/manifest.webmanifest
+  Cache-Control: no-cache
+
+/
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/offline.html
+  Cache-Control: no-cache
+
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable

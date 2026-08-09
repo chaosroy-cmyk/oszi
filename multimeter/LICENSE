@@ -1,0 +1,35 @@
+ENTWURF — NOCH NICHT FREIGEGEBEN
+================================
+
+Das Lizenzmodell für dieses Projekt ist noch nicht entschieden. Die
+Entscheidungsvorlage mit drei Varianten und ihren Folgen liegt in
+LEGAL/LIZENZ-ENTSCHEIDUNG.md. Diese Datei ist ein Platzhalter und ersetzt sie
+nicht.
+
+Bis zu einer Entscheidung gilt der gesetzliche Rechtsvorbehalt:
+
+    Copyright (c) 2026 RS
+    Alle Rechte vorbehalten.
+
+Ohne ausdrückliche schriftliche Zustimmung des Rechteinhabers ist eine
+Vervielfältigung, Bearbeitung, Verbreitung oder öffentliche Zugänglichmachung
+dieses Werkes oder von Teilen davon nicht gestattet. Das gilt für den
+Programmcode ebenso wie für die fachlichen Inhalte (Prüfkarten, Anleitungen,
+Diagnosebäume, Richtwerttabellen).
+
+Nicht von dieser Datei erfasst
+------------------------------
+
+SOURCES.md verweist auf Datenblätter, Normen und Herstellerunterlagen Dritter.
+Diese Dokumente werden ausschließlich verlinkt und zitiert, nicht mitgeliefert.
+Normtexte (ISO, IEC, DIN) und Herstellerdokumente stehen unter dem
+Urheberrecht der jeweiligen Herausgeber und dürfen unabhängig von der hier
+gewählten Lizenz nicht in dieses Projekt übernommen werden.
+
+Haftung
+-------
+
+Die Inhalte sind Orientierungswerte für Lern- und Diagnosezwecke. Angaben des
+Fahrzeug- und Bauteilherstellers haben immer Vorrang. Umfang und Formulierung
+einer Haftungsbeschränkung sind noch offen und anwaltlich zu prüfen; siehe
+LEGAL/00-UEBERSICHT.md, Punkt 4.

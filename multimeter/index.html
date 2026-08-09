@@ -323,6 +323,12 @@ body.beginner .beg-banner{display:flex}
   padding:18px 14px 10px;border-top:1px solid var(--line);margin-top:22px;
 }
 .copy b{color:var(--txt2);font-weight:700}
+.copy-link{
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-top:8px;min-height:44px;padding:10px 16px;
+  background:none;border:1px solid var(--line);border-radius:10px;
+  color:var(--blu);font:inherit;font-weight:700;cursor:pointer;
+}
 .beg-explain .step{border-left-color:#a371f7;background:rgba(163,113,247,.07)}
 .beg-explain .step .lbl,.beg-explain .step .lbl .num{color:#c8a8ff}
 .beg-explain .step .lbl .num{background:#a371f7;color:#1a0a33}
@@ -363,11 +369,19 @@ body.beginner .beg-banner{display:flex}
 .update-banner .ib-ic{background:linear-gradient(135deg,var(--blu),#3b82f6);box-shadow:0 0 12px rgba(88,166,255,.35)}
 .update-banner .ib-btn{background:var(--blu);color:#031024}
 .botnav button{
-  flex:1;background:none;border:none;color:var(--txt2);cursor:pointer;
+  flex:1;min-width:0;background:none;border:none;color:var(--txt2);cursor:pointer;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;
-  font-weight:700;padding:4px;transition:.15s;min-height:44px;
+  font-weight:700;padding:4px 2px;transition:.15s;min-height:44px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .botnav button .bi{font-size:20px}
+/* Sechs Einträge müssen auch auf 360-px-Geräten nebeneinander passen, ohne dass
+   ein Beschriftungstext umbricht oder die Leiste horizontal überläuft.
+   Steht bewusst NACH der Basisregel – gleiche Spezifität, die spätere gewinnt. */
+@media (max-width:400px){
+  .botnav button{font-size:9px;letter-spacing:-.2px}
+  .botnav button .bi{font-size:18px}
+}
 .botnav button.active{color:var(--acc)}
 .botnav button.tog.on{color:#c8a8ff}
 /* empty/fav state */
@@ -572,12 +586,22 @@ body.beginner .beg-banner{display:flex}
   <div class="ovbody" id="treeBody"></div>
 </div>
 
+<!-- Nutzungshinweis Overlay -->
+<div class="overlay" id="hinweisOverlay" role="dialog" aria-modal="true" aria-labelledby="hinweisTitle">
+  <div class="ovhead"><div class="ovbar">
+    <button class="back" onclick="closeHinweis()" aria-label="Zurück">←</button>
+    <div class="t"><span>Vor der ersten Messung</span><h2 id="hinweisTitle">Nutzungshinweis</h2></div>
+  </div></div>
+  <div class="ovbody" id="hinweisBody"></div>
+</div>
+
 <!-- Bottom Nav -->
 <nav class="botnav">
   <button class="active" id="navHome" onclick="showHome()"><span class="bi" aria-hidden="true">🔧</span>Prüfungen</button>
   <button id="navFav" onclick="showFavs()"><span class="bi" aria-hidden="true">⭐</span>Merkliste</button>
   <button id="navTree" onclick="openTreeMenu()"><span class="bi" aria-hidden="true">🌳</span>Diagnose</button>
   <button id="navGloss" onclick="openGloss()"><span class="bi" aria-hidden="true">📖</span>Glossar</button>
+  <button id="navHinweis" onclick="openHinweis()"><span class="bi" aria-hidden="true">ℹ️</span>Hinweis</button>
   <button class="tog" id="navBeg" onclick="toggleBeginner()" aria-pressed="false"><span class="bi" aria-hidden="true">🎓</span>Einsteiger</button>
 </nav>
 
@@ -588,8 +612,12 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.3-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-3';
+const APP_VERSION = '8.4-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-4';
+/* Stand der fachlichen Inhalte. Bewusst getrennt von der Versionsnummer:
+   Sollwerte veralten unabhängig davon, ob am Code etwas geändert wurde.
+   Muss mit der Datierung in SOURCES.md übereinstimmen (prüft der Validator). */
+const DATA_STAND = '09.08.2026';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -1152,6 +1180,63 @@ const TESTS = [
  warn:[["info","NOx-Sensor: meist nicht direkt sinnvoll mit Multimeter prüfbar – Diagnosegerät verwenden."]]
 },
 {
+ id:"agr-pos",cat:"sensor",ic:"♻️",nm:"AGR-Positionssensor",tag:"mm",risk:"niedrig",
+ quality:"MM gut für Versorgung und Signal",
+ syn:"AGR EGR Abgasrückführung AGR-Ventil Abgasrückführventil Positionsgeber Positionssensor Lagerückmeldung Potentiometer Hall Steller Stellungsgeber verkokt Verkokung P0404 P0405 P0406",
+ was:"Rückmeldung über die tatsächliche Stellung des Abgasrückführventils. Meist ein Potentiometer oder ein Hall-Element im Stellergehäuse, versorgt aus der 5-V-Referenz. Manche Ausführungen liefern zwei gegenläufige Signale zur Plausibilisierung.",
+ set:{mode:"DC Volt (V⎓)",buchse:"COM + V/Ω"},
+ probes:[["r","Signalpin am Sensor-/Stellerstecker"],["b","Sensormasse am Stecker, nicht Karosserie"]],
+ mess:"Zündung an, Motor aus. Signalspannung gegen die Sensormasse messen und dabei das Ventil über die Stellgliedprüfung des Diagnosegeräts langsam durchfahren lassen. Beurteilt wird der Verlauf, nicht ein Einzelwert. Bei zwei Signalen beide gleichzeitig beobachten.",
+ good:"Der Verlauf ändert sich gleichmäßig über den ganzen Stellbereich, ohne Sprünge, Aussetzer oder tote Zonen, und die Endlagen bleiben reproduzierbar. Bei zwei Signalen laufen sie gegenläufig und ergänzen sich zu einem konstanten Wert.",
+ bad:"Der Wert bleibt starr, springt, hat tote Zonen oder liegt am Anschlag. Zwei Signale, die gleichsinnig verlaufen, weisen auf einen Sensorfehler hin – nicht auf ein Mechanikproblem.",
+ next:"Signal auffällig → Versorgung und Sensormasse zuerst ausschließen: → Prüfung: 5-V-Referenz prüfen. Signal sauber, Ventil bewegt sich trotzdem nicht → Steller und Mechanik beurteilen: → Prüfung: Stellmotor / Drosselsteller. Vergleichbares Verfahren am Fahrpedal: → Prüfung: Drosselklappe / Pedalgeber.",
+ beg:"Der Sensor ist die Rückmeldung des AGR-Ventils: Er sagt dem Steuergerät, wo das Ventil gerade steht. Wichtig ist nicht der einzelne Messwert, sondern ob sich die Spannung beim Verfahren sauber und gleichmäßig ändert. Und noch wichtiger: Ein verkoktes Ventil, das klemmt, meldet völlig korrekt, dass sich nichts bewegt. Der Sensor ist dann in Ordnung – die Mechanik nicht.",
+ requires:["Schaltplan mit Pinbelegung und Signalrichtung","Diagnosegerät für die Stellgliedprüfung","Versorgung und Sensormasse vorab geprüft"],
+ limits:["kurze Aussetzer und Sprünge im Verlauf erkennt nur das Oszilloskop","das Signal beschreibt die Ventilstellung, nicht die tatsächlich zurückgeführte Abgasmenge","ein elektrisch einwandfreies Signal schließt ein mechanisch klemmendes Ventil nicht aus"],
+ dont:["kein Bauteiltausch, bevor das Ventil mechanisch beurteilt wurde","Signalrichtung nicht aus Plausibilität annehmen"],
+ warn:[["caution","Verkokung schlägt Elektrik: Ein mechanisch klemmendes Ventil liefert ein elektrisch einwandfreies Signal und meldet völlig korrekt, dass keine Bewegung stattfindet. Vor jedem Tausch das Ventil mechanisch beurteilen."],
+   ["info","Die Signalrichtung ist herstellerabhängig invertierbar: Steigende Spannung kann Öffnen oder Schließen bedeuten. Ohne Schaltplan ist der Messwert nicht bewertbar – das ist keine Fußnote, sondern Voraussetzung."],
+   ["info","Nach Reinigung oder Tausch die vorgeschriebene Grundeinstellung beziehungsweise Adaption durchführen. Ohne sie bleibt der Fehler gespeichert oder kehrt zurück."]]
+},
+{
+ id:"lenkwinkel",cat:"sensor",ic:"🛞",nm:"Lenkwinkelsensor",tag:"osz",risk:"hoch",
+ quality:"MM nur Versorgung, Masse und Buspegel",
+ syn:"Lenkwinkelsensor Lenkradwinkelsensor Lenkwinkelgeber Lenkwinkel SAS Wickelfeder Schleifring Lenkstockmodul ESP ESC Fahrdynamik Stabilitätsprogramm Grundeinstellung Kalibrierung Nullabgleich U0126 U0428",
+ was:"Erfasst Lenkradstellung und Lenkgeschwindigkeit für ESP, Lenkunterstützung und Assistenzsysteme. Moderne Ausführungen geben ihre Daten ausschließlich über CAN aus – mit dem Multimeter sind dann nur Versorgung, Masse und Buspegel prüfbar.",
+ set:{mode:"DC Volt (V⎓)",buchse:"COM + V/Ω"},
+ probes:[["r","Versorgungs- bzw. CAN-Pin am Sensorstecker"],["b","Sensormasse am Stecker"]],
+ mess:"Erst nach freigegebener Deaktivierung des Rückhaltesystems und abgelaufener Wartezeit messen. Geprüft werden Versorgung gegen Sensormasse, der Masseanschluss selbst und – falls vorhanden – die Ruhepegel der Busleitungen. Die Winkelinformation selbst wird über das Diagnosegerät ausgelesen, nicht gemessen.",
+ good:"Versorgung und Masse stehen an, die Busleitungen liegen auf ihren Ruhepegeln, und das Diagnosegerät liefert einen Lenkwinkel, der sich beim Drehen stetig und in der richtigen Richtung ändert.",
+ bad:"Versorgung oder Masse fehlen, der Bus zeigt keine Aktivität, oder der ausgelesene Winkel springt, bleibt stehen oder passt nicht zur Lenkradstellung.",
+ next:"Kein Kontakt zum Modul → Busanbindung prüfen: → Prüfung: CAN-Bus prüfen. Arbeiten am Lenkstockmodul immer nur nach der Rückhaltesystem-Prozedur: → Prüfung: Airbag / SRS Leitungen. Vor jeder Tauschentscheidung Grundeinstellung durchführen und Lenkungsspiel ausschließen.",
+ beg:"Der Lenkwinkelsensor sagt dem ESP, wohin du lenkst. Er sitzt oben an der Lenksäule, direkt bei der Wickelfeder – und die gehört zum Airbag. Deshalb gilt hier: erst die Herstellerprozedur zum Deaktivieren, dann arbeiten. Mit dem Multimeter kannst du den Winkel gar nicht messen, nur ob Versorgung und Masse da sind. Und sehr oft ist der Sensor gar nicht kaputt, sondern nur die Grundeinstellung fehlt.",
+ requires:["Herstellervorgabe zur Deaktivierung des Rückhaltesystems inklusive Wartezeit","Lenkrad in Geradeausstellung gesichert","Schaltplan mit Pinbelegung und Busanbindung","Diagnosegerät für Istwerte und Grundeinstellung"],
+ limits:["die Winkelinformation ist mit dem Multimeter grundsätzlich nicht auswertbar","sporadische Aussetzer zeigt nur eine Aufzeichnung während der Fahrt","mechanisches Spiel in der Lenkung wird leicht als Sensorfehler fehlgedeutet"],
+ dont:["keine Prüfspitzen in Steckverbindungen des Rückhaltesystems einführen","Sensor nicht tauschen, bevor Grundeinstellung, Lenkungsspiel und Busanbindung ausgeschlossen sind"],
+ warn:[["danger","Airbag: Der Sensor sitzt im Bereich der Wickelfeder und damit unmittelbar an der Airbageinheit. Vor Arbeiten am Lenkstockmodul die Herstellervorgaben zur Deaktivierung des Rückhaltesystems und die vorgeschriebene Wartezeit einhalten. Erst danach messen – Details: → Prüfung: Airbag / SRS Leitungen."],
+   ["caution","Wickelfeder: Das Lenkrad bei abgezogener oder gelöster Wickelfeder nicht verdrehen, sie wird sonst zerstört. Lenkrad vor dem Trennen in Geradeausstellung sichern."],
+   ["info","Die Grundeinstellung ist nach jedem Eingriff an Lenkung, Fahrwerk und Achsvermessung sowie nach einem Sensortausch Pflicht. Ein gespeicherter Lenkwinkelfehler stammt häufiger von einer fehlenden Grundeinstellung als von einem defekten Sensor."]]
+},
+{
+ id:"ibs",cat:"sensor",ic:"🔗",nm:"Batteriesensor (IBS)",tag:"osz",risk:"mittel",
+ quality:"MM nur Versorgung, Masse und Busaktivität",
+ syn:"Batteriesensor IBS intelligenter Batteriesensor Shunt Polklemme Massepolklemme Batteriepolklemme Energiemanagement Batteriemanagement Start-Stopp Ladezustand SOC LIN Batterie anlernen registrieren codieren",
+ was:"Intelligenter Batteriesensor an der Massepolklemme. Er misst den Strom über einen internen Shunt sowie Spannung und Temperatur, meldet den Ladezustand über LIN an das Energiemanagement und steuert damit Generatorregelung, Start-Stopp und Verbraucherabschaltung mit.",
+ set:{mode:"DC Volt (V⎓), Klemmverbindung in mV",buchse:"COM + V/Ω"},
+ probes:[["r","Versorgungs- bzw. LIN-Pin am Sensorstecker"],["b","Batterie-Minuspol als Bezug"]],
+ mess:"Prüfbar sind ausschließlich Versorgung, Masseanbindung und Busaktivität – Strommessung und Ladezustandsberechnung laufen im Sensor selbst. Zusätzlich den Spannungsabfall über die Klemmverbindung in mV erfassen: Eine schlechte Verbindung verfälscht sämtliche Werte des Sensors.",
+ good:"Versorgung steht an, die Klemmverbindung zeigt bei eingeschaltetem Verbraucher keinen nennenswerten Abfall, und die LIN-Leitung zeigt bei aktiver Kommunikation einen schwankenden Mittelwert.",
+ bad:"Keine Versorgung, erhöhter Abfall über die Klemmverbindung, oder ein starrer LIN-Pegel: nahe Bordspannung bedeutet kein aktiver Sender, nahe 0 V deutet auf Masseschluss.",
+ next:"Vor jedem Sensortausch Polklemme, Anlernstatus und Busanbindung ausschließen. Buspegel belastbar beurteilen: → Prüfung: LIN-Bus prüfen. Auswirkung auf die Strommessung: → Prüfung: Ruhestrom messen. Kreisweise ohne Auftrennen: → Prüfung: Ruhestrom über Sicherung (mV-Drop). Ladeverhalten im Verbund: → Prüfung: Generator LIN/BSD-Regelung.",
+ beg:"Der IBS ist die kleine Box direkt am Minuspol der Batterie. Er misst laufend, wie viel Strom rein- und rausfließt, wie warm die Batterie ist und wie voll sie ist – und meldet das über eine einzelne Datenleitung ans Steuergerät. Mit dem Multimeter kannst du davon fast nichts nachmessen, weil alles im Sensor passiert. Was du prüfen kannst: Kommt Spannung an, ist die Klemmverbindung gut, und tut sich etwas auf der Datenleitung. Zwei Dinge musst du wissen: Der Sensor darf nie überbrückt werden, und nach einem Batteriewechsel muss die neue Batterie angelernt werden.",
+ requires:["Schaltplan mit Pinbelegung des Sensorsteckers","Bezugsmasse direkt am Batterie-Minuspol","Fahrzeugzustand nach Herstellervorgabe definiert"],
+ limits:["Strommessung und Ladezustandsberechnung laufen im Sensor und sind von außen nicht messbar","LIN ist am Multimeter nur als Mittelwert sichtbar; belastbar beurteilbar nur mit dem Oszilloskop","der Sensor bewertet die Batterie über die Zeit – eine Einzelmessung ersetzt weder Batterietest noch Herstellerprozedur","Fehlercodes zum Batteriesensor sind herstellerspezifisch; einen generischen OBD-Code dafür gibt es nicht"],
+ dont:["Sensor nicht überbrücken und das Massekabel nicht direkt an den Pol klemmen","Klemmschraube nicht ohne Herstellervorgabe lösen – Anzugsmoment und Anlernpflicht beachten"],
+ warn:[["caution","Überbrückungsverbot: Den Sensor niemals umgehen und die Masseleitung direkt an den Pol klemmen. Das Energiemanagement verliert damit jede Rückmeldung über Strom, Spannung und Temperatur – mögliche Folgen sind Überladung, Tiefentladung oder ein Ausfall der Ladefunktion."],
+   ["info","Anlernpflicht nach Batteriewechsel: Kapazität und Typ, bei manchen Herstellern zusätzlich die Seriennummer. Ohne diesen Schritt rechnet das Energiemanagement mit den Daten der alten Batterie weiter."],
+   ["info","Wechselwirkung mit der Ruhestrommessung: Der IBS sitzt im Massepfad. Wird das Messgerät hinter dem Sensor eingeschleift, fließt dessen Eigenverbrauch mit durch das Messgerät. Die Anschlussstelle ist bewusst zu wählen und im Ergebnis zu berücksichtigen."]]
+},
+{
  id:"tankgeber",cat:"sensor",ic:"⛽",nm:"Tankgeber",tag:"mm",
  was:"Schwimmer mit Widerstand, ändert sich mit Füllstand.",
  set:{mode:"Ohm (Ω)",buchse:"COM + V/Ω"},
@@ -1337,7 +1422,7 @@ const TESTS = [
  mess:"Ruhespannung grob ~2,5 V. Abschlusswiderstand SPANNUNGSFREI zwischen High & Low messen.",
  good:"HS-CAN: Ruhe ~2,5 V. Abschluss ~60 Ω bei zwei 120-Ω-Widerständen.",
  bad:"120 Ω = ein Abschluss fehlt. Stark abweichend = Schluss/Leitungsproblem.",
- next:"Echte Busdiagnose → Oszilloskop/Diagnosegerät.",
+ next:"Echte Busdiagnose → Oszilloskop/Diagnosegerät. Meldet sich ein einzelnes Modul nicht, zuerst dessen Versorgung und Masse ausschließen – Beispiel: → Prüfung: Lenkwinkelsensor.",
  beg:"Schnelltest am HS-CAN: stromlos zwischen CAN-High und -Low messen. ~60 Ω ist gut. 120 Ω = ein Abschluss fehlt. Andere Busarten/Topologien können abweichen.",
  warn:[["info","Multimeter zeigt bei Kommunikation nur Mittelwerte. 60-Ω-/2,5-V-Regel gilt für klassischen High-Speed-CAN mit Abschlusswiderständen; echte Busanalyse nur per Oszilloskop/Diagnose."]]
 },
@@ -1376,7 +1461,7 @@ const TESTS = [
  mess:"In Reihe zwischen Batterie & Massekabel. Fahrzeug 'schlafen legen' (Wartezeit!). Türen verriegelt simulieren.",
  good:"Typisch ~20–50 mA nach Ruhephase (fahrzeugabhängig).",
  bad:"Dauerhaft deutlich höher = Verbraucher bleibt aktiv.",
- next:"Sicherungen einzeln ziehen, bis Strom fällt → Stromkreis gefunden. Stromzange schont die Verbindung.",
+ next:"Sicherungen einzeln ziehen, bis Strom fällt → Stromkreis gefunden. Stromzange schont die Verbindung. Sitzt ein Batteriesensor im Massepfad, entscheidet die Anschlussstelle darüber, ob dessen Eigenverbrauch mitgemessen wird: → Prüfung: Batteriesensor (IBS).",
  beg:"Misst, was die Batterie über Nacht zieht. Auto muss erst 'einschlafen'. Zu hoch? Sicherungen einzeln ziehen, bis es fällt.",
  warn:[["danger","In Reihe messen – nie parallel. Verbindung beim Umstecken nicht trennen, sonst startet das Wachzeit-Verfahren neu. Stromzange ist sicherer."]]
 },
@@ -1388,7 +1473,7 @@ const TESTS = [
  mess:"Zündung aus, Fahrzeug eingeschlafen. Beide Messöffnungen oben auf der gesteckten Sicherung kontaktieren – die Sicherung BLEIBT drin. Abgelesene mV mit dem Rechner unten oder der Tabelle in Strom umrechnen. So bleibt der Kreis ununterbrochen (kein Reset der Einschlafzeit, kein Funke).",
  good:"Kein/sehr kleiner mV-Wert = wenig Strom in diesem Kreis. Summe aller Kreise ≈ Gesamt-Ruhestrom (20–50 mA typ.).",
  bad:"Auffällig hoher mV-Wert an einer Sicherung = dieser Kreis zieht Strom. Mit Rechner prüfen, ob plausibel.",
- next:"Auffälligen Kreis identifizieren (Belegungsplan), dann Verbraucher dieses Kreises einzeln prüfen. Vorteil: Einschlafzustand bleibt erhalten.",
+ next:"Auffälligen Kreis identifizieren (Belegungsplan), dann Verbraucher dieses Kreises einzeln prüfen. Vorteil: Einschlafzustand bleibt erhalten. Eigenverbrauch des Batteriesensors in die Gesamtbewertung einbeziehen: → Prüfung: Batteriesensor (IBS).",
  beg:"Statt die Sicherung zu ziehen, misst du die winzige Spannung ÜBER der Sicherung (sie bleibt stecken). Je mehr Strom fließt, desto größer der mV-Wert. Der Rechner unten macht daraus Milliampere.",
  calc:"mvdrop",
  warn:[["info","Vorteil gegenüber Sicherung ziehen: der Stromkreis wird nicht unterbrochen – das Fahrzeug bleibt im Schlafzustand und Steuergeräte werden nicht geweckt. Werte sind sehr klein (meist nur wenige mV, oft darunter) – MM mit 0,1-mV-Auflösung nötig, besser 0,01 mV."],
@@ -2208,6 +2293,95 @@ const DEEP = {
      {s:"2 Kommunikation",do:"Diagnose: meldet sich der Sensor?",ok:"Daten da → ok",ng:"keine → Modul/Bus"},
      {s:"3 Plausibilität",do:"NOx-Werte per Diagnose bewerten",ok:"plausibel → ok",ng:"unplausibel → Versorgung, Masse und Bus ausschließen, dann Sensor ersetzen"}]
 },
+"agr-pos":{
+ anl:["<b>1 · Schaltplan vor die Messung.</b> Pinbelegung und Signalrichtung heraussuchen. Die Richtung ist herstellerabhängig invertierbar: Steigende Spannung kann Öffnen oder Schließen bedeuten. Ohne diese Information ist jeder gemessene Wert nicht bewertbar – das ist keine Formalie, sondern die Voraussetzung der ganzen Prüfung.",
+   "<b>2 · Versorgung und Sensormasse zuerst.</b> Zündung an, Motor aus. Die Referenzspannung gegen die <b>Sensormasse</b> messen, nicht gegen die Karosserie. Ein Versatz auf der Sensormasse verschiebt das Signal komplett und sieht am Ende aus wie ein defekter Geber.",
+   "<b>3 · Ruhestellung erfassen und notieren.</b> Den Wert bei unbestromtem Ventil festhalten. Er ist der Bezugspunkt für alles Weitere und gehört ins Messprotokoll – ohne Ausgangswert lässt sich später nicht belegen, ob sich etwas geändert hat.",
+   "<b>4 · Verlauf über die Stellgliedprüfung.</b> Das Ventil mit dem Diagnosegerät langsam über den ganzen Stellbereich fahren lassen und dabei die Signalspannung beobachten. Bewertet wird der <b>Verlauf</b>: gleichmäßig, ohne Sprünge, ohne Aussetzer, ohne tote Zonen. Ein einzelner Messwert sagt hier nichts.",
+   "<b>5 · Bei zwei Signalen beide gleichzeitig prüfen.</b> Doppelte Positionssignale müssen gegenläufig sein und sich zu einem konstanten Wert ergänzen. Laufen beide gleichsinnig, ist das ein Sensorfehler – kein Mechanikfehler. Diese Unterscheidung spart den falschen Bauteiltausch.",
+   "<b>6 · Endlagen wiederholt anfahren.</b> Zwei- bis dreimal in beide Endlagen fahren und prüfen, ob dieselben Werte reproduzierbar erreicht werden. Wandernde Endlagen deuten auf Verschleiß der Schleiferbahn oder auf ein mechanisch schwergängiges Ventil hin.",
+   "<b>7 · Mechanik beurteilen, bevor etwas getauscht wird.</b> Ein verkoktes oder klemmendes Ventil liefert ein elektrisch einwandfreies Signal und meldet zutreffend, dass keine Bewegung stattfindet. Der Sensor ist dann in Ordnung. Erst die Mechanik beurteilen, dann über ein Bauteil entscheiden.",
+   "<b>8 · Nach Reinigung oder Tausch: Grundeinstellung.</b> Die vorgeschriebene Grundeinstellung beziehungsweise Adaption durchführen und den Verlauf anschließend erneut aufnehmen. Der Vorher-Nachher-Vergleich ist der Nachweis, dass die Instandsetzung gewirkt hat."],
+ rt:{head:["Beobachtung","Erwartung","Bewertung"],rows:[
+   ["Verlauf über den Stellbereich","stetig, ohne Sprünge und ohne tote Zonen","g"],
+   ["Endlagen","reproduzierbar, wiederholt derselbe Wert","g"],
+   ["zweites Signal (falls vorhanden)","gegenläufig, Summe bleibt konstant","g"],
+   ["Wert bleibt starr trotz Ansteuerung","kein Positionswechsel erkennbar","b"],
+   ["Sprung oder tote Zone im Verlauf","Schleiferbahn oder Kontaktierung","b"],
+   ["beide Signale gleichsinnig","Sensorfehler, kein Mechanikfehler","b"]],
+   note:"Absolutwerte sind herstellerabhängig, die Signalrichtung ist invertierbar – maßgeblich ist die Fahrzeugvorgabe. Bewertet wird der Verlauf über den Stellbereich, nicht ein Einzelwert. Kurze Aussetzer bleiben dem Multimeter verborgen."},
+ urs:[["Ventil verkokt oder klemmt","Signal elektrisch einwandfrei, Bewegung fehlt","h"],
+      ["Schleiferbahn verschlissen","Sprünge und tote Zonen im Verlauf","h"],
+      ["Versorgung oder Sensormasse gestört","Signal am Anschlag oder dauerhaft versetzt","m"],
+      ["Grundeinstellung nach Reinigung oder Tausch unterblieben","Fehler bleibt gespeichert oder kehrt zurück","m"],
+      ["Signalleitung mit Schluss oder Unterbrechung","fester Wert ohne Reaktion","m"]],
+ fs:[{s:"1 Schaltplan",do:"Pinbelegung und Signalrichtung klären",ok:"bekannt → messen",ng:"unbekannt → nicht bewerten, Unterlagen beschaffen"},
+     {s:"2 Versorgung & Sensormasse",do:"Referenz gegen Sensormasse prüfen",ok:"in Ordnung → weiter",ng:"abweichend → 5-V-Referenz und Masseversatz prüfen"},
+     {s:"3 Verlauf",do:"Ventil über die Stellgliedprüfung durchfahren lassen",ok:"gleichmäßig → Sensor elektrisch plausibel",ng:"Sprung, tote Zone oder starr → Sensor bzw. Leitung eingrenzen"},
+     {s:"4 Doppelsignal",do:"Beide Signale gleichzeitig beobachten",ok:"gegenläufig, Summe konstant → plausibel",ng:"gleichsinnig → Sensorfehler"},
+     {s:"5 Mechanik",do:"Ventil auf Verkokung und Schwergängigkeit beurteilen",ok:"frei beweglich → elektrische Ursache weiterverfolgen",ng:"klemmt oder verkokt → zuerst Mechanik instand setzen; einen Sensor erst nach Gegenprobe des Verlaufs tauschen"},
+     {s:"6 Gegenprobe",do:"Nach Reinigung oder Tausch Grundeinstellung durchführen und Verlauf erneut aufnehmen",ok:"Verlauf sauber, Fehler bleibt gelöscht → erledigt",ng:"unverändert → Steller und Ansteuerung prüfen"}]
+},
+"lenkwinkel":{
+ anl:["<b>1 · Rückhaltesystem zuerst.</b> Vor jedem Eingriff am Lenkstockmodul die Herstellerprozedur zur Deaktivierung befolgen und die vorgeschriebene Wartezeit einhalten. Diese Reihenfolge ist nicht verhandelbar: Erst die Freigabe, dann das Messgerät. Das Lenkrad dabei in Geradeausstellung sichern.",
+   "<b>2 · Systemvariante klären.</b> Aus dem Schaltplan hervorgeht, ob der Sensor Analogsignale liefert oder ausschließlich über CAN sendet. Bei reiner Busanbindung sind mit dem Multimeter nur Versorgung, Masse und Buspegel prüfbar – der Winkel selbst ist keine Multimetergröße.",
+   "<b>3 · Fehlerspeicher und Istwerte vor der Demontage.</b> Gespeicherte Codes und den ausgelesenen Lenkwinkel im Geradeauslauf notieren. Ein Winkel, der nicht zur Lenkradstellung passt, ist zunächst ein Hinweis auf eine fehlende Grundeinstellung – nicht auf einen defekten Sensor.",
+   "<b>4 · Versorgung und Masse am Stecker.</b> Versorgung gegen die Sensormasse messen, anschließend den Masseanschluss selbst gegen den Batterie-Minuspol beurteilen. Fehlt eines von beidem, meldet sich das Modul nicht – der Sensor ist dann unverdächtig.",
+   "<b>5 · Busanbindung beurteilen.</b> Bei CAN-Anbindung die Ruhepegel der beiden Leitungen prüfen. Zeigt der Bus keine Aktivität oder liegt eine Leitung fest, ist die Ursache im Netzwerk zu suchen und nicht im Sensor.",
+   "<b>6 · Lenkbewegung mit dem Diagnosegerät verfolgen.</b> Das Lenkrad langsam von Anschlag zu Anschlag drehen und den ausgelesenen Winkel beobachten. Er muss stetig und in der richtigen Richtung folgen. Sprünge oder Stillstand grenzen auf Sensor, Kontaktierung oder Wickelfeder ein.",
+   "<b>7 · Mechanisches Spiel ausschließen.</b> Spiel in Lenkung, Spurstangen oder Lenkgetriebe erzeugt eine Abweichung zwischen Lenkradstellung und Fahrzeugreaktion, die leicht als Sensorfehler gelesen wird. Diese Prüfung gehört vor jede Tauschentscheidung.",
+   "<b>8 · Grundeinstellung durchführen und Ergebnis belegen.</b> Nach jedem Eingriff an Lenkung, Fahrwerk, Achsvermessung und nach einem Sensortausch ist die Grundeinstellung Pflicht. Danach Fehlerspeicher löschen, Probefahrt, erneut auslesen – erst dieser Nachweis schließt die Arbeit ab."],
+ rt:{head:["Prüfpunkt","Erwartung","Bewertung"],rows:[
+   ["Versorgung gegen Sensormasse","Herstellervorgabe steht an","g"],
+   ["Sensormasse gegen Batterie-Minuspol","nur geringer Abfall","g"],
+   ["Busleitungen im Ruhezustand","liegen auf ihren Ruhepegeln, Aktivität erkennbar","g"],
+   ["ausgelesener Winkel beim Drehen","folgt stetig und richtungsrichtig","g"],
+   ["Winkel springt oder bleibt stehen","Sensor, Kontaktierung oder Grundeinstellung","b"],
+   ["Modul meldet sich nicht","Versorgung, Masse oder Busanbindung","b"],
+   ["Winkelinformation am Multimeter","nicht auswertbar – Diagnosegerät erforderlich","w"]],
+   note:"Sollwerte für Versorgung und Buspegel sind fahrzeugspezifisch und der Herstellervorgabe zu entnehmen. Der Winkel wird ausgelesen, nicht gemessen. Vor jeder Bewertung Grundeinstellung und Lenkungsspiel klären."},
+ urs:[["Grundeinstellung fehlt","nach Achsvermessung, Lenkungsarbeit oder Sensortausch","h"],
+      ["Wickelfeder oder deren Kontaktierung defekt","Aussetzer bis Verbindungsverlust","h"],
+      ["Busanbindung gestört","Modul nicht erreichbar, Folgefehler in mehreren Systemen","m"],
+      ["Versorgung oder Masse fehlt","Sensor ohne Betrieb","m"],
+      ["mechanisches Spiel in der Lenkung","wird als Sensorfehler fehlgedeutet","m"],
+      ["Sensor selbst defekt","erst nach Ausschluss aller vorstehenden Punkte","s"]],
+ fs:[{s:"1 Freigabe",do:"Rückhaltesystem nach Herstellervorgabe deaktivieren, Wartezeit einhalten, Lenkrad sichern",ok:"freigegeben → weiter",ng:"keine Freigabe → nicht arbeiten"},
+     {s:"2 Fehlerspeicher & Istwert",do:"Codes und ausgelesenen Winkel im Geradeauslauf erfassen",ok:"Winkel passt → elektrische Prüfung",ng:"Winkel passt nicht → zuerst Grundeinstellung prüfen"},
+     {s:"3 Versorgung & Masse",do:"Am Stecker gegen Sensormasse und Batterie-Minuspol messen",ok:"vorhanden → weiter",ng:"fehlt → Leitung, Sicherung, Steuergerät"},
+     {s:"4 Busanbindung",do:"Ruhepegel und Aktivität der Busleitungen beurteilen",ok:"plausibel → weiter",ng:"auffällig → Netzwerk statt Sensor verfolgen"},
+     {s:"5 Lenkbewegung",do:"Winkel beim langsamen Drehen von Anschlag zu Anschlag auslesen",ok:"stetig → Sensor liefert",ng:"Sprung oder Stillstand → Wickelfeder und Kontaktierung prüfen"},
+     {s:"6 Mechanik",do:"Spiel in Lenkung und Achse ausschließen",ok:"spielfrei → Ergebnis belastbar",ng:"Spiel vorhanden → zuerst mechanisch instand setzen"},
+     {s:"7 Gegenprobe",do:"Grundeinstellung durchführen, Speicher löschen, Probefahrt, erneut auslesen",ok:"kein Wiederauftreten → erledigt",ng:"Fehler kehrt zurück → Sensor bzw. Modul in Betracht ziehen"}]
+},
+"ibs":{
+ anl:["<b>1 · Anschlussstelle bewusst wählen.</b> Der Sensor sitzt im Massepfad zwischen Batterie-Minuspol und Fahrzeugmasse. Wo das Messgerät eingeschleift wird, entscheidet, ob der Eigenverbrauch des Sensors mitgemessen wird oder nicht. Diese Entscheidung vor der ersten Messung treffen und im Protokoll festhalten.",
+   "<b>2 · Klemmverbindung mechanisch und elektrisch beurteilen.</b> Sitz und Zustand der Polklemme prüfen, danach den Spannungsabfall über die Verbindung in Millivolt bei eingeschaltetem Verbraucher messen. Eine schlechte Verbindung verfälscht sämtliche Werte, die der Sensor liefert – und erzeugt Fehlerbilder, die wie ein defekter Sensor aussehen.",
+   "<b>3 · Versorgung am Sensorstecker prüfen.</b> Gegen den Batterie-Minuspol als Bezug messen. Ohne Versorgung meldet sich der Sensor nicht, und alle Folgefehler im Energiemanagement erklären sich von selbst.",
+   "<b>4 · LIN-Leitung als Mittelwert beobachten.</b> Bei aktiver Kommunikation schwankt der angezeigte Mittelwert. Ein starrer Wert nahe Bordspannung bedeutet, dass kein Sender aktiv ist; ein Wert nahe 0 V deutet auf einen Masseschluss der Datenleitung. Beides ist ein Anhaltspunkt, kein Beweis – belastbar wird die Aussage erst mit dem Oszilloskop.",
+   "<b>5 · Anlernstatus klären.</b> Nach einem Batteriewechsel müssen Kapazität und Typ, bei manchen Herstellern zusätzlich die Seriennummer, angelernt werden. Fehlt dieser Schritt, rechnet das Energiemanagement mit den Daten der alten Batterie weiter – mit Auswirkungen auf Ladestrategie und Start-Stopp, ohne dass am Sensor selbst etwas defekt wäre.",
+   "<b>6 · Wechselwirkung mit der Ruhestrommessung berücksichtigen.</b> Wird das Messgerät hinter dem Sensor eingeschleift, fließt dessen Eigenverbrauch mit durch das Messgerät und erscheint im Ergebnis. Der gemessene Ruhestrom ist deshalb immer zusammen mit der gewählten Anschlussstelle zu bewerten.",
+   "<b>7 · Gegenprobe vor dem Austausch.</b> Erst wenn Klemmverbindung, Versorgung, Busanbindung und Anlernstatus ausgeschlossen sind, ist der Sensor ein Kandidat. Vorher-Nachher-Werte aufnehmen – der Nachweis gehört zur Arbeit, nicht das Bauteil zur Vermutung."],
+ rt:{head:["Prüfpunkt","Erwartung","Bewertung"],rows:[
+   ["Versorgung am Sensorstecker","Bordspannung nach Herstellervorgabe","g"],
+   ["Klemmverbindung Pol → Kabelschuh, unter Last","nur geringer Abfall in mV","g"],
+   ["LIN-Mittelwert bei aktiver Kommunikation","schwankt","g"],
+   ["LIN starr nahe Bordspannung","kein aktiver Sender","b"],
+   ["LIN starr nahe 0 V","Masseschluss der Datenleitung","b"],
+   ["Batteriestrom und Ladezustand","nicht messbar – nur über Diagnosegerät","w"]],
+   note:"Grenzwerte für den Klemmenabfall gibt der Fahrzeughersteller vor. Der Mittelwert einer LIN-Leitung ist ein Anhaltspunkt, kein Nachweis – die belastbare Beurteilung liefert das Oszilloskop. Ladezustand und Batteriestrom berechnet der Sensor intern."},
+ urs:[["Korrosion oder loser Sitz an der Polklemme","verfälscht alle Werte des Sensors","h"],
+      ["mechanische Beschädigung des Sensors","Sturz, Werkzeugeinsatz, überdrehte Klemmschraube","h"],
+      ["Anlernen nach Batteriewechsel unterblieben","Energiemanagement rechnet mit alten Batteriedaten","h"],
+      ["LIN-Leitung unterbrochen oder mit Schluss","kein Datenaustausch, starrer Pegel","m"],
+      ["Sensor als eigene Ruhestromquelle","je nach Anschlussstelle im Messergebnis enthalten","m"]],
+ fs:[{s:"1 Anschlussstelle",do:"Festlegen, ob vor oder hinter dem Sensor gemessen wird, und notieren",ok:"festgelegt → weiter",ng:"unklar → Ergebnis später nicht bewertbar"},
+     {s:"2 Klemmverbindung",do:"Sitz prüfen und Spannungsabfall über die Verbindung unter Last messen",ok:"gering → weiter",ng:"erhöht → Verbindung instand setzen und erneut messen"},
+     {s:"3 Versorgung",do:"Am Sensorstecker gegen Batterie-Minuspol prüfen",ok:"vorhanden → weiter",ng:"fehlt → Leitung, Sicherung, Steuergerät"},
+     {s:"4 Busanbindung",do:"LIN-Mittelwert beobachten und mit dem Oszilloskop bestätigen",ok:"Aktivität erkennbar → weiter",ng:"starr → Leitung und Gegenstelle prüfen"},
+     {s:"5 Anlernstatus",do:"Prüfen, ob die verbaute Batterie angelernt wurde",ok:"angelernt → weiter",ng:"nicht angelernt → Anlernvorgang nachholen und Verhalten erneut bewerten"},
+     {s:"6 Gegenprobe",do:"Vorher-Nachher-Werte aufnehmen, bevor über einen Austausch entschieden wird",ok:"Befund erklärt sich → erledigt",ng:"unverändert → Sensor als Kandidat, Herstellerprozedur beachten"}]
+},
 "tankgeber":{
  rt:{head:["Füllstand","Widerstand (typ.)",""],rows:[
    ["Voll","niedrig o. hoch (typabh.)","g"],["Halb","Mittelwert","g"],["Leer","Gegenwert","g"],
@@ -2675,7 +2849,7 @@ const TREES = {
      {t:"Ja, bei einer Sicherung",go:3},{t:"Nein, ändert sich nicht",go:4}]},
    {r:"Normal – moderne Fahrzeuge brauchen Zeit zum Einschlafen. Kein Fehler."},
    {r:"Stromkreis dieser Sicherung verfolgen – Verbraucher bleibt aktiv. → Prüfung: Ruhestrom / Strom messen."},
-   {r:"Verbraucher direkt an der Batterie (Generator-Diode, Zusatzgerät). Plusleitungen einzeln prüfen."},
+   {r:"Verbraucher direkt an der Batterie (Generator-Diode, Zusatzgerät). Plusleitungen einzeln prüfen. Bei Fahrzeugen mit Batteriesensor zusätzlich die gewählte Anschlussstelle überprüfen – dessen Eigenverbrauch kann im Messergebnis enthalten sein: → Prüfung: Batteriesensor (IBS)."},
  ]},
  "starter-langsam":{title:"Starter dreht langsam",start:0,nodes:[
    {q:"Batteriespannung beim Starten:",opts:[
@@ -2739,7 +2913,7 @@ const TREES = {
  "can-fehler":{title:"CAN-Kommunikationsfehler",start:0,nodes:[
    {q:"Abschlusswiderstand (spannungsfrei High↔Low):",opts:[
      {t:"~60 Ω",go:1},{t:"~120 Ω",go:2},{t:"Stark abweichend / OL",go:3}]},
-   {r:"Abschluss ok. Ruhespannung & einzelne Steuergeräte prüfen. Echte Analyse → Oszilloskop."},
+   {r:"Abschluss ok. Ruhespannung & einzelne Steuergeräte prüfen – bei einem einzelnen stummen Modul zuerst dessen Versorgung und Masse ausschließen, Beispiel: → Prüfung: Lenkwinkelsensor. Echte Analyse → Oszilloskop."},
    {r:"Ein Abschlusswiderstand (120 Ω) fehlt – ein Busknoten/Abschluss weg. → Prüfung: CAN-Bus."},
    {r:"Leitungsschluss/-bruch oder mehrere Knoten weg. Leitung High & Low prüfen. → Prüfung: Leitung / CAN-Bus."},
  ]},
@@ -2853,7 +3027,7 @@ function filterTests(){
 /* Einsteiger-Hinweis (nur sichtbar, wenn body.beginner gesetzt ist) und
    Copyright-Fußzeile – auf jeder Listenansicht gleich. */
 const BEG_BANNER=`<div class="beg-banner"><span class="bb-ic" aria-hidden="true">🎓</span><span><b>Einsteiger-Modus aktiv.</b> In jeder Prüfung steht oben ein Block „Einfach erklärt“. Zum Ausschalten unten erneut auf 🎓 Einsteiger tippen.</span></div>`;
-const COPY_FOOTER=`<div class="copy">© 2026 <b>R.S.</b> – Alle Rechte vorbehalten.<br>KFZ Multimeter Profi ${APP_VERSION} · Richtwerte ohne Gewähr, Herstellerangaben haben Vorrang.</div>`;
+const COPY_FOOTER=`<div class="copy">© 2026 <b>RS</b> – Alle Rechte vorbehalten.<br>KFZ Multimeter Profi ${APP_VERSION} · Inhaltsstand ${DATA_STAND} · Richtwerte ohne Gewähr, Herstellerangaben haben Vorrang.<br><button type="button" class="copy-link" onclick="openHinweis()">Nutzungshinweis lesen</button></div>`;
 
 function renderHome(){
   view="home";
@@ -2901,8 +3075,13 @@ const ov=document.getElementById('overlay');
    Geräte-Zurück) läuft immer über denselben Weg, damit History und UI synchron
    bleiben und sich keine toten Einträge ansammeln. */
 let lastFocus=null;
+/* Alle modalen Overlays an EINER Stelle. Wer ein neues Overlay ergänzt, trägt es
+   hier ein – sonst laufen Fokus-Trap, Inert-Schaltung und History auseinander.
+   Die Elemente selbst werden erst später deklariert; ALL_OVERLAYS wird nur zur
+   Laufzeit ausgewertet, nie beim Parsen. */
+function allOverlays(){return [ov,glossOv,treeOv,hinweisOv];}
 function anyOverlayOpen(){
-  return ov.classList.contains('open')||glossOv.classList.contains('open')||treeOv.classList.contains('open');
+  return allOverlays().some(o=>o&&o.classList.contains('open'));
 }
 /* D2: Hintergrund während eines Dialogs vollständig inert schalten – aria-modal
    allein nimmt ihn nicht aus dem Accessibility-Baum. inert deaktiviert Maus,
@@ -2926,7 +3105,7 @@ function openOverlay(el){
   }
   // Nur ein Overlay sichtbar: andere schließen (gleicher z-index, DOM-Reihenfolge
   // würde sonst z.B. ein über einem Diagnosebaum geöffnetes Detail verdecken)
-  [ov,glossOv,treeOv].forEach(o=>{if(o!==el)o.classList.remove('open');});
+  allOverlays().forEach(o=>{if(o&&o!==el)o.classList.remove('open');});
   el.scrollTop=0;
   el.classList.add('open');
   setBackgroundInert(true);
@@ -2936,7 +3115,7 @@ function openOverlay(el){
 /* Fokus-Trap: Tab bleibt im offenen Overlay */
 document.addEventListener('keydown',e=>{
   if(e.key!=='Tab')return;
-  const oe=[ov,glossOv,treeOv].find(o=>o.classList.contains('open'));
+  const oe=allOverlays().find(o=>o&&o.classList.contains('open'));
   if(!oe)return;
   const f=Array.from(oe.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])'));
   if(!f.length)return;
@@ -2953,7 +3132,7 @@ function requestClose(){
 }
 function doCloseOverlays(){
   if(!anyOverlayOpen())return;
-  ov.classList.remove('open');glossOv.classList.remove('open');treeOv.classList.remove('open');
+  allOverlays().forEach(o=>{if(o)o.classList.remove('open');});
   setBackgroundInert(false);
   setNav(view==='fav'?'navFav':'navHome');
   renderCurrent(); // Favoriten-Sterne der Kacheln aktualisieren
@@ -3096,6 +3275,10 @@ function calcMvDrop(){
   const fEl=document.getElementById('cFuse'),mEl=document.getElementById('cMv'),out=document.getElementById('cOut');
   if(!fEl||!mEl||!out)return;
   const r=parseFloat(fEl.value); // mΩ
+  // Über die Oberfläche liefert das Auswahlfeld immer einen Optionswert. Nach einem
+  // fehlgeschlagenen onFuseTypeChange() mit unbekanntem Bauform-Schlüssel bleibt die
+  // Liste jedoch leer – ohne diesen Wächter stünde dann "≈ NaN mA" im Ergebnis.
+  if(isNaN(r)||r<=0){out.className='calc-out';out.innerHTML='<div class="big">– mA</div><div class="sub">Sicherungsbauform und Nennwert auswählen</div>';return;}
   // Komma als Dezimaltrennzeichen akzeptieren (deutsche Eingabe "2,4")
   const mv=parseFloat(String(mEl.value).replace(',','.')); // mV
   if(isNaN(mv)||mv<=0){out.className='calc-out';out.innerHTML='<div class="big">– mA</div><div class="sub">Wert in mV eingeben</div>';return;}
@@ -3236,6 +3419,66 @@ function checkUpdates(){
 window.checkUpdates=checkUpdates;
 function closeGloss(){requestClose();}
 window.closeGloss=closeGloss;
+
+/* ---------- Nutzungshinweis (4a) ----------
+   Beim ersten Start sichtbar, danach jederzeit über die Navigation und die
+   Fußzeile erreichbar. Die Bestätigung wird lokal gespeichert (HINWEIS_KEY) und
+   der Hinweis erscheint danach nicht mehr von selbst. Kein harter Blocker:
+   Der Hinweis läuft über dieselbe Overlay-/History-Mechanik wie Detail, Glossar
+   und Diagnosebaum – die Zurück-Taste schließt ihn wie jeden anderen Dialog. */
+const hinweisOv=document.getElementById('hinweisOverlay');
+const HINWEIS_KEY='mm_hinweis_ok';
+function hinweisBestaetigt(){
+  try{return localStorage.getItem(HINWEIS_KEY)==='1';}catch(e){return false;}
+}
+const HINWEIS_TEXT=`
+  <div class="warn danger"><span class="wi" aria-hidden="true">⚠️</span><div><b>Diese App trifft keine Freigabeentscheidung.</b>
+    Sie liefert Orientierungswerte für Lern- und Diagnosezwecke. Angaben des Fahrzeug- und
+    Bauteilherstellers sowie das Werkstattinformationssystem haben immer Vorrang.</div></div>
+  <div class="step"><div class="lbl"><span class="num">1</span>Was die App ist</div><div class="body">
+    Eine Lern- und Diagnosehilfe für Messungen mit dem Multimeter am Fahrzeug.
+    Die hinterlegten Werte sind typische Richtwerte und je nach Marke, Modell,
+    Bauteil und Fahrzeugzustand unterschiedlich.</div></div>
+  <div class="step bad"><div class="lbl"><span class="num">2</span>Was die App nicht ist</div><div class="body">
+    Sie ersetzt weder eine Ausbildung noch die Fahrzeugdokumentation noch eine
+    Herstellerprozedur. Eine einzelne Messung ist nie ein Urteil über ein Bauteil.
+    Ein Austausch gehört erst nach einer Gegenprobe entschieden.</div></div>
+  <div class="warn caution"><span class="wi" aria-hidden="true">❗</span><div><b>Qualifikation.</b>
+    Arbeiten an Hochvolt-, Airbag- und Bremssystemen setzen die jeweils
+    vorgeschriebene Qualifikation und die Herstellerfreigabe voraus. Wer diese
+    nicht besitzt, führt solche Arbeiten nicht durch – unabhängig davon, was hier steht.</div></div>
+  <div class="step set"><div class="lbl"><span class="num">3</span>Stand der Inhalte</div><div class="body">
+    Fachlicher Inhaltsstand: <b>${DATA_STAND}</b> · App-Version ${APP_VERSION}.
+    Sollwerte veralten. Bei älterem Stand gilt erst recht die aktuelle Herstellervorgabe.</div></div>
+  <div class="step"><div class="lbl"><span class="num">4</span>Daten auf diesem Gerät</div><div class="body">
+    Die App arbeitet vollständig offline und sendet keine Daten. Lokal gespeichert werden
+    nur Merkliste, Einsteiger-Einstellung, die Bestätigung dieses Hinweises und das
+    Ausblenden des Installationsbanners. Löschen über die Websitedaten des Browsers.</div></div>`;
+function renderHinweis(){
+  const confirmed=hinweisBestaetigt();
+  const btn=confirmed
+    ? `<div class="copy">Bereits bestätigt. Dieser Hinweis erscheint nicht mehr von selbst.</div>`
+    : `<div style="padding:4px 0 10px"><button type="button" id="hinweisOk" class="ib-btn" style="width:100%;min-height:48px" onclick="acceptHinweis()">Verstanden – Hinweis bestätigen</button></div>`;
+  document.getElementById('hinweisBody').innerHTML=HINWEIS_TEXT+btn+COPY_FOOTER;
+}
+function openHinweis(){
+  setNav('navHinweis');
+  renderHinweis();
+  openOverlay(hinweisOv);
+}
+window.openHinweis=openHinweis;
+function closeHinweis(){requestClose();}
+window.closeHinweis=closeHinweis;
+function acceptHinweis(){
+  try{localStorage.setItem(HINWEIS_KEY,'1');}catch(e){}
+  requestClose();
+  showToast('Nutzungshinweis bestätigt');
+}
+window.acceptHinweis=acceptHinweis;
+/* Erststart: einmalig zeigen, danach nie wieder von selbst. */
+function maybeShowHinweis(){
+  if(!hinweisBestaetigt())openHinweis();
+}
 
 /* ---------- Entscheidungsbäume ---------- */
 const treeOv=document.getElementById('treeOverlay');
@@ -3436,7 +3679,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
    mess:"SRS-Leitungen nicht mit Ohm, Durchgang, Prüflampe oder Fremdspannung prüfen. Diagnose nach Herstellerprozedur.",
    good:"SRS nur mit geeignetem Diagnosetester, Prüfkabeln/Simulatoren nach Herstellerangabe und Wartezeit nach Batterieabklemmen.",
    bad:"Ohmmessung am Zünder, Prüflampe, Fremdspannung, Kabelreparatur ohne Freigabe.",
-   next:"Fehlercodes lesen, Stecker/Leitungen optisch prüfen, Herstelleranweisung befolgen.",
+   next:"Fehlercodes lesen, Stecker/Leitungen optisch prüfen, Herstelleranweisung befolgen. Arbeiten im Bereich der Wickelfeder betreffen auch die Lenkwinkelerfassung: → Prüfung: Lenkwinkelsensor.",
    beg:"Airbag-Leitungen sind keine normalen Leitungen. Falsches Messen kann Auslösung oder Steuergerät-/Zünder-Schäden verursachen.",
    quality:"MM tabu",risk:"hoch",
    requires:["Herstelleranweisung","SRS-Freigabe","Wartezeit nach Spannungsfreischaltung"],
@@ -4193,7 +4436,10 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
     "batterie":"Batteriehersteller + OEM; GS Yuasa Ruhespannung/SOC nur unter definierten Bedingungen",
     "can":"OEM-Netztopologie; ISO 11898 für klassischen High-Speed-CAN",
     "lin":"OEM-Netztopologie; ISO 17987/LIN-Spezifikation",
-    "kty":"NXP-Datenblatt der konkreten KTY81/KTY82-Type"
+    "kty":"NXP-Datenblatt der konkreten KTY81/KTY82-Type",
+    "ibs":"OEM-Prüfplan des Energiemanagements; HELLA Ladesystem-/IBS-Unterlagen nur als Systembeispiel. Fehlercodes zum Batteriesensor sind herstellerspezifisch.",
+    "agr-pos":"OEM-Schaltplan mit Signalrichtung und Kennlinie; generische Codes P0404/P0405/P0406 nach SAE J2012 benennen nur den Kreis, keinen Sollwert",
+    "lenkwinkel":"OEM-Prüfplan und Grundeinstellprozedur; Busanbindung nach ISO 11898 für klassischen High-Speed-CAN. Generische Codes U0126/U0428 nach SAE J2012 melden Kommunikations- bzw. Datenfehler, keinen Sensordefekt."
   };
   Object.entries(sourceRefs).forEach(([id,sourceRef])=>{const t=byId(id);if(t)t.sourceRef=sourceRef;});
 
@@ -4262,6 +4508,9 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
 
 /* init */
 renderCats();renderHome();
+/* Nutzungshinweis beim Erststart – erst nach dem Aufbau der Liste, damit der
+   Hintergrund existiert, auf den zurückgesprungen wird. */
+maybeShowHinweis();
 
 /* Service Worker + Update-Erkennung (PWA) */
 if('serviceWorker' in navigator){

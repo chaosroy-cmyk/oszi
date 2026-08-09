@@ -1,4 +1,4 @@
-/* validate.js – Abnahmevalidierung der KFZ-Multimeter-PWA (v8.2)
+/* validate.js – Abnahmevalidierung der KFZ-Multimeter-PWA (v8.4)
    Aufruf: npm ci && npm test
    Prüft Daten, Renderlogik, Fachregeln, Fokus, Theme- und PWA-Regressionen. */
 "use strict";
@@ -171,6 +171,16 @@ const w = dom.window, d = w.document;
   ok("Komma und Punkt liefern dasselbe Ergebnis", run("2,4") === run("2.4"));
   ok("unplausibler Wert über Nennstrom wird abgefangen", run("200").includes("unplausibel"), out.textContent);
   ok("leere/ungültige Eingabe sauber behandelt", run("").includes("Wert in mV eingeben"));
+  // Regression v8.4: ungültiger Widerstandswert darf nie als "NaN" durchschlagen.
+  // Reproduziert den Zustand nach einem fehlgeschlagenen onFuseTypeChange() (leere Optionsliste).
+  const optsBackup = fEl.innerHTML;
+  fEl.innerHTML = '<option value="">–</option>';
+  const nanOut = run("2,4");
+  ok("ungültiger Widerstandswert ergibt kein NaN", !/NaN/.test(nanOut), nanOut);
+  ok("stattdessen erscheint ein verständlicher Hinweis",
+     /Sicherungsbauform und Nennwert auswählen/.test(nanOut), nanOut);
+  fEl.innerHTML = optsBackup; pickType("atof"); pick("10 A");
+  ok("Rechner arbeitet nach dem Fehlerfall wieder normal", run("0,77").includes("100 mA"), out.textContent);
   w.doCloseOverlays();
 
   section("8 · Zustands-Regression");
@@ -419,6 +429,231 @@ const w = dom.window, d = w.document;
   ["87a", "Doppelschließer", "Freilaufdiode", "Parallelwiderstand", "Halbleiter"].forEach(k => {
     ok("Bauartmerkmal abgedeckt: " + k, allText.includes(k));
   });
+
+  section("19 · Release Candidate v8.4");
+
+  // --- Aufgabe 1: die drei wiederhergestellten Bauteilprüfungen ---
+  const newIds = ["ibs", "agr-pos", "lenkwinkel"];
+  newIds.forEach(id => {
+    const t = TESTS.find(x => x.id === id), dd = DEEP[id];
+    const metaComplete = !!t && !!t.quality && !!t.risk &&
+      Array.isArray(t.requires) && t.requires.length > 0 &&
+      Array.isArray(t.limits) && t.limits.length > 0 &&
+      Array.isArray(t.dont) && t.dont.length > 0 && !!t.syn && !!t.beg;
+    ok(id + ": Karte vorhanden, Meta vollständig, Anleitung ≥ 4 Schritte",
+       metaComplete && !!dd && Array.isArray(dd.anl) && dd.anl.length >= 4 &&
+       Array.isArray(dd.urs) && Array.isArray(dd.fs) && !!dd.rt,
+       JSON.stringify({ card: !!t, meta: metaComplete, anl: dd && dd.anl ? dd.anl.length : 0 }));
+    // sourceRef wird zentral zugewiesen; hier zählt, was der Renderer tatsächlich zeigt.
+    w.openDetail(id);
+    const body = d.getElementById("ovbody").textContent;
+    ok(id + ": Detailansicht nennt eine konkrete Sollwertquelle",
+       /Sollwertquelle:/.test(body) && !/Zahlen in dieser Karte sind ohne konkrete Kennlinie/.test(body));
+    w.doCloseOverlays();
+  });
+
+  // Auffindbarkeit über Werkstattsprache UND Fehlercode
+  const findable = [
+    ["ibs", "batteriesensor"], ["ibs", "polklemme"], ["ibs", "start-stopp"],
+    ["agr-pos", "abgasrückführung"], ["agr-pos", "p0405"], ["agr-pos", "verkokung"],
+    ["lenkwinkel", "wickelfeder"], ["lenkwinkel", "u0126"], ["lenkwinkel", "grundeinstellung"]
+  ];
+  const notFound = findable.filter(([id, q]) => {
+    w.eval("query=" + JSON.stringify(q) + ";activeCat='alle';");
+    return !w.filterTests().some(t => t.id === id);
+  }).map(([id, q]) => id + "/" + q);
+  w.eval("query='';activeCat='alle';");
+  ok("neue Karten über Synonyme und Fehlercodes auffindbar (" + findable.length + " Begriffe)",
+     notFound.length === 0, notFound.join(", "));
+
+  // Gefahrwarnung der Lenkwinkelkarte steht VOR der ersten Arbeitsanweisung
+  w.openDetail("lenkwinkel");
+  const lwHtml = d.getElementById("ovbody").innerHTML;
+  const posDanger = lwHtml.indexOf('class="warn danger"');
+  const posWork = lwHtml.indexOf("Messspitzen anhalten");
+  const posAnl = lwHtml.indexOf("Anleitung");
+  ok("lenkwinkel: danger-Block steht vor der ersten Arbeitsanweisung",
+     posDanger > -1 && posWork > posDanger && (posAnl === -1 || posAnl > posDanger),
+     JSON.stringify({ posDanger, posWork, posAnl }));
+  ok("lenkwinkel: Airbagwarnung nennt Deaktivierung und Wartezeit",
+     /Wartezeit/.test(lwHtml) && /Deaktivierung/.test(lwHtml));
+  w.doCloseOverlays();
+
+  // IBS <-> Ruhestrom: beidseitig verlinkt und als Chip aufgelöst
+  const chipTargets = id => {
+    w.openDetail(id);
+    const html = d.getElementById("ovbody").innerHTML;
+    w.doCloseOverlays();
+    return html;
+  };
+  const ibsHtml = chipTargets("ibs");
+  ok("ibs verweist auf Ruhestrom messen und Ruhestrom über Sicherung",
+     /xref/.test(ibsHtml) && /Ruhestrom messen/.test(ibsHtml) && /mV-Drop/.test(ibsHtml));
+  ["ruhestrom", "ruhestrom-fuse"].forEach(id => {
+    const html = chipTargets(id);
+    ok(id + " verweist zurück auf den Batteriesensor",
+       /Batteriesensor \(IBS\)/.test(html) && /xref/.test(html));
+  });
+  ["can", "srs-airbag"].forEach(id => {
+    const html = chipTargets(id);
+    ok(id + " verweist auf den Lenkwinkelsensor", /Lenkwinkelsensor/.test(html) && /xref/.test(html));
+  });
+
+  // --- Aufgabe 3: Auslieferungsdateien ---
+  const offPath = path.join(__dirname, "offline.html");
+  const headPath = path.join(__dirname, "_headers");
+  const hasOffline = fs.existsSync(offPath);
+  ok("offline.html vorhanden", hasOffline);
+  const OFFLINE = hasOffline ? fs.readFileSync(offPath, "utf8") : "";
+  ok("offline.html im Precache (Kernumfang, nicht optional)",
+     /'\.\/offline\.html'/.test(SW) && !/offline\.html[\s\S]{0,80}splash/.test(SW));
+  ok("offline.html ist zweiter Navigations-Fallback hinter index.html",
+     /caches\.match\('\.\/index\.html'\)[\s\S]{0,200}caches\.match\('\.\/offline\.html'\)/.test(SW));
+  ok("offline.html lädt keine fremden Ressourcen",
+     !/https?:\/\//.test(OFFLINE) && !/<script/i.test(OFFLINE));
+  ok("offline.html bietet einen Wiederholen-Weg mit 44-px-Ziel",
+     /Erneut versuchen/.test(OFFLINE) && /min-height:44px/.test(OFFLINE));
+  const hasHeaders = fs.existsSync(headPath);
+  ok("_headers vorhanden", hasHeaders);
+  const HEADERS = hasHeaders ? fs.readFileSync(headPath, "utf8") : "";
+  ["sw.js", "manifest.webmanifest", "index.html", "offline.html"].forEach(f => {
+    const block = (HEADERS.split("\n/").find(b => b.startsWith(f)) || "");
+    ok("_headers: no-cache für " + f, /no-cache/.test(block), block.trim());
+  });
+  ok("_headers: unveränderliche Cachezeit für Bilder",
+     /\*\.png[\s\S]{0,120}immutable/.test(HEADERS) && /\*\.svg[\s\S]{0,120}immutable/.test(HEADERS));
+  ["X-Content-Type-Options: nosniff", "Referrer-Policy: no-referrer", "X-Frame-Options: DENY"]
+    .forEach(h => ok("_headers: " + h, HEADERS.includes(h)));
+
+  // --- Aufgabe 4: Nutzungshinweis, Wertestand, keine externen Anfragen ---
+  ok("Nutzungshinweis über die Navigation erreichbar",
+     !!d.getElementById("navHinweis") && !!d.getElementById("hinweisOverlay"));
+  ok("Nutzungshinweis nennt Herstellervorrang und Qualifikationspflicht",
+     /Vorrang/.test(HTML) && /Hochvolt-, Airbag- und Bremssystemen/.test(HTML));
+  // Erststart: eigene Instanz ohne gesetztes Flag
+  const fresh = new JSDOM(HTML, { runScripts: "dangerously", url: "https://example.test/multimeter/index.html", virtualConsole: vc, pretendToBeVisual: true });
+  ok("Nutzungshinweis erscheint beim Erststart",
+     fresh.window.document.getElementById("hinweisOverlay").classList.contains("open"));
+  ok("Erststart zeigt einen Bestätigungsknopf", !!fresh.window.document.getElementById("hinweisOk"));
+  fresh.window.acceptHinweis();
+  await new Promise(r => setTimeout(r, 50));
+  ok("nach Bestätigung geschlossen und Hintergrund wieder bedienbar",
+     !fresh.window.document.getElementById("hinweisOverlay").classList.contains("open") &&
+     !fresh.window.document.querySelector("main").hasAttribute("inert"));
+  ok("Bestätigung wird lokal gespeichert", fresh.window.localStorage.getItem("mm_hinweis_ok") === "1");
+  const back = new JSDOM(HTML, {
+    runScripts: "dangerously", url: "https://example.test/multimeter/index.html",
+    virtualConsole: vc, pretendToBeVisual: true,
+    beforeParse(win) { try { win.localStorage.setItem("mm_hinweis_ok", "1"); } catch (e) {} }
+  });
+  ok("nach erneutem Laden kehrt der Hinweis nicht von selbst zurück",
+     !back.window.document.getElementById("hinweisOverlay").classList.contains("open"));
+  back.window.openHinweis();
+  ok("Hinweis bleibt über die Navigation aufrufbar",
+     back.window.document.getElementById("hinweisOverlay").classList.contains("open"));
+
+  // Wertestand sichtbar und deckungsgleich mit SOURCES.md
+  const stand = (HTML.match(/DATA_STAND\s*=\s*'([^']+)'/) || [])[1] || "";
+  ok("Inhaltsstand als eigene Konstante gepflegt", /^\d{2}\.\d{2}\.\d{4}$/.test(stand), stand);
+  ok("Inhaltsstand steht auch in SOURCES.md", SOURCES.includes(stand), stand);
+  ok("Inhaltsstand in der Fußzeile sichtbar", /Inhaltsstand \$\{DATA_STAND\}/.test(HTML));
+  w.renderHome();
+  ok("Fußzeile führt zum Nutzungshinweis",
+     /openHinweis\(\)/.test(d.getElementById("main").innerHTML));
+
+  // Datenschutzaussage im Code belegt (deckt LEGAL/DATENSCHUTZ-ENTWURF.md)
+  const prodFiles = ["index.html", "sw.js", "offline.html", "manifest.webmanifest"]
+    .filter(f => fs.existsSync(path.join(__dirname, f)))
+    .map(f => [f, fs.readFileSync(path.join(__dirname, f), "utf8")]);
+  const foreignUrls = [];
+  prodFiles.forEach(([f, src]) => (src.match(/https?:\/\/[^"'\s)]+/g) || [])
+    .filter(u => !/^http:\/\/www\.w3\.org\//.test(u))   // XML-Namensraum, kein Netzaufruf
+    .forEach(u => foreignUrls.push(f + ": " + u)));
+  ok("keine externen URLs im Produktionscode (nur SVG-Namensraum)",
+     foreignUrls.length === 0, foreignUrls.join(", "));
+  const beacons = [];
+  prodFiles.forEach(([f, src]) => {
+    if (/sendBeacon|XMLHttpRequest|new WebSocket|new EventSource|importScripts/.test(src)) beacons.push(f);
+    if (f !== "sw.js" && /\bfetch\s*\(/.test(src)) beacons.push(f + " (fetch)");
+  });
+  ok("keine Übertragungs-APIs außerhalb des Service Workers", beacons.length === 0, beacons.join(", "));
+  ok("Service-Worker-fetch bleibt auf die eigene Herkunft beschränkt",
+     /url\.origin !== self\.location\.origin/.test(SW));
+  // Schlüssel werden teils als Literal, teils über eine Konstante gesetzt
+  // (z.B. HINWEIS_KEY) – beide Schreibweisen erfassen, sonst entsteht eine Lücke.
+  const lsKeys = [...new Set([
+    ...(HTML.match(/localStorage\.[gs]etItem\(['"]([a-z_]+)['"]/g) || [])
+      .map(m => m.replace(/.*['"]([a-z_]+)['"]/, "$1")),
+    ...(HTML.match(/const\s+\w*KEY\s*=\s*'([a-z_]+)'/g) || [])
+      .map(m => m.replace(/.*'([a-z_]+)'/, "$1"))
+  ])].sort();
+  const legalPath = path.join(__dirname, "LEGAL", "DATENSCHUTZ-ENTWURF.md");
+  const LEGAL_DS = fs.existsSync(legalPath) ? fs.readFileSync(legalPath, "utf8") : "";
+  const undocumented = lsKeys.filter(k => !LEGAL_DS.includes(k));
+  ok("jeder localStorage-Schlüssel ist im Datenschutzentwurf aufgeführt (" + lsKeys.length + ": " + lsKeys.join(", ") + ")",
+     LEGAL_DS !== "" && lsKeys.length >= 4 && undocumented.length === 0, undocumented.join(", "));
+  // Gegenrichtung: der Entwurf darf keine Schlüssel nennen, die es nicht mehr gibt.
+  // Nur die Speichertabelle auswerten – die Codebeleg-Tabelle darüber nennt
+  // ebenfalls Bezeichner in Backticks (fetch, XMLHttpRequest …).
+  const storageSection = LEGAL_DS.split("## Was lokal gespeichert wird")[1] || "";
+  const documented = [...(storageSection.match(/^\| `([a-z_]+)`/gm) || [])].map(m => m.replace(/.*`([a-z_]+)`/, "$1"));
+  const stale = documented.filter(k => !lsKeys.includes(k));
+  ok("der Datenschutzentwurf nennt keine Schlüssel, die der Code nicht mehr setzt",
+     stale.length === 0, stale.join(", "));
+
+  // Rechtsdokumente liegen als gekennzeichnete Entwürfe vor
+  [["LICENSE", /ENTWURF/], ["LEGAL/00-UEBERSICHT.md", /Entwurf/],
+   ["LEGAL/IMPRESSUM-ENTWURF.md", /§ 5 ECG/], ["LEGAL/LIZENZ-ENTSCHEIDUNG.md", /bewusst nicht getroffen/],
+   ["LEGAL/RUECKMELDEWEG.md", /bewusst nicht getroffen/], ["README.md", /npm run validate/]
+  ].forEach(([f, re]) => {
+    const p = path.join(__dirname, f);
+    ok("vorhanden und inhaltlich passend: " + f,
+       fs.existsSync(p) && re.test(fs.readFileSync(p, "utf8")));
+  });
+
+  // Versionsgleichstand über alle vier Stellen
+  const appVer = (HTML.match(/APP_VERSION\s*=\s*'([^']+)'/) || [])[1] || "";
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "package.json"), "utf8"));
+  const appCacheN = (HTML.match(/APP_CACHE_NAME\s*=\s*'([^']+)'/) || [])[1] || "";
+  const numeric = appVer.replace(/-.*$/, "");
+  ok("APP_VERSION, CACHE_NAME und package.json sind deckungsgleich",
+     appCacheN === "kfz-multimeter-profi-v" + numeric.split(".").join("-") &&
+     pkg.version.startsWith(numeric + "."),
+     JSON.stringify({ appVer, appCacheN, pkg: pkg.version }));
+
+  section("20 · Vollzähligkeit gegen den Vorzustand");
+  // Grund für diesen Abschnitt: Beim Zusammenführen sind schon einmal drei Karten
+  // ersatzlos entfallen, während alle Tests grün blieben. Eine Prüfsuite, die einen
+  // solchen Verlust nicht bemerkt, prüft die falsche Sache.
+  const basePath = path.join(__dirname, "baseline.json");
+  if (!fs.existsSync(basePath)) {
+    ok("baseline.json vorhanden", false, "fehlt – Vollzähligkeit ungeprüft");
+  } else {
+    const BASE = JSON.parse(fs.readFileSync(basePath, "utf8"));
+    let warnCount = 0; TESTS.forEach(t => warnCount += (t.warn || []).length);
+    let rowCount = 0, fsCount = 0, anlCount = 0, ursCount = 0;
+    Object.values(DEEP).forEach(dd => {
+      if (dd.rt && dd.rt.rows) rowCount += dd.rt.rows.length;
+      if (dd.rt2 && dd.rt2.rows) rowCount += dd.rt2.rows.length;
+      fsCount += (dd.fs || []).length;
+      anlCount += (dd.anl || []).length;
+      ursCount += (dd.urs || []).length;
+    });
+    TESTS.forEach(t => { if (t.table && t.table.rows) rowCount += t.table.rows.length; });
+    const actual = {
+      cards: TESTS.length, deep: Object.keys(DEEP).length, trees: Object.keys(TREES).length,
+      warnings: warnCount, tableRows: rowCount, fsSteps: fsCount, anlSteps: anlCount, ursRows: ursCount
+    };
+    Object.entries(BASE.minima).forEach(([k, min]) => {
+      ok("kein Verlust bei " + k + " (Basis " + min + ", jetzt " + actual[k] + ")", actual[k] >= min);
+    });
+    // Reine Zählprüfung würde "eine Karte weg, eine neu" nicht bemerken.
+    const lost = BASE.cardIds.filter(id => !TESTS.some(t => t.id === id));
+    ok("jede Karte der Basis existiert noch (" + BASE.cardIds.length + " IDs namentlich geprüft)",
+       lost.length === 0, "verloren: " + lost.join(", "));
+    const added = TESTS.map(t => t.id).filter(id => !BASE.cardIds.includes(id));
+    if (added.length) console.log("  ℹ neu gegenüber der Basis: " + added.join(", "));
+  }
 
   if (notes.length) {
     section("Hinweise (kein Fehler)");

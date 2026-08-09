@@ -1,11 +1,12 @@
 /* KFZ Multimeter Profi – Service Worker
-   © 2026 R.S. – Alle Rechte vorbehalten.
+   © 2026 RS – Alle Rechte vorbehalten.
    Precache der App-Shell, network-first für Navigationen (frische index.html),
    cache-first für Assets. CACHE_NAME bei jedem Release erhöhen (passend zu APP_VERSION). */
-const CACHE_NAME = 'kfz-multimeter-profi-v8-3';
+const CACHE_NAME = 'kfz-multimeter-profi-v8-4';
 const ASSETS = [
   './',
   './index.html',
+  './offline.html',
   './manifest.webmanifest',
   './icon.svg',
   './icon-180.png',
@@ -101,7 +102,10 @@ self.addEventListener('fetch', event => {
         const copy = resp.clone();
         caches.open(CACHE_NAME).then(c => c.put(req, copy)).catch(() => {});
         return resp;
-      }).catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
+      }).catch(() => caches.match(req)
+        .then(r => r || caches.match('./index.html'))
+        // Zweiter Fallback: Cache leer (Erstaufruf ohne Netz) -> statische Offline-Seite.
+        .then(r => r || caches.match('./offline.html')))
     );
     return;
   }
