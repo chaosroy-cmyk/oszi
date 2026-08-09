@@ -317,6 +317,9 @@ body.beginner .beg-banner{display:flex}
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.beg{border-color:rgba(163,113,247,.6);color:#d9c2ff}
+/* Toast und Install-/Update-Banner belegen dieselbe Zone über der Navigation.
+   Liegt ein Banner an, setzt showToast() bottom passend zur gemessenen
+   Bannerhöhe per Inline-Stil – siehe Kommentar dort. */
 /* Copyright-Fußzeile */
 .copy{
   text-align:center;font-size:11.5px;color:var(--txt2);line-height:1.6;
@@ -355,6 +358,9 @@ body.beginner .beg-banner{display:flex}
 .ib-tx{flex:1;min-width:0}
 .ib-tx b{display:block;font-size:14px;font-weight:800;color:var(--txt)}
 .ib-tx span{display:block;font-size:11px;color:var(--txt2);line-height:1.35;margin-top:1px}
+/* Die Blockregel oben gilt dem Titel. Im Hinweistext darunter (iOS-Installationsweg)
+   muss <b> inline bleiben, sonst wird der Satz in Einzelzeilen zerrissen. */
+.ib-tx span b{display:inline;font-size:inherit;font-weight:800;color:var(--txt)}
 .ib-btn{
   flex:0 0 auto;background:var(--acc);color:#1a1200;border:none;border-radius:10px;
   padding:10px 15px;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;
@@ -1035,7 +1041,7 @@ const TESTS = [
  bad:"Vorkat fest/träge = Sonde kalt/alt/Fehler. Nachkat pendelt wie Vorkat = Kat-Wirkung oder Sonde prüfen.",
  next:"Sprunggeschwindigkeit, Vorkat/Nachkat-Vergleich & Form sauber → Oszilloskop/Diagnose.",
  beg:"Die Vorkat-Sonde pendelt ständig. Die Nachkat-Sonde darf bei gutem Kat viel ruhiger sein – nicht beide gleich bewerten.",
- /* PRÜFEN: Suchbegriffe (Synonyme/DTC generisch nach SAE J2012) */
+ /* Suchbegriffe: Werkstattsprache + generische DTC nach SAE J2012 (siehe SOURCES.md) */
  syn:"Sauerstoffsensor O2-Sensor Regelsonde Sprungsonde Vorkatsonde P0130 P0133 P0135"
 },
 {
@@ -1049,7 +1055,7 @@ const TESTS = [
  next:"Funktion nur über Diagnosegerät/Oszilloskop sinnvoll beurteilbar.",
  beg:"Diese Sonde ist zu komplex fürs Multimeter. Nur Versorgung/Heizung grob prüfen – Rest über Diagnose.",
  warn:[["info","Breitband-Lambda: Funktionsbeurteilung praktisch nur per Diagnosegerät/Oszilloskop."]],
- /* PRÜFEN: Suchbegriffe (Synonyme) */
+ /* Suchbegriffe: Werkstattsprache */
  syn:"Sauerstoffsensor O2-Sensor Breitbandsonde LSU"
 },
 {
@@ -1074,7 +1080,7 @@ const TESTS = [
  bad:"OL = Spule unterbrochen. Keine AC = kein Signal / Luftspalt zu groß.",
  next:"Signalform & Amplitude → Oszilloskop. Luftspalt & Polrad prüfen.",
  beg:"Der erzeugt seinen Strom selbst – wie ein Mini-Generator. Beim Drehen muss Wechselspannung kommen. Sonst Spule oder Abstand prüfen.",
- /* PRÜFEN: Suchbegriffe (Synonyme/DTC generisch nach SAE J2012) */
+ /* Suchbegriffe: Werkstattsprache + generische DTC nach SAE J2012 (siehe SOURCES.md) */
  syn:"Kurbelwellensensor Kurbelwellengeber OT-Geber CKP Drehzahlgeber P0335 P0336"
 },
 {
@@ -1088,7 +1094,7 @@ const TESTS = [
  next:"Rechtecksignal & Aussetzer sauber → Oszilloskop nötig.",
  beg:"Hall = sauberes Ein/Aus-Signal. Multimeter mittelt das und zeigt eine Zwischenzahl. Für die echte Form braucht es ein Oszilloskop.",
  warn:[["info","Multimeter zeigt beim Hall-Signal nur den Mittelwert – Aussetzer & Flankenfehler nur per Oszilloskop."]],
- /* PRÜFEN: Suchbegriffe (Synonyme/DTC generisch nach SAE J2012) */
+ /* Suchbegriffe: Werkstattsprache + generische DTC nach SAE J2012 (siehe SOURCES.md) */
  syn:"Nockenwellensensor Nockenwellengeber CMP P0340 P0341 P0342"
 },
 {
@@ -1127,7 +1133,7 @@ const TESTS = [
  next:"5-V-Referenz & Masse prüfen, Livedaten vergleichen.",
  beg:"Wie andere Drucksensoren: Signalspannung folgt dem Druck. Bewegt sich nichts, prüfen."
 },
-/* PRÜFEN: neue Karte "oeldruck" – kompletter Fachinhalt zur Freigabe (siehe REVIEW.md) */
+/* Karte "oeldruck": Fachinhalt gegen SOURCES.md geprüft, keine Universalgrenzen */
 {
  id:"oeldruck",cat:"sensor",ic:"🛢️",nm:"Öldruckschalter / Öldrucksensor",tag:"mm",
  was:"Öldruckschalter (Warnlampe) und analoge Öldrucksensoren elektrisch prüfen. Die Öldruckwarnung ist eine Motorschutz-Funktion – elektrische Prüfung ersetzt nie die mechanische Druckmessung.",
@@ -1496,7 +1502,7 @@ const TESTS = [
 const DEEP = {
 /* ===== GRUNDMESSUNGEN ===== */
 "spannung":{
- /* PRÜFEN: Lern-Anleitung v7.9 – keine neuen Zahlenwerte, Werte aus rt übernommen */
+ /* Lern-Anleitung: keine neuen Zahlenwerte, alle Werte aus der rt-Tabelle übernommen */
  anl:["<b>1 · Verstehen, was du misst.</b> Spannung ist kein Wert, den eine Leitung „hat“ – sie besteht immer <b>zwischen zwei Punkten</b>. Das Multimeter zeigt die Differenz zwischen roter und schwarzer Spitze. Deshalb ist die Frage „wie viel Spannung hat die Leitung?“ unvollständig; richtig ist „wie viel Spannung liegt zwischen diesem Punkt und meinem Bezugspunkt?“.",
    "<b>2 · Bezugspunkt bewusst wählen.</b> Für Versorgungsprüfungen die schwarze Spitze direkt an den <b>Batterie-Minuspol</b> legen, nicht an irgendeine Karosseriestelle. Eine schlechte Karosseriemasse verfälscht jede Messung – der Fehler sieht dann nach einem Versorgungsproblem aus, obwohl die Masse schuld ist. Bei Sensoren dagegen gegen die <b>Sensor-Masse</b> messen, sonst bewertest du einen Masseversatz als Sensorfehler.",
    "<b>3 · Messgerät einstellen.</b> DC Volt (V⎓), rote Leitung in V/Ω, schwarze in COM. Kontrolle vor jeder Messung: Steckt die rote Leitung noch in der Ampere-Buchse, ist die nächste Spannungsmessung ein Kurzschluss.",
@@ -1522,7 +1528,7 @@ const DEEP = {
      {s:"4 Unter Last gegenprüfen",do:"Verbraucher einschalten, Spannung erneut messen",ok:"Bleibt stabil → ok",ng:"Bricht ein → Spannungsabfall messen"}]
 },
 "widerstand":{
- /* PRÜFEN: Lern-Anleitung v7.9 – Werte (0,1–0,5 Ω) aus bestehender rt übernommen */
+ /* Lern-Anleitung: Werte (0,1–0,5 Ω) aus der bestehenden rt-Tabelle übernommen */
  anl:["<b>1 · Verstehen, wie das Ohmmeter arbeitet.</b> Es schickt aus der eigenen Batterie einen kleinen Prüfstrom durch das Bauteil und misst, wie viel Spannung dabei abfällt. Genau deshalb darf im Kreis <b>keine Fremdspannung</b> anliegen: Sie überlagert den Prüfstrom, das Ergebnis ist Unsinn, und das Messgerät kann Schaden nehmen.",
    "<b>2 · Spannungsfrei machen.</b> Zündung aus, Stecker abziehen. Bei Steuergeräten die Herstellervorgabe beachten – manche Module dürfen nicht unter Spannung getrennt werden.",
    "<b>3 · Bauteil isolieren.</b> Mindestens einseitig abklemmen. Bleibt das Bauteil im Kreis, messen parallel liegende Bauteile mit und täuschen einen zu niedrigen Wert vor. Klassische Falle: eine Spule scheint „durchgeschlagen“, weil in Wahrheit ein Widerstand daneben mitmisst.",
@@ -1549,7 +1555,7 @@ const DEEP = {
      {s:"5 Lastgegenprobe",do:"Wert ok, Fehler bleibt → Spannungsabfall unter Last messen",ok:"",ng:"0 Ω ist KEIN Lastbeweis"}]
 },
 "durchgang":{
- /* PRÜFEN: Lern-Anleitung v7.9 – Piepschwelle 20–70 Ω bereits in der rt-Note belegt */
+ /* Lern-Anleitung: Piepschwelle 20–70 Ω ist in der rt-Note belegt */
  anl:["<b>1 · Verstehen, was der Piepton bedeutet.</b> Der Durchgangsprüfer ist ein Ohmmeter mit Summer: Er piept, sobald der Widerstand unter einer geräteabhängigen Schwelle liegt – je nach Multimeter irgendwo zwischen 20 und 70 Ω. Der Ton sagt also nur „es ist eine Verbindung da“, nicht „die Verbindung ist gut“. Deshalb parallel immer den angezeigten Ohm-Wert lesen, nicht nur auf das Piepen hören.",
    "<b>2 · Spannungsfrei arbeiten.</b> Zündung aus, beide Leitungsenden abziehen. Wie bei jeder Ohm-Messung gilt: Fremdspannung verfälscht das Ergebnis und gefährdet das Messgerät.",
    "<b>3 · Messgerät selbst prüfen.</b> Beide Spitzen zusammenhalten – das Gerät muss piepen und nahe 0 Ω anzeigen. Tut es das nicht, ist die Messleitung gebrochen oder die Batterie des Messgeräts leer. Dieser Zehn-Sekunden-Test verhindert die häufigste Fehldiagnose überhaupt: eine intakte Leitung, die für unterbrochen gehalten wird.",
@@ -1712,7 +1718,7 @@ const DEEP = {
      {s:"5 Bewertung",do:"Spannung & Ansteuerung gut, dreht trotzdem lahm",ok:"Leitungen ok",ng:"Starter intern (Kohlen/Lager) defekt"}]
 },
 "sicherung":{
- /* PRÜFEN: Lern-Anleitung v7.9 – Werte (< 0,2 V, 60–120 Ω) aus bestehender rt übernommen */
+ /* Lern-Anleitung: Werte (< 0,2 V, 60–120 Ω) aus der bestehenden rt-Tabelle übernommen */
  anl:["<b>1 · Optisch prüfen reicht nicht.</b> Ein Schmelzleiter kann einen Haarriss haben, der von oben aussieht wie ein intakter Bügel. Umgekehrt sagt eine sichtbar durchgebrannte Sicherung nur, <b>dass</b> etwas zu viel Strom gezogen hat – nicht warum. Beides macht die Messung unverzichtbar.",
    "<b>2 · Sicherung gesteckt lassen und Spannung messen.</b> Die meisten KFZ-Flachsicherungen haben oben zwei kleine Prüföffnungen. Schwarze Spitze an Masse, rote nacheinander auf beide Öffnungen. Vorteil: Der Kreis bleibt geschlossen, kein Steuergerät wird geweckt.",
    "<b>3 · Zustand beachten.</b> Vorher klären, ob die Sicherung an Dauerplus (Klemme 30) oder an Zündungsplus (Klemme 15) hängt. Eine Kl.-15-Sicherung ist bei ausgeschalteter Zündung völlig zu Recht spannungslos – das ist kein Fehler, sondern der falsche Zustand.",
@@ -1905,7 +1911,7 @@ const DEEP = {
      {s:"3 Sensoren einzeln abstecken",do:"Nacheinander trennen, Referenz beobachten",ok:"kommt zurück → letzter Sensor/Leitung schuldig",ng:"bleibt weg → weiter"},
      {s:"4 Schluss lokalisieren",do:"Spannungsfrei Leitung gegen Masse & Plus prüfen",ok:"Schluss gefunden → reparieren",ng:"kein Schluss → STG-Ausgang prüfen"}]
 },
-/* PRÜFEN: DEEP-Blöcke zum 5-V-Kurzschluss-Kartensatz (Vorgabe Fachautor) */
+/* DEEP-Blöcke zum 5-V-Kurzschluss-Kartensatz */
 "ref5v-basis":{
  anl:["Schaltplan öffnen: Referenzpin, Sensor-Masse und alle Sensoren an derselben Referenz identifizieren.",
    "MM auf DC Volt. Zündung an, Sensor angesteckt, per Backprobing von der Kabelseite an Referenzpin und Sensor-Masse.",
@@ -2235,7 +2241,7 @@ const DEEP = {
      {s:"2 Klima an",do:"Signal bei laufender Klima beobachten",ok:"ändert sich → ok",ng:"fest → Sensor/Füllmenge"},
      {s:"3 Referenz & Druck",do:"5 V prüfen, ggf. Manometer vergleichen",ok:"stimmt → ok",ng:"Abweichung → Füllmenge/Sensor"}]
 },
-/* PRÜFEN: DEEP "oeldruck" – kompletter Fachinhalt zur Freigabe (siehe REVIEW.md) */
+/* DEEP "oeldruck": Fachinhalt gegen SOURCES.md geprüft, keine Universalgrenzen */
 "oeldruck":{
  anl:["Bauart im Schaltplan klären: einfacher Warnschalter (2-polig, meist massegeschaltet), Kombischalter oder analoger Drucksensor (3-Draht: Versorgung/Masse/Signal).",
    "Ölstand und Ölzustand IMMER zuerst prüfen – die häufigste Ursache für eine Öldruckwarnung ist kein Elektrikfehler.",
@@ -2618,7 +2624,7 @@ const DEEP = {
 },
 /* ===== LEITUNG ===== */
 "leitung":{
- /* PRÜFEN: ausführliche Lern-Anleitung ergänzt (v7.8). Enthält keine neuen
+ /* Ausführliche Lern-Anleitung. Enthält keine neuen
     Zahlenwerte – 0,1–0,5 Ω und < 0,2 V stammen aus bestehenden Karten. */
  anl:["<b>1 · Auftrag klären.</b> Schaltplan öffnen und beide Enden der Leitung eindeutig bestimmen: Steckerbezeichnung, Pin-Nummer, Aderfarbe. Wer nur nach Farbe sucht, misst früher oder später die falsche Ader – Farben wiederholen sich im Kabelbaum.",
    "<b>2 · Spannungsfrei machen.</b> Zündung aus, Leitung an <b>beiden</b> Enden abziehen. Grund: Solange noch Steuergeräte, Sensoren oder Verbraucher angeschlossen sind, misst du deren Innenwiderstand parallel mit und erhältst zu niedrige Werte. Ohm- und Durchgangsmessung niemals an spannungsführenden Leitungen.",
@@ -3060,6 +3066,18 @@ let toastTimer=null;
 function showToast(msg,cls){
   const el=document.getElementById('toast');
   if(!el)return;
+  // Liegt gerade ein Install- oder Updatebanner an, würde der Toast es verdecken –
+  // auf dem iPhone genau in dem Moment, in dem der Installationshinweis zählt.
+  // Höhe messen statt schätzen: Die Banner sind je nach Text unterschiedlich hoch.
+  const banner=['installBanner','updateBanner']
+    .map(id=>document.getElementById(id))
+    .find(b=>b&&getComputedStyle(b).display!=='none');
+  if(banner){
+    const r=banner.getBoundingClientRect();
+    el.style.bottom=Math.round(window.innerHeight-r.top+10)+'px';
+  }else{
+    el.style.bottom='';
+  }
   el.textContent=msg;
   el.className='toast show'+(cls?' '+cls:'');
   clearTimeout(toastTimer);
@@ -3620,8 +3638,8 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
     "radsensor":{quality:"MM nur grob",risk:"mittel",requires:["Sensortyp über Schaltplan klären"],limits:["Encoder-Aussetzer nur Oszi/Livedaten"]},
     "lambda-breit":{quality:"MM kaum geeignet",risk:"mittel",requires:["Versorgung/Heizung prüfen"],limits:["Funktion über Diagnose/Pumpstrom"]},
     "nox":{quality:"MM nur Versorgung",risk:"mittel",requires:["Diagnosegerät"],limits:["Sensorfunktion nicht direkt messbar"]},
-    /* PRÜFEN: v7.4 – Meta-Felder für bisher ungepflegte Karten. Methodisch aus den
-       vorhandenen Kartentexten abgeleitet, keine neuen Zahlenwerte. Freigabe: REVIEW.md */
+    /* Meta-Felder für zuvor ungepflegte Karten. Methodisch aus den
+       vorhandenen Kartentexten abgeleitet, keine neuen Zahlenwerte. Belege: SOURCES.md */
     "ntc-kts":{quality:"MM sehr gut",risk:"niedrig",requires:["spannungsfrei für Ohm-Messung","Referenztemperatur bekannt"],limits:["sporadische Aussetzer im Fahrbetrieb nicht sichtbar"],dont:["nicht bei angestecktem Stecker Ohm messen"]},
     "ntc-ats":{quality:"MM sehr gut",risk:"niedrig",requires:["spannungsfrei für Ohm-Messung","Umgebungstemperatur als Referenz"],limits:["reagiert träge – langsame Drift schwer erkennbar"],dont:["nicht bei angestecktem Stecker Ohm messen"]},
     "poti-dk":{quality:"MM gut, Oszi bei Aussetzern",risk:"niedrig",requires:["Zündung an","Stellweg langsam und vollständig durchfahren"],limits:["kurze Aussetzer nur per Oszilloskop sicher sichtbar"],dont:["Signalleitung nicht mit Prüflampe belasten"]},
@@ -3862,8 +3880,8 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
 
   newTests.forEach(t=>{if(!TESTS.some(x=>x.id===t.id)) TESTS.push(t);});
 
-  /* PRÜFEN: v7.4 – fehlende "Nicht machen"-Felder (dont). Methodisch aus den
-     vorhandenen Warnungen/Texten abgeleitet, keine neuen Zahlenwerte. Freigabe: REVIEW.md */
+  /* "Nicht machen"-Felder (dont). Methodisch aus den
+     vorhandenen Warnungen/Texten abgeleitet, keine neuen Zahlenwerte. Belege: SOURCES.md */
   const metaDont={
     "spannung":["nicht gegen einen zweifelhaften Massepunkt als einzige Referenz messen"],
     "durchgang":["nie an spannungsführenden Leitungen Durchgang prüfen"],
@@ -4550,10 +4568,19 @@ if('serviceWorker' in navigator){
     if(!worker||!navigator.serviceWorker.controller)return;
     const candidate=await workerVersion(worker);
     const current=await workerVersion(navigator.serviceWorker.controller);
-    // Gleiche Version = kein Update. Ein unbekannter wartender Alt-Worker darf
-    // einen bereits passenden v8.2-Controller nicht wieder herunterstufen.
+    // 1) Endzustand: Der Controller fährt genau die Version, zu der dieses
+    //    Dokument gehört, und daneben wartet nichts Identifizierbares mehr.
+    //    Ohne diesen Fall kann ein verwaister Worker dauerhaft als "Update"
+    //    erscheinen und bei jedem Klick einen weiteren Reload auslösen.
+    if(current===APP_CACHE_NAME&&(!candidate||candidate===current)){hideUpdate();return;}
+    // 2) Gleiche Version auf beiden Seiten = kein Update.
     if(candidate&&current&&candidate===current){hideUpdate();return;}
-    if(!candidate&&current===APP_CACHE_NAME){hideUpdate();return;}
+    // 3) Der wartende Worker antwortet nicht auf GET_VERSION, ist also nicht
+    //    identifizierbar (Alt-Build oder verwaist). Er wird NICHT angeboten:
+    //    Ein Klick würde sonst möglicherweise eine ältere Fassung aktivieren,
+    //    woraufhin die neuere erneut installiert und erneut angeboten wird.
+    if(!candidate){hideUpdate();return;}
+    // 4) Ein identifizierbarer, abweichender Worker ist ein echtes Update.
     showUpdate(worker);
   }
 
@@ -4562,8 +4589,16 @@ if('serviceWorker' in navigator){
     if(waitingWorker){
       ubBtn.textContent='Lädt…';ubBtn.disabled=true;
       if(ub)ub.style.display='none';
-      try{sessionStorage.setItem('kfz-update-applying',APP_VERSION);}catch(e){}
+      // Konstante Marke, KEINE Versionsnummer: Geschrieben wird sie von der
+      // alten Fassung, gelesen von der neuen – ein Versionsvergleich könnte
+      // deshalb niemals zutreffen und der Aufräumschritt liefe nie.
+      try{sessionStorage.setItem('kfz-update-applying','1');}catch(e){}
       waitingWorker.postMessage({type:'SKIP_WAITING'});
+      // Notausstieg: WebKit (iPhone/iPad) meldet controllerchange nicht in jedem
+      // Fall zuverlässig. Ohne diesen Fallback bliebe der Knopf auf „Lädt…“
+      // stehen und das Update käme nie an. Neu laden holt den bereits
+      // aktivierten Worker in jedem Fall ins Dokument.
+      setTimeout(()=>{if(!refreshing){refreshing=true;window.location.reload();}},6000);
     }
   });
   ubClose&&ubClose.addEventListener('click',hideUpdate);
@@ -4593,9 +4628,13 @@ if('serviceWorker' in navigator){
       // Nach erfolgreicher Aktivierung darf kein altes Banner aus dem vorherigen
       // Dokumentzustand stehen bleiben.
       try{
-        if(sessionStorage.getItem('kfz-update-applying')===APP_VERSION){
+        if(sessionStorage.getItem('kfz-update-applying')){
           sessionStorage.removeItem('kfz-update-applying');
-          workerVersion(navigator.serviceWorker.controller).then(v=>{if(v===APP_CACHE_NAME)hideUpdate();});
+          // Dieses Dokument ist die Folge eines gerade angewandten Updates.
+          // Ein Banner aus dem vorherigen Dokumentzustand ist damit überholt.
+          // Steht wirklich noch etwas Neueres an, meldet considerUpdate() es
+          // gleich darauf erneut – dann aber geprüft.
+          hideUpdate();
         }
       }catch(e){}
     }).catch(()=>{});
@@ -4643,13 +4682,20 @@ if('serviceWorker' in navigator){
   // Nach erfolgreicher Installation ausblenden
   window.addEventListener('appinstalled',()=>{setDismissed();hide();});
 
-  // iOS/iPadOS Safari: kein Auto-Prompt -> manuelle Anleitung zeigen
+  // iOS/iPadOS: Es gibt dort kein beforeinstallprompt – weder in Safari noch in
+  // Chrome, Firefox oder Edge, weil alle auf WebKit laufen. Ohne Hinweis würde
+  // niemand auf dem iPhone die App installieren, und ohne Installation gilt in
+  // Safari die 7-Tage-Löschfrist für Websitedaten: Offline-Cache und Merkliste
+  // wären nach einer Woche ohne Nutzung weg. Der Hinweis ist deshalb kein
+  // Beiwerk, sondern Voraussetzung für den Werkstattbetrieb.
   const ua=navigator.userAgent||'';
   const isIOS=/iphone|ipad|ipod/i.test(ua) || (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   const isSafari=/^((?!chrome|crios|fxios|edgios).)*safari/i.test(ua);
-  if(isIOS && isSafari && !isStandalone() && !dismissed()){
+  if(isIOS && !isStandalone() && !dismissed()){
     btn.style.display='none'; // iOS kann nicht automatisch installieren
-    sub.innerHTML='Tippe auf <b>Teilen</b> ⬆️ und dann <b>„Zum Home-Bildschirm"</b>';
+    sub.innerHTML=isSafari
+      ? '<b>Teilen</b> ⬆️ → <b>„Zum Home-Bildschirm“</b>. Erst dann bleibt sie dauerhaft offline.'
+      : 'Browsermenü → <b>„Zum Startbildschirm“</b>. Erst dann bleibt sie dauerhaft offline.';
     show();
   }
 })();

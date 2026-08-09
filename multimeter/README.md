@@ -19,7 +19,7 @@ Bauteiltausch steht erst nach einer Gegenprobe an. Diese Linie ist in
 | App-Version | `8.4-Profi` |
 | Inhaltsstand | 09.08.2026 |
 | Umfang | 77 Prüfkarten, 15 Diagnosebäume |
-| Validator | 142 Prüfungen |
+| Validator | 153 Prüfungen |
 | Abhängigkeiten der App | keine |
 
 ## Projektaufbau

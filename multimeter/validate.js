@@ -611,6 +611,40 @@ const w = dom.window, d = w.document;
        fs.existsSync(p) && re.test(fs.readFileSync(p, "utf8")));
   });
 
+  // iPhone: Installationshinweis. Es gibt auf iOS kein beforeinstallprompt –
+  // ohne diesen Zweig sieht dort niemand einen Installationsweg, und ohne
+  // Installation greift in Safari die 7-Tage-Löschfrist für Websitedaten.
+  ok("Installationshinweis für alle iOS-Browser, nicht nur Safari",
+     /isIOS && !isStandalone\(\) && !dismissed\(\)/.test(HTML));
+  ok("iOS-Hinweis nennt den Weg über Teilen bzw. Browsermenü",
+     /Zum Home-Bildschirm/.test(HTML) && /Zum Startbildschirm/.test(HTML));
+  ok("Android-Zweig nutzt weiterhin das echte Install-Prompt",
+     /beforeinstallprompt/.test(HTML) && /deferredPrompt\.prompt\(\)/.test(HTML));
+  ok("Toast weicht einem sichtbaren Banner aus (sonst verdeckt er den iOS-Hinweis)",
+     /\['installBanner','updateBanner'\]/.test(HTML) &&
+     /el\.style\.bottom=Math\.round\(window\.innerHeight-r\.top\+10\)/.test(HTML));
+  ok("iOS-Startbilder und Home-Screen-Symbol hinterlegt",
+     /apple-mobile-web-app-capable/.test(HTML) &&
+     /rel="apple-touch-icon"/.test(HTML) &&
+     (HTML.match(/rel="apple-touch-startup-image"/g) || []).length >= 20);
+
+  // Updatepfad: reproduzierbare Schleife aus dem externen Audit vom 09.08.2026
+  ok("considerUpdate behandelt einen passenden Controller als Endzustand",
+     /current===APP_CACHE_NAME&&\(!candidate\|\|candidate===current\)\{?hideUpdate/.test(HTML.replace(/\s/g, "")) ||
+     /if\(current===APP_CACHE_NAME&&\(!candidate\|\|candidate===current\)\)\{hideUpdate\(\);return;\}/.test(HTML));
+  ok("ein nicht identifizierbarer wartender Worker wird nicht als Update angeboten",
+     /if\(!candidate\)\{hideUpdate\(\);return;\}/.test(HTML));
+  ok("Update-Marke ist versionsunabhängig (sonst greift der Aufräumschritt nie)",
+     /setItem\('kfz-update-applying','1'\)/.test(HTML) &&
+     !/setItem\('kfz-update-applying',APP_VERSION\)/.test(HTML) &&
+     !/getItem\('kfz-update-applying'\)===APP_VERSION/.test(HTML));
+  ok("Update-Marke wird nach dem Reload entfernt und das Altbanner geschlossen",
+     /removeItem\('kfz-update-applying'\);[\s\S]{0,400}hideUpdate\(\);/.test(HTML));
+  ok("Notausstieg falls controllerchange ausbleibt (WebKit/iOS)",
+     /postMessage\(\{type:'SKIP_WAITING'\}\);[\s\S]{0,500}setTimeout\([\s\S]{0,160}location\.reload/.test(HTML));
+  ok("keine offenen PRÜFEN-Marker und keine Verweise auf eine fehlende REVIEW.md",
+     !/PRÜFEN:/.test(HTML) && !/REVIEW\.md/.test(HTML));
+
   // Versionsgleichstand über alle vier Stellen
   const appVer = (HTML.match(/APP_VERSION\s*=\s*'([^']+)'/) || [])[1] || "";
   const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "package.json"), "utf8"));
