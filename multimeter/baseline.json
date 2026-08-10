@@ -1,17 +1,18 @@
 {
   "_hinweis": "Vollzaehligkeitsbasis. Der Validator schlaegt fehl, sobald einer dieser Werte unterschritten wird oder eine der gelisteten Karten-IDs fehlt. NUR bewusst beim Release fortschreiben - niemals anpassen, um einen roten Lauf gruen zu bekommen.",
-  "_basis": "v8.3-Profi (Commit a062901), gemessen am 09.08.2026",
+  "_basis": "v8.5-Profi, fortgeschrieben am 10.08.2026 (zuvor: v8.3-Profi, Commit a062901)",
   "minima": {
-    "cards": 74,
-    "deep": 74,
+    "cards": 77,
+    "deep": 77,
     "trees": 15,
-    "warnings": 68,
-    "tableRows": 375,
-    "fsSteps": 308,
-    "anlSteps": 442,
-    "ursRows": 295
+    "warnings": 77,
+    "tableRows": 394,
+    "fsSteps": 327,
+    "anlSteps": 465,
+    "ursRows": 311
   },
   "cardIds": [
+    "agr-pos",
     "agt",
     "backprobe",
     "batterie",
@@ -26,6 +27,7 @@
     "hall",
     "hupe",
     "hv-hybrid",
+    "ibs",
     "injektor-benzin",
     "injektor-diesel",
     "klemmen",
@@ -37,6 +39,7 @@
     "lambda-breit",
     "lambda-sprung",
     "leitung",
+    "lenkwinkel",
     "lin",
     "lmm-a",
     "lmm-d",

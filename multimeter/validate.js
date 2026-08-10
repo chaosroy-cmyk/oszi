@@ -1,4 +1,4 @@
-/* validate.js – Abnahmevalidierung der KFZ-Multimeter-PWA (v8.4)
+/* validate.js – Abnahmevalidierung der KFZ-Multimeter-PWA (v8.5)
    Aufruf: npm ci && npm test
    Prüft Daten, Renderlogik, Fachregeln, Fokus, Theme- und PWA-Regressionen. */
 "use strict";
@@ -430,7 +430,7 @@ const w = dom.window, d = w.document;
     ok("Bauartmerkmal abgedeckt: " + k, allText.includes(k));
   });
 
-  section("19 · Release Candidate v8.4");
+  section("19 · Release Candidate v8.5");
 
   // --- Aufgabe 1: die drei wiederhergestellten Bauteilprüfungen ---
   const newIds = ["ibs", "agr-pos", "lenkwinkel"];

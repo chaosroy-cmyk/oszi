@@ -2,7 +2,7 @@
    © 2026 RS – Alle Rechte vorbehalten.
    Precache der App-Shell, network-first für Navigationen (frische index.html),
    cache-first für Assets. CACHE_NAME bei jedem Release erhöhen (passend zu APP_VERSION). */
-const CACHE_NAME = 'kfz-multimeter-profi-v8-4';
+const CACHE_NAME = 'kfz-multimeter-profi-v8-5';
 const ASSETS = [
   './',
   './index.html',

@@ -16,7 +16,7 @@ Bauteiltausch steht erst nach einer Gegenprobe an. Diese Linie ist in
 
 | | |
 |---|---|
-| App-Version | `8.4-Profi` |
+| App-Version | `8.5-Profi` |
 | Inhaltsstand | 09.08.2026 |
 | Umfang | 77 Prüfkarten, 15 Diagnosebäume |
 | Validator | 153 Prüfungen |
@@ -110,10 +110,10 @@ Vier Stellen müssen zusammenpassen; der Validator prüft das:
 
 | Stelle | Beispiel |
 |---|---|
-| `index.html` → `APP_VERSION` | `8.4-Profi` |
-| `index.html` → `APP_CACHE_NAME` | `kfz-multimeter-profi-v8-4` |
-| `sw.js` → `CACHE_NAME` | `kfz-multimeter-profi-v8-4` |
-| `package.json` → `version` | `8.4.0` |
+| `index.html` → `APP_VERSION` | `8.5-Profi` |
+| `index.html` → `APP_CACHE_NAME` | `kfz-multimeter-profi-v8-5` |
+| `sw.js` → `CACHE_NAME` | `kfz-multimeter-profi-v8-5` |
+| `package.json` → `version` | `8.5.0` |
 
 Getrennt davon steht `DATA_STAND` in `index.html` — der **fachliche
 Inhaltsstand**, sichtbar in der Fußzeile und im Nutzungshinweis. Er muss mit der

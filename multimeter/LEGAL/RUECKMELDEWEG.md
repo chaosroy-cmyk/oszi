@@ -19,7 +19,7 @@ nachvollziehbar.
 ## Variante 1 · `mailto:`-Verweis mit vorbefülltem Betreff
 
 Ein Verweis in jeder Detailansicht, der das E-Mail-Programm mit vorbefülltem
-Betreff und Rumpftext öffnet: `Rückmeldung: <Kartenname> (<ID>) · v8.4-Profi ·
+Betreff und Rumpftext öffnet: `Rückmeldung: <Kartenname> (<ID>) · v8.5-Profi ·
 Stand 28.07.2026`.
 
 - **Dafür:** Kein Dienst, kein Konto, keine Infrastruktur. Funktioniert auch bei

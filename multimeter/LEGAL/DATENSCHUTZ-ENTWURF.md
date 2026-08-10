@@ -16,7 +16,7 @@ Das ist keine Datenübermittlung durch die App, aber es ist Datenverarbeitung, u
 sie gehört benannt. Nach dem einmaligen vollständigen Laden funktioniert die App
 offline; dann entstehen keine weiteren Aufrufe mehr.
 
-## Codebeleg (Stand v8.4-Profi, geprüft am Auslieferungsstand)
+## Codebeleg (Stand v8.5-Profi, geprüft am Auslieferungsstand)
 
 Nachgeprüft wurde der gesamte Produktionscode — `index.html`, `sw.js`,
 `offline.html`, `manifest.webmanifest`:
@@ -46,7 +46,7 @@ Daten verlassen das Gerät nicht und werden von der App nirgendwohin übertragen
 | `ib_dismissed` | `1` oder nicht gesetzt | Installationsbanner wurde weggetippt |
 
 Zusätzlich legt der Browser die App-Dateien im **Cache Storage** unter dem Namen
-`kfz-multimeter-profi-v8-4` ab. Das sind ausschließlich Programmdateien und
+`kfz-multimeter-profi-v8-5` ab. Das sind ausschließlich Programmdateien und
 Bilder der App, keine Nutzungsdaten. Ohne diesen Cache wäre kein Offlinebetrieb
 möglich.
 

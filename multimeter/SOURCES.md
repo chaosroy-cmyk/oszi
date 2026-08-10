@@ -1,6 +1,6 @@
 # SOURCES.md — Quellen- und Grenzwertmatrix
 
-Stand: **v8.4-Profi, geprüft am 09.08.2026**.
+Stand: **v8.5-Profi, Quellen geprüft am 09.08.2026**.
 
 Dieses Datum ist zugleich der in der App sichtbare **Inhaltsstand**
 (`DATA_STAND` in `index.html`, Fußzeile und Nutzungshinweis). Beide Angaben
