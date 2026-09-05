@@ -588,8 +588,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.5-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-5';
+const APP_VERSION = '8.6-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-6';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -725,9 +725,9 @@ const TESTS = [
  was:"Sicherung auf Durchgang, Kontaktqualität und Auslöseursache prüfen – ohne sie zu ziehen.",
  set:{mode:"DC Volt (V⎓)",buchse:"COM + V/Ω"},
  probes:[["r","Prüföffnung Seite 1, dann Seite 2"],["b","Masse"]],
- mess:"NICHT nur optisch prüfen – Spannung auf BEIDEN Prüföffnungen messen, Sicherung bleibt gesteckt. Für die Kontaktqualität zusätzlich den Abfall über der Sicherung unter Last bewerten.",
- good:"Beide Seiten führen dieselbe Spannung; unter Last kein nennenswerter Abfall über der Sicherung.",
- bad:"Spannung nur auf einer Seite = Sicherung offen (auch bei Haarriss). Beide Seiten 0 V = Versorgung fehlt schon davor. Deutlicher Abfall unter Last = Übergangswiderstand am Sicherungskontakt.",
+ mess:"NICHT nur optisch prüfen – Spannung auf BEIDEN Prüföffnungen gegen Masse messen, Sicherung bleibt gesteckt. Für die Kontaktqualität nicht über der Sicherung messen, sondern über den Sicherungssockel: eine Spitze auf die Prüföffnung, die andere jenseits der Halteklemme (versorgungsseitig Batterieplus/Sammelschiene, lastseitig Verbraucheranschluss).",
+ good:"Beide Seiten führen dieselbe Spannung; über dem Sockel fällt unter Last nur wenig ab. Der kleine Abfall über der Sicherung selbst ist bauartbedingt normal.",
+ bad:"Spannung nur auf einer Seite = Sicherung offen (auch bei Haarriss). Beide Seiten 0 V = Versorgung fehlt schon davor. Deutlicher Abfall über dem Sockel unter Last = Übergangswiderstand an Halteklemme oder Sicherungskasten.",
  next:"Sicherungskasten-Kontakt und Halteklemmen prüfen. Fliegt sie erneut: Ursache suchen, nie höher absichern. Für die Prüfung des geschalteten Kreises → Prüfung: Relais prüfen.",
  beg:"Eine Sicherung ist eine gewollte Schwachstelle: Sie brennt durch, bevor die Leitung schmort. Sie kann von oben völlig heil aussehen und trotzdem einen Haarriss haben – deshalb misst du statt hinzuschauen. Am einfachsten mit gesteckter Sicherung: schwarze Spitze an Masse, rote nacheinander auf die beiden kleinen Prüföffnungen oben. Gleiche Spannung auf beiden Seiten heißt, sie leitet. Nur auf einer Seite Spannung heißt, sie ist offen. Auf beiden Seiten 0 V heißt, dass schon davor nichts ankommt – dann bringt Tauschen gar nichts. Und ganz wichtig: nie eine stärkere Sicherung einsetzen – der Nennwert ist auf den Leitungsquerschnitt ausgelegt, eine größere schützt die Leitung nicht mehr. Das Relais, das den Kreis schaltet, hat eine eigene Karte."
 },
@@ -1646,18 +1646,20 @@ const DEEP = {
    "<b>2 · Sicherung gesteckt lassen und Spannung messen.</b> Die meisten KFZ-Flachsicherungen haben oben zwei kleine Prüföffnungen. Schwarze Spitze an Masse, rote nacheinander auf beide Öffnungen. Vorteil: Der Kreis bleibt geschlossen, kein Steuergerät wird geweckt.",
    "<b>3 · Zustand beachten.</b> Vorher klären, ob die Sicherung an Dauerplus (Klemme 30) oder an Zündungsplus (Klemme 15) hängt. Eine Kl.-15-Sicherung ist bei ausgeschalteter Zündung völlig zu Recht spannungslos – das ist kein Fehler, sondern der falsche Zustand.",
    "<b>4 · Ergebnis bewerten.</b> Beide Seiten gleiche Spannung = Sicherung leitet. Nur eine Seite Spannung = Sicherung offen. Beide Seiten 0 V = die Versorgung fehlt schon davor, dann rückwärts weitersuchen statt die Sicherung zu tauschen.",
-   "<b>5 · Sicherung unter Last bewerten.</b> Verbraucher einschalten und die Spannung über der Sicherung selbst messen (eine Spitze je Prüföffnung). Ein nennenswerter Abfall bedeutet Übergangswiderstand am Sicherungskontakt – oft durch Korrosion im Sicherungskasten. Die Sicherung ist dann elektrisch „ganz“, aber trotzdem die Fehlerquelle.",
+   "<b>5 · Den Sockel prüfen, nicht die Sicherung.</b> Die beiden Prüföffnungen sitzen auf den Blechfahnen der Sicherung selbst. Wer eine Spitze je Öffnung setzt, misst ausschließlich den Schmelzleiter – die Halteklemmen des Sockels liegen <b>außerhalb</b> dieses Pfades und können so gar nicht auffallen. Der dort gemessene Abfall ist zudem bauartbedingt normal: Eine ATOF 10 A hat rund 7,7 mΩ, bei 10 A fallen also etwa 77 mV ab. Genau diesen Effekt nutzt die Prüfung „Ruhestrom über Sicherung (mV-Drop)“, um daraus den Strom zu berechnen.","<b>6 · Übergangswiderstand am Sockel richtig messen.</b> Verbraucher einschalten und so messen, dass die Halteklemme im Messpfad liegt: versorgungsseitig eine Spitze an Batterieplus oder die Sammelschiene, die andere auf die eingangsseitige Prüföffnung; lastseitig eine Spitze auf die ausgangsseitige Prüföffnung, die andere an den Verbraucheranschluss. Ein deutlicher Abfall gehört jetzt tatsächlich zum Kontakt – typisch bei Korrosion oder aufgeweiteter Klemme. Ein warmer oder verfärbter Sockel bestätigt den Befund.",
             "<b>6 · Fliegt die Sicherung erneut, nicht stärker absichern.</b> Der Nennwert ist auf den Leitungsquerschnitt ausgelegt; eine größere Sicherung schützt die Leitung nicht mehr und kann einen Kabelbrand auslösen. Stattdessen die Ursache suchen – meist ein Kurzschluss nach Masse oder ein schwergängiger Verbraucher.",
    "<b>Merksatz:</b> Eine Sicherung beweist ihre Güte erst unter Last – und ein erneutes Auslösen ist ein Diagnoseauftrag, keine Einladung zum Hochsichern."],
  rt:{head:["Messung","Befund","Bewertung"],rows:[
    ["Beide Seiten Sicherung","gleiche Spannung","g"],["Nur eine Seite Spannung","Sicherung offen","b"],
-   ["Abfall über der Sicherung unter Last","möglichst gering, gegen OEM-Vorgabe","g"],["deutlicher Abfall unter Last","Übergangswiderstand am Kontakt","b"]],
+   ["Abfall zwischen den beiden Prüföffnungen","bauartbedingt normal (ATOF 10 A ≈ 7,7 mΩ, bei 10 A ≈ 77 mV) – kein Kontaktbefund","g"],
+   ["Abfall über dem Sockel unter Last (Prüföffnung ↔ jenseits der Halteklemme)","gering, gegen OEM-Vorgabe oder Vergleichskreis","g"],
+   ["deutlicher Abfall über dem Sockel","Übergangswiderstand an Halteklemme oder Sicherungskasten","b"]],
    note:"VAG: viele Hochlast-Sicherungsträger im Wasserkasten/E-Box – Korrosion durch Feuchtigkeit häufig. BMW: Sicherungsträger teils im Kofferraum/hinter Handschuhfach."},
  urs:[["Haarriss in Sicherung","optisch ok, elektrisch offen","h"],
       ["Korrosion im Sicherungskasten","Übergangswiderstand, Verlust","m"],
       ["Halteklemmen aufgeweitet","Sicherung sitzt lose, Übergangswiderstand","m"]],
  fs:[{s:"1 Sicherung beidseitig",do:"Spannung auf beiden Kontakten messen",ok:"gleich → Sicherung ok",ng:"nur eine Seite → Sicherung offen; vor dem Ersetzen Ursache des Auslösens klären"},
-     {s:"2 Abfall unter Last",do:"Spannung über der gesteckten Sicherung bei eingeschaltetem Verbraucher",ok:"gering → Sicherungskontakt ok",ng:"deutlich → Halteklemmen und Sicherungskasten-Kontakt prüfen"},
+     {s:"2 Sockel unter Last",do:"Verbraucher an; Prüföffnung gegen einen Punkt jenseits der Halteklemme messen (Batterieplus/Sammelschiene bzw. Verbraucher) – nicht Prüföffnung gegen Prüföffnung",ok:"gering → Sockelkontakt ok",ng:"deutlich → Halteklemmen und Sicherungskasten-Kontakt prüfen"},
      {s:"3 Auslöseursache",do:"Fliegt sie erneut: Verbraucher trennen, Leitung auf Schluss gegen Masse prüfen",ok:"Ursache gefunden → beheben",ng:"nie höher absichern – Nennwert ist auf den Leitungsquerschnitt ausgelegt"},
      {s:"4 Geschalteten Kreis abgrenzen",do:"Sicherung in Ordnung, Verbraucher trotzdem tot: schaltendes Bauteil prüfen",ok:"Sicherungspfad ok → weiter",ng:"→ Prüfung: Relais prüfen"}]
 },

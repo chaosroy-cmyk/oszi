@@ -3,7 +3,7 @@
 Fortschrittsregister des Verbesserungs-Loops. Arbeitsanweisung:
 [`PROMPT-VERBESSERUNG.md`](PROMPT-VERBESSERUNG.md).
 
-**Nächstes Fokusthema: 3 · Strom, Sicherungen, mV-Rechner**
+**Nächstes Fokusthema: 4 · Energie & Anlasser**
 
 Format je Runde:
 
@@ -211,3 +211,59 @@ absoluten Abfallgrenzen über das gesamte Projekt.
   betroffenen Karten gemeinsam anfasst — bewusst nicht als Beifang erledigt.
 - Aus Runde 1 weiter offen: Grundsatzfrage `warn` gegen `dont` bei
   Kraftstoff- und Kältemittelgefahren; `syn`-Feld für `injektor-benzin`.
+
+---
+
+## Runde 3 · Strom, Sicherungen, mV-Rechner · 2026-09-05
+
+Baseline: 101/101 grün → Abschluss: 108/108 grün · Version 8.5-Profi → 8.6-Profi
+
+Geprüft: `strom`, `sicherung`, `relais`, `relais-typen`, `relais-leistung`,
+`relais-elektronisch`, `ruhestrom`, `ruhestrom-fuse`, `prueflampe-last`,
+`stromzange-dc` sowie `FUSE_TYPES`.
+
+### Befunde
+
+- **Kontaktprüfung misst den Kontakt gar nicht** (`sicherung`, sechs Felder)
+  Die Karte wies an, „eine Spitze je Prüföffnung" zu setzen und den Abfall als
+  „Übergangswiderstand am Sicherungskontakt" zu deuten. Zwei Fehler:
+  (1) Die Prüföffnungen sitzen auf den Blechfahnen der Sicherung; gemessen wird
+  Fahne → Schmelzleiter → Fahne. Die Halteklemmen des Sockels liegen außerhalb
+  dieses Pfades und können prinzipbedingt nicht auffallen.
+  (2) Der dort gemessene Abfall ist bauartbedingt normal — der Schmelzleiter hat
+  einen konstruktiven Widerstand.
+  Beleg intern und zwingend: Die Karte `ruhestrom-fuse` baut auf genau diesem
+  Abfall auf und rechnet ihn über die hinterlegten Littelfuse-Kaltwiderstände in
+  Strom um. `FUSE_TYPES.atof` führt für 10 A 7,7 mΩ; bei 10 A ergibt das 77 mV.
+  Zwei Karten deuteten dieselbe Messung damit gegensätzlich.
+  Praktische Folge: Ein intakter Sicherungskasten wäre gereinigt oder getauscht
+  worden, ein tatsächlich aufgeweiteter Klemmenkontakt trotzdem unentdeckt
+  geblieben.
+  Fix: Anleitungsschritt 5 erklärt Messpfad und Normalität des Abfalls, neuer
+  Schritt 6 gibt die richtige Sockelmessung (Prüföffnung gegen einen Punkt
+  jenseits der Halteklemme), Tabelle trennt beide Messungen, `mess`/`good`/`bad`
+  und Fehlersuchschritt 2 nachgezogen.
+  Regression: `validate.js` Abschnitt 21, 7 Prüfungen. Eine rechnet den im Text
+  genannten Beispielwert gegen `FUSE_TYPES` nach (7,7 mΩ × 10 A = 77 mV), damit
+  Text und Daten nicht auseinanderdriften; eine weitere sichert die
+  Widerspruchsfreiheit zu `ruhestrom-fuse`.
+
+### Geprüft und für korrekt befunden
+
+- `strom`: Reihenmessung, A-Buchse, sofortiges Rückstecken, größter Bereich
+  zuerst — richtig und vollständig.
+- `ruhestrom`: Einschlafzeit, Trennen weckt Steuergeräte, Radio-Code und
+  Adaptionen, mV-Drop als schonende Alternative — richtig.
+- `stromzange-dc`: Nullabgleich, nur ein Leiter, Feldaufhebung bei gemeinsamem
+  Umfassen von Hin- und Rückleiter — physikalisch korrekt.
+- `prueflampe-last`: „21 W bei 12 V ≈ 1,75 A" rechnerisch korrekt (21/12 =
+  1,75). Tabu-Liste (5 V, CAN/LIN, SRS, ECU-Signal) fachlich richtig.
+- Relais-Kartensatz aus v8.3: unverändert stimmig.
+
+### Beobachtungen ohne Beleg
+
+- `FUSE_TYPES` konnte nicht erneut gegen die Littelfuse-Datenblätter geprüft
+  werden — der Abruf wird serverseitig mit HTTP 403 abgewiesen. Der bestehende
+  Ankerprüfpunkt (ATOF 10 A = 7,70 mΩ) bleibt die einzige verifizierte Stelle.
+  Unverifizierte Werte wurden bewusst nicht angetastet. Für eine spätere Runde:
+  Datenblatt manuell beschaffen und die übrigen Nennströme gegenprüfen.

@@ -502,6 +502,41 @@ const w = dom.window, d = w.document;
   ok("SOURCES.md führt die HELLA-Abfalltabelle mit Direktlink",
      /earth-31-troubleshooting/.test(SOURCES));
 
+  section("21 · Runde 3 · Sicherung: Messpfad und Sockelkontakt");
+  // Der Auslöser: Die Karte "sicherung" wies an, eine Spitze je Prüföffnung zu setzen,
+  // und deutete den Abfall als "Übergangswiderstand am Sicherungskontakt". Die
+  // Prüföffnungen sitzen aber auf den Blechfahnen der Sicherung – die Halteklemmen des
+  // Sockels liegen ausserhalb dieses Pfades. Zugleich ist der dort gemessene Abfall
+  // bauartbedingt normal: genau ihn nutzt "ruhestrom-fuse", um den Strom zu berechnen.
+  // Beide Karten beschrieben dieselbe Messung widersprüchlich.
+  const sic = TESTS.find(t => t.id === "sicherung");
+  const sicAll = JSON.stringify(sic) + JSON.stringify(DEEP["sicherung"] || {});
+
+  ok("sicherung deutet den Abfall zwischen den Prüföffnungen nicht mehr als Kontaktfehler",
+     !/Übergangswiderstand am Sicherungskontakt/.test(sicAll));
+  ok("sicherung erklärt den Abfall über der Sicherung als bauartbedingt normal",
+     /bauartbedingt normal/.test(sicAll));
+  ok("sicherung verweist für die Sockelprüfung auf einen Punkt jenseits der Halteklemme",
+     /jenseits der Halteklemme/.test(sicAll));
+  ok("sicherung warnt ausdrücklich vor Prüföffnung-gegen-Prüföffnung als Kontakttest",
+     /nicht Prüföffnung gegen Prüföffnung/.test(sicAll));
+  ok("sicherung verweist auf die mV-Drop-Prüfung als Nutzer desselben Effekts",
+     /mV-Drop/.test(sicAll));
+
+  // Der genannte Beispielwert muss rechnerisch zur hinterlegten Sicherungstabelle passen.
+  const atof10 = w.eval("FUSE_TYPES").atof.items.find(x => x.a === 10).r;
+  const mvBei10A = atof10 * 10;
+  ok("Beispiel „ATOF 10 A ≈ 7,7 mΩ, bei 10 A ≈ 77 mV“ deckt sich mit FUSE_TYPES",
+     Math.abs(atof10 - 7.7) < 0.01 && Math.abs(mvBei10A - 77) < 1 &&
+     /7,7 mΩ/.test(sicAll) && /77 mV/.test(sicAll),
+     "FUSE_TYPES: " + atof10 + " mΩ → " + mvBei10A + " mV");
+
+  // Widerspruchsfreiheit der beiden Karten über dieselbe Messung
+  const rfAll = JSON.stringify(TESTS.find(t => t.id === "ruhestrom-fuse")) +
+                JSON.stringify(DEEP["ruhestrom-fuse"] || {});
+  ok("ruhestrom-fuse beschreibt den Abfall weiterhin als Strommessgrösse, nicht als Defekt",
+     /rechne|umrechnen|Strom umrechnen|in Strom/i.test(rfAll) && !/Übergangswiderstand/.test(rfAll));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");
