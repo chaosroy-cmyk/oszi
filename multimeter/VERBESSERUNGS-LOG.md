@@ -3,7 +3,7 @@
 Fortschrittsregister des Verbesserungs-Loops. Arbeitsanweisung:
 [`PROMPT-VERBESSERUNG.md`](PROMPT-VERBESSERUNG.md).
 
-**Nächstes Fokusthema: 11 · Glossar, Suche, Querverweise**
+**Nächstes Fokusthema: 12 · PWA, Offline, A11y, Theme**
 
 Format je Runde:
 
@@ -646,3 +646,51 @@ besonders sauber: `generator-laedt-nicht[6]` („nicht den Generator tauschen"),
 `steuergeraet-offline[1]` („Nicht das Steuergerät tauschen, bevor Versorgung
 unter Last stimmt"), `5v-kurzschluss[8]` („Noch kein Austauschgrund") und `[12]`
 („Erst jetzt darf der Steuergeräteausgang bewertet werden").
+
+---
+
+## Runde 11 · Glossar, Suche, Querverweise · 2026-09-05
+
+Baseline: 161/161 grün → Abschluss: 176/176 grün · Version 8.13-Profi → 8.14-Profi
+
+Geprüft: Suchindex, `syn`-Felder, `linkifyRefs`, 53 Glossareinträge,
+Begriffskonsistenz.
+
+### Befunde
+
+- **Die Suche erfasste den Großteil des Inhalts nicht**
+  Der Index umfasste nur die Kopffelder (`nm`, `was`, `id`, `mess`, `next`,
+  `syn` und die Meta-Listen). Die gesamten `DEEP`-Inhalte — Anleitung,
+  Richtwerttabellen samt Notizen, Ursachenlisten, Fehlersuchketten — sowie
+  `good`, `bad` und `beg` blieben außen vor. Das ist der weitaus größte Teil des
+  Textes.
+  Beleg durch Messung: Zehn Begriffe, die in der App stehen, lieferten null
+  Treffer — `AGM` (Ladetabelle `batterie`), `Wegfahrsperre` (Notiz `starter`),
+  `Rekuperation` (Anleitung `generator`), `Schleifring` (Ursachen `srs-airbag`),
+  `Common Rail`, `TFSI`, `Spannungsteiler`, `Sulfatierung`, `Nullabgleich`,
+  `Open Collector`. Für ein Werkstatt-Nachschlagewerk ist das die teuerste Sorte
+  Fehler: Der Inhalt ist da, die Arbeit steckt drin, und der Anwender findet ihn
+  nicht.
+  Fix: einmalig aufgebauter Suchindex über den gesamten Karteninhalt
+  einschließlich `DEEP`, HTML-Auszeichnung beim Aufbau entfernt. Einmalig statt
+  pro Tastendruck, weil 74 Karten samt Tiefeninhalten bei jedem Anschlag neu zu
+  serialisieren auf dem Handy spürbar wäre.
+  Regression: `validate.js` Abschnitt 29, 15 Prüfungen. Darunter eine, die aus
+  dem letzten Anleitungsschritt jeder Karte ein Wort zieht und im Index sucht —
+  damit kann der Index nicht wieder auf die Kopffelder zusammenschrumpfen. Dazu
+  die Gegenprobe, dass ein Unsinnsbegriff weiterhin null Treffer liefert.
+
+### Damit erledigt sich die offene Frage aus Runde 1
+
+`injektor-benzin` hat kein `syn`-Feld — braucht es aber nicht mehr:
+„Direkteinspritzer", „TFSI" und „GDI" stehen in den Tiefeninhalten der Karte
+und werden jetzt gefunden.
+
+### Geprüft und für korrekt befunden
+
+- Alle 74 Kartennamen waren schon vorher auffindbar und sind es weiterhin.
+- Querverweis-Chips lösen sämtlich auf gültige Ziele auf.
+- 14 Karten führen ein `syn`-Feld; die Pflege bleibt sinnvoll für Begriffe, die
+  sonst nirgends im Text stehen (etwa `P0130`, `Arbeitsstromrelais`).
+- „Kaltwiderstand" liefert weiterhin null Treffer — der Begriff steht
+  tatsächlich nur in `SOURCES.md`, nicht in der App. Kein Befund.

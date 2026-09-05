@@ -588,8 +588,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.13-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-13';
+const APP_VERSION = '8.14-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-14';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -4266,8 +4266,29 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
   };
   window.openDetail=openDetail;
 
-  // Tile-Suche: Mehrwortsuche (alle Begriffe, Reihenfolge egal) über Name,
-  // Beschreibung, Mess-/Folgetexte, Meta-Felder und Synonyme (syn)
+  // Suchindex über den GESAMTEN Karteninhalt – einschliesslich der DEEP-Daten
+  // (Anleitung, Richtwerttabellen, Ursachen, Fehlersuchkette). Vorher umfasste die
+  // Suche nur die Kopffelder; Begriffe wie AGM, Wegfahrsperre, Rekuperation oder
+  // Common-Rail stehen aber ausschliesslich in den Tiefeninhalten und waren damit
+  // unauffindbar, obwohl die Antwort in der App steht.
+  // Einmalig aufgebaut: Der Index ändert sich zur Laufzeit nicht, und ihn bei jedem
+  // Tastendruck neu zu serialisieren wäre auf dem Handy spürbar.
+  const flatten=v=>{
+    if(v==null)return '';
+    if(typeof v==='string')return v;
+    if(Array.isArray(v))return v.map(flatten).join(' ');
+    if(typeof v==='object')return Object.values(v).map(flatten).join(' ');
+    return String(v);
+  };
+  const SEARCH_INDEX=Object.create(null);
+  TESTS.forEach(t=>{
+    SEARCH_INDEX[t.id]=(flatten(t)+' '+flatten(DEEP[t.id]||{}))
+      .replace(/<[^>]+>/g,' ')   // HTML-Auszeichnung aus den Anleitungstexten entfernen
+      .replace(/\s+/g,' ')
+      .toLowerCase();
+  });
+
+  // Tile-Suche: Mehrwortsuche (alle Begriffe, Reihenfolge egal) über den ganzen Index
   filterTests=function(){
     const q=query.trim().toLowerCase();
     const toks=q.split(/\s+/).filter(Boolean);
@@ -4275,10 +4296,11 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
       const okCat=activeCat==='alle'||t.cat===activeCat;
       if(!okCat)return false;
       if(!toks.length)return true;
-      const hay=[t.nm,t.was,t.id,t.mess,t.next,t.syn,t.quality,t.risk,(t.requires||[]).join(' '),(t.limits||[]).join(' '),(t.dont||[]).join(' ')].join(' ').toLowerCase();
+      const hay=SEARCH_INDEX[t.id]||'';
       return toks.every(tk=>hay.includes(tk));
     });
   };
+  window.SEARCH_INDEX=SEARCH_INDEX;
 })();
 
 

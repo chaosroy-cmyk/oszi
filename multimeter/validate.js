@@ -863,6 +863,52 @@ const w = dom.window, d = w.document;
      Object.values(TREES).reduce((a, t) => a + t.nodes.length, 0) + " Knoten geprüft)",
      sackgassen.length === 0, sackgassen.join(", "));
 
+  section("29 · Runde 11 · Suche erfasst den gesamten Karteninhalt");
+  // Der Auslöser: Der Suchindex umfasste nur die Kopffelder der Karte (nm, was, id,
+  // mess, next, syn und die Meta-Listen). Die DEEP-Inhalte – Anleitung,
+  // Richtwerttabellen, Ursachen, Fehlersuchkette – und die Felder good, bad und beg
+  // blieben aussen vor. Das ist der Großteil des Textes. Begriffe wie AGM,
+  // Wegfahrsperre, Rekuperation, Schleifring oder Common-Rail stehen ausschliesslich
+  // dort und waren unauffindbar, obwohl die Antwort in der App steht.
+  const idx = w.SEARCH_INDEX;
+  ok("Suchindex ist aufgebaut und deckt alle " + TESTS.length + " Karten ab",
+     idx && Object.keys(idx).length === TESTS.length);
+
+  // Der Index muss die Tiefeninhalte tatsächlich enthalten, nicht nur die Kopffelder.
+  const tiefeFehlt = TESTS.filter(t => {
+    const dd = DEEP[t.id] || {};
+    if (!Array.isArray(dd.anl) || !dd.anl.length) return false;
+    const probe = String(dd.anl[dd.anl.length - 1]).replace(/<[^>]+>/g, " ")
+                    .split(/\s+/).filter(x => x.length > 7)[0];
+    return probe && !(idx[t.id] || "").includes(probe.toLowerCase());
+  }).map(t => t.id);
+  ok("der Index enthält für jede Karte auch den Anleitungstext",
+     tiefeFehlt.length === 0, tiefeFehlt.join(", "));
+
+  ok("HTML-Auszeichnung ist aus dem Index entfernt",
+     !Object.values(idx).some(v => /<b>|<\/b>/.test(v)));
+
+  const searchEl2 = d.getElementById("search");
+  const suchen = async q => {
+    searchEl2.value = q;
+    searchEl2.dispatchEvent(new w.Event("input", { bubbles: true }));
+    await new Promise(r => setTimeout(r, 220));
+    return d.getElementById("main").querySelectorAll(".tile").length;
+  };
+  // Begriffe, die ausschliesslich in den Tiefeninhalten stehen
+  for (const term of ["agm", "wegfahrsperre", "rekuperation", "schleifring",
+                      "common rail", "tfsi", "spannungsteiler", "sulfatierung",
+                      "open collector", "nullabgleich"]) {
+    ok('Suche findet den Tiefenbegriff "' + term + '"', (await suchen(term)) > 0);
+  }
+  // Gegenprobe: die Suche darf nicht alles finden
+  ok("Suche liefert für einen Unsinnsbegriff keine Treffer", (await suchen("zzzqqqxyz")) === 0);
+  // Jeder Kartenname bleibt auffindbar
+  const nameFehlt = [];
+  for (const t of TESTS) { if ((await suchen(t.nm)) === 0) nameFehlt.push(t.id); }
+  ok("alle " + TESTS.length + " Kartennamen weiterhin auffindbar", nameFehlt.length === 0, nameFehlt.join(", "));
+  await suchen("");
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");
