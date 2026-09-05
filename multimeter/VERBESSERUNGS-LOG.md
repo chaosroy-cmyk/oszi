@@ -835,3 +835,52 @@ fiele sofort auf.
 
 Scan über alle Karten nach harten Entscheidungsgrenzen in anderen Einheiten
 (mV, mA, A, Ω, kΩ, °C, %): keine einzige ungebundene Stelle.
+
+---
+
+## Runde 15 · Zweiter Durchgang: Freigabekriterien und Spaltenköpfe · 2026-09-05
+
+Baseline: 199/199 grün → Abschluss: 207/207 grün · Version 8.17-Profi → 8.18-Profi
+
+### Befunde
+
+- **Grünes Freigabekriterium für eine Messung, die die Karte selbst verwirft**
+  (`zuendspule`)
+  Die Tabelle führte „Primär-Ohm (falls messbar) — < 1 Ω typ." als grün. Dieselbe
+  Karte sagt an drei Stellen das Gegenteil: Anleitung Schritt 1
+  („bei integrierter Elektronik oft nicht direkt messbar"), Tabellennotiz
+  („Primär kaum sinnvoll mit MM") und `quality` („nur Primär-Grundprüfung").
+  Bei Stab- und COP-Spulen mit integrierter Endstufe misst man die Elektronik
+  statt der Wicklung; bei Werten um 1 Ω liegt zudem der Messleitungswiderstand in
+  derselben Größenordnung wie das Messobjekt.
+  Fix: Bauartbedingung und OEM-Bindung in die Zeile, Hinweis auf den
+  Messleitungswiderstand, Ampel von grün auf gelb (keine Freigabe).
+  `mess`/`good`/`bad` tragen den Vorbehalt mit; Versorgung und Masse bleiben als
+  brauchbare Prüfung erhalten — der Validator prüft diese Gegenrichtung.
+
+- **Zwölf Tabellen mit fehlendem oder falschem Spaltenkopf**
+  Sieben (`ntc-ats`, `lmm-d`, `lambda-breit`, `klopf`, `agt`, `nox`, `tankgeber`)
+  rendern ein komplett leeres `<th>`, obwohl die Zellen darunter
+  „plausibel"/„auffällig" mit Ampelfarbe tragen — für Screenreader ist die
+  Spalte unbenannt, während alle übrigen rund sechzig Tabellen sie beschriften.
+  Fünf weitere waren falsch beschriftet: `widerstand` und `durchgang`
+  („Bedeutung"), `injektor-diesel` und `ruhestrom-fuse` („Hinweis"). Bei
+  `sensor-masseversatz` waren die Köpfe verschoben — „Bewertung" stand über dem
+  Text, „Hinweis" über der Ampel; jetzt „Beobachtung | Einordnung | Bewertung".
+  Regression: drei Prüfungen, darunter eine, die alle 74 Detailansichten im DOM
+  auf leere `<th>` prüft statt nur die Daten.
+
+### Ergebnislos geprüft
+
+- Zustandslogik: Suche mit Regex-Sonderzeichen, Umlauten, `Ω`, `→`; Kategorie
+  plus Suche; Merkliste anlegen/listen/entfernen; Overlay-Verschachtelung
+  Detail → Baum → Detail; Einsteiger-Umschaltung bei offenem Detail; Rechner mit
+  negativen, leeren, riesigen und textuellen Eingaben. Keine Auffälligkeit,
+  kein Laufzeitfehler.
+  (Ein vermeintlicher Befund „Kategorie + Suche filtert nicht" war ein Fehler im
+  Testaufbau: `activeCat` ist eine Closure-Variable und lässt sich nicht von
+  außen setzen. Über den echten Kategorie-Chip verhält sich die App korrekt.)
+- Struktur: alle Pflichtfelder vorhanden, `DEEP`-Daten vollständig, keine leere
+  Tabellenzelle, keine ungültige Ampelwertung.
+- Querabgleich der Zahlenwerte über Kartengrenzen: Unterschiede bei „Heizung
+  (Ohm, kalt)", „Spulen-Ohm" und „Ruhespannung" sind sachlich begründet.

@@ -598,8 +598,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.17-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-17';
+const APP_VERSION = '8.18-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-18';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -1245,9 +1245,9 @@ const TESTS = [
  was:"Primärversorgung & Ansteuerung der Zündspule prüfen.",
  set:{mode:"DC V + Ohm",buchse:"COM + V/Ω"},
  probes:[["r","Plus / Klemme 15"],["b","Masse"]],
- mess:"Versorgung (Kl.15) prüfen, Primär-Ohm grob, Ansteuerung beobachten.",
- good:"Versorgung da, Primärwiderstand plausibel.",
- bad:"Keine Versorgung / Spule offen.",
+ mess:"Versorgung (Kl.15) und Masse prüfen, Ansteuerung beobachten. Primär-Ohm nur bei Spulen ohne integrierte Endstufe – bei Stab- und COP-Spulen mit Endstufe misst man die Elektronik mit, nicht die Wicklung.",
+ good:"Versorgung und Masse stehen unter Ansteuerung. Ein Primärwiderstand wird nur bewertet, wenn die Bauart ihn zugänglich macht und ein OEM-Sollwert vorliegt.",
+ bad:"Keine Versorgung oder keine Masse. Ein auffälliger Ohm-Wert ist nur bei zugänglicher Wicklung und vorliegendem Sollwert ein Befund – sonst über Zylindertausch und Oszilloskop entscheiden.",
  next:"Zündsignal/Schließzeit sauber → Oszilloskop.",
  beg:"Prüfen, ob Strom (Kl.15) ankommt und das Steuergerät ansteuert. Die eigentliche Zündung sieht man nur mit Oszilloskop.",
  warn:[["caution","Zündanlage: hohe Sekundärspannung – nicht in laufende Sekundärseite greifen."]]
@@ -1469,7 +1469,7 @@ const DEEP = {
    "<b>8 · Wackeltest.</b> Während der Messung Kabel und Stecker bewegen. Ein springender Wert entlarvt einen Teilbruch oder lockeren Crimp, der bei ruhiger Messung unauffällig bleibt.",
    "<b>9 · Grenze der Methode kennen.</b> Ein Wert nahe 0 Ω beweist nur eine Verbindung, nicht deren Belastbarkeit: Auch eine einzelne verbliebene Litze zeigt 0 Ω und brennt unter Last durch. Wenn der Fehler trotz gutem Ohm-Wert bleibt, unter Last per Spannungsabfall weitermessen.",
    "<b>Merksatz:</b> Ohm nur spannungsfrei, nur isoliert, und nie als Belastbarkeitsnachweis."],
- rt:{head:["Befund","Wert","Bedeutung"],rows:[
+ rt:{head:["Befund","Wert","Bewertung"],rows:[
    ["Eigenwiderstand Messspitzen","0,1–0,5 Ω","g"],["Guter Durchgang","nahe 0 Ω (nach Abzug)","g"],
    ["Übergangswiderstand","einige Ω bis kΩ","w"],["Unterbrechung","OL / ∞","b"],
    ["Windungsschluss Spule","< Sollwert","b"]],
@@ -1494,7 +1494,7 @@ const DEEP = {
    "<b>6 · Wackeltest.</b> Während die Spitzen anliegen, Kabel und Stecker abschnittsweise bewegen. Ein aussetzender Ton lokalisiert einen Teilbruch, der bei ruhiger Leitung nicht messbar ist – typisch an Türübergängen und Heckklappenscharnieren.",
    "<b>7 · Grenze kennen und den nächsten Schritt wählen.</b> Für Signal- und Steuerleitungen mit kleinen Strömen reicht die Durchgangsprüfung meist aus. Für belastete Leitungen (Licht, Motoren, Starter, Masseband) reicht sie <b>nicht</b>: Eine korrodierte Klemme piept sauber und verheizt unter Last trotzdem die halbe Spannung. Dort immer zusätzlich den Spannungsabfall unter Last messen.",
    "<b>Merksatz:</b> Der Piepton beweist eine Verbindung, nicht ihre Belastbarkeit."],
- rt:{head:["Befund","Anzeige","Bedeutung"],rows:[
+ rt:{head:["Befund","Anzeige","Bewertung"],rows:[
    ["Durchgehend","Piepton / ~0 Ω","g"],["Hoher Übergang","Ton schwach / einige Ω","w"],
    ["Unterbrechung","kein Ton / OL","b"]],
    note:"Durchgangston sagt nichts über Belastbarkeit. Schlechte Kontakte erst unter Last sichtbar. Piepschwelle je nach MM unterschiedlich (oft bis 20–70 Ω) – der Ton kann also auch bei deutlich erhöhtem Widerstand noch kommen."},
@@ -1992,7 +1992,7 @@ const DEEP = {
      {s:"4 Plausibilität",do:"Livedaten mit echter Temperatur vergleichen",ok:"stimmt → ok",ng:"Abweichung → Versorgung, Masse und Signalleitung ausschließen, dann Sensor ersetzen"}]
 },
 "ntc-ats":{
- rt:{head:["Temperatur","Widerstand (typ.)",""],rows:[
+ rt:{head:["Temperatur","Widerstand (typ.)","Bewertung"],rows:[
    ["−10 °C","~9 kΩ","g"],["20 °C","~2,5 kΩ","g"],["40 °C","~1,2 kΩ","g"],["80 °C","~330 Ω","g"]],
    note:"Oft im LMM/Ladeluftrohr integriert. Reagiert träger als Kühlmittel-NTC."},
  urs:[["Verschmutzung (Öl/Ruß)","träge/falsche Werte","m"],["Steckerkorrosion","Aussetzer","m"],
@@ -2074,7 +2074,7 @@ const DEEP = {
      {s:"4 Falschluft",do:"Ansaugtrakt nach LMM auf Dichtheit",ok:"dicht → Falschluft ausgeschlossen, LMM nach Livedaten-Gegenprobe ersetzen",ng:"undicht → abdichten"}]
 },
 "lmm-d":{
- rt:{head:["Zustand","Frequenz (typ.)",""],rows:[
+ rt:{head:["Zustand","Frequenz (typ.)","Bewertung"],rows:[
    ["Leerlauf","~2–3 kHz","g"],["Höhere Last","steigend","g"],["Keine Reaktion","defekt","b"]],
    note:"Frequenzwerte herstellerabhängig – relevant ist die saubere Zunahme mit der Luftmasse."},
  urs:[["Hitzfilm verschmutzt","Frequenz zu niedrig","h"],["Falschluft","unplausibel","m"],
@@ -2098,7 +2098,7 @@ const DEEP = {
      {s:"4 Heizung",do:"Spannungsfrei Heizwiderstand prüfen",ok:"im Soll → ok",ng:"OL → Heizung defekt"}]
 },
 "lambda-breit":{
- rt:{head:["Messung","Richtwert",""],rows:[
+ rt:{head:["Messung","Richtwert","Bewertung"],rows:[
    ["Heizung (Ohm, kalt)","~2–10 Ω typ.","g"],["Versorgung","≈ Bordspannung","g"],
    ["Pumpstrom","NICHT sinnvoll mit MM","b"]],
    note:"Funktion (Lambda-Ist) nur über Diagnose/Oszilloskop. MM nur für Versorgung/Heizung."},
@@ -2148,7 +2148,7 @@ const DEEP = {
      {s:"3 Oszilloskop",do:"Rechteck, Flanken, Aussetzer prüfen",ok:"sauber → ok",ng:"Aussetzer → Sensor/Impulsrad"}]
 },
 "klopf":{
- rt:{head:["Messung","Richtwert",""],rows:[
+ rt:{head:["Messung","Richtwert","Bewertung"],rows:[
    ["Leichtes Klopfen → AC","minimale mV-Reaktion","w"],["keine Reaktion","unsicher (kein Beweis)","w"],
    ["Anzugsmoment","Herstellervorgabe kritisch!","b"]],
    note:"Piezo – mit MM kaum sicher prüfbar. Falsches Anzugsmoment verfälscht Funktion. Beurteilung per Oszilloskop/Diagnose."},
@@ -2206,7 +2206,7 @@ const DEEP = {
      {s:"4 Manometer",do:"Bleibt die Warnung: mechanischen Öldruck messen",ok:"Druck im Soll → Elektrik weiter eingrenzen",ng:"Druck zu niedrig → Mechanik instandsetzen"}]
 },
 "agt":{
- rt:{head:["Temperatur","Widerstand (typ.)",""],rows:[
+ rt:{head:["Temperatur","Widerstand (typ.)","Bewertung"],rows:[
    ["20 °C","je nach Typ (PTC oft niedrig)","g"],["Hohe Temp","steigt (PTC) bzw. fällt (NTC)","g"],
    ["OL/fest","defekt","b"]],
    note:"Typ (NTC/PTC) variiert! Mehrere AGT-Sensoren über Livedaten plausibilisieren. VAG Diesel: mehrere im Abgasstrang."},
@@ -2230,7 +2230,7 @@ const DEEP = {
      {s:"4 Beladung",do:"Ruß-/Aschemasse per Diagnose",ok:"plausibel → ok",ng:"DPF voll/Sensor → bewerten"}]
 },
 "nox":{
- rt:{head:["Messung","Richtwert",""],rows:[
+ rt:{head:["Messung","Richtwert","Bewertung"],rows:[
    ["Versorgung","≈ Bordspannung","g"],["Masse","gut","g"],["Funktion/NOx-Wert","nur Diagnosegerät","b"]],
    note:"Eigenes Sensormodul am Bus. MM nur für Versorgung/Masse. VAG/BMW: NOx-Sensor teuer – vor Tausch Versorgung sicher prüfen."},
  urs:[["Sensor/Modul defekt","Plausibilitäts-/Kommunikationsfehler","h"],
@@ -2240,7 +2240,7 @@ const DEEP = {
      {s:"3 Plausibilität",do:"NOx-Werte per Diagnose bewerten",ok:"plausibel → ok",ng:"unplausibel → Versorgung, Masse und Bus ausschließen, dann Sensor ersetzen"}]
 },
 "tankgeber":{
- rt:{head:["Füllstand","Widerstand (typ.)",""],rows:[
+ rt:{head:["Füllstand","Widerstand (typ.)","Bewertung"],rows:[
    ["Voll","niedrig o. hoch (typabh.)","g"],["Halb","Mittelwert","g"],["Leer","Gegenwert","g"],
    ["Sprung/tote Stelle","Bahn verschlissen","b"],["OL","unterbrochen","b"]],
    note:"Kennlinie & Richtung typabhängig. VAG: oft 2 Geber (Haupt-/Zusatz) im Sattel-/Doppeltank."},
@@ -2299,7 +2299,7 @@ const DEEP = {
      {s:"4 Mengenabgleich",do:"Einspritzkorrekturen per Diagnose",ok:"ausgeglichen → ok",ng:"Ausreißer → durch zweite Messung bestätigen, dann reinigen bzw. ersetzen"}]
 },
 "injektor-diesel":{
- rt:{head:["Typ","Prüfung","Hinweis"],rows:[
+ rt:{head:["Typ","Prüfung","Bewertung"],rows:[
    ["Magnet-Injektor","Spulen-Ohm ~0,2–0,5 Ω (Vorgabe!)","w"],
    ["Piezo-Injektor","NICHT mit MM messen","b"],
    ["Mengenkorrektur","nur Diagnose","b"]],
@@ -2313,7 +2313,7 @@ const DEEP = {
 },
 "zuendspule":{
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
-   ["Versorgung Kl.15","≈ Bordspannung","g"],["Primär-Ohm (falls messbar)","< 1 Ω typ.","g"],
+   ["Versorgung Kl.15","≈ Bordspannung","g"],["Primär-Ohm","nur bei Spulen OHNE integrierte Endstufe und nur gegen den OEM-Sollwert; Größenordnung meist deutlich unter 1 Ω, der Messleitungswiderstand ist dabei nicht vernachlässigbar","w"],
    ["Masse","gut","g"],["keine Versorgung","Sicherung/Leitung","b"]],
    note:"Moderne Stabzündspulen: Primär kaum sinnvoll mit MM. Zündverhalten (Schließzeit/Brenndauer) nur per Oszilloskop. VAG: häufig Spulenausfall einzeln."},
  urs:[["Spule defekt (Aussetzer)","Misfire-Code Zylinder X","h"],
@@ -2546,7 +2546,7 @@ const DEEP = {
    "Sicherungen mit auffällig hohem mV-Wert markieren. Den Wert mit dem <b>Rechner unten</b> in mA umrechnen (Sicherungs-Nennwert wählen, mV eintippen).",
    "Im Belegungsplan nachsehen, welcher Verbraucher zur verdächtigen Sicherung gehört, und diesen gezielt prüfen.",
    "Vorteil: kein Auftrennen, kein Reset der Einschlafzeit, kein Funke. Nachteil: nur zum <b>Eingrenzen</b> – für genaue Werte zusätzlich in Reihe oder mit Stromzange messen."],
- rt:{head:["Sicherung","≈ mV pro 100 mA","Hinweis"],rows:[
+ rt:{head:["Sicherung","≈ mV pro 100 mA","Bewertung"],rows:[
    ["Mini/Standard 3 A","~ 3 mV","g"],
    ["Mini/Standard 5 A","~ 1,8 mV","g"],
    ["Standard 10 A","~ 0,8 mV","g"],
@@ -3772,7 +3772,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
          "Zündung an oder Motor laufen lassen – je nachdem, wann der Fehler auftritt.",
          "mV-Wert beobachten und gleichzeitig am Kabel/Stecker wackeln.",
          "Wenn Masseversatz vorhanden ist, Signalleitung nicht sofort als Sensorfehler bewerten."],
-    rt:{head:["Beobachtung","Bewertung","Hinweis"],rows:[
+    rt:{head:["Beobachtung","Einordnung","Bewertung"],rows:[
       ["nahe 0 mV und stabil","plausibel","g"],["Signal gegen beide Bezüge gleich","plausibel","g"],["Wert verändert sich mit Last/Wackeln","Massepfad prüfen","w"],["Signalbewertung hängt vom Bezugspunkt ab","Masseversatz nachweisen","b"],["außerhalb OEM-Grenze","Teilstrecken und Steckkontakte prüfen","b"]],
       note:"Bei empfindlichen analogen Sensoren können bereits kleine Massefehler die Plausibilität verschieben. Eine feste Universalgrenze wäre deshalb irreführend; OEM-Prüfplan und Seitenvergleich entscheiden."},
     urs:[["Sensor-Masseleitung korrodiert","Signalwert verschoben","h"],["gemeinsame Masse überlastet","mehrere Sensoren unplausibel","m"],["ECU-Stecker Feuchtigkeit","Masse/Signal instabil","m"],["falscher Messbezug","Diagnosefehler","h"]],

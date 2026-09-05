@@ -1153,6 +1153,85 @@ const w = dom.window, d = w.document;
   ok("Sicherungswiderstände fallen in jeder Bauform monoton mit dem Nennstrom",
      nichtMonoton.length === 0, nichtMonoton.join(", "));
 
+  section("34 · Runde 15 · Keine grüne Zeile für eine Messung, die die Karte selbst verwirft");
+  // Auslöser: zuendspule führte "Primär-Ohm (falls messbar) — < 1 Ω typ." als GRÜNES
+  // Kriterium. Dieselbe Karte sagt an drei anderen Stellen, der Wert sei bei
+  // integrierter Endstufe gar nicht messbar und "kaum sinnvoll mit MM". Eine harte
+  // Schwelle als Freigabekriterium für eine Messung, die die Karte selbst verwirft.
+  const rohSchwelle = /[<>]\s*=?\s*\d+[,.]?\d*\s*(mV|kΩ|mΩ|Ω|V|A|mA|%)/;
+  const gruenRoh = [];
+  TESTS.forEach(t => {
+    const dd = DEEP[t.id] || {};
+    [["rt", dd.rt], ["rt2", dd.rt2]].forEach(([nm, rt]) => {
+      if (!rt) return;
+      (rt.rows || []).forEach((r, i) => {
+        if (r[r.length - 1] !== "g") return;
+        const z = r.join(" ");
+        if (rohSchwelle.test(z) && !/OEM|Vorgabe|Herstellerbeispiel|Vergleich|Rechenbeispiel/.test(z))
+          gruenRoh.push(t.id + " " + nm + "[" + i + "]: " + z);
+      });
+    });
+  });
+  ok("keine grüne Richtwertzeile mit ungebundener Schwelle",
+     gruenRoh.length === 0, gruenRoh.join(" ; "));
+
+  const zs = TESTS.find(t => t.id === "zuendspule"), zsD = DEEP["zuendspule"];
+  ok("zuendspule: Primär-Ohm ist an Bauart und OEM-Sollwert gebunden",
+     zsD.rt.rows.some(r => /Primär-Ohm/.test(r[0]) && /OHNE integrierte Endstufe/.test(r[1]) && /OEM-Sollwert/.test(r[1])));
+  ok("zuendspule: die Zeile ist nicht mehr als Freigabe (grün) ausgewiesen",
+     zsD.rt.rows.filter(r => /Primär-Ohm/.test(r[0])).every(r => r[r.length - 1] !== "g"));
+  ok("zuendspule: Kopffelder tragen den Bauartvorbehalt mit",
+     /ohne integrierte Endstufe/.test(zs.mess) && /OEM-Sollwert/.test(zs.good));
+  // Gegenprobe: die Karte bleibt brauchbar – Versorgung und Masse sind weiter prüfbar
+  ok("zuendspule: Versorgung und Masse bleiben als Prüfung erhalten",
+     /Versorgung \(Kl\.15\) und Masse prüfen/.test(zs.mess));
+
+  section("35 · Runde 15 · Keine unbeschrifteten Tabellenspalten");
+  // Auslöser: Sieben Richtwerttabellen (ntc-ats, lmm-d, lambda-breit, klopf, agt, nox,
+  // tankgeber) führten die Bewertungsspalte mit LEEREM Kopf. Gerendert wurde ein leeres
+  // <th>: Für Screenreader ist die Spalte damit unbenannt, obwohl ihre Zellen
+  // "plausibel"/"auffällig" tragen – und alle übrigen rund 60 Tabellen beschriften sie.
+  const leereKopfzellen = [];
+  TESTS.forEach(t => {
+    const dd = DEEP[t.id] || {};
+    [["rt", dd.rt], ["rt2", dd.rt2]].forEach(([nm, rt]) => {
+      if (!rt || !rt.head) return;
+      rt.head.forEach((h, j) => {
+        if (String(h).trim() === "") leereKopfzellen.push(t.id + " " + nm + ".head[" + j + "]");
+      });
+    });
+  });
+  ok("keine Richtwerttabelle hat eine unbeschriftete Spalte",
+     leereKopfzellen.length === 0, leereKopfzellen.join(", "));
+
+  // Auch im gerenderten DOM darf kein <th> leer bleiben.
+  const leereTh = [];
+  TESTS.forEach(t => {
+    w.openDetail(t.id);
+    d.getElementById("ovbody").querySelectorAll("table th").forEach((th, j) => {
+      if (!th.textContent.trim()) leereTh.push(t.id + " th[" + j + "]");
+    });
+  });
+  w.doCloseOverlays();
+  ok("kein gerendertes <th> ohne Text (" + TESTS.length + " Detailansichten geprüft)",
+     leereTh.length === 0, leereTh.join(", "));
+
+  // Jede Tabelle mit g/w/b-Zellen muss die Spalte auch benennen.
+  const unbenannteWertung = [];
+  TESTS.forEach(t => {
+    const dd = DEEP[t.id] || {};
+    [["rt", dd.rt], ["rt2", dd.rt2]].forEach(([nm, rt]) => {
+      if (!rt || !rt.rows || !rt.rows.length) return;
+      const letzte = rt.rows.map(r => r[r.length - 1]);
+      if (!letzte.every(v => ["g", "w", "b"].includes(v))) return;
+      const kopf = String(rt.head[rt.head.length - 1] || "");
+      if (!/Bewertung|Prüfpriorität/i.test(kopf))
+        unbenannteWertung.push(t.id + " " + nm + ": „" + kopf + "“");
+    });
+  });
+  ok("jede Ampelspalte trägt eine Überschrift (Bewertung oder Prüfpriorität)",
+     unbenannteWertung.length === 0, unbenannteWertung.join(" ; "));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");
