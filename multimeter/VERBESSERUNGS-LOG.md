@@ -3,7 +3,7 @@
 Fortschrittsregister des Verbesserungs-Loops. Arbeitsanweisung:
 [`PROMPT-VERBESSERUNG.md`](PROMPT-VERBESSERUNG.md).
 
-**Nächstes Fokusthema: 9 · Bus & Leitungen**
+**Nächstes Fokusthema: 10 · Diagnosebäume**
 
 Format je Runde:
 
@@ -549,3 +549,48 @@ sichtbaren Warnblock dazu. Das ist keine Konvention, sondern eine Lücke bei den
 `gluehkerze` (Niedervolt-Kerzen 4,4/7 V nie an 12 V — wichtiger Bauartschutz),
 `ptc-heizung` (bis ~80 A, Gefahrblock gegen Reihenmessung),
 `injektor-benzin`/`injektor-diesel` (in Runde 1 bearbeitet), `luefter`, `hupe`.
+
+---
+
+## Runde 9 · Bus & Leitungen · 2026-09-05
+
+Baseline: 147/147 grün → Abschluss: 155/155 grün · Version 8.11-Profi → 8.12-Profi
+
+Geprüft: `can`, `lin`, `pullup-pulldown`, `generator-lin-bsd`, `masse`,
+`leitung`, `backprobe`, `kurzschluss-plus-masse`.
+
+### Befunde
+
+- **„120 Ω = ein Abschluss fehlt" ist zu kurz gegriffen** (`can`)
+  Derselbe Messwert entsteht auch, wenn CAN-High oder CAN-Low **zwischen** den
+  beiden Abschlüssen unterbrochen ist: Der Bruch trennt den entfernten Abschluss
+  ab, gemessen wird nur noch der nähere. Zwei grundverschiedene Reparaturen —
+  fehlendes Steuergerät gegen Kabelbruch — mit identischem Messwert. Wer nur den
+  ersten Fall kennt, sucht am falschen Ende und findet nichts, weil alle
+  Steuergeräte da sind.
+  Fix: `bad`, Einsteigertext und Anleitung benennen beide Ursachen und den
+  Schritt, der sie trennt (spannungsfrei beide Adern über die gesamte Strecke auf
+  Durchgang prüfen). Tabelle löst die eine Zeile in drei auf.
+  Zwei weitere Klarstellungen in der Notiz: ~60 Ω belegt nur zwei parallele
+  Abschlüsse, nicht intakte Adern und nicht fehlerfreie Kommunikation; und
+  „Zündung aus" ist nicht spannungsfrei, weil Steuergeräte an Klemme 30 versorgt
+  bleiben und den Bus wecken können — dieselbe Unterscheidung, die der
+  5-V-Referenzsatz seit v8.10 ausdrücklich trifft.
+  Regression: `validate.js` Abschnitt 27, dazu eine Prüfung der CAN-Pegel gegen
+  die klassische High-Speed-Physik (rezessiv 2,5 V, dominant 3,5/1,5 V).
+
+- **Letzte ungebundene Abfallgrenze** (`leitung` fs9, „< 0,2 V → belastbar")
+  an die Vorgabe des Kreises gebunden. Damit ist die in Runde 2 begonnene
+  Umstellung projektweit abgeschlossen: `spannungsabfall` (v8.5),
+  `batterie`/`generator`/`starter` (v8.7), `luefter`/`hupe` (v8.11), `leitung`
+  (v8.12). Eine neue projektweite Prüfung hält den Zustand.
+
+### Geprüft und für korrekt befunden
+
+- `lin`: rezessiv nahe Bordspannung, dominant nahe 0 V, Master/Slave-Rollen
+  korrekt; besonders gut die Klarstellung, dass ein fester High-Pegel keinen
+  Leitungsfehler beweist, sondern Idle, Sleep oder fehlender Master sein kann.
+- `pullup-pulldown`: Pegel gegen Sensor-Masse UND Batterieminus vergleichen —
+  richtig und selten so sauber formuliert.
+- `masse`, `backprobe`, `kurzschluss-plus-masse`, `generator-lin-bsd`:
+  unauffällig.

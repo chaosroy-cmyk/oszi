@@ -588,8 +588,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.11-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-11';
+const APP_VERSION = '8.12-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-12';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -1347,9 +1347,9 @@ const TESTS = [
  probes:[["r","CAN High"],["b","CAN Low / Masse"]],
  mess:"Ruhespannung grob ~2,5 V. Abschlusswiderstand SPANNUNGSFREI zwischen High & Low messen.",
  good:"HS-CAN: Ruhe ~2,5 V. Abschluss ~60 Ω bei zwei 120-Ω-Widerständen.",
- bad:"120 Ω = ein Abschluss fehlt. Stark abweichend = Schluss/Leitungsproblem.",
+ bad:"~120 Ω hat zwei völlig verschiedene Ursachen: ein fehlender Abschluss ODER eine Unterbrechung in CAN-High oder CAN-Low zwischen den beiden Abschlüssen – dann misst man nur noch den näheren. Vor der Reparaturentscheidung durch Durchgangsprüfung beider Adern über die ganze Strecke unterscheiden. Stark abweichend = Schluss/Leitungsproblem.",
  next:"Echte Busdiagnose → Oszilloskop/Diagnosegerät.",
- beg:"Schnelltest am HS-CAN: stromlos zwischen CAN-High und -Low messen. ~60 Ω ist gut. 120 Ω = ein Abschluss fehlt. Andere Busarten/Topologien können abweichen.",
+ beg:"Schnelltest am HS-CAN: stromlos zwischen CAN-High und -Low messen. ~60 Ω ist gut, weil zwei 120-Ω-Abschlüsse parallel liegen. Misst du ~120 Ω, sieht dein Messgerät nur einen davon – und dafür gibt es zwei Gründe: Entweder fehlt ein Abschluss, oder eine der beiden Adern ist zwischen den Abschlüssen gebrochen und trennt den zweiten ab. Das sind zwei völlig verschiedene Reparaturen, also prüf danach beide Adern auf Durchgang, bevor du entscheidest. Andere Busarten und Topologien können ohnehin abweichen.",
  warn:[["info","Multimeter zeigt bei Kommunikation nur Mittelwerte. 60-Ω-/2,5-V-Regel gilt für klassischen High-Speed-CAN mit Abschlusswiderständen; echte Busanalyse nur per Oszilloskop/Diagnose."]]
 },
 {
@@ -2426,18 +2426,18 @@ const DEEP = {
 /* ===== BUS ===== */
 "can":{
  anl:["<b>Abschlusswiderstand (wichtigster Schnelltest):</b> Zündung AUS, Bus spannungsfrei. MM auf Ohm. Zwischen CAN-High und CAN-Low messen.",
-   "Zwei parallele 120-Ω-Abschlüsse ergeben <b>~60 Ω</b> = ok. ~120 Ω = ein Abschluss/Steuergerät fehlt. Nahe 0 Ω = Kurzschluss High↔Low. Sehr hoch/OL = Leitungsbruch.",
+   "Zwei parallele 120-Ω-Abschlüsse ergeben <b>~60 Ω</b> = ok. Nahe 0 Ω = Kurzschluss High↔Low. Sehr hoch/OL = Leitungsbruch in der Messstrecke.","<b>~120 Ω ist nicht eindeutig – hier trennt sich gute von schlechter Diagnose.</b> Der Wert entsteht auf zwei völlig verschiedene Arten: Entweder fehlt tatsächlich ein Abschluss (Steuergerät abgesteckt, Widerstand defekt), oder CAN-High beziehungsweise CAN-Low ist <b>zwischen</b> den beiden Abschlüssen unterbrochen – dann sieht das Messgerät nur noch den näher liegenden Abschluss und zeigt ebenfalls 120 Ω. Zwei grundverschiedene Reparaturen mit demselben Messwert. Unterscheiden: spannungsfrei beide Adern über die gesamte Strecke auf Durchgang prüfen, notfalls von beiden Busenden aus messen.",
    "<b>Ruhespannungen:</b> MM auf DC Volt, Zündung an. CAN-High gegen Masse ≈ 2,5 V, CAN-Low gegen Masse ≈ 2,5 V (Ruhepegel).",
    "<b>Schlussprüfung:</b> spannungsfrei jede Leitung gegen Masse und gegen Plus messen – es darf kein niederohmiger Schluss bestehen.",
    "Lässt sich der Fehler nicht eingrenzen: Steuergeräte <b>nacheinander vom Bus trennen</b> und beobachten, ob sich die Kommunikation erholt – das zuletzt getrennte ist dann verdächtig.",
    "Für die echte Signalqualität (Pegel, Flanken, Störungen) reicht das Multimeter nicht – <b>Oszilloskop</b> oder Diagnosegerät verwenden.",
    "Topologie beachten: VAG verteilt mehrere CAN über ein Gateway, BMW nutzt PT-CAN/K-CAN/FlexRay – immer den fahrzeugspezifischen Schaltplan heranziehen."],
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
-   ["Abschluss (2×120 Ω)","~60 Ω","g"],["Abschluss, ein Widerstand weg","~120 Ω","b"],
+   ["Abschluss (2×120 Ω)","~60 Ω","g"],["~120 Ω gemessen","Abschluss fehlt ODER Unterbrechung zwischen den Abschlüssen – erst unterscheiden","w"],["~120 Ω, beide Adern durchgängig","Abschluss/Steuergerät fehlt","b"],["~120 Ω, eine Ader unterbrochen","Leitungsbruch zwischen den Abschlüssen","b"],
    ["Ruhe CAN-High","~2,5 V","g"],["Ruhe CAN-Low","~2,5 V","g"],
    ["High aktiv","~3,5 V","g"],["Low aktiv","~1,5 V","g"],
    ["High↔Low Schluss","~0 Ω","b"],["Leitung↔Masse Schluss","niederohmig","b"]],
-   note:"60-Ω-Test SPANNUNGSFREI und vorrangig für klassischen High-Speed-CAN mit zwei 120-Ω-Abschlüssen. VAG: mehrere CAN über Gateway. BMW: PT-CAN/K-CAN/FlexRay – Topologie im Schaltplan."},
+   note:"60-Ω-Test SPANNUNGSFREI und vorrangig für klassischen High-Speed-CAN mit zwei 120-Ω-Abschlüssen. „Zündung aus“ allein genügt dafür nicht – Steuergeräte an Klemme 30 bleiben versorgt und können den Bus wecken; Nachlauf abwarten und den Bus nach Herstellervorgabe stromlos machen. ~60 Ω belegt außerdem nur, dass zwei Abschlüsse parallel liegen – es beweist weder intakte Adern über die ganze Strecke noch fehlerfreie Kommunikation. Ein Multimeterwert ersetzt keine Signalbewertung. VAG: mehrere CAN über Gateway. BMW: PT-CAN/K-CAN/FlexRay – Topologie im Schaltplan."},
  urs:[["Abschlusswiderstand/Steuergerät fehlt","~120 Ω, Buszweig tot","m"],
       ["Leitung High/Low vertauscht/gebrochen","keine Kommunikation","m"],
       ["Schluss High↔Low oder gegen Masse/Plus","Bus down, viele Codes","h"],
@@ -2504,7 +2504,7 @@ const DEEP = {
      {s:"6 Schluss gegen Plus",do:"Ohm Leitung ↔ Plusleitung, spannungsfrei",ok:"hochohmig → kein Plusschluss",ng:"niederohmig → Fremdeinspeisung orten"},
      {s:"7 Schluss gegen Nachbarader",do:"Jede benachbarte Ader im selben Strang gegenmessen",ok:"hochohmig → sauber getrennt",ng:"niederohmig → beide Adern durchgescheuert"},
      {s:"8 Wackeltest",do:"Auf Durchgang messen und Kabelbaum abschnittsweise bewegen/klopfen",ok:"Wert stabil → kein Teilbruch",ng:"Aussetzer → Stelle eingrenzen"},
-     {s:"9 Spannungsabfall unter Last",do:"Leitung anschließen, Verbraucher ein, Verlust über die Strecke messen",ok:"< 0,2 V → belastbar",ng:"hoch → Übergangswiderstand trotz Durchgang"},
+     {s:"9 Spannungsabfall unter Last",do:"Leitung anschließen, Verbraucher ein, Verlust über die Strecke gegen die Vorgabe für diesen Kreis messen",ok:"unter der Vorgabe → belastbar",ng:"darüber → Übergangswiderstand trotz Durchgang"},
      {s:"10 Nachweisen",do:"Nach der Reparatur denselben Spannungsabfall erneut messen",ok:"Wert deutlich gefallen → behoben",ng:"unverändert → Fehlerstelle nicht getroffen"}]
 },
 "ruhestrom":{

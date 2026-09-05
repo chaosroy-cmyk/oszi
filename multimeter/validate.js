@@ -754,6 +754,52 @@ const w = dom.window, d = w.document;
   });
   w.doCloseOverlays();
 
+  section("27 · Runde 9 · CAN: 120 Ω ist nicht eindeutig");
+  // Der Auslöser: can sagte "120 Ω = ein Abschluss fehlt". Derselbe Messwert entsteht
+  // aber auch, wenn CAN-High oder CAN-Low ZWISCHEN den beiden Abschlüssen unterbrochen
+  // ist – dann sieht das Messgerät nur noch den näheren Abschluss. Zwei grundverschiedene
+  // Reparaturen mit identischem Messwert: einmal fehlt ein Steuergerät, einmal ist eine
+  // Ader gebrochen. Wer nur den ersten Fall kennt, sucht am falschen Ende.
+  const can = TESTS.find(t => t.id === "can"), canD = DEEP["can"];
+  const canTxt = JSON.stringify(can) + JSON.stringify(canD);
+  ok("can: 120 Ω wird nicht mehr eindeutig als fehlender Abschluss gedeutet",
+     !/120 Ω = ein Abschluss fehlt/.test(canTxt));
+  ok("can: beide Ursachen für 120 Ω sind benannt",
+     /Abschluss fehlt ODER/.test(canTxt) && /zwischen den beiden Abschlüssen/i.test(canTxt));
+  ok("can: die Unterscheidung ist als Arbeitsschritt beschrieben (Durchgang beider Adern)",
+     /beide Adern über die gesamte Strecke auf Durchgang/.test(canTxt) ||
+     /Durchgangsprüfung beider Adern/.test(canTxt));
+  ok("can: Tabelle trennt die beiden Fälle in eigene Zeilen",
+     canD.rt.rows.some(r => /beide Adern durchgängig/.test(r[0])) &&
+     canD.rt.rows.some(r => /eine Ader unterbrochen/.test(r[0])));
+  ok("can: 60 Ω wird nicht als Beweis für intakte Adern oder Kommunikation verkauft",
+     /belegt außerdem nur/.test(canD.rt.note) && /ersetzt keine Signalbewertung/.test(canD.rt.note));
+  ok("can: „Zündung aus“ wird nicht mit spannungsfrei gleichgesetzt",
+     /genügt dafür nicht/.test(canD.rt.note) && /Klemme 30/.test(canD.rt.note));
+
+  // CAN-Pegel gegen ISO 11898-2: rezessiv beide ~2,5 V, dominant 3,5 / 1,5 V
+  ok("can: Ruhe- und Aktivpegel entsprechen der klassischen High-Speed-Physik",
+     canD.rt.rows.some(r => /Ruhe CAN-High/.test(r[0]) && /2,5 V/.test(r[1])) &&
+     canD.rt.rows.some(r => /High aktiv/.test(r[0]) && /3,5 V/.test(r[1])) &&
+     canD.rt.rows.some(r => /Low aktiv/.test(r[0]) && /1,5 V/.test(r[1])));
+
+  // Damit ist projektweit keine feste Abfallgrenze mehr in einem Arbeitsschritt übrig.
+  const restGrenzen = [];
+  TESTS.forEach(t => {
+    const dd = DEEP[t.id] || {};
+    const roh = /[<>]\s*=?\s*0,\d+\s*V/;
+    const gebunden = /OEM|Herstellerbeispiel|Vorgabe/;
+    (dd.anl || []).forEach((x, i) => {
+      if (roh.test(String(x)) && !gebunden.test(String(x))) restGrenzen.push(t.id + " anl" + (i + 1));
+    });
+    (dd.fs || []).forEach((f, i) => {
+      const txt = (f.ok || "") + " " + (f.ng || "") + " " + (f.do || "");
+      if (roh.test(txt) && !gebunden.test(txt)) restGrenzen.push(t.id + " fs" + (i + 1));
+    });
+  });
+  ok("projektweit keine ungebundene Abfallgrenze mehr in Anleitung oder Fehlersuchkette",
+     restGrenzen.length === 0, restGrenzen.join(", "));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");
