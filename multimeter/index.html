@@ -588,8 +588,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.10-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-10';
+const APP_VERSION = '8.11-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-11';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -1010,7 +1010,8 @@ const TESTS = [
  next:"Sprunggeschwindigkeit, Vorkat/Nachkat-Vergleich & Form sauber → Oszilloskop/Diagnose.",
  beg:"Die Vorkat-Sonde pendelt ständig. Die Nachkat-Sonde darf bei gutem Kat viel ruhiger sein – nicht beide gleich bewerten.",
  /* PRÜFEN: Suchbegriffe (Synonyme/DTC generisch nach SAE J2012) */
- syn:"Sauerstoffsensor O2-Sensor Regelsonde Sprungsonde Vorkatsonde P0130 P0133 P0135"
+ syn:"Sauerstoffsensor O2-Sensor Regelsonde Sprungsonde Vorkatsonde P0130 P0133 P0135",
+ warn:[["caution","Die Sonde ist nur betriebswarm aussagekräftig – genau dann sind Sonde, Krümmer und Abgasrohr mehrere hundert Grad heiß. Verbrennungsgefahr an Hand und Unterarm. Mit Handschuhen arbeiten, Messleitungen nicht auf heiße Teile legen und die Sonde erst nach dem Abkühlen ausbauen (heiß ausgebaut reißt sie oft im Gewinde ab)."]]
 },
 {
  id:"lambda-breit",cat:"sensor",ic:"🫧",nm:"Breitband-Lambda",tag:"osz",
@@ -1099,7 +1100,8 @@ const TESTS = [
  good:"Plausibles Signal, ändert sich mit Druck.",
  bad:"Anschlagwert / keine Reaktion.",
  next:"5-V-Referenz & Masse prüfen, Livedaten vergleichen.",
- beg:"Wie andere Drucksensoren: Signalspannung folgt dem Druck. Bewegt sich nichts, prüfen."
+ beg:"Wie andere Drucksensoren: Signalspannung folgt dem Druck. Bewegt sich nichts, prüfen. Gemessen wird ausschließlich elektrisch – der Kältemittelkreis bleibt zu.",
+ warn:[["caution","Den Kältemittelkreis nicht öffnen und den Sensor nicht unter Druck herausdrehen. Austretendes Kältemittel verursacht Erfrierungen an Haut und Augen; R1234yf ist zusätzlich entzündlich. Absaugen und Befüllen nur mit zugelassenem Klimaservicegerät und passender Schutzausrüstung. Diese Karte prüft nur die elektrische Seite."]]
 },
 /* PRÜFEN: neue Karte "oeldruck" – kompletter Fachinhalt zur Freigabe (siehe REVIEW.md) */
 {
@@ -1128,7 +1130,8 @@ const TESTS = [
  good:"Plausibler Wert zur realen Temperatur; mehrere AGT-Sensoren kalt ähnlich/plausibel.",
  bad:"OL/fest/unplausibel oder Kaltwerte einzelner Sensoren stark abweichend.",
  next:"Livedaten der einzelnen AGT-Sensoren vergleichen, Kabel/Stecker auf Hitze- und Abgasschäden prüfen. PT200/PT1000-Bauart → Prüfung 'PTC-Temperatursensor'.",
- beg:"Nicht pauschal NTC: Manche Kennlinien steigen, andere fallen. Entscheidend ist Sollwert und Plausibilität im Fahrzeug."
+ beg:"Nicht pauschal NTC: Manche Kennlinien steigen, andere fallen. Entscheidend ist Sollwert und Plausibilität im Fahrzeug.",
+ warn:[["caution","Abgastemperatursensoren sitzen dort, wo es am heißesten ist – im Betrieb mehrere hundert Grad, nach dem Abstellen noch lange. Die Ohm-Messung verlangt ohnehin den abgekühlten Strang: erst abkühlen lassen, dann messen. Verbrennungsgefahr und Brandgefahr durch abgelegte Messleitungen."]]
 },
 {
  id:"dpf-diff",cat:"sensor",ic:"🌫️",nm:"Differenzdruck DPF",tag:"mm",
@@ -1162,7 +1165,8 @@ const TESTS = [
  good:"Gleichmäßige Widerstandsänderung über den Weg.",
  bad:"Sprünge/tote Stellen = Bahn verschlissen. OL = unterbrochen.",
  next:"Mit Livedaten vergleichen.",
- beg:"Schwimmer hoch/runter ändert den Widerstand. Beim langsamen Bewegen muss sich der Wert gleichmäßig ändern – Sprünge = defekt."
+ beg:"Schwimmer hoch/runter ändert den Widerstand. Beim langsamen Bewegen muss sich der Wert gleichmäßig ändern – Sprünge = defekt. Vorher aber die Gefahr klären: Sobald der Geber ausgebaut oder der Tankdeckel geöffnet ist, steht ein zündfähiges Dampf-Luft-Gemisch im Raum.",
+ warn:[["danger","Am geöffneten Tank steht ein zündfähiges Benzindampf-Luft-Gemisch. Keine Funken, keine offene Flamme, kein Rauchen, keine Schaltvorgänge in Tanknähe – auch ein Relais oder eine Prüflampe kann zünden. Vor dem Öffnen Batterie nach OEM-Prozedur abklemmen, Arbeitsplatz belüften, Löschmittel bereithalten. Die Ohm-Messung selbst am ausgebauten Geber ist unkritisch, der geöffnete Tank ist es nicht."]],
 },
 {
  id:"schalter",cat:"sensor",ic:"🔲",nm:"Schalter / Kontakte",tag:"mm",
@@ -1288,7 +1292,8 @@ const TESTS = [
  good:"Versorgung kommt an, Masse gut, plausible Stromaufnahme, Pumpe summt.",
  bad:"Keine Versorgung = Relais/Sicherung/Ansteuerung. Hoher Abfall = Leitung/Masse.",
  next:"Pumpenrelais & Spannungsabfall prüfen. Kein Anlauf → Ansteuerung rückwärts verfolgen.",
- beg:"Kurz beim Zündung-an muss die Pumpe summen. Tut sie's nicht: Strom, Masse, Relais und Sicherung der Reihe nach prüfen."
+ beg:"Kurz beim Zündung-an muss die Pumpe summen. Tut sie's nicht: Strom, Masse, Relais und Sicherung der Reihe nach prüfen. Denk daran, wo du misst: Der elektrische Teil ist harmlos, das Kraftstoffsystem daneben nicht.",
+ warn:[["danger","Arbeiten am Kraftstoffsystem: Kraftstoff und Dämpfe sind entzündlich. Keine Funken, keine offene Flamme, Löschmittel in Reichweite, Arbeitsplatz belüftet. Vor dem Öffnen von Leitungen den Druck nach OEM-Prozedur abbauen – auch nach dem Abstellen steht Restdruck an, bei Direkteinspritzern mehrere hundert bar. Austretenden Kraftstoff sofort aufnehmen."],["caution","Die Pumpe nicht trocken dauerbestromen: Sie wird vom Kraftstoff gekühlt und geschmiert und nimmt sonst Schaden. Zum Einschalten den Stellgliedtest oder die vom Hersteller vorgesehene Ansteuerung verwenden."]],
 },
 {
  id:"stellmotor",cat:"aktor",ic:"🔧",nm:"Stellmotor / Drosselsteller",tag:"mm",
@@ -2353,7 +2358,7 @@ const DEEP = {
       ["Schlechte Masse","läuft schwach","m"],["Ansteuerung (PWM/LIN) fehlt","keine Stufe","m"],
       ["Vorwiderstand/Stufe defekt","nur manche Stufen","m"]],
  fs:[{s:"1 Versorgung",do:"Plus am Lüfter bei Ansteuerung",ok:"vorhanden → weiter",ng:"fehlt → Sicherung/Relais/STG"},
-     {s:"2 Masse",do:"Masseabfall unter Last",ok:"< 0,2 V → ok",ng:"hoch → Masse reparieren"},
+     {s:"2 Masse",do:"Masseabfall unter Last, gegen die Vorgabe für diesen Kreis",ok:"unter der Vorgabe → ok",ng:"darüber → Masse reparieren"},
      {s:"3 Ansteuerung",do:"PWM/LIN-Signal am Modul prüfen",ok:"vorhanden → Modul/Motor",ng:"fehlt → STG/Leitung"},
      {s:"4 Motor direkt",do:"Vorsichtig direkt bestromen (falls zulässig)",ok:"läuft → Ansteuerung",ng:"läuft nicht → Motor/Modul"}]
 },
@@ -2414,8 +2419,8 @@ const DEEP = {
  urs:[["Spannungsabfall Plus/Masse","Lampe schwach, Hupe leise","h"],["Verbraucher defekt","tot trotz Spannung","m"],
       ["Schalter/Relais","keine Ansteuerung","m"],["Schlechte Masse","schwach","h"]],
  fs:[{s:"1 Spannung am Verbraucher",do:"Beim Einschalten messen",ok:"voll → weiter",ng:"zu wenig → Spannungsabfall messen"},
-     {s:"2 Plus-Abfall",do:"Spannungsabfall Plusleitung unter Last",ok:"< 0,3 V → ok",ng:"hoch → Plusleitung/Kontakt"},
-     {s:"3 Masse-Abfall",do:"Spannungsabfall Masse unter Last",ok:"< 0,2 V → ok",ng:"hoch → Masse reparieren"},
+     {s:"2 Plus-Abfall",do:"Spannungsabfall Plusleitung unter Last, gegen die Vorgabe für diesen Kreis",ok:"unter der Vorgabe → ok",ng:"darüber → Plusleitung/Kontakt"},
+     {s:"3 Masse-Abfall",do:"Spannungsabfall Masse unter Last, gegen die Vorgabe für diesen Kreis",ok:"unter der Vorgabe → ok",ng:"darüber → Masse reparieren"},
      {s:"4 Verbraucher",do:"Spannung voll, läuft nicht",ok:"Leitungen ok",ng:"Spannung und Masse belegt in Ordnung → erst dann Verbraucher ersetzen"}]
 },
 /* ===== BUS ===== */
@@ -3409,7 +3414,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
     "klimadruck":{quality:"MM gut für Signalprüfung",risk:"mittel",requires:["Zündung an","Systemzustand (Klima an/aus) beachten"],limits:["Kältemittelmenge nicht elektrisch messbar"],dont:["Kältemittelkreis nicht ohne Klimaservicegerät öffnen"]},
     "agt":{quality:"MM gut, Typ beachten",risk:"mittel",requires:["Typ NTC/PTC über Sollwerte geklärt","Abgasstrang abgekühlt"],limits:["Drift bei hohen Temperaturen kalt nicht erkennbar"],dont:["nicht am heißen Abgasstrang arbeiten"]},
     "dpf-diff":{quality:"MM gut für Signalprüfung",risk:"niedrig",requires:["Zündung an, Schläuche drucklos für Ruhewert"],limits:["tatsächliche Asche-/Rußmasse nur per Diagnose"],dont:["Druckschläuche nicht vertauschen"]},
-    "tankgeber":{quality:"MM sehr gut",risk:"mittel",requires:["spannungsfrei","Zugang zum Geber"],limits:["Kontaktfehler nur über den ganzen Schwimmerweg sichtbar"],dont:["keine Funken/Zündquellen am offenen Tank – Explosionsgefahr"]},
+    "tankgeber":{quality:"MM sehr gut",risk:"hoch",requires:["spannungsfrei","Zugang zum Geber"],limits:["Kontaktfehler nur über den ganzen Schwimmerweg sichtbar"],dont:["keine Funken/Zündquellen am offenen Tank – Explosionsgefahr"]},
     "schalter":{quality:"MM sehr gut",risk:"niedrig",requires:["Schalter betätigbar","Bauart (Öffner/Schließer) bekannt"],limits:["Prellen/Übergangswiderstand unter Last zeigt der Piepton nicht"],dont:["nicht nur den Piepton werten – wichtige Kreise unter Last gegenprüfen"]},
     "magnetventil":{quality:"MM sehr gut für Spule",risk:"niedrig",requires:["spannungsfrei für Ohm","Schaltplan: plus- oder massegeschaltet"],limits:["mechanisches Klemmen elektrisch nicht sichtbar"],dont:["Ventil nicht ohne Herstellervorgabe dauerbestromen"]},
     "taktventil":{quality:"MM für Spule, Oszi für PWM",risk:"niedrig",requires:["spannungsfrei für Ohm","Duty-/Hz-Funktion für Ansteuerung"],limits:["PWM-Form und Flanken nur per Oszilloskop"],dont:["Ventil nicht ohne Herstellervorgabe dauerbestromen"]},
@@ -3418,7 +3423,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
     "zuendspule":{quality:"MM nur Primär-Grundprüfung",risk:"hoch",requires:["Kl.15-Versorgung und Masse geprüft"],limits:["Zündbild/Sekundärseite nur per Oszilloskop"],dont:["nicht in die offene Sekundärseite bei laufendem Motor greifen"]},
     "gluehkerze":{quality:"MM gut, Stromzange besser",risk:"mittel",requires:["spannungsfrei","Eigenwiderstand der Messspitzen abgezogen"],limits:["Ohm-Wert sagt wenig über die reale Glühleistung"],dont:["Niedervolt-Kerzen (4,4/7 V) nie direkt an 12 V legen"]},
     "luefter":{quality:"MM gut für Versorgung/Masse",risk:"hoch",requires:["Lüfter gegen unvermitteltes Anlaufen gesichert"],limits:["LIN-/Modul-Lüfter nur begrenzt direkt prüfbar"],dont:["nicht bei drehendem oder unabgesichertem Lüfter messen","Lüfterrad nicht blockieren"]},
-    "kraftstoffpumpe":{quality:"MM gut, Stromzange fürs Detail",risk:"mittel",requires:["Ansteuerlogik bekannt (Relais oder Pumpensteuergerät)"],limits:["Förderdruck und -menge nicht elektrisch messbar"],dont:["Pumpe nicht trocken dauerbestromen","keine Funken am Kraftstoffsystem"]},
+    "kraftstoffpumpe":{quality:"MM gut, Stromzange fürs Detail",risk:"hoch",requires:["Ansteuerlogik bekannt (Relais oder Pumpensteuergerät)"],limits:["Förderdruck und -menge nicht elektrisch messbar"],dont:["Pumpe nicht trocken dauerbestromen","keine Funken am Kraftstoffsystem"]},
     "stellmotor":{quality:"MM für Wicklung/Poti",risk:"niedrig",requires:["spannungsfrei für Ohm"],limits:["H-Brücken-Ansteuerung nur per Oszilloskop/Stellgliedtest"],dont:["Klappe nicht mit Gewalt von Hand bewegen – Getriebeschaden"]},
     "ventil-tank":{quality:"MM sehr gut für Spule",risk:"niedrig",requires:["spannungsfrei für Ohm"],limits:["Dichtheit nur mechanisch/per Diagnose prüfbar"],dont:["Ventil nicht ohne Herstellervorgabe dauerbestromen"]},
     "motor-allg":{quality:"MM gut für Versorgung/Masse",risk:"niedrig",requires:["Betätigung/Ansteuerung auslösbar"],limits:["Schwergängigkeit nur über die Stromaufnahme erkennbar"],dont:["Motor nicht gegen den Anschlag dauerbestromen"]},

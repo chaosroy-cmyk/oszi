@@ -3,7 +3,7 @@
 Fortschrittsregister des Verbesserungs-Loops. Arbeitsanweisung:
 [`PROMPT-VERBESSERUNG.md`](PROMPT-VERBESSERUNG.md).
 
-**Nächstes Fokusthema: 8 · Aktoren**
+**Nächstes Fokusthema: 9 · Bus & Leitungen**
 
 Format je Runde:
 
@@ -499,3 +499,53 @@ Masse erst am vollständig isolierten Leiter belastbar, Zwischenwerte
 ausdrücklich Verdacht und möglicherweise Halbleiterstrecke im Steuergerät;
 Bewertung von Stabilität und Abweichungsrichtung statt der zweiten
 Nachkommastelle.
+
+---
+
+## Runde 8 · Aktoren · 2026-09-05
+
+Baseline: 137/137 grün → Abschluss: 147/147 grün · Version 8.10-Profi → 8.11-Profi
+
+Geprüft: alle 14 Aktorkarten sowie die aus Runde 1 zurückgestellte
+Grundsatzfrage `warn` gegen `dont`.
+
+### Grundsatzfrage aus Runde 1 — entschieden
+
+Bestandsaufnahme statt Geschmacksentscheidung: Von zwölf Karten, die eine
+Personen- oder Brandgefahr im `dont`-Block nennen, trugen **neun** bereits einen
+sichtbaren Warnblock dazu. Das ist keine Konvention, sondern eine Lücke bei den
+übrigen. Tragende Regel des Bestands: `dont` für das, was Bauteile beschädigt —
+`warn` für das, was Menschen verletzt oder brennt.
+
+### Befunde
+
+- **Vier Karten mit Personen- oder Brandgefahr ohne jeden Warnblock**
+  `tankgeber` („keine Funken/Zündquellen am offenen Tank – Explosionsgefahr"),
+  `kraftstoffpumpe` („keine Funken am Kraftstoffsystem"), `lambda-sprung`
+  („heiße Abgasteile nicht berühren"), `agt` („nicht am heißen Abgasstrang
+  arbeiten"). Dazu `klimadruck`, das den Kältemittelkreis nur indirekt
+  absicherte, ohne die Gefahr zu benennen.
+  `tankgeber` sticht heraus: Die Karte schrieb das Wort „Explosionsgefahr"
+  selbst in ihren `dont`-Block und zeigte dem Anwender trotzdem keine Warnung.
+  Fix: `danger` für `tankgeber` (zündfähiges Dampf-Luft-Gemisch, keine
+  Schaltvorgänge in Tanknähe – auch Relais und Prüflampe zünden) und
+  `kraftstoffpumpe` (Kraftstoff, Dämpfe, Restdruck, OEM-Druckabbau), jeweils
+  `risk` auf `hoch`; `caution` für `lambda-sprung`, `agt` und `klimadruck`
+  (Erfrierungen, R1234yf entzündlich).
+  Regression: `validate.js` Abschnitt 26, verallgemeinert auf jede Karte mit
+  Personen- oder Brandgefahr im `dont`-Block. Drei weitere Prüfungen sichern die
+  Gegenrichtung: Die elektrische Prüfung muss zulässig erkennbar bleiben.
+
+- **Restliche feste Abfallgrenzen in Aktorkarten** (`luefter` fs2, `hupe`
+  fs2/fs3) an die Vorgabe des jeweiligen Kreises gebunden — wie seit v8.5 in
+  `spannungsabfall` und seit v8.7 in `batterie`, `generator`, `starter`.
+  Projektweit verbleibt damit **eine einzige** feste Abfallgrenze in einem
+  Arbeitsschritt: `leitung` fs9, Runde 9.
+
+### Geprüft und für korrekt befunden
+
+`pwm`, `magnetventil`, `taktventil`, `stellmotor`, `ventil-tank`, `motor-allg`,
+`zuendspule` (Sekundärseite nur per Oszilloskop, Warnung gegen Hineingreifen),
+`gluehkerze` (Niedervolt-Kerzen 4,4/7 V nie an 12 V — wichtiger Bauartschutz),
+`ptc-heizung` (bis ~80 A, Gefahrblock gegen Reihenmessung),
+`injektor-benzin`/`injektor-diesel` (in Runde 1 bearbeitet), `luefter`, `hupe`.

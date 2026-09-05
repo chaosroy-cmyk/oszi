@@ -713,6 +713,47 @@ const w = dom.window, d = w.document;
   ok("ref5v: Einstiegskarte formuliert den Abweichungsbefund als Verdacht, nicht als Gleichung",
      /Verdacht auf Kurzschluss/.test(r5.bad) && !/= Kurzschluss nach Masse\/Plus/.test(r5.bad));
 
+  section("26 · Runde 8 · Personen- und Brandgefahr gehört in den Warnblock");
+  // Die in Runde 1 zurückgestellte Grundsatzfrage, entschieden mit Bestandsaufnahme
+  // statt Geschmack: 9 von 12 Karten, die eine Personen- oder Brandgefahr im
+  // dont-Block nennen, trugen dazu bereits einen sichtbaren Warnblock. Die vier
+  // Ausreisser waren keine Konvention, sondern eine Lücke – darunter tankgeber mit
+  // dem Eintrag "keine Funken/Zündquellen am offenen Tank – Explosionsgefahr" ohne
+  // jede Warnung. dont ist für das, was Bauteile beschädigt; warn für das, was
+  // Menschen verletzt oder brennt.
+  const PERSONENGEFAHR = /Funken|Zündquelle|Explosion|Brand|Feuer|Verbrenn|heiß|Hochdruck|Lichtbogen|Hochspannung|greifen|drehend/i;
+  const ohneWarnblock = TESTS.filter(t => {
+    if (!(t.dont || []).some(x => PERSONENGEFAHR.test(x))) return false;
+    return !(t.warn || []).some(x => x[0] === "danger" || x[0] === "caution");
+  }).map(t => t.id);
+  ok("jede Karte mit Personen- oder Brandgefahr im dont-Block trägt einen sichtbaren Warnblock",
+     ohneWarnblock.length === 0, ohneWarnblock.join(", "));
+
+  const warnOf = id => (TESTS.find(t => t.id === id).warn || []);
+  ok("tankgeber: Gefahrblock zum zündfähigen Dampf-Luft-Gemisch am offenen Tank",
+     warnOf("tankgeber").some(x => x[0] === "danger" && /zündfähiges/.test(x[1])));
+  ok("tankgeber: Risiko hoch, und die Ohm-Messung selbst bleibt als unkritisch benannt",
+     TESTS.find(t => t.id === "tankgeber").risk === "hoch" &&
+     /Ohm-Messung selbst[^"]*unkritisch/.test(JSON.stringify(warnOf("tankgeber"))));
+  ok("kraftstoffpumpe: Gefahrblock zu Kraftstoff und Druckabbau, Risiko hoch",
+     warnOf("kraftstoffpumpe").some(x => x[0] === "danger" && /Druck nach OEM-Prozedur/.test(x[1])) &&
+     TESTS.find(t => t.id === "kraftstoffpumpe").risk === "hoch");
+  ok("lambda-sprung: Warnung vor heißen Abgasteilen im Betriebszustand",
+     warnOf("lambda-sprung").some(x => x[0] === "caution" && /betriebswarm/.test(x[1])));
+  ok("agt: Warnung vor dem heißen Abgasstrang",
+     warnOf("agt").some(x => x[0] === "caution" && /abgekühlten Strang|abkühlen/.test(x[1])));
+  ok("klimadruck: Warnung zu Kältemittel, Erfrierung und Entzündlichkeit von R1234yf",
+     warnOf("klimadruck").some(x => x[0] === "caution" && /Erfrierungen/.test(x[1]) && /R1234yf/.test(x[1])));
+
+  // Gegenprobe gegen Überwarnung: Die eigentliche Messung muss zulässig bleiben.
+  ["tankgeber", "kraftstoffpumpe", "klimadruck"].forEach(id => {
+    w.openDetail(id);
+    const html = d.getElementById("ovbody").innerHTML;
+    ok(id + ": die elektrische Prüfung bleibt als zulässig erkennbar",
+       /Ohm|Widerstand|Versorgung|Signal/.test(html));
+  });
+  w.doCloseOverlays();
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");
