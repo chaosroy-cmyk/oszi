@@ -3,7 +3,9 @@
 Fortschrittsregister des Verbesserungs-Loops. Arbeitsanweisung:
 [`PROMPT-VERBESSERUNG.md`](PROMPT-VERBESSERUNG.md).
 
-**Nächstes Fokusthema: 13 · Quellenpflege**
+**Rotation einmal vollständig durchlaufen (Runde 1–13).**
+Nächster Durchgang beginnt wieder bei Thema 1 – mit dem Anspruch, das zu finden,
+was beim ersten Mal durchgerutscht ist.
 
 Format je Runde:
 
@@ -736,3 +738,47 @@ Service Worker, Cache-Isolation, Precache, Update-Banner, Versionssynchronität
 Touchziele ≥ 44 px (Abschnitt 14); genau ein Light-Block an der richtigen Stelle
 (Abschnitt 15). `role="dialog"`, `aria-modal`, `aria-live`, `@media print`,
 `:focus-visible` und `lang` sind vorhanden.
+
+---
+
+## Runde 13 · Quellenpflege · 2026-09-05
+
+Baseline: 181/181 grün → Abschluss: 189/189 grün · Version 8.15-Profi → 8.16-Profi
+
+Geprüft: alle 24 in `SOURCES.md` verlinkten Adressen, dazu die Normstände.
+
+### Befunde
+
+- **Ein echter Totlink** (NXP KTY81-Datenblatt)
+  `nxp.com/docs/en/data-sheet/KTY81_SER.pdf` liefert HTTP 404 — zweifach
+  geprüft, auch über Umleitungen. NXP hat das Dokument nach der Abkündigung
+  entfernt.
+  Fix: Die Zeile führt die Adresse nicht mehr als Link, sondern nennt den Befund
+  samt Datum. Der Zahlenwert der Karte `ptc-sensor` (KTY81-1xx: ~1000 Ω bei
+  25 °C, ~1700 Ω bei 100 °C) bleibt unverändert — er stützt sich auf die
+  Dokumentausgabe Rev. 05 vom 25.04.2008, nicht auf die Erreichbarkeit einer
+  URL. Entfallen ist der Abrufweg, nicht der Beleg.
+
+- **Acht 403-Antworten sind KEINE toten Links** (ISO ×4, Littelfuse ×3,
+  GS Yuasa Info-Hub). Die Seiten bestehen; der Anbieter weist automatisierte
+  Abrufe ab. Diese Unterscheidung ist jetzt in `SOURCES.md` festgehalten — wer
+  403 und 404 in einen Topf wirft, wirft gute Quellen weg.
+
+- **Zwei Ford-PDFs nicht abschließend beurteilbar.** Der Host antwortet mit 200,
+  die beiden Dateien brechen die Verbindung ab. Genau so vermerkt, statt es in
+  die eine oder andere Richtung zu behaupten.
+
+### Bewusst nicht getan
+
+Kein Ersatzlink für das KTY81-Datenblatt. Distributor-Spiegel existieren, weisen
+automatisierte Abrufe aber ihrerseits mit 403 ab und konnten nicht gegengeprüft
+werden. Sie als Quelle zu führen, hätte eine Prüfung vorgetäuscht, die nicht
+stattgefunden hat.
+
+### Regression
+
+`validate.js` Abschnitt 31. Darunter die **Linkbilanz**: 24 geprüft − 1 entlinkt
+= 23 vorhanden, gezählt an der Datei selbst. Damit kann die Dokumentation nicht
+stillschweigend von der Realität abweichen. Dazu die Normstände: ISO 8820-3:2015
+gültig, FDIS ausdrücklich nicht als publiziert, IEC 60751, ISO 11898-2:2026,
+ISO 17987-3:2025.

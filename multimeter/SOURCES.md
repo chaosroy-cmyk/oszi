@@ -1,6 +1,6 @@
 # SOURCES.md — Quellen- und Grenzwertmatrix
 
-Stand: **v8.15-Profi, geprüft am 05.09.2026**.
+Stand: **v8.16-Profi, geprüft am 05.09.2026**.
 
 Die Vollversion unterscheidet drei Evidenzstufen:
 
@@ -23,7 +23,7 @@ Ampelfarben in Tabellen zeigen deshalb die **Prüfpriorität**, nicht automatisc
 | Kaltwiderstände MAXI | [Littelfuse MAXI Series 299, Beispiel 50 A](https://www.littelfuse.com/de/products/fuses-overcurrent-protection/fuses/automotive-fuses/blade-fuses-shunt/maxi/299/0299050-txn) | Herstellerseite/Datenblatt, Abruf 27.07.2026 | `FUSE_TYPES.maxi`; Tabellenwerte gelten nur für Series 299 |
 | Bauformen und Anforderungen an Kfz-Flachsicherungen | gültig: [ISO 8820-3:2015](https://www.iso.org/standard/58088.html) · in Überarbeitung: [ISO/FDIS 8820-3](https://www.iso.org/standard/85282.html) | ISO 8820-3:2015 (gültige Ausgabe); FDIS im Genehmigungsverfahren, noch nicht veröffentlicht | Normhintergrund; der Rechner ersetzt keine Sicherungsauslegung. Der Entwurf darf nicht als publizierte Norm zitiert werden. |
 | Pt100/Pt1000-Temperatur-Widerstandsbeziehung | [IEC 60751](https://webstore.iec.ch/en/publication/3400) | Beziehung in IEC 60751; aktuelle Ausgabe 2022 beachten | Karte `ptc-sensor`; nur Platinfühler nach dieser Norm |
-| KTY81-Kennlinie | [NXP KTY81 Series, Rev. 05](https://www.nxp.com/docs/en/data-sheet/KTY81_SER.pdf) | 25.04.2008, Produkt inzwischen EOL | Nur konkrete KTY81-Type; nicht auf beliebige Kfz-PTC übertragen |
+| KTY81-Kennlinie | NXP **KTY81 Series, Rev. 05** (Dokumentidentität; die frühere Adresse `nxp.com/docs/en/data-sheet/KTY81_SER.pdf` liefert seit dem 05.09.2026 **HTTP 404** – NXP hat das Dokument nach der Abkündigung entfernt) | 25.04.2008, Produkt EOL | Karte `ptc-sensor`, Zeile KTY81-1xx (~1000 Ω bei 25 °C, ~1700 Ω bei 100 °C). Der Wert bleibt belegt durch die genannte Dokumentausgabe; nur der Abrufweg ist entfallen. Nur die konkrete KTY81-Type, nicht auf beliebige Kfz-PTC übertragen |
 | 5-V-Referenz, Beispiel 4,75-V-Untergrenze | [Ford OBDSM1801-HEV](https://www.fordservicecontent.com/Ford_Content/catalog/motorcraft/OBDSM1801-HEV-2018.pdf) | Ford, Revision 12.05.2017 | Herstellerbeispiel, keine allgemeine 5-V-Grenze |
 | 5-V-Referenz, Beispiel 4,7–5,3 V | [Ford OBDSM1700-HEV](https://www.fordservicecontent.com/Ford_Content/catalog/motorcraft/OBDSM1700-HEV-2017.pdf) | Ford, Revision 09.11.2015 | Belegt die Systemabhängigkeit; nur gekennzeichnetes Beispiel |
 | Saugrohr-/Ladedrucksensor: unterschiedliche Messbereiche und 5-V-Versorgung | [Bosch Mobility – Boost pressure sensor](https://www.bosch-mobility.com/en/solutions/sensors/boost-pressure-and-temperature-sensor/) | Herstellerseite, Abruf 27.07.2026 | Karte `map`; keine universelle KOEO-Signalspannung |
@@ -67,3 +67,29 @@ Kontaktwiderstand, Fertigungstoleranz und Messauflösung verändern das Ergebnis
 Der Rechner gibt daher nur den berechneten Strom aus und fordert den Vergleich
 mit gemessenem Gesamtstrom sowie dem fahrzeugspezifischen Ruhestrom-Soll. Er
 klassifiziert den berechneten Wert nicht mehr pauschal als gut oder schlecht.
+
+## Linkprüfung
+
+Stand **05.09.2026**. Zum Prüfzeitpunkt enthielt diese Datei **24** verlinkte
+Adressen; alle wurden maschinell abgerufen. Die eine als entfallen erkannte Adresse
+ist seither nicht mehr als Link ausgezeichnet, sodass jetzt **23** Links verbleiben. Das Ergebnis gehört zur Quellenpflege, weil eine Quelle,
+die niemand mehr aufrufen kann, ihren Zweck verfehlt.
+
+| Ergebnis | Anzahl | Bedeutung |
+|---|---|---|
+| **200 – erreichbar** | 13 | GS Yuasa Battery Management Guide, IEC 60751, alle vier Bosch-Mobility-Seiten, alle drei HELLA-Techworld-Seiten, UK HSE, LIN 2.2A, beide W3C-WCAG-Seiten |
+| **403 – Zugriff durch den Anbieter gesperrt** | 8 | ISO (4 Normseiten), Littelfuse (3), GS Yuasa Info-Hub. **Kein toter Link:** Die Seiten bestehen, der Anbieter weist automatisierte Abrufe ab. Im Browser normal erreichbar |
+| **404 – nicht mehr vorhanden** | 1 | NXP KTY81-Datenblatt, siehe Zeile oben |
+| **Verbindung abgebrochen** | 2 | Beide Ford-`OBDSM`-PDFs. Der Host `fordservicecontent.com` antwortet mit 200, die PDFs selbst brechen die Verbindung ab. Nicht abschließend beurteilbar |
+
+**Konsequenz für die Bewertung:** Die betroffenen Zahlenwerte bleiben
+unverändert. Sie stützen sich auf die genannte **Dokumentausgabe**, nicht auf
+die Erreichbarkeit einer Adresse. Ein 403 belegt nichts über den Inhalt, und
+eine entfallene Datei entwertet keine korrekt zitierte Revision. Ersetzt wurde
+deshalb kein Wert, sondern nur die Angabe zum Abrufweg.
+
+Kein Wert wurde durch einen unverifizierten Ersatzlink gestützt: Für das
+KTY81-Datenblatt existieren Distributor-Spiegel, die ihrerseits automatisierte
+Abrufe mit 403 abweisen und daher nicht gegengeprüft werden konnten. Sie hier
+als Quelle zu führen, hätte eine Prüfung vorgetäuscht, die nicht stattgefunden
+hat.

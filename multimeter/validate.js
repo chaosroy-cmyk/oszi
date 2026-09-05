@@ -970,6 +970,47 @@ const w = dom.window, d = w.document;
   ok("alle " + TEXTFARBEN.length + " Textfarben erreichen in beiden Schemata mindestens 4,5:1 auf beiden Hintergründen",
      schwach.length === 0, schwach.join(" ; "));
 
+  section("31 · Runde 13 · Quellenpflege: Linkstatus dokumentiert");
+  // Auslöser: Die Linkprüfung aller 24 Adressen ergab einen echten Totlink – das
+  // NXP-KTY81-Datenblatt liefert HTTP 404, seit NXP das Dokument nach der Abkündigung
+  // entfernt hat. Acht weitere Adressen antworten mit 403; das ist eine Bot-Sperre des
+  // Anbieters und KEIN toter Link, was in einer Quellendatei unterscheidbar sein muss.
+  ok("SOURCES.md dokumentiert eine datierte Linkprüfung",
+     /## Linkprüfung/.test(SOURCES) && /Stand \*\*05\.09\.2026\*\*/.test(SOURCES));
+  ok("Linkprüfung unterscheidet 403 (Anbietersperre) von 404 (entfallen)",
+     /403[^|]*Zugriff durch den Anbieter gesperrt/.test(SOURCES) &&
+     /Kein toter Link/.test(SOURCES) &&
+     /404[^|]*nicht mehr vorhanden/.test(SOURCES));
+
+  // Die tote Adresse darf nicht mehr als anklickbarer Link geführt werden.
+  const totLink = /\[[^\]]*KTY81[^\]]*\]\(https:\/\/www\.nxp\.com\/docs\/en\/data-sheet\/KTY81_SER\.pdf\)/;
+  ok("das tote NXP-Datenblatt ist nicht mehr als Link ausgezeichnet", !totLink.test(SOURCES));
+  ok("die Dokumentidentität des KTY81-Datenblatts bleibt zitiert",
+     /KTY81 Series, Rev\. 05/.test(SOURCES) && /HTTP 404/.test(SOURCES));
+  ok("der KTY81-Wert bleibt der Karte ptc-sensor zugeordnet und begründet",
+     /Karte `ptc-sensor`[^|]*KTY81-1xx/.test(SOURCES) && /nur der Abrufweg ist entfallen/.test(SOURCES));
+
+  // Ehrlichkeit statt Lückenfüller: kein unverifizierter Ersatzlink.
+  ok("kein unverifizierter Ersatzlink als Quelle eingesetzt",
+     /hätte eine Prüfung vorgetäuscht/.test(SOURCES));
+
+  // Die Zahl der geprüften Adressen muss zur Datei passen.
+  const urls = (SOURCES.match(/https:\/\/[^)\s]+/g) || []);
+  const eindeutig = new Set(urls.map(u => u.replace(/[).,]+$/, "")));
+  // Der geprüfte Umfang (24) und die heute verbleibenden Links (23) müssen zusammenpassen:
+  // genau eine Adresse wurde als entfallen erkannt und deshalb entlinkt.
+  const geprueft = parseInt((SOURCES.match(/enthielt diese Datei \*\*(\d+)\*\* verlinkte/) || [])[1], 10);
+  const verbleibend = parseInt((SOURCES.match(/sodass jetzt \*\*(\d+)\*\* Links verbleiben/) || [])[1], 10);
+  ok("Linkbilanz stimmt: " + geprueft + " geprüft − 1 entlinkt = " + verbleibend + " vorhanden",
+     verbleibend === eindeutig.size && geprueft === verbleibend + 1,
+     "tatsächlich vorhanden: " + eindeutig.size);
+
+  // Normstände: der ISO-8820-3-Entwurf darf weiterhin nicht als publiziert gelten
+  ok("Normstände unverändert korrekt zitiert (ISO 8820-3, IEC 60751, ISO 11898-2, ISO 17987-3)",
+     /ISO 8820-3:2015/.test(SOURCES) && /ISO\/FDIS 8820-3/.test(SOURCES) &&
+     !/ISO 8820-3:2026/.test(SOURCES) &&
+     /IEC 60751/.test(SOURCES) && /ISO 11898-2:2026/.test(SOURCES) && /ISO 17987-3:2025/.test(SOURCES));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");
