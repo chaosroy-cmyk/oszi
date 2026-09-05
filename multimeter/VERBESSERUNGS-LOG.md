@@ -3,7 +3,7 @@
 Fortschrittsregister des Verbesserungs-Loops. Arbeitsanweisung:
 [`PROMPT-VERBESSERUNG.md`](PROMPT-VERBESSERUNG.md).
 
-**Nächstes Fokusthema: 4 · Energie & Anlasser**
+**Nächstes Fokusthema: 5 · Sensorik I – Temperatur & Druck**
 
 Format je Runde:
 
@@ -267,3 +267,69 @@ Geprüft: `strom`, `sicherung`, `relais`, `relais-typen`, `relais-leistung`,
   Ankerprüfpunkt (ATOF 10 A = 7,70 mΩ) bleibt die einzige verifizierte Stelle.
   Unverifizierte Werte wurden bewusst nicht angetastet. Für eine spätere Runde:
   Datenblatt manuell beschaffen und die übrigen Nennströme gegenprüfen.
+
+---
+
+## Runde 4 · Energie & Anlasser · 2026-09-05
+
+Baseline: 108/108 grün → Abschluss: 115/115 grün · Version 8.6-Profi → 8.7-Profi
+
+Geprüft: `batterie`, `generator`, `starter`, `starter-drop-profi` — dazu ein
+projektweiter Abgleich, welche Karten eine OEM-gebundene Tabelle, aber harte
+Grenzen in den Schritten führen.
+
+### Befunde
+
+- **Die OEM-Umstellung erreichte die Tabellen, nicht die Arbeitsschritte**
+  (`batterie`, `generator`, `starter` — zehn Stellen)
+  Die Richtwerttabellen dieser drei Karten waren bereits auf „nach OEM-Vorgabe"
+  umgestellt. Anleitung und Fehlersuchkette verteilten aber weiter feste
+  Grenzen: `starter` anl3 „< 0,5 V", anl4 „< 0,2 V", fs1 „≥10 V → weiter" und
+  „<9,6 V → Batterie/Klemmen", fs2 „>8 V → Ansteuerung ok", fs3/fs4 „<0,5 V"
+  und „<0,2 V"; `generator` anl5 „< 0,3 V", anl6 „< 0,2 V"; `batterie` anl4 und
+  fs3 „< 0,1 V = guter Kontakt".
+  Beleg intern und eindeutig: Die `starter`-Tabelle bezeichnet 9,6–10 V
+  wörtlich als „verbreiteten Orientierungswert, keine allgemeingültige
+  Bestehensgrenze" — und die Fehlersuchkette derselben Karte benutzte genau
+  diese Zahl als Bestehensgrenze. Ein Monteur arbeitet die Schritte ab, nicht
+  die Tabelle; die Umstellung war dort nie angekommen, wo sie wirkt.
+  Fix: alle zehn Stellen an die jeweilige Tabelle angeglichen und, wo belegbar,
+  an die HELLA-Tabelle gebunden (Starter-Pluskabel 0,5 V,
+  Batterieminus→Startergehäuse 0,3 V, Generator-Pluskabel 0,4 V,
+  Batterieminus→Generatorgehäuse 0,3 V, Gehäuse→Karosserie 0,1 V — jeweils
+  ausdrücklich als Herstellerbeispiel, OEM-Vorgabe hat Vorrang). Bei `batterie`
+  ersetzt der Seitenvergleich Plus gegen Minus die feste 0,1-V-Grenze; im
+  Messpfad liegt dort nur eine einzige Klemmverbindung, der Vergleich ist
+  aussagekräftiger als eine Zahl, die den Startstrom nicht kennt.
+  Regression: `validate.js` Abschnitt 22, 7 Prüfungen. Die Leitprüfung ist
+  verallgemeinert: keine Karte mit OEM-gebundener Tabelle darf in Anleitung
+  oder Fehlersuchkette noch eine feste Abfallgrenze unter 1 V tragen.
+
+### Bewusst nicht geändert
+
+- `batterie` fs1 („< 12,4 V → laden & Ruhestrom prüfen") ist keine
+  Defektentscheidung, sondern eine Handlungsschwelle aus der belegten
+  SOC-Tabelle (GS Yuasa). Bleibt.
+- HELLA führt für den „Hauptanschluss Starter unter Last beim Startvorgang"
+  3,5 V. Ob dieser Wert denselben Messpfad meint wie der App-Schritt
+  (Batterieplus→Kl.30 während des Startens), geht aus der Quelle nicht
+  zweifelsfrei hervor. Deshalb wurde **nicht** auf 3,5 V geändert, sondern der
+  eindeutige 0,5-V-Wert für das Pluskabel als Beispiel gesetzt. Vermerkt als
+  offene Frage.
+
+### Geprüft und für korrekt befunden
+
+- `starter-drop-profi`: bereits durchgehend OEM-gebunden, Tabelle **und**
+  Schritte. Diente als Vorbild für die Angleichung.
+- `generator`: intelligente Ladesysteme (LIN/BSD/BMS, Rekuperation) fachlich
+  richtig behandelt; der Hinweis, dass AC-Ripple am Multimeter nur ein Grobtest
+  ist und viele Geräte bei überlagerter Gleichspannung falsch anzeigen, ist
+  korrekt und wird oft ausgelassen.
+
+### Offen
+
+- Verbleibende feste Abfallgrenzen in Karten **ohne** OEM-gebundene Tabelle:
+  `luefter` fs2 „< 0,2 V", `hupe` fs2 „< 0,3 V" und fs3 „< 0,2 V", `leitung`
+  fs9 „< 0,2 V". Gehören zu Runde 8 (Aktoren) und Runde 9 (Leitungen).
+- `ruhestrom-fuse` anl2 „< 10 mV" ist eine Auflösungsangabe, keine
+  Entscheidungsgrenze — kein Befund.

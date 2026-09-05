@@ -588,8 +588,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.6-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-6';
+const APP_VERSION = '8.7-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-7';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -1569,7 +1569,7 @@ const DEEP = {
  anl:["<b>Ruhespannung:</b> Fahrzeug stand mind. 1 h (besser über Nacht). MM auf DC Volt, rot an Plus-, schwarz an Minuspol. Wert mit der Ladetabelle vergleichen.",
    "<b>Startspannung:</b> MM angeschlossen lassen, Motor anlassen und während des Startvorgangs die Spannung beobachten. Der zulässige Einbruch richtet sich nach der OEM-Vorgabe (9,6–10 V ist ein verbreiteter Orientierungswert, keine allgemeingültige Bestehensgrenze) und hängt von Temperatur, CCA, Batteriechemie, Starterstrom, Ölviskosität und Startdrehzahl ab. Die Startspannung ist ein Hinweis – die Austauschentscheidung trifft ein definierter Last-/Leitwerttest. Tipp: <b>MIN/MAX-Funktion</b> nutzen – sie hält den tiefsten Wert beim Starten automatisch fest (Autorange ist dafür oft zu träge).",
    "<b>Ladespannung:</b> Motor läuft. Erwartetes Verhalten hängt von der Ladesystemart ab: konventionell geregelt steigt die Spannung typischerweise deutlich über die Ruhespannung (Beispiel konventionell geregelter Systeme, keine allgemeingültige Grenze); bei intelligentem Lademanagement regelt das Steuergerät bewusst variabel. Sollwert per Diagnose gegen die Steuergeräteanforderung prüfen.",
-   "<b>Polklemmen unter Last:</b> beim Starten den Spannungsabfall zwischen Klemme und Batteriepol messen (rot an Klemme, schwarz an Pol). < 0,1 V = guter Kontakt.",
+   "<b>Polklemmen unter Last:</b> beim Starten den Spannungsabfall zwischen Klemme und Batteriepol messen (rot an Klemme, schwarz an Pol). Bewertung gegen die OEM-Vorgabe; als Orientierung gilt ein sehr kleiner Wert, weil hier nur eine einzige Klemmverbindung im Messpfad liegt. Entscheidend ist der Seitenvergleich Plus gegen Minus und ob der Wert nach dem Reinigen und Nachziehen deutlich fällt.",
    "<b>Masseband:</b> beim Starten Abfall Motor↔Karosserie prüfen. Hoher Wert = schlechtes Masseband (häufige Ursache für lahmes Drehen).",
    "Multimeter ersetzt keinen echten <b>Belastungs-/Leitwerttest</b>: Eine schwache Zelle kann eine gute Ruhespannung zeigen und trotzdem unter Last zusammenbrechen.",
    "Nach Batteriewechsel ggf. <b>Batteriemanagement anlernen</b> (BEM/IBS), sonst passt die Ladestrategie nicht."],
@@ -1585,7 +1585,7 @@ const DEEP = {
       ["Falsche/ nicht angelernte Batterie","Ladestrategie passt nicht (BEM/IBS)","m"]],
  fs:[{s:"1 Ruhespannung",do:"Nach Standzeit Pol-zu-Pol messen",ok:"≥12,6 V → geladen",ng:"< 12,4 V → laden & Ruhestrom prüfen"},
      {s:"2 Startspannung als HINWEIS",do:"Beim Anlassen beobachten, Temperatur und Startbedingungen notieren",ok:"Einbruch im Rahmen der OEM-Vorgabe → Hinweis, noch keine Freigabe",ng:"Starker Einbruch → definierter Last-/Leitwerttest entscheidet"},
-     {s:"3 Polklemmen unter Last",do:"Spannungsabfall Klemme↔Pol beim Starten",ok:"< 0,1 V → ok",ng:"Hoch → reinigen/nachziehen"},
+     {s:"3 Polklemmen unter Last",do:"Spannungsabfall Klemme↔Pol beim Starten, Plus- und Minusseite vergleichen",ok:"sehr klein und seitengleich → ok",ng:"auffällig → reinigen/nachziehen, danach unter gleicher Last nachmessen"},
      {s:"4 Masseband prüfen",do:"Abfall Motor↔Karosserie beim Starten",ok:"niedrig → ok",ng:"Hoch → Masseband erneuern"},
      {s:"5 Profi-Test",do:"Bei Zweifel echten Lasttest/Leitwerttester",ok:"besteht → Batterie ok",ng:"durchgefallen im definierten Last-/Leitwerttest → Batterie ersetzen und anlernen"}]
 },
@@ -1594,8 +1594,8 @@ const DEEP = {
    "<b>Ladespannung Leerlauf:</b> MM auf DC Volt an der Batterie, Motor im Leerlauf. Konventionell geregelt typischerweise deutlich über Ruhespannung (Beispiel konventionell geregelter Systeme, keine allgemeingültige Grenze); bei geregeltem System gegen die Sollwertvorgabe der Diagnose bewerten.",
    "<b>Unter Last:</b> Abblendlicht, Heckscheibenheizung und Gebläse einschalten. Bewertet wird, ob das System die angeforderte Ladespannung hält – nicht das Unterschreiten einer festen Zahl. Messzustand, Lastfall, Batteriezustand und Temperatur mitprotokollieren.",
    "<b>AC-Ripple:</b> MM auf <b>AC Volt</b> umschalten, an der Batterie bei laufendem Motor messen. Nur als Grobtest: viele Multimeter zeigen hier falsche Werte. Deutlich erhöhter AC-Anteil ist verdächtig; sichere Bewertung der Diodenwelligkeit per Oszilloskop.",
-   "<b>Leitungsabfall Plus:</b> Spannungsabfall B+ (Generator) → Batterie-Plus unter Last. < 0,3 V.",
-   "<b>Leitungsabfall Masse:</b> Generatorgehäuse → Batterie-Minus unter Last. < 0,2 V.",
+   "<b>Leitungsabfall Plus:</b> Spannungsabfall B+ (Generator) → Batterie-Plus unter definierter Last. Gegen die OEM-Vorgabe bewerten; HELLA nennt als Herstellerbeispiel 0,4 V für das Pluskabel Batterie→Hauptanschluss Generator.",
+   "<b>Leitungsabfall Masse:</b> Generatorgehäuse → Batterie-Minus unter definierter Last. Gegen die OEM-Vorgabe bewerten; HELLA nennt als Herstellerbeispiel 0,3 V für Batterieminus→Generatorgehäuse und 0,1 V für Generatorgehäuse→Karosserie/Motorblock.",
    "Keine Spannungserhöhung beim Starten: Erregerkreis/Ladekontrollleuchte bzw. LIN-Ansteuerung prüfen.",
    "Wichtig: Moderne Generatoren (VAG/BMW) regeln über LIN/BSD bewusst variabel (Rekuperation). Eine schwankende Spannung ist nicht automatisch ein Defekt – im Zweifel Soll-/Ist-Vorgabe per Diagnose prüfen."],
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
@@ -1618,8 +1618,8 @@ const DEEP = {
 "starter":{
  anl:["MM auf <b>DC Volt</b>. <b>Klemme 30</b> (Dauerplus am Starter) gegen Masse messen – muss ≈ Batteriespannung sein.",
    "<b>Klemme 50</b> (Ansteuerung) beim Anlassen messen: hier muss während des Startens > 8–10 V anliegen. Fehlt das Signal → Zündschloss/Starterrelais/Wegfahrsperre prüfen.",
-   "<b>Plus-Spannungsabfall:</b> rote Spitze an Batterie-Plus, schwarze an Starter-Plus (Kl.30), beim Startvorgang messen. < 0,5 V.",
-   "<b>Masse-Spannungsabfall:</b> rote Spitze ans Startergehäuse, schwarze an Batterie-Minus, beim Starten. < 0,2 V.",
+   "<b>Plus-Spannungsabfall:</b> rote Spitze an Batterie-Plus, schwarze an Starter-Plus (Kl.30), beim Startvorgang messen. Gegen die OEM-Vorgabe bewerten; HELLA nennt für 12-V-Fahrzeuge als Herstellerbeispiel 0,5 V für das Pluskabel Batterie→Hauptanschluss Starter. Ohne Vorgabe: Plus- und Masseseite gegeneinander und gegen die Startdrehzahl bewerten.",
+   "<b>Masse-Spannungsabfall:</b> rote Spitze ans Startergehäuse, schwarze an Batterie-Minus, beim Starten. Gegen die OEM-Vorgabe bewerten; HELLA nennt als Herstellerbeispiel 0,3 V für Batterieminus→Startergehäuse und 0,1 V für Startergehäuse→Karosserie/Motorblock.",
    "Masseband Motor↔Karosserie separat beim Starten prüfen – häufigste Ursache für langsames Drehen.",
    "Sind Versorgung, Ansteuerung und beide Abfälle in Ordnung, dreht aber lahm: Starter intern (Kohlen, Lager, Magnetschalter) verdächtig.",
    "Sicherheit: Bei Messungen am laufenden/startenden Motor auf Riemen, Lüfter und heiße Teile achten."],
@@ -1634,10 +1634,10 @@ const DEEP = {
       ["Magnetschalter defekt","'Klack' aber dreht nicht","h"],
       ["Kohlen/Lager im Starter verschlissen","dreht langsam trotz guter Leitungen","m"],
       ["Kl.50-Ansteuerung fehlt","kein Drehen, Relais/Wegfahrsperre","m"]],
- fs:[{s:"1 Batterie beim Starten",do:"Spannung beim Anlassen beobachten",ok:"≥10 V → weiter",ng:"<9,6 V → Batterie/Klemmen"},
-     {s:"2 Kl.50 prüfen",do:"Spannung an Kl.50 beim Drehen",ok:">8 V → Ansteuerung ok",ng:"0 V → Relais/Zündschloss/Wegfahrsperre"},
-     {s:"3 Plusabfall",do:"Abfall Batterieplus→Starterplus beim Starten",ok:"<0,5 V → ok",ng:"Hoch → Plusleitung/Klemme"},
-     {s:"4 Masseabfall",do:"Abfall Startergehäuse→Batterieminus beim Starten",ok:"<0,2 V → ok",ng:"Hoch → Masseband erneuern"},
+ fs:[{s:"1 Batterie beim Starten",do:"Spannung beim Anlassen beobachten, Temperatur und Startbedingungen notieren",ok:"Einbruch im Rahmen der OEM-Vorgabe → weiter",ng:"starker Einbruch → Batterie/Klemmen; die Austauschentscheidung trifft ein definierter Last-/Leitwerttest"},
+     {s:"2 Kl.50 prüfen",do:"Spannung an Kl.50 beim Drehen",ok:"im Rahmen der OEM-Vorgabe → Ansteuerung ok (verbreiteter Orientierungswert: >8–10 V)",ng:"0 V → Relais/Zündschloss/Wegfahrsperre"},
+     {s:"3 Plusabfall",do:"Abfall Batterieplus→Starterplus beim Starten",ok:"unter der OEM-Vorgabe → ok (Herstellerbeispiel HELLA: 0,5 V)",ng:"darüber → Plusleitung/Klemme"},
+     {s:"4 Masseabfall",do:"Abfall Startergehäuse→Batterieminus beim Starten",ok:"unter der OEM-Vorgabe → ok (Herstellerbeispiel HELLA: 0,3 V Batterieminus→Startergehäuse)",ng:"darüber → Masseband erneuern"},
      {s:"5 Bewertung",do:"Spannung & Ansteuerung gut, dreht trotzdem lahm",ok:"Leitungen ok",ng:"Starter intern (Kohlen/Lager) defekt"}]
 },
 "sicherung":{

@@ -537,6 +537,46 @@ const w = dom.window, d = w.document;
   ok("ruhestrom-fuse beschreibt den Abfall weiterhin als Strommessgrösse, nicht als Defekt",
      /rechne|umrechnen|Strom umrechnen|in Strom/i.test(rfAll) && !/Übergangswiderstand/.test(rfAll));
 
+  section("22 · Runde 4 · Energie: Tabelle und Arbeitsschritte sagen dasselbe");
+  // Der Auslöser: In batterie, generator und starter waren die Richtwerttabellen
+  // bereits auf "nach OEM-Vorgabe" umgestellt – die Anleitungs- und Fehlersuchschritte
+  // verteilten aber weiter harte Grenzen (< 0,5 V, < 0,2 V, ≥10 V, >8 V). Der Monteur
+  // folgt den Schritten, nicht der Tabelle; die Umstellung war dort nie angekommen.
+  const dropLimit = /[<>]\s*=?\s*0,\d+\s*V/;          // Abfallgrenzen liegen unter 1 V
+  const oemBound  = /OEM-Vorgabe|OEM-Grenze|nach OEM|OEM-Prüfplan|Herstellerbeispiel/;
+  const widerspruch = [];
+  TESTS.forEach(t => {
+    const dd = DEEP[t.id] || {};
+    if (!oemBound.test(JSON.stringify(dd.rt || {}))) return;   // nur umgestellte Tabellen
+    (dd.anl || []).forEach((x, i) => {
+      if (dropLimit.test(String(x)) && !oemBound.test(String(x)))
+        widerspruch.push(t.id + " anl" + (i + 1));
+    });
+    (dd.fs || []).forEach((f, i) => {
+      const txt = (f.ok || "") + " " + (f.ng || "");
+      if (dropLimit.test(txt) && !oemBound.test(txt))
+        widerspruch.push(t.id + " fs" + (i + 1));
+    });
+  });
+  ok("keine Karte mit OEM-gebundener Tabelle verteilt in den Schritten noch eine feste Abfallgrenze",
+     widerspruch.length === 0, widerspruch.join(", "));
+
+  const starter = DEEP["starter"], gen = DEEP["generator"], bat = DEEP["batterie"];
+  const sTxt = JSON.stringify(starter), gTxt = JSON.stringify(gen), bTxt = JSON.stringify(bat);
+
+  ok("starter: Plus- und Masseabfall gegen OEM-Vorgabe mit HELLA-Beispiel",
+     /Herstellerbeispiel HELLA: 0,5 V/.test(sTxt) && /Herstellerbeispiel HELLA: 0,3 V/.test(sTxt));
+  ok("starter: Startspannung ist kein festes Bestehenskriterium mehr",
+     !/≥10 V → weiter/.test(sTxt) && !/<9,6 V →/.test(sTxt));
+  ok("starter: Kl.50 nennt den Orientierungswert als solchen, nicht als Grenze",
+     /verbreiteter Orientierungswert/.test(sTxt) && !/>8 V → Ansteuerung ok/.test(sTxt));
+  ok("generator: beide Leitungsabfälle OEM-gebunden mit HELLA-Beispiel",
+     /0,4 V für das Pluskabel/.test(gTxt) && /0,3 V für Batterieminus→Generatorgehäuse/.test(gTxt));
+  ok("batterie: Polklemmenprüfung nutzt Seitenvergleich statt fester 0,1-V-Grenze",
+     /Seitenvergleich|seitengleich/.test(bTxt) && !/< 0,1 V = guter Kontakt/.test(bTxt));
+  ok("batterie: Startspannung bleibt Hinweis, nicht Austauschentscheidung",
+     /Last-\/Leitwerttest/.test(bTxt));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");
