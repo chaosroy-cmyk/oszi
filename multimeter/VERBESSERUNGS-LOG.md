@@ -3,7 +3,7 @@
 Fortschrittsregister des Verbesserungs-Loops. Arbeitsanweisung:
 [`PROMPT-VERBESSERUNG.md`](PROMPT-VERBESSERUNG.md).
 
-**Nächstes Fokusthema: 10 · Diagnosebäume**
+**Nächstes Fokusthema: 11 · Glossar, Suche, Querverweise**
 
 Format je Runde:
 
@@ -594,3 +594,55 @@ Geprüft: `can`, `lin`, `pullup-pulldown`, `generator-lin-bsd`, `masse`,
   richtig und selten so sauber formuliert.
 - `masse`, `backprobe`, `kurzschluss-plus-masse`, `generator-lin-bsd`:
   unauffällig.
+
+---
+
+## Runde 10 · Diagnosebäume · 2026-09-05
+
+Baseline: 155/155 grün → Abschluss: 161/161 grün · Version 8.12-Profi → 8.13-Profi
+
+Geprüft: alle 15 Bäume, 109 Knoten — Struktur, Verzweigungskriterien,
+Sicherheitsgates, Tauschempfehlungen.
+
+### Befunde
+
+- **Verzweigung über eine Schwelle mit Deckungslücke** (`starter-langsam[0]`)
+  Die Einstiegsfrage bot „Bricht stark ein (< 9,6 V)" gegen „Bleibt > 10 V".
+  Zwischen 9,6 und 10 V passte keine der beiden Antworten — wer 9,8 V misst,
+  stand ohne gangbaren Weg im Baum. Zusätzlich entschied der Baum über eine
+  feste Zahl, obwohl die verlinkte Karte `starter` 9,6–10 V ausdrücklich als
+  Orientierungswert und nicht als Bestehensgrenze führt (seit v8.7 auch in
+  ihren Schritten).
+  Fix: Frage nennt Orientierungswert samt Vorbehalt und Einflussgrößen, beide
+  Antworten lauten „unter der OEM-Vorgabe" und „im Rahmen der OEM-Vorgabe" —
+  lückenlos und ohne feste Zahl.
+  Regression: verallgemeinert — keine Baumverzweigung darf über eine feste
+  Zahlenschwelle entscheiden, geprüft über alle 109 Knoten für V, mV, A, mA, Ω
+  und °C.
+
+- **Relaistausch ohne Sockelbeurteilung** (`keine-spannung[4]`)
+  „Relaiskontakt verbrannt … Relais tauschen." — während der Spezialbaum
+  `relais-schaltet-nicht` an derselben Stelle warnt: „Ein neues Relais im
+  beschädigten Sockel brennt erneut ab." Der allgemeine Baum gab die Empfehlung,
+  vor der der spezielle warnt.
+  Fix: Ergebnis verlangt Beurteilung von Halteklemmen und Kontaktflächen,
+  Nachweis durch erneute Messung unter derselben Last, Verweis auf `relais` und
+  `relais-leistung`.
+
+### Regel zweimal nachgeschärft
+
+Die Relais-Regel schlug zunächst bei drei Ergebnissen an, die sich beim
+Nachlesen als richtig erwiesen: `relais-schaltet-nicht[8]` („Bauart
+gegenprüfen, **bevor** ersetzt wird" — Vorbedingung), `[10]` („Relais **nicht**
+ersetzen" — Verneinung) und `keine-spannung[1]` (dort wird die **Sicherung**
+getauscht, „Relais" stand nur im Querverweis). Die Regel nimmt Verneinungen,
+Vorbedingungen und Querverweise jetzt aus.
+
+### Geprüft und für korrekt befunden
+
+Keine Sackgassen, alle Knoten erreichbar, alle Sprungziele gültig. Inhaltlich
+besonders sauber: `generator-laedt-nicht[6]` („nicht den Generator tauschen"),
+`[11]` (AC-Anteil nur ein Verdacht, Oszilloskop vor dem Tausch),
+`steuergeraet-offline[1]` („Nicht das Steuergerät tauschen, bevor Versorgung
+unter Last stimmt"), `5v-kurzschluss[8]` („Noch kein Austauschgrund") und `[12]`
+(„Erst jetzt darf der Steuergeräteausgang bewertet werden").

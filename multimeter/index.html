@@ -588,8 +588,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.12-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-12';
+const APP_VERSION = '8.13-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-13';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -2620,7 +2620,7 @@ const TREES = {
    {q:"Schaltet das Relais (Klick) und kommt an Kl.87 Spannung?",opts:[
      {t:"Relais klickt nicht",go:3},{t:"Klickt, Kl.87 ohne Spannung",go:4},{t:"Kl.87 hat Spannung",go:5}]},
    {r:"Relais-Ansteuerung (Spule Kl.85/86) prüfen: Masse & Steuersignal. → Prüfung: Sicherung prüfen / Relais prüfen."},
-   {r:"Relaiskontakt verbrannt (Kl.30→87 hoher Abfall). Relais tauschen. → Prüfung: Spannungsabfall."},
+   {r:"Hoher Abfall über den geschlossenen Kontakt Kl.30→87: Der Kontakt ist verbrannt. <b>Vor dem Austausch den Sockel beurteilen</b> – Halteklemmen und Kontaktflächen auf Schmorspuren, Verfärbung und Aufweitung prüfen. Ein neues Relais in einem beschädigten Sockel brennt erneut ab. Nach der Instandsetzung denselben Abfall unter derselben Last erneut messen. → Prüfung: Relais prüfen. → Prüfung: Leistungsrelais prüfen (Hochstrom)."},
    {q:"Spannung am Verbraucher selbst vorhanden?",opts:[
      {t:"Nein",go:6},{t:"Ja, aber Verbraucher tot",go:7}]},
    {r:"Unterbrechung in der Leitung zwischen Relais & Verbraucher. → Prüfung: Leitung prüfen."},
@@ -2699,8 +2699,8 @@ const TREES = {
    {r:"Verbraucher direkt an der Batterie (Generator-Diode, Zusatzgerät). Plusleitungen einzeln prüfen."},
  ]},
  "starter-langsam":{title:"Starter dreht langsam",start:0,nodes:[
-   {q:"Batteriespannung beim Starten:",opts:[
-     {t:"Bricht stark ein (< 9,6 V)",go:1},{t:"Bleibt > 10 V",go:2}]},
+   {q:"Batteriespannung beim Starten, bewertet gegen die OEM-Vorgabe (verbreiteter Orientierungswert: rund 9,6–10 V – keine allgemeingültige Bestehensgrenze, abhängig von Temperatur, CCA, Starterstrom und Startdrehzahl):",opts:[
+     {t:"Bricht deutlich ein – unter der OEM-Vorgabe",go:1},{t:"Bleibt im Rahmen der OEM-Vorgabe",go:2}]},
    {r:"Batterie schwach ODER hoher Übergangswiderstand. Lasttest Batterie. → Prüfung: Batterie."},
    {q:"Spannungsabfall Plus & Masse beim Starten:",opts:[
      {t:"Hoher Abfall auf Masseband",go:3},{t:"Hoher Abfall auf Plusleitung",go:4},{t:"Beide gering",go:5}]},

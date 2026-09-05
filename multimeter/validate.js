@@ -800,6 +800,69 @@ const w = dom.window, d = w.document;
   ok("projektweit keine ungebundene Abfallgrenze mehr in Anleitung oder Fehlersuchkette",
      restGrenzen.length === 0, restGrenzen.join(", "));
 
+  section("28 · Runde 10 · Diagnosebäume: Verzweigungen ohne feste Schwellen");
+  // Auslöser 1: starter-langsam verzweigte über "Bricht stark ein (< 9,6 V)" gegen
+  // "Bleibt > 10 V". Doppelt falsch: Die Karte starter bezeichnet 9,6–10 V ausdrücklich
+  // als Orientierungswert und nicht als Bestehensgrenze (seit v8.7 auch in ihren
+  // Schritten) – und zwischen 9,6 und 10 V passte KEINE der beiden Antworten. Ein
+  // gemessener Wert von 9,8 V liess den Baum ohne gangbaren Weg.
+  const schwelleInOption = [];
+  Object.entries(TREES).forEach(([k, tr]) => {
+    tr.nodes.forEach((nd, i) => {
+      (nd.opts || []).forEach(o => {
+        if (/[<>]\s*=?\s*\d+[,.]?\d*\s*(V|mV|A|mA|Ω|°C)/.test(String(o.t || "")))
+          schwelleInOption.push(k + "[" + i + "]: " + o.t);
+      });
+    });
+  });
+  ok("keine Baumverzweigung entscheidet über eine feste Zahlenschwelle",
+     schwelleInOption.length === 0, schwelleInOption.join(" ; "));
+
+  const stl = TREES["starter-langsam"];
+  ok("starter-langsam: Einstiegsfrage bindet die Bewertung an die OEM-Vorgabe",
+     /OEM-Vorgabe/.test(stl.nodes[stl.start].q) && /keine allgemeingültige Bestehensgrenze/.test(stl.nodes[stl.start].q));
+  ok("starter-langsam: die beiden Antworten decken den Wertebereich lückenlos ab",
+     stl.nodes[stl.start].opts.every(o => /OEM-Vorgabe/.test(o.t)) &&
+     stl.nodes[stl.start].opts.length === 2);
+
+  // Auslöser 2: keine-spannung empfahl den Relaistausch ohne Sockelbeurteilung –
+  // während der Spezialbaum relais-schaltet-nicht ausdrücklich warnt, ein neues Relais
+  // brenne im beschädigten Sockel erneut ab.
+  // Die Regel muss zwei Formulierungen ausnehmen, die beim Prüfen als richtig bestätigt
+  // wurden und keine Tauschempfehlung sind:
+  //   relais-schaltet-nicht[8]  "Bauart gegenprüfen, bevor ersetzt wird"   – Vorbedingung
+  //   relais-schaltet-nicht[10] "Relais nicht ersetzen."                   – Verneinung
+  // Ebenso keine-spannung[1], wo die SICHERUNG getauscht wird und "Relais" nur im
+  // Querverweis steht.
+  const tauschOhneSockel = [];
+  Object.entries(TREES).forEach(([k, tr]) => {
+    tr.nodes.forEach((nd, i) => {
+      const r = String(nd.r || "");
+      // positive Tauschanweisung, die sich auf das Relais selbst bezieht
+      if (!/Relais\s+(tauschen|ersetzen|erneuern)/i.test(r)) return;
+      if (/nicht\s+(tauschen|ersetzen|erneuern)/i.test(r)) return;      // Verneinung
+      if (/(bevor|vor dem Austausch|vorher|Gegenprobe)/i.test(r)) return; // Vorbedingung
+      if (!/Sockel/i.test(r)) tauschOhneSockel.push(k + "[" + i + "]");
+    });
+  });
+  ok("kein Baumergebnis empfiehlt einen Relaistausch ohne Sockelbeurteilung oder Vorbedingung",
+     tauschOhneSockel.length === 0, tauschOhneSockel.join(", "));
+  ok("keine-spannung: der Relaisbefund verlangt jetzt die Sockelbeurteilung",
+     /Vor dem Austausch den Sockel beurteilen/.test(TREES["keine-spannung"].nodes[4].r) &&
+     /brennt erneut ab/.test(TREES["keine-spannung"].nodes[4].r));
+
+  // Struktur: keine Sackgassen – jeder Knoten ist entweder Frage mit Zielen oder Ergebnis.
+  const sackgassen = [];
+  Object.entries(TREES).forEach(([k, tr]) => {
+    tr.nodes.forEach((nd, i) => {
+      const frage = nd.q && (nd.opts || []).length > 0;
+      if (!frage && !nd.r) sackgassen.push(k + "[" + i + "]");
+    });
+  });
+  ok("kein Knoten ohne Frage-Ziele und ohne Ergebnis (" +
+     Object.values(TREES).reduce((a, t) => a + t.nodes.length, 0) + " Knoten geprüft)",
+     sackgassen.length === 0, sackgassen.join(", "));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");
