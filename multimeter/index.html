@@ -588,8 +588,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.9-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-9';
+const APP_VERSION = '8.10-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-10';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -826,7 +826,7 @@ const TESTS = [
     die Toleranz ist aber OEM-spezifisch. Feste Grenzen (4,9–5,1 / 4,75–5,25 / 4,7–5,3 V)
     dürfen nur als gekennzeichnete Beispiele auftreten, nie als Gut-/Schlecht-Entscheidung. */
  good:"Wert liegt im Sollbereich der Fahrzeug-/Steuergerätevorgabe und bleibt stabil. Bei vielen Systemen liegt die Referenz nahe 5 V; die konkrete Toleranz steht nur im OEM-Prüfplan (Beispiele: 4,75–5,25 V oder 4,7–5,3 V – nicht allgemeingültig).",
- bad:"0 V oder eingebrochen = Kurzschluss nach Masse/Plus oder Versorgung defekt.",
+ bad:"0 V oder eingebrochen: Verdacht auf Kurzschluss nach Masse oder Plus, Überlast oder defekte Versorgung – die Unterscheidung gelingt erst am isolierten Leiter beziehungsweise nach Power-down.",
  next:"Auf Schluss nach Masse UND nach Plus prüfen. Sensorversorgung NICHT belasten.",
  beg:"Mehrere Sensoren hängen an derselben 5-V-Leitung. Ein kaputter zieht alle runter → wirkt wie viele Defekte. Einzeln absteckmethode.",
  warn:[["danger","NIE mit Prüflampe auf 5-V-Referenz! Die Lampe belastet die empfindliche Versorgung und kann Sensorwerte/Steuergerät stören."]]
@@ -1933,12 +1933,12 @@ const DEEP = {
    ["Häufigkeit","häufig","selten"],
    ["Gefahr für Sensor/Steuergerät","gering – Ausgang schaltet meist ab","hoch – Bauteilschaden möglich"],
    ["Sofortmaßnahme","keine","einspeisende Leitung stromlos machen"],
-   ["Erstmessung","Ohm Referenz ↔ Masse, spannungsfrei","Spannung Referenz ↔ Masse bei Zündung AUS"],
-   ["Befund bei Schluss","nahe 0 Ω","Spannung ohne Zündung vorhanden"],
+   ["Erstmessung","Ohm Referenz ↔ Masse, am vollständig isolierten Leiter","Spannung Referenz ↔ Masse NACH vollständigem Power-down (OEM-Nachlaufzeit abwarten – „Zündung aus“ allein genügt nicht)"],
+   ["Befund bei Schluss","niederohmiger Pfad am isolierten Leiter","dauerhafte Spannung nach Power-down, bis zur Quelle zurückverfolgt"],["Kein Befund","Zwischenwert bei nicht getrennten Pfaden","kurzzeitige Restspannung, Nachlauf oder Wake-up"],
    ["Eingrenzung","Sensoren einzeln, dann Halbierung","identisch, zusätzlich Verbraucher durchschalten"],
    ["Typische Quelle","Scheuerstelle gegen Karosserie, Sensor intern","Parallelverlegung zu Verbraucher-/Relaisleitung"],
    ["Nacharbeit","Referenz erneut messen","zusätzlich Sensor und ECU auf Folgeschaden prüfen"]],
-   note:"Beide Fehlerbilder betreffen meist mehrere Sensoren gleichzeitig, weil sich diese eine Referenz teilen. Weder nahe 0 V noch erhöht: dann liegt kein Kurzschluss vor, sondern Überlast, Kontaktproblem oder Masseversatz."},
+   note:"Beide Fehlerbilder betreffen meist mehrere Sensoren gleichzeitig, weil sich diese eine Referenz teilen. Weder nahe 0 V noch erhöht: dann liegt kein Kurzschluss vor, sondern Überlast, Kontaktproblem oder Masseversatz. Diese Übersicht ordnet nur zu – sie ersetzt die Bedingungen der jeweiligen Detailkarte nicht: Der Masseschluss ist erst am vollständig isolierten Leiter bewertbar, die Fremdeinspeisung erst nach vollständigem Power-down und zurückverfolgter Quelle. Eine Zuordnung aus dieser Tabelle ist ein Verdacht, kein Befund."},
  urs:[["Referenz nahe 0 V","Masseschluss oder interner Sensorschluss","h"],
       ["Referenz erhöht","Fremdspannung aus Verbraucherleitung","m"],
       ["Referenz schwankend","Übergangswiderstand oder Masseversatz, kein Schluss","h"],

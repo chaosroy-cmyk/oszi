@@ -683,6 +683,36 @@ const w = dom.window, d = w.document;
   ok("keine Karte kennt den Pull-up in den Schritten und behauptet in der Tabelle „HIGH ≈ Versorgung“",
      pegelBad.length === 0, pegelBad.join(", "));
 
+  section("25 · Runde 7 · 5-V-Referenz: Übersicht und Detailkarte widerspruchsfrei");
+  // Der Auslöser: ref5v-vergleich – die Einstiegskarte, über die zugeordnet wird –
+  // nannte als Erstmessung "Spannung Referenz ↔ Masse bei Zündung AUS" und als Befund
+  // "Spannung ohne Zündung vorhanden". Die Detailkarte ref5v-plusschluss sagt dagegen
+  // ausdrücklich, "Zündung aus" genüge NICHT und Nachlauf oder Wake-up seien KEIN
+  // Befund. Wer über die Übersicht einsteigt, hätte Restspannung als Fremdeinspeisung
+  // gewertet – genau der Fehlschluss, den die Detailkarte verhindern soll.
+  const vgl = DEEP["ref5v-vergleich"], plus = DEEP["ref5v-plusschluss"];
+  const vglTxt = JSON.stringify(vgl);
+
+  ok("ref5v-vergleich: Erstmessung verlangt vollständigen Power-down, nicht nur Zündung aus",
+     /Power-down/.test(vglTxt) && /genügt nicht/i.test(vglTxt) &&
+     !/"Spannung Referenz ↔ Masse bei Zündung AUS"/.test(vglTxt));
+  ok("ref5v-vergleich: Befund verlangt zurückverfolgte Quelle",
+     /zurückverfolgt/.test(vglTxt) && !/"Spannung ohne Zündung vorhanden"/.test(vglTxt));
+  ok("ref5v-vergleich: Nachlauf und Wake-up sind ausdrücklich als Nicht-Befund geführt",
+     /Restspannung, Nachlauf oder Wake-up/.test(vglTxt));
+  ok("ref5v-vergleich: Notiz stellt klar, dass die Übersicht nur zuordnet",
+     /Verdacht, kein Befund/.test(vgl.rt.note));
+  ok("ref5v-vergleich: Masseschluss-Erstmessung nennt den isolierten Leiter",
+     /isolierten Leiter/.test(vglTxt));
+
+  // Die beiden Karten müssen dieselbe Bedingung tragen.
+  ok("Übersicht und Detailkarte fordern beide den Power-down",
+     /Power-down/.test(vglTxt) && /Power-down/.test(JSON.stringify(plus)));
+
+  const r5 = TESTS.find(t => t.id === "ref5v");
+  ok("ref5v: Einstiegskarte formuliert den Abweichungsbefund als Verdacht, nicht als Gleichung",
+     /Verdacht auf Kurzschluss/.test(r5.bad) && !/= Kurzschluss nach Masse\/Plus/.test(r5.bad));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");

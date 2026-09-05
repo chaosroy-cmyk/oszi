@@ -3,7 +3,7 @@
 Fortschrittsregister des Verbesserungs-Loops. Arbeitsanweisung:
 [`PROMPT-VERBESSERUNG.md`](PROMPT-VERBESSERUNG.md).
 
-**Nächstes Fokusthema: 7 · 5-V-Referenzsatz**
+**Nächstes Fokusthema: 8 · Aktoren**
 
 Format je Runde:
 
@@ -453,3 +453,49 @@ Geprüft: `poti-dk`, `lmm-a`, `lmm-d`, `lambda-sprung`, `lambda-breit`,
 - `sensor-masseversatz`: verzichtet weiterhin bewusst auf eine Universalgrenze.
 - `hall` im Übrigen: „MM zeigt nur Mittelwert" beim getakteten Rechteck ist
   korrekt.
+
+---
+
+## Runde 7 · 5-V-Referenzsatz · 2026-09-05
+
+Baseline: 130/130 grün → Abschluss: 137/137 grün · Version 8.9-Profi → 8.10-Profi
+
+Geprüft: `ref5v`, `ref5v-basis`, `ref5v-masseschluss`, `ref5v-plusschluss`,
+`ref5v-vergleich`.
+
+### Befunde
+
+- **Einstiegskarte widerspricht der Detailkarte** (`ref5v-vergleich`)
+  Die Vergleichsübersicht nannte als Erstmessung für den Plusschluss „Spannung
+  Referenz ↔ Masse bei Zündung AUS" und als Befund „Spannung ohne Zündung
+  vorhanden". Die Detailkarte `ref5v-plusschluss` sagt dagegen ausdrücklich:
+  „‚Zündung aus' genügt NICHT" — es braucht die OEM-Nachlauf-/Power-down-Zeit,
+  und „kurzzeitige Restspannung, Nachlauf oder ein Wake-up sind KEIN Befund".
+  Analog war die Masseschluss-Spalte zu kurz gefasst („spannungsfrei" statt
+  „am vollständig isolierten Leiter").
+  Warum es zählt: Die Übersicht ist der Einstieg. Wer nach ihr arbeitet, trifft
+  die Zuordnung, bevor er die Detailkarte überhaupt öffnet — und hätte eine
+  Nachlaufspannung als belegte Fremdeinspeisung gewertet. Genau diesen
+  Fehlschluss soll die Detailkarte verhindern.
+  Fix: Beide Erstmessungs- und Befundzeilen an die Bedingungen der Detailkarten
+  angeglichen, neue Zeile „Kein Befund" für Zwischenwerte und Restspannung,
+  Notiz stellt klar, dass die Übersicht nur zuordnet und eine Zuordnung daraus
+  ein Verdacht, kein Befund ist.
+  Regression: `validate.js` Abschnitt 25, darunter eine Prüfung, die Übersicht
+  und Detailkarte gegeneinander hält — beide müssen den Power-down fordern.
+
+- **Verdacht als Gleichung formuliert** (`ref5v`)
+  Das Feld `bad` sagte „0 V oder eingebrochen = Kurzschluss nach Masse/Plus oder
+  Versorgung defekt", während die Richtwerttabelle derselben Karte korrekt
+  „auffällig – erst nach Isolation bewertbar" führt. Jetzt als Verdacht
+  formuliert.
+
+### Geprüft und für korrekt befunden
+
+`ref5v-basis`, `ref5v-masseschluss`, `ref5v-plusschluss` — fachlich vorbildlich,
+unverändert. Besonders sauber: Messpunkt am Sensorstecker statt am Steuergerät;
+Gegenprobe gegen Batterieminus zur Trennung von Masseversatz; Widerstand gegen
+Masse erst am vollständig isolierten Leiter belastbar, Zwischenwerte
+ausdrücklich Verdacht und möglicherweise Halbleiterstrecke im Steuergerät;
+Bewertung von Stabilität und Abweichungsrichtung statt der zweiten
+Nachkommastelle.
