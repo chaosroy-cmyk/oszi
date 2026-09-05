@@ -29,3 +29,5 @@
   Cache-Control: public, max-age=3600
 /multimeter/icon*
   Cache-Control: public, max-age=604800
+/multimeter/splash-*
+  Cache-Control: public, max-age=604800

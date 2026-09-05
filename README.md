@@ -32,6 +32,18 @@ Prüfbericht und Änderungshistorie: `multimeter/REVIEW.md`.
 Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
 `CACHE_NAME` in `multimeter/sw.js` gemeinsam erhöhen.
 
+| Datei in `multimeter/` | Zweck |
+|---|---|
+| `validate.js` | Abnahmevalidator (`npm ci && npm test`), prüft Daten, Rendering, Fachregeln, PWA, A11y |
+| `SOURCES.md` | Quellen- und Grenzwertmatrix mit drei Evidenzstufen |
+| `PROMPT-VERBESSERUNG.md` | Arbeitsanweisung für eine Verbesserungsrunde |
+| `VERBESSERUNGS-LOG.md` | Fortschrittsregister der Runden |
+
+Beide Apps teilen sich einen Origin. Cache Storage ist origin-weit, deshalb
+räumen **beide** Service Worker nur präfix-gefiltert auf (`kfzoszi-` bzw.
+`kfz-multimeter-profi-`). Diese Filterung darf nicht entfernt werden – sonst
+löschen sich die Apps gegenseitig den Offline-Cache.
+
 ## Nutzung
 
 - **Direkt:** `index.html` im Browser öffnen – läuft auch als lokale
