@@ -647,6 +647,42 @@ const w = dom.window, d = w.document;
      Math.abs(pt(200, 20) - 216) < 1 && Math.abs(pt(200, 100) - 277) < 1 &&
      /216/.test(ptTxt) && /277/.test(ptTxt));
 
+  section("24 · Runde 6 · Hall und Induktivgeber: Pegel und AC-Wert richtig einordnen");
+  // Auslöser 1: hall führte "Signal HIGH ≈ Versorgung" als grünes Kriterium. Viele
+  // Kfz-Hallgeber haben aber einen Open-Collector-Ausgang – der Sensor zieht nur nach
+  // Masse, den High-Pegel legt der Pull-up im Steuergerät fest. Ein mit 12 V versorgter
+  // Geber mit 0↔5-V-Signal ist normal und wäre nach der alten Tabelle "defekt".
+  // Die Karte widersprach sich selbst: anl4 nennt "fehlenden Pull-up" als Ursache.
+  const hall = DEEP["hall"], hallTxt = JSON.stringify(hall);
+  ok("hall: High-Pegel ist an den Pull-up des Steuergeräts gebunden, nicht an die Versorgung",
+     /Pull-up-Pegel des Steuergeräts/.test(hallTxt) && !/"Signal HIGH","≈ Versorgung"/.test(hallTxt));
+  ok("hall: der Fall 12 V versorgt / 0↔5 V Signal ist ausdrücklich als normal benannt",
+     /12 V versorgt.*0↔5 V/.test(hallTxt) && /kein Fehler/.test(hallTxt));
+  ok("hall: Notiz erklärt den Open-Collector-Ausgang",
+     /Open-Collector/.test(hall.rt.note));
+  ok("hall: Notiz verweist auf die Pull-up-Karte",
+     /Prüfung: Pull-up \/ Pull-down Signal/.test(hall.rt.note));
+
+  // Auslöser 2: kw-ind gab AC-Volt als Richtwert aus, ohne die Bandbreitengrenze des
+  // Multimeters zu nennen – dieselbe Einschränkung, die generator beim Ripple bereits
+  // ausdrücklich macht.
+  const kw = DEEP["kw-ind"];
+  ok("kw-ind: AC-Wert ist als Anwesenheitsnachweis eingeordnet, nicht als Messwert",
+     /Anwesenheitsnachweis/.test(kw.rt.note) && /nicht die Zahl/.test(kw.rt.note));
+  ok("kw-ind: Begründung nennt Signalform und Frequenz",
+     /weder sinusförmig noch 50 Hz/.test(kw.rt.note));
+
+  // Verallgemeinert: Eine Karte, die den Pull-up in ihren Schritten als Ursache kennt,
+  // darf in der Tabelle nicht behaupten, der Pegel folge der Versorgung.
+  const pegelBad = [];
+  TESTS.forEach(t => {
+    const dd = DEEP[t.id] || {};
+    if (!/Pull-up/i.test(JSON.stringify(dd.anl || []))) return;
+    if (/"≈ Versorgung"/.test(JSON.stringify(dd.rt || {}))) pegelBad.push(t.id);
+  });
+  ok("keine Karte kennt den Pull-up in den Schritten und behauptet in der Tabelle „HIGH ≈ Versorgung“",
+     pegelBad.length === 0, pegelBad.join(", "));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");

@@ -588,8 +588,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.8-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-8';
+const APP_VERSION = '8.9-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-9';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -2113,7 +2113,7 @@ const DEEP = {
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
    ["Spulen-Ohm","~0,5–1,5 kΩ typ.","g"],["AC beim Anlassen","~1–5 V (drehzahl-/geberabhängig)","g"],
    ["OL","Spule unterbrochen","b"],["keine AC","kein Signal/Luftspalt","b"]],
-   note:"Induktiv = erzeugt selbst Spannung. Geschirmte Leitung – Schirmmasse wichtig. Luftspalt typ. 0,5–1,5 mm."},
+   note:"Induktiv = erzeugt selbst Spannung. Der AC-Wert ist nur ein Anwesenheitsnachweis, kein Messwert: Multimeter sind für sinusförmige Netzfrequenz ausgelegt, das Gebersignal ist weder sinusförmig noch 50 Hz und ändert seine Frequenz mit der Drehzahl. Zwei Geräte zeigen am selben Geber unterschiedliche Werte – bewerte deshalb „steigt mit der Drehzahl“, nicht die Zahl. Amplitude, Flanken, fehlende Zähne und Aussetzer nur per Oszilloskop. Geschirmte Leitung – Schirmmasse wichtig. Luftspalt typ. 0,5–1,5 mm."},
  urs:[["Spule unterbrochen","OL, kein Start","m"],["Luftspalt/Geberrad","kein/schwaches Signal","m"],
       ["Schirm-/Masseproblem","Störungen, Aussetzer","m"],["Geberrad beschädigt","unrunder Lauf/Aussetzer","m"]],
  fs:[{s:"1 Spulen-Ohm",do:"Spannungsfrei Widerstand messen",ok:"im Soll → weiter",ng:"OL → Spule defekt"},
@@ -2123,9 +2123,9 @@ const DEEP = {
 },
 "hall":{
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
-   ["Versorgung","5 V oder 12 V (typ.)","g"],["Signal HIGH","≈ Versorgung","g"],["Signal LOW","nahe 0 V","g"],
+   ["Versorgung","5 V oder 12 V – nach Schaltplan","g"],["Signal HIGH","≈ Pull-up-Pegel des Steuergeräts, NICHT zwingend die Sensorversorgung","g"],["12 V versorgt, Signal schaltet 0↔5 V","normal bei Open-Collector-Ausgang – kein Fehler","g"],["Signal LOW","nahe 0 V","g"],
    ["MM-Mittelwert beim Drehen","springt/zwischenwert","g"],["fester Wert","kein Signal","b"]],
-   note:"Hall = sauberes Rechteck. MM zeigt nur Mittelwert. Aussetzer/Flanken nur per Oszilloskop. VAG NW-Geber häufig Hall."},
+   note:"Hall = sauberes Rechteck. MM zeigt nur Mittelwert. Wichtig für die Bewertung des High-Pegels: Viele Kfz-Hallgeber haben einen Open-Collector-Ausgang – der Sensor zieht das Signal nur nach Masse, den High-Pegel legt der Pull-up im Steuergerät fest. Versorgung und Signalpegel dürfen deshalb auseinanderfallen: Ein mit 12 V versorgter Geber, dessen Signal zwischen 0 und 5 V schaltet, ist völlig normal. Den erwarteten Pegel im Schaltplan klären → Prüfung: Pull-up / Pull-down Signal. Aussetzer/Flanken nur per Oszilloskop. VAG NW-Geber häufig Hall."},
  urs:[["Sensor defekt","kein Schalten","m"],["Versorgung/Masse fehlt","kein Signal","m"],
       ["Geberrad/Impulsrad","Aussetzer","m"],["Signalleitung Schluss/Bruch","fester Wert","m"]],
  fs:[{s:"1 Versorgung & Masse",do:"Versorgungsspannung und Masse prüfen",ok:"ok → weiter",ng:"fehlt → Leitung/STG"},

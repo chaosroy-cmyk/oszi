@@ -3,7 +3,7 @@
 Fortschrittsregister des Verbesserungs-Loops. Arbeitsanweisung:
 [`PROMPT-VERBESSERUNG.md`](PROMPT-VERBESSERUNG.md).
 
-**Nächstes Fokusthema: 6 · Sensorik II – Position, Drehzahl, Gemisch**
+**Nächstes Fokusthema: 7 · 5-V-Referenzsatz**
 
 Format je Runde:
 
@@ -402,3 +402,54 @@ Beschaltung entsteht.
   Hersteller deutlich. Sie sind als Spannen gekennzeichnet und wurden deshalb
   nicht angetastet; eine Bindung an ein konkretes Bosch- oder VDO-Datenblatt
   wäre die saubere Ergänzung.
+
+---
+
+## Runde 6 · Sensorik II – Position, Drehzahl, Gemisch · 2026-09-05
+
+Baseline: 123/123 grün → Abschluss: 130/130 grün · Version 8.8-Profi → 8.9-Profi
+
+Geprüft: `poti-dk`, `lmm-a`, `lmm-d`, `lambda-sprung`, `lambda-breit`,
+`radsensor`, `kw-ind`, `hall`, `klopf`, `nox`, `tankgeber`, `schalter`,
+`sensor-masseversatz`.
+
+### Befunde
+
+- **High-Pegel an die Versorgung gebunden statt an den Pull-up** (`hall`)
+  Die Tabelle führte „Signal HIGH — ≈ Versorgung" als grünes Kriterium. Viele
+  Kfz-Hallgeber haben aber einen Open-Collector-Ausgang: Der Sensor zieht nur
+  nach Masse, den High-Pegel legt der Pull-up im Steuergerät fest. Ein mit 12 V
+  versorgter Geber mit 0↔5-V-Signal ist normal — nach der alten Tabelle wäre er
+  durchgefallen.
+  Beleg intern und eindeutig: Anleitungsschritt 4 derselben Karte nennt
+  „fehlenden Pull-up" als mögliche Ursache, und das Feld `was` sagt
+  „0↔5 V **oder** 0↔12 V". Die Karte `pullup-pulldown` erklärt im selben
+  Projekt Pull-up-Kreise mit 5 V und 12 V samt typischer 1–10 kΩ.
+  Fix: Tabellenzeile an den Pull-up gebunden, neue Zeile für den Fall
+  „12 V versorgt / 0↔5 V Signal — kein Fehler", Notiz erklärt den
+  Open-Collector-Ausgang und verweist per Chip auf `pullup-pulldown`.
+  Regression: `validate.js` Abschnitt 24, verallgemeinert — keine Karte darf den
+  Pull-up in den Schritten kennen und in der Tabelle „HIGH ≈ Versorgung"
+  behaupten.
+
+- **AC-Wert am Induktivgeber ohne Bandbreitenvorbehalt** (`kw-ind`)
+  „AC beim Anlassen ~1–5 V" stand als Richtwert ohne Hinweis darauf, dass
+  Multimeter für sinusförmige Netzfrequenz ausgelegt sind. Das Gebersignal ist
+  weder sinusförmig noch 50 Hz und ändert seine Frequenz mit der Drehzahl; zwei
+  Geräte zeigen am selben Geber unterschiedliche Werte.
+  Beleg intern: `generator` macht genau diese Einschränkung bereits ausdrücklich
+  („viele MM zeigen bei Gleichspannung/Regler-PWM falsche AC-Werte").
+  Fix: Notiz ordnet den AC-Wert als Anwesenheitsnachweis ein — bewertet wird
+  „steigt mit der Drehzahl", nicht die Zahl.
+
+### Geprüft und für korrekt befunden
+
+- `radsensor`: Strommodulation 7 ↔ 14 mA zutreffend; der Hinweis, dass die
+  Pinzahl kein sicherer Typhinweis ist, ist ein häufig übersehenes Detail.
+- `lambda-breit`: Pumpstrom ausdrücklich „nicht sinnvoll mit MM" — korrekt.
+- `klopf`: ehrlich über die Unzuverlässigkeit der Piezo-Prüfung; Anzugsmoment
+  zutreffend als kritisch.
+- `nox`, `lmm-a`, `lmm-d`, `tankgeber`, `schalter`: unauffällig.
+- `sensor-masseversatz`: verzichtet weiterhin bewusst auf eine Universalgrenze.
+- `hall` im Übrigen: „MM zeigt nur Mittelwert" beim getakteten Rechteck ist
+  korrekt.
