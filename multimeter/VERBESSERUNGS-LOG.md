@@ -3,7 +3,7 @@
 Fortschrittsregister des Verbesserungs-Loops. Arbeitsanweisung:
 [`PROMPT-VERBESSERUNG.md`](PROMPT-VERBESSERUNG.md).
 
-**Nächstes Fokusthema: 1 · Sicherheit & Gefahrkarten**
+**Nächstes Fokusthema: 2 · Basis-Messverfahren**
 
 Format je Runde:
 
@@ -59,3 +59,69 @@ Baseline: 78/78 grün → Abschluss: 78/78 grün · Version 7.3-Profi → 8.3-Pr
 ### Offen
 
 - Rotation startet mit Thema 1 (Sicherheit & Gefahrkarten).
+
+---
+
+## Runde 1 · Sicherheit & Gefahrkarten · 2026-09-05
+
+Baseline: 78/78 grün → Abschluss: 86/86 grün · Version 8.3-Profi → 8.4-Profi
+
+Geprüft: `sicherheitscheck`, `srs-airbag`, `hv-hybrid`, `batterie`,
+`raildruck`, `relais-leistung` — dazu im Quervergleich alle 20 Karten mit
+`danger`-Warnung und alle Karten mit Kraftstoff-Hochdruckbezug.
+
+### Befunde
+
+- **Benzin-Direkteinspritzung ohne jede Gefahrenkennzeichnung**
+  (`injektor-benzin`)
+  Die Karte behandelte Direkteinspritzer ausdrücklich (Einsteigertext,
+  Tabellennotiz „VAG TFSI/TSI: hohe Schaltspannung", `dont`-Eintrag gegen
+  Brücken und Fremdbestromen) — trug aber **keine einzige Warnung** bei
+  `risk:"mittel"`. Die Schwesterkarte `injektor-diesel` hatte für dasselbe
+  Bauteil einen roten Gefahrblock und `risk:"hoch"`. Die Gefahrenkennzeichnung
+  hing damit am Kraftstoff statt am Hochdrucksystem.
+  Beleg: Bosch führt Hochdruckpumpen für Benzin-DI mit bis zu 250 bar und bis
+  zu 350 bar Systemdruck, Injektor HDEV 6 bis 350 bar
+  (bosch-mobility.com/en/solutions/powertrain/gasoline/gasoline-direct-injection/
+  und /solutions/pumps/high-pressure-pump/, Abruf 05.09.2026). Die HSE hält
+  Injektionsverletzungen ab 7 bar für möglich, schwere Verletzungen
+  typischerweise über 100 bar (HSE FOD 4-2014) — diese Quelle stand bereits in
+  `SOURCES.md` und trug die Gefahrkennzeichnung der Diesel-Karten. Sie belegt
+  die Gefahr druckabhängig, nicht kraftstoffabhängig.
+  Fix: `danger`- und `caution`-Block ergänzt, `risk` auf `hoch`, `requires`
+  um Systemklärung und OEM-Druckabbau erweitert, Anleitungsschritt
+  vorangestellt, `sourceRef` und zwei `SOURCES.md`-Zeilen ergänzt.
+  Regression: `validate.js` Abschnitt 19, verallgemeinert auf **jede** Karte
+  mit Direkteinspritzung oder Common-Rail. Gegen den Zustand vor der Änderung
+  meldet der Validator `injektor-benzin(keine warn/mittel)` und schlägt fehl —
+  Wirksamkeit nachgestellt und bestätigt.
+  Gegenprobe gegen Überwarnung: eine zusätzliche Prüfung stellt sicher, dass
+  die Spulenmessung am getrennten Stecker weiterhin als zulässige Prüfung
+  erkennbar bleibt.
+
+### Beobachtungen ohne Beleg
+
+- **Schaltspannung der DI-Ansteuerung.** Die Tabellennotiz spricht von „hoher
+  Schaltspannung", ohne einen Wert zu nennen. Recherche nach einer belastbaren
+  Herstellerangabe (Bosch, Infineon, TI, Delphi) brachte nur Patentschriften
+  ohne konkrete Betriebsspannung. Deshalb bewusst **keine Zahl** ergänzt — die
+  Warnung bleibt qualitativ. Offen für eine Runde mit Zugriff auf ein
+  Bosch-Datenblatt der HDEV-Reihe.
+
+### Offen
+
+- **Grundsatzfrage `warn` gegen `dont`:** `kraftstoffpumpe` (nennt die
+  Hochdruckpumpe) und `klimadruck` (nennt die Hochdruckseite des
+  Kältemittelkreises, R1234yf ist zusätzlich entzündlich) führen ihre Gefahr
+  ausschließlich im `dont`-Block, ohne sichtbaren Warnblock. Dasselbe Muster
+  bei `tankgeber` („keine Funken/Zündquellen am offenen Tank —
+  Explosionsgefahr"). Das ist erkennbar Hauskonvention, kein Einzelfehler, und
+  wurde deshalb **nicht** im Vorbeigehen geändert. Die Frage gehört einmal
+  bewusst entschieden und dann einheitlich über alle Karten gezogen — Vorschlag:
+  Runde 8 (Aktoren).
+- `injektor-benzin` hat kein `syn`-Feld; ob die Suche „Direkteinspritzer",
+  „TFSI" oder „GDI" findet, ist offen. Gehört zu Runde 11 (Glossar/Suche).
+- `map` nennt „1 bar" als Messbereich und wird von einer groben
+  Hochdruck-Regex fälschlich getroffen. Kein Befund, aber ein Hinweis darauf,
+  dass Textregeln über Druckangaben eng gefasst sein müssen — deutsche Wörter
+  auf `-bar` (erkennbar, brauchbar) sind eine ständige Fehlerquelle.

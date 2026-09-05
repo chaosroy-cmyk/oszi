@@ -588,8 +588,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.3-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-3';
+const APP_VERSION = '8.4-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-4';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -1206,7 +1206,11 @@ const TESTS = [
  good:"Widerstand aller Injektoren ähnlich & im Sollbereich.",
  bad:"OL = offen. Stark abweichend = defekt.",
  next:"Ansteuerung & Einspritzmenge → Oszilloskop/Diagnose. Direkteinspritzer nicht pauschal bewerten.",
- beg:"Nur Spulenwiderstand grob prüfbar. Hochohmige Saugrohr-Injektoren liegen oft um 12–16 Ω; ein Ausreißer im Satz ist verdächtig."
+ beg:"Nur Spulenwiderstand grob prüfbar. Hochohmige Saugrohr-Injektoren liegen oft um 12–16 Ω; ein Ausreißer im Satz ist verdächtig. Wichtig vorweg: Saugrohreinspritzer arbeiten mit wenigen bar, Direkteinspritzer (TFSI, TSI, GDI, THP) dagegen mit mehreren hundert bar im Rail. Die Spulenmessung selbst ist am getrennten Stecker in beiden Fällen harmlos – gefährlich wird die Hochdruckseite daneben. Kläre deshalb zuerst, welches System vor dir liegt.",
+ warn:[["danger","Benzin-Direkteinspritzung: Das Rail steht je nach System unter mehreren hundert bar (Bosch nennt bis 350 bar) – auch nach dem Abstellen. Hochdruckpumpe, Rail, Hochdruckleitungen und Injektorschäfte niemals bei laufendem Motor oder unter Restdruck lösen. Ein feiner Strahl durchdringt die Haut, die Einstichstelle sieht harmlos aus, und die Verletzung ist ein chirurgischer Notfall. Druckabbau ausschließlich nach OEM-Prozedur."],
+      ["caution","Die Ansteuerung von Direkteinspritzern arbeitet mit einer Schaltspannung deutlich über Bordspannung. Ansteuerleitungen nicht brücken, nicht fremdbestromen und nicht mit der Prüflampe belasten – nur freigegebener Prüfaufbau, Oszilloskop oder Diagnose."],
+      ["info","Kraftstoff und Dämpfe sind entzündlich: keine Funken, keine offene Flamme, Löschmittel in Reichweite. Austretenden Kraftstoff sofort aufnehmen."]],
+ sourceRef:"OEM-Sollwerte je Teilenummer; Bosch: Benzin-Direkteinspritzung bis 350 bar Systemdruck; HSE: Injektionsverletzung bereits ab 7 bar möglich"
 },
 {
  id:"injektor-diesel",cat:"aktor",ic:"💉",nm:"Diesel-Injektor",tag:"gef",
@@ -3397,7 +3401,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
     "schalter":{quality:"MM sehr gut",risk:"niedrig",requires:["Schalter betätigbar","Bauart (Öffner/Schließer) bekannt"],limits:["Prellen/Übergangswiderstand unter Last zeigt der Piepton nicht"],dont:["nicht nur den Piepton werten – wichtige Kreise unter Last gegenprüfen"]},
     "magnetventil":{quality:"MM sehr gut für Spule",risk:"niedrig",requires:["spannungsfrei für Ohm","Schaltplan: plus- oder massegeschaltet"],limits:["mechanisches Klemmen elektrisch nicht sichtbar"],dont:["Ventil nicht ohne Herstellervorgabe dauerbestromen"]},
     "taktventil":{quality:"MM für Spule, Oszi für PWM",risk:"niedrig",requires:["spannungsfrei für Ohm","Duty-/Hz-Funktion für Ansteuerung"],limits:["PWM-Form und Flanken nur per Oszilloskop"],dont:["Ventil nicht ohne Herstellervorgabe dauerbestromen"]},
-    "injektor-benzin":{quality:"MM nur Spulen-Grundprüfung",risk:"mittel",requires:["spannungsfrei","alle Injektoren im Vergleich messen"],limits:["Ohm-Wert sagt nichts über Spritzbild und Menge"],dont:["Direkteinspritzer-Ansteuerung nicht brücken oder fremdbestromen"]},
+    "injektor-benzin":{quality:"MM nur Spulen-Grundprüfung",risk:"hoch",requires:["Einspritzsystem geklärt: Saugrohr- oder Direkteinspritzung","bei Direkteinspritzung Hochdruckseite drucklos nach OEM-Prozedur","spannungsfrei","alle Injektoren im Vergleich messen"],limits:["Ohm-Wert sagt nichts über Spritzbild und Menge","Systemdruck ist elektrisch nicht messbar – Drucklosigkeit nur über die OEM-Prozedur"],dont:["Hochdruckseite der Direkteinspritzung nicht bei laufendem Motor oder unter Restdruck lösen","Direkteinspritzer-Ansteuerung nicht brücken oder fremdbestromen","keine Funken oder offene Flammen am geöffneten Kraftstoffsystem"]},
     "injektor-diesel":{quality:"MM nur bei Magnet-Injektor",risk:"hoch",requires:["Typ Magnet/Piezo sicher geklärt","Herstellersollwerte"],limits:["Mengenstreuung nur per Diagnose/Rücklaufmessung"],dont:["Piezo-Injektoren niemals mit MM oder Fremdspannung prüfen","Hochdruckbereich nicht öffnen"]},
     "zuendspule":{quality:"MM nur Primär-Grundprüfung",risk:"hoch",requires:["Kl.15-Versorgung und Masse geprüft"],limits:["Zündbild/Sekundärseite nur per Oszilloskop"],dont:["nicht in die offene Sekundärseite bei laufendem Motor greifen"]},
     "gluehkerze":{quality:"MM gut, Stromzange besser",risk:"mittel",requires:["spannungsfrei","Eigenwiderstand der Messspitzen abgezogen"],limits:["Ohm-Wert sagt wenig über die reale Glühleistung"],dont:["Niedervolt-Kerzen (4,4/7 V) nie direkt an 12 V legen"]},
@@ -4036,7 +4040,8 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
       "PWM-Form, Stromanstieg, Aussetzer und mechanisches Klemmen mit Oszilloskop beziehungsweise Funktionsprüfung trennen."
     ],
     "injektor-benzin":[
-      "Einspritzsystem und Injektortyp klären; Saugrohr-, Niederohm- und Direkteinspritzer dürfen nicht pauschal verglichen werden.",
+      "Einspritzsystem und Injektortyp klären; Saugrohr-, Niederohm- und Direkteinspritzer dürfen nicht pauschal verglichen werden. Diese Einordnung entscheidet über die Gefährdung: Saugrohreinspritzung führt wenige bar, Direkteinspritzung mehrere hundert bar im Rail.",
+      "Bei Direkteinspritzung vor jedem Eingriff an der Hochdruckseite den Druck nach OEM-Prozedur abbauen und die Wartezeit einhalten. Der Restdruck bleibt nach dem Abstellen bestehen; die reine Spulenmessung am getrennten Stecker erfordert dagegen keinen Eingriff in die Hochdruckseite.",
       "Zündung aus und Stecker getrennt: Widerstand mit geeignetem Messgerät und OEM-Sollwert prüfen; Messleitungswiderstand berücksichtigen.",
       "Alle Injektoren bei gleicher Temperatur vergleichen und Stecker/Leitung auf Kontaktfehler untersuchen.",
       "Versorgung und Ansteuerung nur mit freigegebenem Prüfaufbau messen; Direkteinspritzer nicht brücken oder fremdbestromen.",

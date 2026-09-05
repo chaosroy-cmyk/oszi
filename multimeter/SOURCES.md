@@ -1,6 +1,6 @@
 # SOURCES.md — Quellen- und Grenzwertmatrix
 
-Stand: **v8.3-Profi, geprüft am 28.07.2026**.
+Stand: **v8.4-Profi, geprüft am 05.09.2026**.
 
 Die Vollversion unterscheidet drei Evidenzstufen:
 
@@ -32,7 +32,8 @@ Ampelfarben in Tabellen zeigen deshalb die **Prüfpriorität**, nicht automatisc
 | Ladesystemprüfung und IBS/LIN-Regelung | [HELLA Techworld – Service work on the charging system](https://www.hella.com/techworld/en/technical/car-electronics-and-electrics/starting-and-charging-system/service-work-on-the-charging-system/) | Hersteller-Fachinformation, Abruf 27.07.2026 | Begründet Batterieprüfung, Soll-/Ist-Anforderung und Leitungsprüfung |
 | Batterie-Ruhespannung/SOC als Herstellerorientierung | [GS Yuasa Battery Management Guide](https://academy.gs-yuasa.eu/wp-content/uploads/2017/05/GS-Yuasa-Battery-Management-Guide.pdf) | Herstellerleitfaden, Abruf 27.07.2026 | Nur stabilisierte OCV und definierte Batteriebedingungen; kein SOH-/Austauschbeweis |
 | Batteriesicherheit: Wasserstoff, Säure, Kurzschluss/Lichtbogen | [GS Yuasa – Battery health & safety](https://www.gs-yuasa.eu/en-it/info-hub/battery-health-and-safety) | 05.09.2024 | Sicherheitswarnung der Karte `batterie` |
-| Hochdruck-Flüssigkeitsstrahl/Injektionsverletzung | [UK HSE Safety Alert FOD 4-2014](https://www.hse.gov.uk/safetybulletins/hydraulic-injection-injury.htm) | 23.09.2014 | Allgemeiner Gefahrennachweis für Flüssigkeitsinjektion; am Fahrzeug gilt zusätzlich die OEM-Druckabbauprozedur |
+| Hochdruck-Flüssigkeitsstrahl/Injektionsverletzung | [UK HSE Safety Alert FOD 4-2014](https://www.hse.gov.uk/safetybulletins/hydraulic-injection-injury.htm) | 23.09.2014 | Allgemeiner Gefahrennachweis für Flüssigkeitsinjektion; Karten `raildruck`, `injektor-diesel`, `injektor-benzin`. HSE nennt schwere Verletzungen typischerweise über 100 bar und hält eine Injektionsverletzung bereits ab 7 bar für möglich – die Gefahr besteht damit unabhängig von Diesel oder Benzin. Am Fahrzeug gilt zusätzlich die OEM-Druckabbauprozedur |
+| Benzin-Direkteinspritzung: Systemdruck im Rail | [Bosch Mobility – Gasoline direct injection](https://www.bosch-mobility.com/en/solutions/powertrain/gasoline/gasoline-direct-injection/) · [Bosch Mobility – High-pressure pump HDP](https://www.bosch-mobility.com/en/solutions/pumps/high-pressure-pump/) | Herstellerseite, Abruf 05.09.2026 | Karte `injektor-benzin`; Bosch führt Hochdruckpumpen mit bis zu 250 bar und bis zu 350 bar Systemdruck. **Herstellerbeispiel**, kein universeller Wert: Der konkrete Raildruck folgt der Teilenummer und dem Motorsteuergerät. Belegt ausschließlich die Größenordnung der Gefährdung, keine Prüf- oder Freigabegrenze |
 | Klassischer High-Speed-CAN, physikalische Schicht | [ISO 11898-2:2026](https://www.iso.org/standard/90697.html) | Edition 4, 2026-05 | Karte `can`; 60 Ω nur bei der klassischen Topologie mit zwei 120-Ω-Abschlüssen |
 | LIN-Protokoll | [ISO 17987-3:2025](https://www.iso.org/fr/standard/85127.html) und [LIN 2.2A](https://www.lin-cia.org/fileadmin/microsites/lin-cia.org/resources/documents/LIN_2.2A.pdf) | ISO Edition 2 / LIN Rev. 2.2A | Karte `lin`; Multimeter kann Frames nicht freigeben |
 | Klemmenbezeichnungen im Kfz (30, 85, 86, 87, 87a, 87b) | DIN 72552 – Klemmenbezeichnungen in Kraftfahrzeugen | Deutsche Norm, Klemmenverzeichnis | Karten `relais`, `relais-typen`, `klemmen`; die Norm regelt die Bezeichnung, nicht Sollwerte |

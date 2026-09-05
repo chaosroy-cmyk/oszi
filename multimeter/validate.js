@@ -420,6 +420,48 @@ const w = dom.window, d = w.document;
     ok("Bauartmerkmal abgedeckt: " + k, allText.includes(k));
   });
 
+  section("19 · Runde 1 · Kraftstoff-Hochdruck als Gefahrenklasse");
+  // Der Auslöser: injektor-benzin behandelte Direkteinspritzer ("hohe Schaltspannung",
+  // "nicht brücken oder fremdbestromen"), trug aber weder Warnung noch Risiko hoch –
+  // während die Schwesterkarte injektor-diesel einen Gefahrblock hat. Benzin-DI läuft
+  // laut Bosch mit bis zu 350 bar; HSE hält Injektionsverletzungen ab 7 bar für möglich.
+  // Die Gefahr hängt also am Hochdrucksystem, nicht am Kraftstoff.
+  const hochdruckKarten = TESTS.filter(t =>
+    /Direkteinspritz|Common.?Rail/i.test(JSON.stringify(t) + JSON.stringify(DEEP[t.id] || {})));
+  ok("Kartensatz mit Kraftstoff-Hochdruck erkannt (" + hochdruckKarten.length + ")",
+     hochdruckKarten.length >= 3, hochdruckKarten.map(t => t.id).join(", "));
+  const ohneGefahr = hochdruckKarten
+    .filter(t => !(t.warn || []).some(x => x[0] === "danger") || t.risk !== "hoch")
+    .map(t => t.id + "(" + ((t.warn || []).map(x => x[0]).join(",") || "keine warn") + "/" + t.risk + ")");
+  ok("jede Karte mit Direkteinspritzung oder Common-Rail: Gefahrblock und Risiko hoch",
+     ohneGefahr.length === 0, ohneGefahr.join(", "));
+
+  const benzin = TESTS.find(t => t.id === "injektor-benzin");
+  const benzinDanger = (benzin.warn || []).filter(x => x[0] === "danger").map(x => x[1]).join(" ");
+  ok("injektor-benzin: Gefahrblock benennt die Hochdruckseite konkret",
+     /Hochdruck/.test(benzinDanger) && /Restdruck|drucklos|Druckabbau/.test(benzinDanger),
+     benzinDanger.slice(0, 90));
+  ok("injektor-benzin: Druckabbau nach OEM-Prozedur ist Voraussetzung",
+     (benzin.requires || []).some(r => /OEM-Prozedur/.test(r)), JSON.stringify(benzin.requires));
+
+  // Gegenprobe zur Überwarnung: Die eigentliche Spulenmessung am getrennten Stecker
+  // bleibt eine zulässige, harmlose Multimeterprüfung. Eine Karte, die nur noch warnt,
+  // wäre in der Werkstatt wertlos.
+  w.openDetail("injektor-benzin");
+  const benzinHtml = d.getElementById("ovbody").innerHTML;
+  ok("injektor-benzin: Spulenmessung bleibt als zulässige Prüfung erkennbar",
+     /Spulenwiderstand/.test(benzinHtml) && /Stecker getrennt/.test(benzinHtml));
+  w.doCloseOverlays();
+
+  // Der Druckwert ist Gefährdungsgrößenordnung, keine Prüf- oder Freigabegrenze.
+  ok("350 bar wird als quellengebundenes Herstellerbeispiel geführt, nicht als Grenzwert",
+     /Herstellerbeispiel/.test(SOURCES) && /350 bar/.test(SOURCES) &&
+     !/(Sollwert|Grenzwert|Freigabe)[^|\n]{0,40}350\s*bar/i.test(SOURCES));
+  ok("SOURCES.md ordnet die HSE-Injektionsquelle auch injektor-benzin zu",
+     /hydraulic-injection-injury[\s\S]{0,400}injektor-benzin/.test(SOURCES));
+  ok("SOURCES.md belegt den Benzin-Systemdruck mit einer Bosch-Direktquelle",
+     /gasoline-direct-injection|high-pressure-pump/.test(SOURCES));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");
