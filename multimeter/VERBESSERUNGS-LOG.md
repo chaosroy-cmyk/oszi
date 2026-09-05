@@ -3,7 +3,7 @@
 Fortschrittsregister des Verbesserungs-Loops. Arbeitsanweisung:
 [`PROMPT-VERBESSERUNG.md`](PROMPT-VERBESSERUNG.md).
 
-**Nächstes Fokusthema: 5 · Sensorik I – Temperatur & Druck**
+**Nächstes Fokusthema: 6 · Sensorik II – Position, Drehzahl, Gemisch**
 
 Format je Runde:
 
@@ -333,3 +333,72 @@ Grenzen in den Schritten führen.
   fs9 „< 0,2 V". Gehören zu Runde 8 (Aktoren) und Runde 9 (Leitungen).
 - `ruhestrom-fuse` anl2 „< 10 mV" ist eine Auflösungsangabe, keine
   Entscheidungsgrenze — kein Befund.
+
+---
+
+## Runde 5 · Sensorik I – Temperatur & Druck · 2026-09-05
+
+Baseline: 115/115 grün → Abschluss: 123/123 grün · Version 8.7-Profi → 8.8-Profi
+
+Geprüft: `ntc-kts`, `ntc-ats`, `ptc-sensor`, `map`, `raildruck`, `klimadruck`,
+`oeldruck`, `agt`, `dpf-diff`.
+
+### Befunde
+
+- **Signalspannungstabelle, die keine reale Konfiguration erzeugt** (`ntc-kts`)
+  Die Karte führte eine Spalte „Signal (typ.)" mit absoluten Spannungen. Ein NTC
+  ist aber ein passiver Widerstand ohne eigene Spannung — sie entsteht erst im
+  Spannungsteiler mit dem Pull-up des Steuergeräts:
+  U = Uref × R / (R + Rpullup).
+  Beleg durch Rückrechnung: Aus Widerstand und angegebener Spannung folgt ein
+  Pull-up von 2375 Ω bei −10 °C, 1212 Ω bei 20 °C, 1150 Ω bei 40 °C, 968 Ω bei
+  80 °C und 760 Ω bei 100 °C. Der unterstellte Pull-up schwankt um mehr als den
+  Faktor drei — keine reale Steuergerätekonfiguration erzeugt diese Spalte, die
+  Werte waren an keinem Fahrzeug nachprüfbar.
+  Die Karte widerlegte sich zusätzlich selbst: Ihre eigene Notiz vermerkt, dass
+  VAG häufig eine 2-Stufen-Kennlinie fährt und das Steuergerät den Pull-up im
+  Messbereich umschaltet. Und `map` verweigert im selben Projekt ausdrücklich
+  einen universellen Spannungswert.
+  Fix: Spalte heißt jetzt „Rechenbeispiel 5 V über 1 kΩ" mit Werten, die aus den
+  angegebenen Widerständen tatsächlich folgen (4,52/3,46/2,67/1,27/0,80 V); jede
+  Zeile nennt den zugrunde gelegten Widerstand mit. Notiz erklärt Formel und
+  Abhängigkeit und benennt den Widerstand als die belastbare Messgröße.
+  Regression: `validate.js` Abschnitt 23. Zwei Prüfungen rechnen aktiv nach —
+  die NTC-Spannungen aus U = 5 V × R/(R+1 kΩ) und die PT1000/PT200-Werte gegen
+  die Callendar-Van-Dusen-Gleichung aus IEC 60751. Zahl und Physik können damit
+  nicht mehr auseinanderdriften.
+
+### Regel zuerst zu weit gefasst — korrigiert
+
+Der erste Entwurf der verallgemeinerten Prüfung verlangte von **jeder**
+Sensorkarte eine Begründung für absolute Signalspannungen und schlug bei
+`poti-dk` und `lambda-sprung` an. Nachprüfung ergab: Die Karten sind richtig,
+die Regel war falsch.
+- `poti-dk` ist ein Potentiometer an der 5-V-Referenz — ein ratiometrischer
+  Teiler im Sensor selbst. 0,5–0,9 V und 4,0–4,5 V sind Sensoreigenschaften.
+- `lambda-sprung` ist eine Zirkonia-Zelle, die ihre Spannung galvanisch selbst
+  erzeugt. 0,1–0,9 V gehören ihr.
+Die Regel greift jetzt nur noch bei passiv-resistiven Sensoren, erkennbar an
+einer Widerstandsspalte — dem einzigen Fall, in dem die Spannung erst durch die
+Beschaltung entsteht.
+
+### Geprüft und für korrekt befunden
+
+- `ptc-sensor`: PT1000 (1078 Ω bei 20 °C, 1385 Ω bei 100 °C) und PT200
+  (216/277 Ω) gegen IEC 60751 nachgerechnet — korrekt. KTY81-1xx mit 1000 Ω bei
+  25 °C und ~1700 Ω bei 100 °C trifft die NXP-Kennlinie. Der Hinweis auf den
+  Messleitungswiderstand bei kleinen PT200-Werten ist fachlich wichtig.
+- `map`: vorbildlich — verweigert universelle Spannungswerte und begründet das
+  mit dem Messbereich (1 bar Saugmotor gegen 2,5/3 bar Ladedruck).
+- `oeldruck`: Ölstand zuerst, Elektrikprüfung ersetzt nie die Manometermessung,
+  klares STOPP bei Warnung im Betrieb — richtig gewichtet.
+- `dpf-diff`, `agt` (NTC/PTC/aktiv sauber unterschieden, Kaltvergleich mehrerer
+  Sensoren), `klimadruck`, `ntc-ats`, `raildruck`: unauffällig.
+
+### Offen
+
+- Die NTC-Widerstandstabellen (`ntc-kts`, `ntc-ats`) sind generische
+  „typ."-Werte ohne Quellenbindung. NTC-Kennlinien unterscheiden sich je
+  Hersteller deutlich. Sie sind als Spannen gekennzeichnet und wurden deshalb
+  nicht angetastet; eine Bindung an ein konkretes Bosch- oder VDO-Datenblatt
+  wäre die saubere Ergänzung.

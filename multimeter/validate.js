@@ -577,6 +577,76 @@ const w = dom.window, d = w.document;
   ok("batterie: Startspannung bleibt Hinweis, nicht Austauschentscheidung",
      /Last-\/Leitwerttest/.test(bTxt));
 
+  section("23 · Runde 5 · NTC: Signalspannung ist keine Sensoreigenschaft");
+  // Der Auslöser: ntc-kts führte eine Spalte "Signal (typ.)" mit absoluten Volt
+  // (~4 V bei −10 °C … ~1 V bei 100 °C). Die Signalspannung entsteht aber erst im
+  // Spannungsteiler mit dem Pull-up des Steuergeräts. Rückgerechnet ergab die alte
+  // Spalte einen Pull-up zwischen 2375 Ω und 760 Ω – keine einzige reale
+  // Konfiguration erzeugt sie, sie war an keinem Fahrzeug nachprüfbar. Dieselbe
+  // Karte merkt an, dass VAG den Pull-up im Messbereich umschaltet.
+  const ntc = DEEP["ntc-kts"];
+  const ntcRt = ntc.rt, ntcTxt = JSON.stringify(ntc);
+  ok("ntc-kts: Spaltenkopf nennt die unterstellte Konfiguration",
+     /Rechenbeispiel/.test(ntcRt.head[2]) && /5 V/.test(ntcRt.head[2]), ntcRt.head[2]);
+  ok("ntc-kts: Notiz erklärt die Spannungsteiler-Abhängigkeit mit Formel",
+     /Pull-up/.test(ntcRt.note) && /U = Uref/.test(ntcRt.note));
+  ok("ntc-kts: Notiz begründet, warum eine feste Spannungstabelle unbrauchbar ist",
+     /2-Stufen-Kennlinie/.test(ntcRt.note) && /unbrauchbar/.test(ntcRt.note));
+  ok("ntc-kts: Widerstand ist als die belastbare Messgröße benannt",
+     /Widerstand ist die belastbare Messgröße/.test(ntcRt.note));
+
+  // Die Beispielspannungen müssen aus den angegebenen Widerständen folgen.
+  // Damit können Tabellenwerte nicht mehr von der Physik wegdriften.
+  const teilerBad = [];
+  ntcRt.rows.forEach(r => {
+    const mR = r[1].match(/hier\s+([\d,]+)\s*(kΩ|Ω)/);
+    const mU = r[2].match(/([\d,]+)\s*V/);
+    if (!mR || !mU) { teilerBad.push(r[0] + ": nicht auswertbar"); return; }
+    let R = parseFloat(mR[1].replace(",", "."));
+    if (mR[2] === "kΩ") R *= 1000;
+    const soll = 5 * R / (R + 1000);
+    const ist = parseFloat(mU[1].replace(",", "."));
+    if (Math.abs(soll - ist) > 0.02)
+      teilerBad.push(r[0] + ": Tabelle " + ist + " V, berechnet " + soll.toFixed(2) + " V");
+  });
+  ok("ntc-kts: alle " + ntcRt.rows.length + " Beispielspannungen stimmen mit U = 5 V × R/(R+1 kΩ)",
+     teilerBad.length === 0, teilerBad.join(" ; "));
+
+  // Verallgemeinert – aber nur für den Fall, in dem die Spannung tatsächlich keine
+  // Sensoreigenschaft ist: PASSIV-RESISTIVE Sensoren (Tabelle mit Widerstandsspalte).
+  // Dort entsteht die Spannung erst im Teiler mit dem Pull-up des Steuergeräts.
+  // Ausdrücklich NICHT betroffen und beim Prüfen bestätigt:
+  //   poti-dk       – Potentiometer an der 5-V-Referenz, ratiometrischer Eigenausgang
+  //   lambda-sprung – Zirkonia-Sprungsonde, galvanische Zelle, erzeugt ihre Spannung selbst
+  // Bei beiden ist die Spannung sehr wohl eine Eigenschaft des Sensors.
+  const signalBad = [];
+  TESTS.forEach(t => {
+    const rt = (DEEP[t.id] || {}).rt;
+    if (!rt || !rt.head) return;
+    const hatWiderstandsspalte = rt.head.some(h => /Widerstand|Ohm|Ω/i.test(h));
+    if (!hatWiderstandsspalte) return;                 // nur passiv-resistive Karten
+    const iSig = rt.head.findIndex(h => /Signal|Spannung/i.test(h) && !/Rechenbeispiel/.test(h));
+    if (iSig < 0) return;
+    const hatVolt = rt.rows.some(r => /[\d,]+\s*V\b/.test(String(r[iSig] || "")));
+    const erklaert = /Pull-up|Spannungsteiler|U = Uref/i.test(rt.note || "");
+    if (hatVolt && !erklaert) signalBad.push(t.id);
+  });
+  ok("keine passiv-resistive Sensorkarte führt Signalspannungen ohne Pull-up-Erklärung",
+     signalBad.length === 0, signalBad.join(", "));
+
+  // PT-Kennlinie gegen IEC 60751 nachrechnen (Callendar–Van Dusen, t > 0 °C)
+  const A = 3.9083e-3, B = -5.775e-7;
+  const pt = (R0, t) => R0 * (1 + A * t + B * t * t);
+  const ptTxt = JSON.stringify(DEEP["ptc-sensor"]);
+  ok("ptc-sensor: PT1000-Werte decken sich mit IEC 60751 (20 °C ≈ " +
+     pt(1000, 20).toFixed(0) + " Ω, 100 °C ≈ " + pt(1000, 100).toFixed(0) + " Ω)",
+     Math.abs(pt(1000, 20) - 1078) < 1 && Math.abs(pt(1000, 100) - 1385) < 1 &&
+     /1078/.test(ptTxt) && /1385/.test(ptTxt));
+  ok("ptc-sensor: PT200-Werte decken sich mit IEC 60751 (20 °C ≈ " +
+     pt(200, 20).toFixed(0) + " Ω, 100 °C ≈ " + pt(200, 100).toFixed(0) + " Ω)",
+     Math.abs(pt(200, 20) - 216) < 1 && Math.abs(pt(200, 100) - 277) < 1 &&
+     /216/.test(ptTxt) && /277/.test(ptTxt));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");

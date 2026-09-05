@@ -588,8 +588,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.7-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-7';
+const APP_VERSION = '8.8-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-8';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -1962,11 +1962,11 @@ const DEEP = {
 },
 /* ===== SENSOREN ===== */
 "ntc-kts":{
- rt:{head:["Temperatur","Widerstand (typ.)","Signal (typ.)"],rows:[
-   ["−10 °C","~9–10 kΩ","~4 V"],["20 °C","~2,0–2,5 kΩ","~3–3,5 V"],
-   ["40 °C","~1,1–1,2 kΩ","~2,5 V"],["80 °C","~300–380 Ω","~1,3 V"],
-   ["100 °C","~180–200 Ω","~1 V"]],
-   note:"VAG: häufig 2-Stufen-Kennlinie (Umschaltung im STG) – Sprung im Signal ist normal. BMW: Sensor oft kombiniert (Kühlmittel/Ausgleichbehälter)."},
+ rt:{head:["Temperatur","Widerstand (typ.)","Rechenbeispiel 5 V über 1 kΩ"],rows:[
+   ["−10 °C","~9–10 kΩ (hier 9,5 kΩ)","4,52 V"],["20 °C","~2,0–2,5 kΩ (hier 2,25 kΩ)","3,46 V"],
+   ["40 °C","~1,1–1,2 kΩ (hier 1,15 kΩ)","2,67 V"],["80 °C","~300–380 Ω (hier 340 Ω)","1,27 V"],
+   ["100 °C","~180–200 Ω (hier 190 Ω)","0,80 V"]],
+   note:"Die Signalspannung ist KEINE Eigenschaft des Sensors. Das Steuergerät legt den NTC über einen Pull-up-Widerstand an seine Referenzspannung; gemessen wird die Spannung am Spannungsteiler: U = Uref × R / (R + Rpullup). Die dritte Spalte ist deshalb ein reines Rechenbeispiel für 5 V über 1 kΩ – ein Steuergerät mit anderem Pull-up liefert bei identischem Sensor und identischer Temperatur andere Spannungen. Bewerte deshalb den Verlauf (Spannung fällt mit steigender Temperatur) und vergleiche mit den Livedaten; einen Absolutwert nur, wenn der Pull-up des Fahrzeugs bekannt ist. VAG: häufig 2-Stufen-Kennlinie – das Steuergerät schaltet den Pull-up im Messbereich um, ein Sprung im Signal ist normal und macht jede feste Spannungstabelle unbrauchbar. BMW: Sensor oft kombiniert (Kühlmittel/Ausgleichbehälter). Der Widerstand ist die belastbare Messgröße, nicht die Spannung."},
  urs:[["Korrosion am Stecker","Wert springt, sporadische Fehler","h"],
       ["Sensor altert/driftet","Wert plausibel aber falsch","m"],
       ["Signalleitung Schluss/Bruch","0 V oder 5 V Anschlag","m"],
