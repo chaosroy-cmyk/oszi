@@ -166,9 +166,19 @@ button:focus-visible,.tile:focus-visible,.search:focus-visible{outline:2px solid
 }
 .overlay.open{transform:translateX(0);visibility:visible;transition:transform .26s cubic-bezier(.4,0,.2,1)}
 @media (prefers-reduced-motion:reduce){
+  /* Die Einzelregeln deckten nur Overlay, Install-Banner und Scrollverhalten ab –
+     Transform- und Opacity-Übergänge an Karten, Chips und Buttons liefen weiter.
+     Wer Bewegungsreduktion einstellt, meint alle Bewegung. Deshalb global, mit
+     Restdauer statt 0: Ein sauber beendetes Transition-Event bleibt so erhalten. */
   html{scroll-behavior:auto}
-  .overlay{transition:none}
-  .install-banner{animation:none}
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+    transition-delay:0s!important;
+    animation-delay:0s!important;
+    scroll-behavior:auto!important;
+  }
 }
 .ovhead{
   position:sticky;top:0;z-index:10;background:var(--bg2);
@@ -588,8 +598,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.14-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-14';
+const APP_VERSION = '8.15-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-15';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},

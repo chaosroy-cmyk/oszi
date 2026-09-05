@@ -3,7 +3,7 @@
 Fortschrittsregister des Verbesserungs-Loops. Arbeitsanweisung:
 [`PROMPT-VERBESSERUNG.md`](PROMPT-VERBESSERUNG.md).
 
-**Nächstes Fokusthema: 12 · PWA, Offline, A11y, Theme**
+**Nächstes Fokusthema: 13 · Quellenpflege**
 
 Format je Runde:
 
@@ -694,3 +694,45 @@ und werden jetzt gefunden.
   sonst nirgends im Text stehen (etwa `P0130`, `Arbeitsstromrelais`).
 - „Kaltwiderstand" liefert weiterhin null Treffer — der Begriff steht
   tatsächlich nur in `SOURCES.md`, nicht in der App. Kein Befund.
+
+---
+
+## Runde 12 · PWA, Offline, A11y, Theme · 2026-09-05
+
+Baseline: 176/176 grün → Abschluss: 181/181 grün · Version 8.14-Profi → 8.15-Profi
+
+### Befunde
+
+- **Bewegungsreduktion deckte 3 von 11 Bewegungen ab**
+  Der `prefers-reduced-motion`-Block erfasste nur `scroll-behavior`, `.overlay`
+  und `.install-banner`. Im Stylesheet stehen zehn Transitions und eine
+  Animation; Transform- und Opacity-Übergänge an Karten, Chips und Buttons
+  liefen trotz eingestellter Bewegungsreduktion weiter. Diese Einstellung wird
+  nicht aus Geschmack gesetzt — vestibuläre Störungen, Migräne und
+  Anfallsleiden sind die üblichen Gründe; sie teilweise zu respektieren hilft
+  niemandem.
+  Fix: globale Fassung für alle Elemente samt Pseudoelementen, mit Restdauer
+  `.01ms` statt `0s`, damit ein `transitionend` weiterhin feuert.
+  Nachgezogenes Detail: Das Overlay schaltet `visibility` über eine
+  `transition-delay` von 0,26 s. `transition-duration` allein hätte diese
+  Verzögerung stehen lassen — die alte Einzelregel `.overlay{transition:none}`
+  hatte sie mit abgedeckt. Deshalb `transition-delay` und `animation-delay`
+  ebenfalls auf `0s`.
+  Regression: `validate.js` Abschnitt 30, vier Prüfungen einschließlich der
+  Verzögerungen.
+
+### Kontrollumfang erweitert, ohne Reparaturbedarf
+
+Der Validator prüfte Kontraste an **zwei fest verdrahteten Farbpaaren**. Jetzt
+rechnet er die WCAG-Formel für alle acht Textfarben gegen beide Hintergründe in
+beiden Schemata durch — 32 Paare. **Alle bestehen**, Minimum 4,74:1 (`--red` auf
+`--card`, dunkel), Maximum 17,48:1. Hier gab es nichts zu reparieren; ab jetzt
+fällt aber eine Palettenänderung sofort auf, die einen Wert unter 4,5:1 drückt.
+
+### Geprüft und für korrekt befunden
+
+Service Worker, Cache-Isolation, Precache, Update-Banner, Versionssynchronität
+(Abschnitt 13); Fokus-Trap, `inert`-Hintergrund, `aria-current`, `aria-pressed`,
+Touchziele ≥ 44 px (Abschnitt 14); genau ein Light-Block an der richtigen Stelle
+(Abschnitt 15). `role="dialog"`, `aria-modal`, `aria-live`, `@media print`,
+`:focus-visible` und `lang` sind vorhanden.

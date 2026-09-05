@@ -909,6 +909,67 @@ const w = dom.window, d = w.document;
   ok("alle " + TESTS.length + " Kartennamen weiterhin auffindbar", nameFehlt.length === 0, nameFehlt.join(", "));
   await suchen("");
 
+  section("30 · Runde 12 · Bewegungsreduktion und Kontraste systematisch");
+  // Auslöser: Der prefers-reduced-motion-Block deckte nur drei Stellen ab
+  // (Scrollverhalten, .overlay, .install-banner). Im Stylesheet stehen aber elf
+  // Bewegungen – Transform- und Opacity-Übergänge an Karten, Chips und Buttons liefen
+  // trotz eingestellter Bewegungsreduktion weiter. Jetzt global gefasst.
+  const rmIdx = HTML.indexOf("@media (prefers-reduced-motion:reduce)");
+  const rmBlock = HTML.slice(rmIdx, HTML.indexOf("\n}", rmIdx));
+  ok("Bewegungsreduktion greift global, nicht nur an einzelnen Selektoren",
+     rmIdx > -1 && /\*,\*::before,\*::after/.test(rmBlock));
+  ok("Bewegungsreduktion deckt Animation und Transition ab",
+     /animation-duration:\s*\.01ms!important/.test(rmBlock) &&
+     /transition-duration:\s*\.01ms!important/.test(rmBlock) &&
+     /animation-iteration-count:\s*1!important/.test(rmBlock));
+  // Restdauer statt 0, damit ein transitionend noch feuert, falls je darauf gehört wird
+  ok("Restdauer statt 0 gewählt", !/transition-duration:\s*0s?!important/.test(rmBlock));
+  // Die Verzögerungen müssen mit: Das Overlay schaltet visibility über eine
+  // transition-delay von .26s. Ohne Neutralisierung bliebe genau diese Verzögerung
+  // stehen, obwohl der Transform schon durch ist – die alte Einzelregel
+  // ".overlay{transition:none}" hatte das mit abgedeckt.
+  ok("Bewegungsreduktion neutralisiert auch die Verzögerungen",
+     /transition-delay:\s*0s!important/.test(rmBlock) && /animation-delay:\s*0s!important/.test(rmBlock));
+
+  // Kontraste systematisch statt an zwei fest verdrahteten Paaren:
+  // jede Textfarbe der Palette gegen beide Hintergründe, in beiden Schemata.
+  const cssAll = HTML.slice(HTML.indexOf("<style>"), HTML.indexOf("</style>"));
+  const readVars = block => {
+    const o = {};
+    (block.match(/--[a-z0-9-]+\s*:\s*[^;]+;/gi) || []).forEach(dcl => {
+      const m = dcl.match(/(--[a-z0-9-]+)\s*:\s*([^;]+);/i);
+      o[m[1]] = m[2].trim();
+    });
+    return o;
+  };
+  const darkVars = readVars(cssAll.slice(cssAll.indexOf(":root"), cssAll.indexOf("}", cssAll.indexOf(":root"))));
+  const liPos = cssAll.indexOf("@media (prefers-color-scheme: light)");
+  const lightVars = readVars(cssAll.slice(liPos, cssAll.indexOf("}", cssAll.indexOf("}", liPos) + 1) + 1));
+  const relLum = hex => {
+    let h = hex.replace("#", "");
+    if (h.length === 3) h = h.split("").map(c => c + c).join("");
+    const c = [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) / 255)
+      .map(v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  };
+  const kontrast = (a, b) => {
+    const x = relLum(a), y = relLum(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  };
+  const TEXTFARBEN = ["--txt", "--txt2", "--acc", "--acc2", "--grn", "--red", "--blu", "--warn"];
+  const schwach = [];
+  [["dunkel", darkVars], ["hell", Object.assign({}, darkVars, lightVars)]].forEach(([nm, V]) => {
+    TEXTFARBEN.forEach(k => {
+      if (!/^#[0-9a-f]{3,8}$/i.test(V[k] || "")) { schwach.push(nm + " " + k + ": fehlt"); return; }
+      ["--bg", "--card"].forEach(bk => {
+        const kv = kontrast(V[k], V[bk]);
+        if (kv < 4.5) schwach.push(nm + " " + k + " auf " + bk + " = " + kv.toFixed(2) + ":1");
+      });
+    });
+  });
+  ok("alle " + TEXTFARBEN.length + " Textfarben erreichen in beiden Schemata mindestens 4,5:1 auf beiden Hintergründen",
+     schwach.length === 0, schwach.join(" ; "));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");
