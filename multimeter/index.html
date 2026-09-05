@@ -588,8 +588,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.4-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-4';
+const APP_VERSION = '8.5-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-5';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -674,11 +674,13 @@ const TESTS = [
  set:{mode:"DC Volt (V⎓)",buchse:"COM + V/Ω"},
  probes:[["r","Plusseite: an Batterieplus"],["b","Plusseite: an Plus am Verbraucher"]],
  mess:"Stromkreis muss EINGESCHALTET/belastet sein! Angezeigter Wert = Verlust auf dieser Leitung.",
- good:"Sehr niedrig. Sensorleitung < 0,1 V. Normalverbraucher < 0,2–0,3 V.",
- bad:"Hoher Wert = Verlust durch Korrosion/schlechten Kontakt auf genau dieser Leitung.",
+ good:"Deutlich unter der Vorgabe für genau diesen Kreis. Der zulässige Abfall wächst mit dem Strom – einen Wert, der für alle Leitungen gilt, gibt es nicht.",
+ bad:"Wert über der Vorgabe dieses Kreises = Verlust durch Korrosion oder schlechten Kontakt auf genau dieser Leitung.",
  next:"Masseseite genauso prüfen: rote Spitze an Verbraucher-Masse, schwarze an Batterieminus.",
  beg:"Statt 'ist Strom da?' fragst du 'wo geht Spannung verloren?'. Unter Last messen – ein hoher Wert zeigt genau die schlechte Stelle.",
- warn:[["info","Plusseite & Masseseite getrennt prüfen. Hoher Wert = genau hier sitzt der Verlust (Korrosion, lose Klemme, schlechter Pin)."]]
+ warn:[["info","Plusseite & Masseseite getrennt prüfen. Hoher Wert = genau hier sitzt der Verlust (Korrosion, lose Klemme, schlechter Pin)."],
+       ["caution","Keine Faustzahl auf einen fremden Kreis übertragen: Der zulässige Abfall hängt vom Strom ab. HELLA lässt im selben Lichtsystem unter 15 W nur 0,1 V zu, über 15 W dagegen 0,5 V – und am Hauptanschluss des Starters beim Startvorgang bis 3,5 V. Wer eine einzige Grenze auf alles anwendet, verurteilt intakte Leitungen."]],
+ sourceRef:"OEM-Prüfplan des jeweiligen Kreises; Herstellerbeispiel HELLA Techworld (Klemme 31, zulässige Spannungsabfälle 12 V)"
 },
 /* ---------- BATTERIE / LADE / START ---------- */
 {
@@ -1533,24 +1535,32 @@ const DEEP = {
 },
 "spannungsabfall":{
  anl:["MM auf <b>DC Volt</b>, kleiner Bereich (z.B. 2 V) wählen, falls kein Autorange.",
-   "Verbraucher <b>einschalten</b> – der Stromkreis muss unter Last stehen, sonst fließt kein Strom und der Abfall ist immer 0 V.",
+   "Verbraucher <b>einschalten</b> – der Stromkreis muss unter Last stehen. Ohne Stromfluss fällt an einer intakten Leitung nichts ab, die Anzeige steht nahe 0 V und beweist nichts. Eine Ausnahme gehört dazu: Ist die Leitung <b>unterbrochen</b>, zeigt dieselbe Messung auch ohne Last nahezu die volle Bordspannung – das ist kein Spannungsabfall, sondern ein Leitungsbruch.",
    "<b>Plusseite:</b> rote Spitze direkt an Batterie-Plus, schwarze Spitze an den Plus-Anschluss am Verbraucher. Abgelesener Wert = gesamter Verlust auf der Plusleitung inkl. aller Kontakte/Sicherungen dazwischen.",
    "<b>Masseseite:</b> rote Spitze an den Masseanschluss des Verbrauchers, schwarze Spitze an Batterie-Minus. Wert = Verlust auf dem kompletten Massepfad.",
+   "<b>Gegen die Vorgabe dieses Kreises bewerten, nicht gegen eine Faustzahl.</b> Der zulässige Abfall wächst mit dem Strom. HELLA nennt für 12-V-Fahrzeuge im selben Lichtsystem 0,1 V unter 15 W und 0,5 V über 15 W, für den Steuerstromkreis vom Zündschalter zum Starter 1,5 V und für den Hauptanschluss des Starters unter Last beim Startvorgang 3,5 V. Dieselbe Zahl bedeutet also je nach Kreis „tadellos“ oder „defekt“. Liegt keine OEM-Vorgabe vor: mit einem baugleichen intakten Kreis vergleichen.",
    "Ist ein Wert zu hoch: Messpunkt schrittweise verschieben (z.B. Klemme für Klemme Richtung Batterie). Dort wo der Wert <b>springt</b>, sitzt die schlechte Stelle.",
    "Kontakt reinigen/nachziehen, dann unter Last erneut messen – der Wert muss deutlich fallen.",
    "Merke: Diese Messung findet Fehler, die eine reine Durchgangs-/Ohm-Messung NICHT zeigt, weil sie nur unter echtem Stromfluss auftreten."],
- rt:{head:["Leitung","Zielwert","Bewertung"],rows:[
-   ["Sensorsignal/-versorgung","< 0,1 V","g"],["Normalverbraucher Plus","< 0,2–0,3 V","g"],
-   ["Masseband/Massepunkt","< 0,1–0,2 V","g"],["Kompletter Massepfad Verbraucher","< 0,3 V","g"],
-   ["Starterkreis (Hochstrom)","< 0,5 V Plus, < 0,2 V Masse","w"],["> 0,5 V Signalkreis","kritisch","b"]],
-   note:"Faustregel: je 0,1 V Verlust = relevant bei kleinen Strömen. Bei Hochstrom (Starter) höhere Werte, aber im Verhältnis bewerten."},
+ rt:{head:["Kreis – Herstellerbeispiel HELLA (12 V)","Zulässiger Abfall","Prüfpriorität"],rows:[
+   ["Startergehäuse → Karosserie/Motorblock (Minuskabel)","0,1 V","g"],
+   ["Batterieminus → Startergehäuse","0,3 V","g"],
+   ["Batterieplus → Hauptanschluss Starter (Pluskabel)","0,5 V","g"],
+   ["Hauptanschluss Starter unter Last (beim Startvorgang)","3,5 V","w"],
+   ["Generatorgehäuse → Karosserie/Motorblock (Minuskabel)","0,1 V","g"],
+   ["Batterieplus → Hauptanschluss Generator (Pluskabel)","0,4 V","g"],
+   ["Lichtschalter Kl.30 → Leuchtmittel unter 15 W","0,1 V (gesamt 0,6 V)","g"],
+   ["Lichtschalter Kl.30 → Leuchtmittel über 15 W","0,5 V (gesamt 0,9 V)","g"],
+   ["Zündschalter → Steuerstromanschluss Starter","1,5 V","g"],
+   ["Kreis ohne Vorgabe","Vergleich mit baugleichem intaktem Kreis","w"]],
+   note:"Herstellerbeispiel für 12-V-Fahrzeuge, keine allgemeingültige Freigabegrenze – der OEM-Prüfplan des Fahrzeugs geht immer vor. Entscheidend ist die Spanne selbst: derselbe Lichtkreis darf unter 15 W nur 0,1 V verlieren, über 15 W aber 0,5 V, und der Starter unter Last 3,5 V. Der zulässige Abfall hängt am Strom des Kreises, nicht an einer Faustzahl. Die Ampel zeigt die Prüfpriorität, nicht die Freigabe des Bauteils."},
  urs:[["Korrodierte Klemme/Steckkontakt","klassischer Hochwiderstand unter Last","h"],
       ["Lockerer Massepunkt","verfälscht Sensoren, flackernde Lampen","h"],
       ["Unterdimensionierte/angeschmorte Leitung","Wärme + Verlust","m"],
       ["Sicherungskontakt oxidiert","Verlust direkt an der Sicherung","m"]],
  fs:[{s:"1 Last einschalten",do:"Verbraucher muss eingeschaltet/belastet sein",ok:"weiter",ng:"Ohne Last keine Aussage"},
-     {s:"2 Plusseite messen",do:"Rot an Batterieplus, Schwarz an Plus des Verbrauchers",ok:"Wert niedrig → Plus ok",ng:"Hoch → Verlust auf Plusleitung"},
-     {s:"3 Masseseite messen",do:"Rot an Verbraucher-Masse, Schwarz an Batterieminus",ok:"Wert niedrig → Masse ok",ng:"Hoch → Verlust auf Masse"},
+     {s:"2 Plusseite messen",do:"Rot an Batterieplus, Schwarz an Plus des Verbrauchers",ok:"unter der Vorgabe dieses Kreises → Plus ok",ng:"darüber → Verlust auf Plusleitung"},
+     {s:"3 Masseseite messen",do:"Rot an Verbraucher-Masse, Schwarz an Batterieminus",ok:"unter der Vorgabe dieses Kreises → Masse ok",ng:"darüber → Verlust auf Masse"},
      {s:"4 Verlust einkreisen",do:"Messpunkt schrittweise verschieben (Klemme zu Klemme)",ok:"Sprung im Wert = Fehlerstelle",ng:""},
      {s:"5 Reinigen & nachmessen",do:"Kontakt reinigen/nachziehen, erneut unter Last",ok:"Wert fällt → behoben",ng:"Leitung erneuern"}]
 },
@@ -3366,7 +3376,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
     "durchgang":{quality:"MM nur Grobtest",risk:"mittel",requires:["spannungsfrei","Stecker getrennt"],limits:["Piepton beweist keine Belastbarkeit"]},
     "diodentest":{quality:"MM sehr gut",risk:"niedrig",requires:["spannungsfrei","Bauteil möglichst abgeklemmt"],limits:["eingebaut verfälschen Parallelpfade das Ergebnis"],dont:["nie an spannungsführenden Kreisen"]},
     "strom":{quality:"MM möglich, Stromzange sicherer",risk:"hoch",requires:["in Reihe einschleifen","richtige A-Buchse und Sicherung"],limits:["Messgerät-Sicherung begrenzt"],dont:["niemals parallel an Batterie/Verbraucher"]},
-    "spannungsabfall":{quality:"MM Profi-Messung",risk:"niedrig",requires:["Verbraucher eingeschaltet","Plus- und Masseseite getrennt prüfen"],limits:["ohne Last kaum Aussage"]},
+    "spannungsabfall":{quality:"MM Profi-Messung",risk:"niedrig",requires:["Verbraucher eingeschaltet","Plus- und Masseseite getrennt prüfen","Vorgabe für genau diesen Kreis (OEM-Prüfplan oder Herstellerbeispiel)"],limits:["ohne Last kaum Aussage","keine für alle Kreise gültige Abfallgrenze – der zulässige Wert wächst mit dem Strom des Kreises"]},
     "batterie":{quality:"MM guter Vortest – Gefahrenbereich",risk:"hoch",requires:["Schutzbrille und geeignete Handschuhe","ausreichende Belüftung, keine Zündquellen","Schmuck ablegen, Werkzeug gegen Polbrücke sichern","Pole direkt messen und danach Klemmen mitprüfen"],limits:["ersetzt keinen definierten Last-/Leitwerttest","Startspannung allein ist keine Austauschentscheidung"],dont:["keine Zündquellen oder Funken in Batterienähe","Pole nicht mit Werkzeug überbrücken"]},
     "generator":{quality:"MM grob, Oszi für Ripple",risk:"mittel",requires:["BMS/LIN-Regelung berücksichtigen"],limits:["AC-Ripple am MM oft unzuverlässig"]},
     "starter":{quality:"MM gut, Stromzange besser",risk:"hoch",requires:["zweite Person oder Remote-Starter","bewegliche Teile sichern"],limits:["Stromaufnahme nur mit Stromzange sinnvoll"]},
@@ -3628,7 +3638,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
   const metaDont={
     "spannung":["nicht gegen einen zweifelhaften Massepunkt als einzige Referenz messen"],
     "durchgang":["nie an spannungsführenden Leitungen Durchgang prüfen"],
-    "spannungsabfall":["nicht ohne eingeschalteten Verbraucher bewerten – ohne Last ist der Wert immer 0"],
+    "spannungsabfall":["nicht ohne eingeschalteten Verbraucher bewerten – ohne Stromfluss fällt an einer intakten Leitung nichts ab","keine Faustzahl auf einen fremden Kreis übertragen – der zulässige Abfall hängt vom Strom des Kreises ab"],
     "batterie":["Pole nicht mit Werkzeug überbrücken – Kurzschluss- und Funkengefahr"],
     "generator":["Batterie niemals bei laufendem Motor abklemmen – Spannungsspitzen zerstören Elektronik"],
     "starter":["beim Startversuch nicht in den Riemen-/Lüfterbereich greifen"],

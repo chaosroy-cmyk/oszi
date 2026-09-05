@@ -462,6 +462,46 @@ const w = dom.window, d = w.document;
   ok("SOURCES.md belegt den Benzin-Systemdruck mit einer Bosch-Direktquelle",
      /gasoline-direct-injection|high-pressure-pump/.test(SOURCES));
 
+  section("20 · Runde 2 · Spannungsabfall: Grenzen sind kreisabhängig");
+  // Der Auslöser: Die Basiskarte gab absolute Abfallgrenzen als Ampelurteil aus
+  // ("Starterkreis < 0,5 V Plus" = w, "> 0,5 V Signalkreis" = kritisch). HELLA lässt
+  // am Hauptanschluss des Starters unter Last beim Startvorgang 3,5 V zu und am
+  // Steuerstromkreis vom Zündschalter zum Starter 1,5 V – die Karte hätte intakte
+  // Leitungen verurteilt. Dieselbe Quelle belegt die Stromabhängigkeit direkt:
+  // derselbe Lichtkreis darf unter 15 W nur 0,1 V verlieren, über 15 W aber 0,5 V.
+  const sab = TESTS.find(t => t.id === "spannungsabfall");
+  const sabDeep = DEEP["spannungsabfall"] || {};
+  const sabAll = JSON.stringify(sab) + JSON.stringify(sabDeep);
+
+  ok("keine universelle 'Normalverbraucher'-Zeile mehr", !/Normalverbraucher/.test(sabAll));
+  ok("kein pauschales '> 0,5 V Signalkreis = kritisch'",
+     !/>\s*0,5\s*V[^"]{0,12}Signalkreis/.test(sabAll));
+  ok("Starterkreis nicht mehr pauschal auf 0,5 V begrenzt",
+     !/Starterkreis \(Hochstrom\)/.test(sabAll));
+  ok("dont behauptet nicht mehr, der Wert sei ohne Last immer 0", !/immer 0/.test(sabAll));
+
+  // Jede Richtwertzeile muss einen konkreten Kreis benennen statt einer Bauteilklasse.
+  const sabRows = (sabDeep.rt && sabDeep.rt.rows) || [];
+  ok("Richtwerttabelle vorhanden und kreisbezogen (" + sabRows.length + " Zeilen)", sabRows.length >= 8);
+  ok("Tabellenkopf weist die Werte als Herstellerbeispiel aus",
+     /Herstellerbeispiel/.test(((sabDeep.rt || {}).head || []).join(" ")),
+     JSON.stringify((sabDeep.rt || {}).head));
+  ok("Startvorgangs-Ausnahme (3,5 V unter Last) ist abgebildet", /3,5 V/.test(sabAll));
+  ok("Steuerstromkreis Zündschalter (1,5 V) ist abgebildet", /1,5 V/.test(sabAll));
+  ok("Lichtkreis-Spanne 0,1 V unter 15 W gegen 0,5 V über 15 W ist abgebildet",
+     /unter 15 W/.test(sabAll) && /über 15 W/.test(sabAll));
+  ok("Karte erklärt die Stromabhängigkeit ausdrücklich",
+     /(wächst|hängt)[^"]{0,30}Strom/.test(sabAll));
+  ok("Ersatzregel ohne OEM-Vorgabe: Vergleich mit baugleichem intaktem Kreis",
+     /baugleiche[nm]\s+intakte[nm]\s+Kreis/.test(sabAll));
+  ok("Tabellennotiz verneint die Allgemeingültigkeit ausdrücklich",
+     /keine allgemeingültige Freigabegrenze/.test(JSON.stringify(sabDeep.rt || {})));
+  ok("Ampel ist als Prüfpriorität deklariert, nicht als Freigabe",
+     /Prüfpriorität/.test(JSON.stringify(sabDeep.rt || {})));
+  ok("Sollwertquelle der Karte nennt HELLA", /HELLA/.test(sab.sourceRef || ""), sab.sourceRef);
+  ok("SOURCES.md führt die HELLA-Abfalltabelle mit Direktlink",
+     /earth-31-troubleshooting/.test(SOURCES));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");

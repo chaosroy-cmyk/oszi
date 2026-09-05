@@ -3,7 +3,7 @@
 Fortschrittsregister des Verbesserungs-Loops. Arbeitsanweisung:
 [`PROMPT-VERBESSERUNG.md`](PROMPT-VERBESSERUNG.md).
 
-**Nächstes Fokusthema: 2 · Basis-Messverfahren**
+**Nächstes Fokusthema: 3 · Strom, Sicherungen, mV-Rechner**
 
 Format je Runde:
 
@@ -125,3 +125,89 @@ Geprüft: `sicherheitscheck`, `srs-airbag`, `hv-hybrid`, `batterie`,
   Hochdruck-Regex fälschlich getroffen. Kein Befund, aber ein Hinweis darauf,
   dass Textregeln über Druckangaben eng gefasst sein müssen — deutsche Wörter
   auf `-bar` (erkennbar, brauchbar) sind eine ständige Fehlerquelle.
+
+---
+
+## Runde 2 · Basis-Messverfahren · 2026-09-05
+
+Baseline: 86/86 grün → Abschluss: 101/101 grün · Version 8.4-Profi → 8.5-Profi
+
+Geprüft: `spannung`, `widerstand`, `durchgang`, `diodentest`,
+`spannungsabfall`, `klemmen` — vollständig, inklusive Quervergleich der
+absoluten Abfallgrenzen über das gesamte Projekt.
+
+### Befunde
+
+- **Universelle Abfallgrenzen erzeugen Fehlalarme** (`spannungsabfall`)
+  Die Basiskarte gab absolute Grenzen als Ampelurteil aus: „Starterkreis
+  (Hochstrom) < 0,5 V Plus" als Warnung, „> 0,5 V Signalkreis" als kritisch
+  (rot). Der zulässige Abfall hängt aber am Strom des Kreises (U = I × R).
+  Beleg: HELLA Techworld, Tabelle zulässiger Spannungsabfälle für 12-V-Fahrzeuge
+  (hella.com/techworld/us/ti/earth-31-troubleshooting/, Abruf 05.09.2026).
+  Der Hersteller erlaubt am **Hauptanschluss des Starters unter Last beim
+  Startvorgang 3,5 V** — das Siebenfache dessen, was die Karte als Warnung
+  auswarf — und am **Steuerstromkreis vom Zündschalter zum Starter 1,5 V**,
+  also das Dreifache dessen, was die Karte als kritisch rot markierte. Nach
+  der alten Tabelle hätte ein Monteur intakte Leitungen verurteilt.
+  Dieselbe Quelle belegt das Prinzip innerhalb eines Systems: derselbe
+  Lichtkreis darf unter 15 W nur 0,1 V verlieren, über 15 W aber 0,5 V —
+  Faktor fünf bei gleicher Bauart, nur anderem Strom.
+  Widerspruch im eigenen Bestand: `relais-leistung` (v8.3) sagt bereits
+  wörtlich „Absolute Abfallgrenzen sind strom- und fahrzeugabhängig", und
+  `sensor-masseversatz` wurde die feste < 50 mV-Grenze bewusst entzogen,
+  bewacht von `validate.js` seit v8.2. Nur die Basiskarte, von der die Methode
+  gelernt wird, verteilte weiter Universalgrenzen.
+  Fix: Tabelle auf 10 kreisbezogene Zeilen nach der HELLA-Tabelle umgestellt,
+  Kopfzeile als Herstellerbeispiel deklariert, Spalte „Bewertung" zu
+  „Prüfpriorität", Notiz verneint Allgemeingültigkeit, neuer Anleitungsschritt
+  zur Stromabhängigkeit, Ersatzregel „Vergleich mit baugleichem intaktem
+  Kreis" wie in `relais-leistung`, `good`/`bad`/`fs`/`requires`/`limits` an den
+  Kreis gebunden, `caution`-Block gegen Faustzahl-Übertragung, `sourceRef` und
+  `SOURCES.md`-Zeile ergänzt.
+  Regression: `validate.js` Abschnitt 20, 15 Prüfungen. Sichert beide
+  Richtungen — alte Universalzeilen weg **und** kreisbezogene Werte samt
+  Stromabhängigkeit, Ersatzregel und Prüfprioritäts-Semantik vorhanden. Gegen
+  den Stand vor der Änderung schlagen 14 der 15 fehl; nachgestellt und
+  bestätigt.
+
+- **Sachfehler: „ohne Last ist der Wert immer 0"** (`spannungsabfall`,
+  Anleitung und `dont`)
+  Gilt nur für eine intakte Leitung. Ist die Leitung unterbrochen, zeigt
+  dieselbe Messung auch ohne Last nahezu die volle Bordspannung — kein
+  Spannungsabfall, sondern ein Leitungsbruch. Genau der Fall, in dem ein
+  Anfänger die Messung anwendet. Beide Stellen benennen die Ausnahme jetzt.
+  Regression: Prüfung „dont behauptet nicht mehr, der Wert sei ohne Last
+  immer 0".
+
+### Geprüft und für korrekt befunden
+
+- `diodentest`: Flussspannungen Si 0,4–0,8 V, Schottky 0,15–0,45 V, LED
+  1,5–3 V farbabhängig, Sperrrichtung OL, Polung rot an Anode — fachlich
+  korrekt. Der Hinweis, dass die Prüfspannung mancher Geräte für blaue und
+  weiße LED nicht reicht, ist ein Detail, das viele Anleitungen auslassen.
+- `widerstand`: spannungsfrei, einseitig trennen, Nullabgleich, Temperaturbezug,
+  Wackeltest, „0 Ω ist kein Belastbarkeitsnachweis" — vollständig und richtig.
+- `durchgang`: Piepschwelle geräteabhängig, Ton beweist keine Belastbarkeit,
+  Selbsttest der Messleitungen — richtig.
+- `spannung`: Bezugspunktwahl, Zustandsangabe als Pflicht, Lastgegenprobe —
+  richtig. `klemmen` gegen DIN 72552 stimmig.
+
+### Beobachtungen ohne Beleg
+
+- `durchgang` nennt die Piepschwelle mit „zwischen 20 und 70 Ω". Plausibel und
+  geräteabhängig formuliert, aber ohne Quelle. Keine Änderung: die Aussage ist
+  bewusst als Spanne und als geräteabhängig gekennzeichnet, und ein einzelnes
+  Gerätedatenblatt würde sie nicht allgemeingültiger machen. Falls eine Runde
+  Zugriff auf Fluke- oder Gossen-Datenblätter hat, wäre eine Beispielangabe mit
+  Typenbezug die saubere Ergänzung.
+
+### Offen
+
+- **Projektweite Umstellung der absoluten Abfallgrenzen.** Rund 27 Fundstellen
+  (`< 0,2 V` 15×, `< 0,3 V` 4×, `< 0,1 V` 4×, `< 0,5 V` 2×) stehen weiterhin in
+  anderen Karten, darunter `batterie` („Polklemmen < 0,1 V"), `masse`, `starter`
+  und `leitung`. Die Basiskarte ist jetzt korrekt, die abgeleiteten Karten noch
+  nicht. Das ist eine zusammenhängende Aufgabe für eine eigene Runde, die alle
+  betroffenen Karten gemeinsam anfasst — bewusst nicht als Beifang erledigt.
+- Aus Runde 1 weiter offen: Grundsatzfrage `warn` gegen `dont` bei
+  Kraftstoff- und Kältemittelgefahren; `syn`-Feld für `injektor-benzin`.
