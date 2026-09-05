@@ -38,6 +38,12 @@ Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
 | `SOURCES.md` | Quellen- und Grenzwertmatrix mit drei Evidenzstufen |
 | `PROMPT-VERBESSERUNG.md` | Arbeitsanweisung für eine Verbesserungsrunde |
 | `VERBESSERUNGS-LOG.md` | Fortschrittsregister der Runden |
+| `CHANGELOG-v8.*.md` | Änderungshistorie je Release |
+
+Die Fokusrotation der Verbesserungsrunden ist einmal vollständig durchlaufen
+(Runde 1–13, v8.3 → v8.16). Der Validator ist dabei von 78 auf 190 Prüfungen
+gewachsen; jeder Befund ist durch eine Prüfung gesichert, die den alten Zustand
+rot färben würde.
 
 Beide Apps teilen sich einen Origin. Cache Storage ist origin-weit, deshalb
 räumen **beide** Service Worker nur präfix-gefiltert auf (`kfzoszi-` bzw.

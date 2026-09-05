@@ -201,6 +201,12 @@ const w = dom.window, d = w.document;
   await doSearch("");
 
   section("10 · Versionierung");
+  // package.json wurde beim Hochzählen der Runden 4–13 zunächst übersehen und lief der
+  // App-Version hinterher. Jetzt mitgeprüft, damit das nicht wieder still passiert.
+  const pkgV = JSON.parse(fs.readFileSync(path.join(__dirname, "package.json"), "utf8")).version;
+  const appVnum = (HTML.match(/APP_VERSION\s*=\s*'([^']+)'/) || [])[1].replace("-Profi", "");
+  ok("package.json (" + pkgV + ") folgt der APP_VERSION (" + appVnum + ")",
+     pkgV.split(".").slice(0, 2).join(".") === appVnum);
   const appV = (HTML.match(/APP_VERSION\s*=\s*'([^']+)'/) || [])[1] || "";
   const cacheV = (SW.match(/CACHE_NAME\s*=\s*'kfz-multimeter-profi-v([^']+)'/) || [])[1] || "";
   ok("APP_VERSION (" + appV + ") ↔ CACHE_NAME (v" + cacheV + ") synchron",
