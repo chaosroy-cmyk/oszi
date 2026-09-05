@@ -598,8 +598,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.16-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-16';
+const APP_VERSION = '8.17-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-17';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -630,7 +630,7 @@ const TESTS = [
 },
 {
  id:"widerstand",cat:"basis",ic:"〰️",nm:"Widerstand messen",tag:"mm",
- was:"Wert eines Bauteils/Leitung im stromlosen Zustand prüfen (NTC, Spule, Durchgang).",
+ was:"Wert eines Bauteils/Leitung im spannungsfreien Zustand prüfen (NTC, Spule, Durchgang).",
  set:{mode:"Ohm (Ω)",buchse:"COM + V/Ω"},
  probes:[["r","Bauteilanschluss 1"],["b","Bauteilanschluss 2"]],
  mess:"NUR spannungsfrei! Stecker abziehen, Bauteil isolieren. Messspitzen erst zusammenhalten → Eigenwiderstand merken.",
@@ -819,7 +819,7 @@ const TESTS = [
  set:{mode:"DC Volt (V⎓)",buchse:"COM + V/Ω"},
  probes:[["r","Verbraucher-Masse"],["b","Batterieminus"]],
  mess:"Verbraucher EINSCHALTEN. Spannung zwischen Verbraucher-Masse und Batterieminus messen.",
- good:"Möglichst nahe 0 V (< 0,1–0,2 V unter Last).",
+ good:"Unter Last möglichst nahe 0 V, bewertet gegen die Vorgabe für genau diesen Massepfad. Ohne OEM-Vorgabe zählt der Vergleich mit einem baugleichen intakten Pfad und die Funktion des Verbrauchers.",
  bad:"Je höher der Wert, desto schlechter die Masse (Korrosion, lose, Übergangswiderstand).",
  next:"Sensor-Masse ≠ Leistungsmasse – nicht verwechseln! Masseband Motor↔Karosserie separat prüfen.",
  beg:"Masse ist der 'Rückweg' des Stroms. Verbraucher an, dann misst du den Rückweg-Verlust. Hoher Wert = schlechte Masse.",
@@ -893,7 +893,7 @@ const TESTS = [
  requires:["Messung bei ausgeschalteter Zündung als Erstschritt","Schaltplan mit Leitungsverlauf und Nachbaradern","spannungsfrei für alle Ohm-Messungen"],
  limits:["zeigt nicht, wie lange die Fremdspannung schon anlag – Folgeschaden bleibt möglich","Schluss nur gegen geschaltetes Plus tritt erst im Betriebszustand auf"],
  dont:["Fahrzeug nicht mit bekanntem Plusschluss weiterbetreiben","Sensoren nicht auf Verdacht tauschen, bevor die Fremdspannung weg ist"],
- warn:[["danger","Fremdspannung auf der 5-V-Referenz kann Sensor UND Steuergeräteausgang zerstören. Vor jeder weiteren Diagnose die einspeisende Leitung stromlos machen."],
+ warn:[["danger","Fremdspannung auf der 5-V-Referenz kann Sensor UND Steuergeräteausgang zerstören. Vor jeder weiteren Diagnose die einspeisende Leitung spannungsfrei schalten."],
        ["caution","Typische Quelle: Parallelverlegung mit Verbraucherleitungen – Lüfter, Beleuchtung, Relaisausgänge. Schluss gegen geschaltetes Plus zeigt sich nur, wenn dieser Verbraucher aktiv ist."],
        ["info","Nach der Reparatur: Referenz erneut messen, Fehlerspeicher löschen, Livedaten aller Sensoren an dieser Referenz auf Plausibilität prüfen – ein still beschädigter Sensor bleibt sonst unentdeckt."]],
  syn:"Plusschluss Kurzschluss nach Plus Fremdspannung Überspannung 5V"
@@ -1040,7 +1040,7 @@ const TESTS = [
 {
  id:"radsensor",cat:"sensor",ic:"🛞",nm:"Raddrehzahlsensor",tag:"osz",
  was:"ABS-/Raddrehzahlsensor: aktiv oder passiv. Pinzahl allein reicht NICHT zur Typbestimmung.",
- set:{mode:"DC V / AC V / ggf. mA nach Schaltplan",buchse:"COM + V/Ω"},
+ set:{mode:"DC V / AC V / ggf. mA nach Schaltplan; Ohm nur bei sicher passivem Geber",buchse:"COM + V/Ω"},
  probes:[["r","Signal/Versorgung nach Schaltplan"],["b","Masse/Rückleitung nach Schaltplan"]],
  mess:"Typ zuerst über Schaltplan/Livedaten klären. Passiv: AC-Spannung beim Drehen. Aktiv: Versorgung/Strom-/Signaländerung prüfen; viele aktive Sensoren sind 2-polig.",
  good:"Passiv: AC steigt mit Drehzahl. Aktiv: Versorgung vorhanden und Signal/Strom ändert sich beim Drehen.",
@@ -1199,7 +1199,7 @@ const TESTS = [
  good:"Spulenwiderstand im Sollbereich, Versorgung & Ansteuerung kommen an.",
  bad:"OL = Spule offen. ~0 Ω = Windungsschluss. Keine Ansteuerung.",
  next:"Ansteuerung Plus- oder massegeschaltet? Im Schaltplan klären.",
- beg:"Spule misst man stromlos (Ohm). Dann prüfen: kommt Strom und kommt das Schaltsignal an?"
+ beg:"Die Spule misst man spannungsfrei mit Ohm – nicht bloß stromlos: Solange Spannung am Kreis anliegt, überlagert sie den Prüfstrom des Messgeräts, auch wenn gerade kein Strom fließt. Also Stecker ab, dann messen. Danach prüfen: kommt Strom und kommt das Schaltsignal an?"
 },
 {
  id:"taktventil",cat:"aktor",ic:"📶",nm:"Takt-/PWM-Ventil (N75/N249)",tag:"osz",
@@ -1359,7 +1359,7 @@ const TESTS = [
  good:"HS-CAN: Ruhe ~2,5 V. Abschluss ~60 Ω bei zwei 120-Ω-Widerständen.",
  bad:"~120 Ω hat zwei völlig verschiedene Ursachen: ein fehlender Abschluss ODER eine Unterbrechung in CAN-High oder CAN-Low zwischen den beiden Abschlüssen – dann misst man nur noch den näheren. Vor der Reparaturentscheidung durch Durchgangsprüfung beider Adern über die ganze Strecke unterscheiden. Stark abweichend = Schluss/Leitungsproblem.",
  next:"Echte Busdiagnose → Oszilloskop/Diagnosegerät.",
- beg:"Schnelltest am HS-CAN: stromlos zwischen CAN-High und -Low messen. ~60 Ω ist gut, weil zwei 120-Ω-Abschlüsse parallel liegen. Misst du ~120 Ω, sieht dein Messgerät nur einen davon – und dafür gibt es zwei Gründe: Entweder fehlt ein Abschluss, oder eine der beiden Adern ist zwischen den Abschlüssen gebrochen und trennt den zweiten ab. Das sind zwei völlig verschiedene Reparaturen, also prüf danach beide Adern auf Durchgang, bevor du entscheidest. Andere Busarten und Topologien können ohnehin abweichen.",
+ beg:"Schnelltest am HS-CAN: spannungsfrei zwischen CAN-High und -Low messen. ~60 Ω ist gut, weil zwei 120-Ω-Abschlüsse parallel liegen. Misst du ~120 Ω, sieht dein Messgerät nur einen davon – und dafür gibt es zwei Gründe: Entweder fehlt ein Abschluss, oder eine der beiden Adern ist zwischen den Abschlüssen gebrochen und trennt den zweiten ab. Das sind zwei völlig verschiedene Reparaturen, also prüf danach beide Adern auf Durchgang, bevor du entscheidest. Andere Busarten und Topologien können ohnehin abweichen.",
  warn:[["info","Multimeter zeigt bei Kommunikation nur Mittelwerte. 60-Ω-/2,5-V-Regel gilt für klassischen High-Speed-CAN mit Abschlusswiderständen; echte Busanalyse nur per Oszilloskop/Diagnose."]]
 },
 {
@@ -1696,7 +1696,7 @@ const DEEP = {
    ["Klicken vorhanden, Verbraucher tot","Kontakt verdächtig – unter Last messen","w"],
    ["Spulenwiderstand (spannungsfrei)","gegen OEM-Vorgabe; Beispiel 60–120 Ω","g"],
    ["Spule mit Parallelwiderstand","Messwert nicht aussagekräftig","w"],
-   ["Abfall 30→87 unter Last","gering, Beispielzielwert < 0,2 V","g"],
+   ["Abfall 30→87 unter Last","gering, gegen die Vorgabe für diesen Kreis; ohne Vorgabe Vergleichskreis","g"],
    ["deutlicher Abfall 30→87 unter Last","Kontakt oder Sockel prüfen","b"],
    ["Ruhezustand 87a (Öffner/Wechsler)","Spannung liegt an, verschwindet beim Anziehen","g"]],
    note:"Klemmenbezeichnungen nach DIN 72552. Spulenwiderstand und Abfallgrenze sind bauart- und OEM-abhängig; die genannten Zahlen sind Beispiele aus dieser App und keine allgemeingültigen Grenzen. Entscheidend ist immer der Kontakt unter realer Last."},
@@ -1947,7 +1947,7 @@ const DEEP = {
    ["Spannung an der Referenz","unterhalb OEM-Soll, Richtung 0 V","oberhalb OEM-Soll, Richtung Bordspannung"],
    ["Häufigkeit","häufig","selten"],
    ["Gefahr für Sensor/Steuergerät","gering – Ausgang schaltet meist ab","hoch – Bauteilschaden möglich"],
-   ["Sofortmaßnahme","keine","einspeisende Leitung stromlos machen"],
+   ["Sofortmaßnahme","keine","einspeisende Leitung spannungsfrei schalten"],
    ["Erstmessung","Ohm Referenz ↔ Masse, am vollständig isolierten Leiter","Spannung Referenz ↔ Masse NACH vollständigem Power-down (OEM-Nachlaufzeit abwarten – „Zündung aus“ allein genügt nicht)"],
    ["Befund bei Schluss","niederohmiger Pfad am isolierten Leiter","dauerhafte Spannung nach Power-down, bis zur Quelle zurückverfolgt"],["Kein Befund","Zwischenwert bei nicht getrennten Pfaden","kurzzeitige Restspannung, Nachlauf oder Wake-up"],
    ["Eingrenzung","Sensoren einzeln, dann Halbierung","identisch, zusätzlich Verbraucher durchschalten"],
@@ -2346,7 +2346,7 @@ const DEEP = {
    ["Ohm kalt (je Stufe)","niederohmig, kein OL","g"],
    ["Einschaltstrom Zuheizer-Stufe","hoch (z.B. 20–40 A)","g"],
    ["Strom nach Aufheizen","deutlich gefallen","g"],
-   ["Masseabfall unter Last","< 0,2 V","g"],
+   ["Masseabfall unter Last","gegen die Vorgabe für diesen Kreis; ohne Vorgabe Vergleichskreis","g"],
    ["0 A trotz Spannung","Element/Zuleitung offen","b"],
    ["Strom bleibt maximal","keine Selbstregelung – Element/Luftstrom","b"]],
    note:"Leistungs- und Stromwerte sind stark fahrzeugabhängig (Zuheizer gesamt bis ~1 kW bei 12 V). Stufenansteuerung über Relais oder LIN – Ansteuerlogik per Schaltplan/Diagnose klären. Hochstromkreis: Stecker und Leitungen auf Schmorstellen prüfen."},
@@ -2361,7 +2361,7 @@ const DEEP = {
 },
 "luefter":{
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
-   ["Versorgung am Lüfter","≈ Bordspannung","g"],["Masseabfall unter Last","< 0,2 V","g"],
+   ["Versorgung am Lüfter","≈ Bordspannung","g"],["Masseabfall unter Last","gegen die Vorgabe für diesen Kreis; ohne Vorgabe Vergleichskreis","g"],
    ["Wicklungs-Ohm","niedrig (typabh.)","g"],["PWM-Mittelwert","ändert sich mit Stufe","g"]],
    note:"VAG/BMW oft PWM-/LIN-gesteuerte Lüftermodule (eigenes STG im Lüfter). Dann nur Versorgung/Masse/Ansteuerung prüfbar – Modul-Diagnose."},
  urs:[["Lüftermotor/Modul defekt","läuft nicht/brummt","h"],["Versorgung/Sicherung fehlt","tot","h"],
@@ -2374,7 +2374,7 @@ const DEEP = {
 },
 "kraftstoffpumpe":{
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
-   ["Versorgung an Pumpe","≈ Bordspannung","g"],["Masseabfall unter Last","< 0,2 V","g"],
+   ["Versorgung an Pumpe","≈ Bordspannung","g"],["Masseabfall unter Last","gegen die Vorgabe für diesen Kreis; ohne Vorgabe Vergleichskreis","g"],
    ["Stromaufnahme (Stromzange)","~4–8 A typ.","g"],["zu hoher Strom","Pumpe schwergängig","b"],
    ["0 A trotz Spannung","Pumpe offen","b"]],
    note:"VAG: Pumpenansteuerung oft über Pumpensteuergerät (J538/PWM) – nicht einfach Dauerplus. BMW: EKPS-Modul. Vorförder- vs. Hochdruckpumpe unterscheiden."},
@@ -2411,7 +2411,7 @@ const DEEP = {
 },
 "motor-allg":{
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
-   ["Versorgung am Motor","≈ Bordspannung","g"],["Masseabfall unter Last","< 0,2 V","g"],
+   ["Versorgung am Motor","≈ Bordspannung","g"],["Masseabfall unter Last","gegen die Vorgabe für diesen Kreis; ohne Vorgabe Vergleichskreis","g"],
    ["Stromaufnahme","plausibel","g"],["zu hoher Strom","schwergängig","b"]],
    note:"Fensterheber/ZV oft im Türsteuergerät mit Stromüberwachung & Einklemmschutz – nach Batterietrennung evtl. Anlernen."},
  urs:[["Motor verschlissen/schwergängig","läuft schwer, hoher Strom","h"],["Schalter defekt","keine Ansteuerung","m"],
@@ -2423,8 +2423,8 @@ const DEEP = {
 },
 "hupe":{
  rt:{head:["Messung","Richtwert","Bewertung"],rows:[
-   ["Spannung am Verbraucher","≈ Bordspannung","g"],["Plus-Abfall unter Last","< 0,3 V","g"],
-   ["Masse-Abfall unter Last","< 0,2 V","g"],["deutlich zu wenig","Abfall/Leitung","b"]],
+   ["Spannung am Verbraucher","≈ Bordspannung","g"],["Plus-Abfall unter Last","gegen die Vorgabe für diesen Kreis; ohne Vorgabe Vergleichskreis","g"],
+   ["Masse-Abfall unter Last","gegen die Vorgabe für diesen Kreis; ohne Vorgabe Vergleichskreis","g"],["deutlich zu wenig","Abfall/Leitung","b"]],
    note:"LED-Leuchten: oft eigene Elektronik/Steuergerät, CAN-Ansteuerung – einfache Spannungsprüfung kann täuschen. Glühlampe = klassischer Lastverbraucher."},
  urs:[["Spannungsabfall Plus/Masse","Lampe schwach, Hupe leise","h"],["Verbraucher defekt","tot trotz Spannung","m"],
       ["Schalter/Relais","keine Ansteuerung","m"],["Schlechte Masse","schwach","h"]],
@@ -2447,7 +2447,7 @@ const DEEP = {
    ["Ruhe CAN-High","~2,5 V","g"],["Ruhe CAN-Low","~2,5 V","g"],
    ["High aktiv","~3,5 V","g"],["Low aktiv","~1,5 V","g"],
    ["High↔Low Schluss","~0 Ω","b"],["Leitung↔Masse Schluss","niederohmig","b"]],
-   note:"60-Ω-Test SPANNUNGSFREI und vorrangig für klassischen High-Speed-CAN mit zwei 120-Ω-Abschlüssen. „Zündung aus“ allein genügt dafür nicht – Steuergeräte an Klemme 30 bleiben versorgt und können den Bus wecken; Nachlauf abwarten und den Bus nach Herstellervorgabe stromlos machen. ~60 Ω belegt außerdem nur, dass zwei Abschlüsse parallel liegen – es beweist weder intakte Adern über die ganze Strecke noch fehlerfreie Kommunikation. Ein Multimeterwert ersetzt keine Signalbewertung. VAG: mehrere CAN über Gateway. BMW: PT-CAN/K-CAN/FlexRay – Topologie im Schaltplan."},
+   note:"60-Ω-Test SPANNUNGSFREI und vorrangig für klassischen High-Speed-CAN mit zwei 120-Ω-Abschlüssen. „Zündung aus“ allein genügt dafür nicht – Steuergeräte an Klemme 30 bleiben versorgt und können den Bus wecken; Nachlauf abwarten und den Bus nach Herstellervorgabe spannungsfrei schalten. ~60 Ω belegt außerdem nur, dass zwei Abschlüsse parallel liegen – es beweist weder intakte Adern über die ganze Strecke noch fehlerfreie Kommunikation. Ein Multimeterwert ersetzt keine Signalbewertung. VAG: mehrere CAN über Gateway. BMW: PT-CAN/K-CAN/FlexRay – Topologie im Schaltplan."},
  urs:[["Abschlusswiderstand/Steuergerät fehlt","~120 Ω, Buszweig tot","m"],
       ["Leitung High/Low vertauscht/gebrochen","keine Kommunikation","m"],
       ["Schluss High↔Low oder gegen Masse/Plus","Bus down, viele Codes","h"],
@@ -2499,7 +2499,7 @@ const DEEP = {
  rt:{head:["Prüfung","Befund OK","Fehlerbild"],rows:[
    ["Durchgang","~0 Ω","OL = Bruch"],["Schluss gegen Masse","OL (kein Schluss)","niederohmig = Schluss"],
    ["Schluss gegen Plus","kein Schluss","Spannung wo keine sein soll"],
-   ["Spannungsabfall (Last)","< 0,2 V","hoch = Kontakt/Korrosion"],["Pin-Fit","fester Sitz","aufgeweitet = Wackler"]],
+   ["Spannungsabfall (Last)","gegen die Vorgabe für diesen Kreis; ohne Vorgabe Vergleichskreis","darüber = Kontakt/Korrosion"],["Pin-Fit","fester Sitz","aufgeweitet = Wackler"]],
    note:"Backprobing statt Durchstechen. VAG/BMW: typische Scheuerstellen an Türübergängen, Heckklappe, Motor-Karosserie-Übergang, Auspuffnähe."},
  urs:[["Scheuerstelle/Durchscheuern","Schluss gegen Masse, Sicherung fliegt","h"],
       ["Kabelbruch durch Bewegung","Aussetzer (Tür/Heckklappe)","h"],

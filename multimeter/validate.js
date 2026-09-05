@@ -1017,6 +1017,142 @@ const w = dom.window, d = w.document;
      !/ISO 8820-3:2026/.test(SOURCES) &&
      /IEC 60751/.test(SOURCES) && /ISO 11898-2:2026/.test(SOURCES) && /ISO 17987-3:2025/.test(SOURCES));
 
+  section("32 · Runde 14 · Begriffsschärfe und die letzte übersehene Festgrenze");
+  // Auslöser 1: Die projektweite Prüfung aus Runde 9 durchsuchte nur anl und fs. Die
+  // Kopffelder good, bad und mess blieben aussen vor – und genau dort stand in der
+  // Karte masse noch "< 0,1–0,2 V unter Last", während ihre eigene Tabelle korrekt
+  // "OEM-Grenze für Kreis und Last verwenden" sagt. Die Regel deckt jetzt alle Felder ab.
+  const rohGrenze = /[<>]\s*=?\s*0,\d+\s*V/;
+  const gebunden  = /OEM|Herstellerbeispiel|Vorgabe|Vergleichskreis/;
+  const restGrenzen2 = [];
+  TESTS.forEach(t => {
+    const dd = DEEP[t.id] || {};
+    ["mess", "good", "bad", "next"].forEach(f => {
+      const v = String(t[f] || "");
+      if (rohGrenze.test(v) && !gebunden.test(v)) restGrenzen2.push(t.id + "." + f);
+    });
+    (dd.anl || []).forEach((x, i) => {
+      if (rohGrenze.test(String(x)) && !gebunden.test(String(x))) restGrenzen2.push(t.id + " anl" + (i + 1));
+    });
+    (dd.fs || []).forEach((f, i) => {
+      const txt = (f.ok || "") + " " + (f.ng || "") + " " + (f.do || "");
+      if (rohGrenze.test(txt) && !gebunden.test(txt)) restGrenzen2.push(t.id + " fs" + (i + 1));
+    });
+  });
+  // Und der Rest der Karte: Richtwerttabellen, deren Notizen, Warnblöcke,
+  // Voraussetzungen, Grenzen, Verbote – sowie sämtliche Baumknoten. Erst damit ist
+  // die Regel vollständig; die früheren Fassungen liessen jeweils Felder aus, und
+  // genau dort überlebten Grenzen (masse.good, ptc-heizung.rt, luefter.rt, hupe.rt …).
+  TESTS.forEach(t => {
+    const dd = DEEP[t.id] || {};
+    [["rt", dd.rt], ["rt2", dd.rt2]].forEach(([nm, rt]) => {
+      if (!rt) return;
+      (rt.rows || []).forEach((r, i) => {
+        const z = r.join(" ");
+        if (rohGrenze.test(z) && !gebunden.test(z)) restGrenzen2.push(t.id + " " + nm + "[" + i + "]");
+      });
+      if (rt.note && rohGrenze.test(rt.note) && !gebunden.test(rt.note))
+        restGrenzen2.push(t.id + " " + nm + ".note");
+    });
+    const meta = JSON.stringify([t.warn, t.requires, t.limits, t.dont]);
+    if (rohGrenze.test(meta) && !gebunden.test(meta)) restGrenzen2.push(t.id + " meta");
+  });
+  Object.entries(TREES).forEach(([k, tr]) => {
+    tr.nodes.forEach((nd, i) => {
+      const z = (nd.q || "") + " " + (nd.r || "") + " " + ((nd.opts || []).map(o => o.t).join(" "));
+      if (rohGrenze.test(z) && !gebunden.test(z)) restGrenzen2.push(k + "[" + i + "]");
+    });
+  });
+  ok("keine ungebundene Abfallgrenze im GESAMTEN Bestand (Kopffelder, Tabellen, Notizen, Meta, Bäume)",
+     restGrenzen2.length === 0, restGrenzen2.join(", "));
+  ok("masse: Massepfadbewertung ist an Vorgabe und Vergleichspfad gebunden",
+     /Vorgabe für genau diesen Massepfad/.test(TESTS.find(t => t.id === "masse").good));
+
+  // Auslöser 2: "stromlos" und "spannungsfrei" sind nicht dasselbe. Für die Ohm-Messung
+  // ist Spannungsfreiheit die Bedingung: Der Ohmmeter speist einen eigenen Prüfstrom ein,
+  // den eine anliegende Fremdspannung überlagert – auch dann, wenn gerade kein Strom
+  // fliesst. widerstand sagte im Feld "was" noch "im stromlosen Zustand", während sein
+  // eigenes Feld "mess" korrekt "NUR spannungsfrei!" fordert.
+  const flatten2 = v => v == null ? "" : typeof v === "string" ? v
+    : Array.isArray(v) ? v.map(flatten2).join(" ")
+    : typeof v === "object" ? Object.values(v).map(flatten2).join(" ") : String(v);
+  const stromlosFalsch = [];
+  TESTS.forEach(t => {
+    const txt = flatten2(t) + " " + flatten2(DEEP[t.id] || {});
+    // "stromlos" in unmittelbarer Nähe einer Ohm-/Widerstandsmessung
+    const treffer = txt.match(/.{0,80}stromlos.{0,80}/g) || [];
+    treffer.forEach(f => {
+      if (!/Ohm|Widerstand/i.test(f)) return;          // nur ohmische Kontexte
+      if (/nicht bloß stromlos|nicht nur stromlos/.test(f)) return; // bewusster Lehrsatz
+      stromlosFalsch.push(t.id);
+    });
+  });
+  ok("keine Karte nennt „stromlos“ als Voraussetzung einer Ohm-Messung",
+     stromlosFalsch.length === 0, [...new Set(stromlosFalsch)].join(", "));
+  ok("widerstand: Kartenzweck nennt den spannungsfreien Zustand",
+     /spannungsfreien Zustand/.test(TESTS.find(t => t.id === "widerstand").was));
+  ok("magnetventil: Einsteigertext erklärt den Unterschied ausdrücklich",
+     /nicht bloß stromlos/.test(DEEP["magnetventil"] ? JSON.stringify(TESTS.find(t => t.id === "magnetventil")) : ""));
+
+  // Auslöser 3: radsensor schreibt für sicher passive Geber eine Ohm-Messung vor,
+  // führte Ohm aber nicht in der Geräteeinstellung.
+  const rs = TESTS.find(t => t.id === "radsensor");
+  ok("radsensor: Geräteeinstellung nennt Ohm mit dem nötigen Vorbehalt",
+     /Ohm nur bei sicher passivem Geber/.test(rs.set.mode), rs.set.mode);
+
+  section("33 · Runde 14 · mV-Drop-Tabelle gegen die Sicherungsdaten");
+  // Die Tabelle "≈ mV pro 100 mA" der Karte ruhestrom-fuse ist aus FUSE_TYPES ableitbar:
+  // U[mV] = R[mΩ] × 0,1 A = R/10. Sie war korrekt – aber nirgends abgesichert. Eine
+  // Änderung an FUSE_TYPES hätte die Tabelle stumm falsch werden lassen.
+  const FT = w.eval("FUSE_TYPES");
+  const mvJe100mA = (typ, a) => {
+    const it = FT[typ].items.find(x => x.a === a);
+    return it ? it.r / 10 : null;
+  };
+  const rfRows = DEEP["ruhestrom-fuse"].rt.rows;
+  // Zeilen mit "Mini/Standard" decken ZWEI Bauformen ab und nennen einen gerundeten
+  // Wert; die zulässige Spanne ergibt sich deshalb aus beiden Reihen. Reine
+  // Standard-Zeilen werden gegen ATOF geprüft. Toleranz relativ, weil die Tabelle
+  // ihre Werte mit "~" führt.
+  const zeilen = [
+    ["Mini/Standard 3 A", [["atof", 3], ["mini", 3]]],
+    ["Mini/Standard 5 A", [["atof", 5], ["mini", 5]]],
+    ["Standard 10 A",     [["atof", 10]]],
+    ["Standard 15 A",     [["atof", 15]]],
+    ["Standard 20 A",     [["atof", 20]]],
+    ["Standard 25–30 A",  [["atof", 25], ["atof", 30]]],
+    ["Maxi 40–50 A",      [["maxi", 40], ["maxi", 50]]]
+  ];
+  const mvBad = [];
+  zeilen.forEach(([label, quellen]) => {
+    const werte = quellen.map(([typ, a]) => mvJe100mA(typ, a));
+    if (werte.some(v => v === null)) { mvBad.push(label + ": FUSE_TYPES-Eintrag fehlt"); return; }
+    const lo = Math.min(...werte), hi = Math.max(...werte);
+    const zeile = rfRows.find(r => r[0].trim() === label);
+    if (!zeile) { mvBad.push(label + ": Tabellenzeile fehlt"); return; }
+    const genannt = (zeile[1].match(/[\d]+(?:,[\d]+)?/g) || []).map(x => parseFloat(x.replace(",", ".")));
+    if (!genannt.length) { mvBad.push(label + ": kein Zahlenwert in der Zeile"); return; }
+    // Jeder genannte Wert muss innerhalb der aus den Daten folgenden Spanne
+    // liegen, mit 15 % Rundungsspielraum nach beiden Seiten.
+    const passt = genannt.every(g => g >= lo * 0.85 - 0.02 && g <= hi * 1.15 + 0.02);
+    if (!passt)
+      mvBad.push(label + ": Tabelle „" + zeile[1] + "“, aus FUSE_TYPES folgt " +
+                 lo.toFixed(2) + "–" + hi.toFixed(2) + " mV");
+  });
+  ok("alle " + zeilen.length + " mV-Richtwerte der Sicherungstabelle folgen aus FUSE_TYPES (U = R/10)",
+     mvBad.length === 0, mvBad.join(" ; "));
+  ok("ATOF-Ankerwert unverändert: 10 A = 7,70 mΩ",
+     Math.abs(FT.atof.items.find(x => x.a === 10).r - 7.70) < 0.01);
+  // Die Reihen müssen monoton fallen – ein Tippfehler in einem Wert fiele hier auf.
+  const nichtMonoton = [];
+  Object.entries(FT).forEach(([typ, v]) => {
+    for (let i = 1; i < v.items.length; i++)
+      if (v.items[i].r >= v.items[i - 1].r)
+        nichtMonoton.push(typ + " " + v.items[i - 1].a + "A→" + v.items[i].a + "A");
+  });
+  ok("Sicherungswiderstände fallen in jeder Bauform monoton mit dem Nennstrom",
+     nichtMonoton.length === 0, nichtMonoton.join(", "));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");

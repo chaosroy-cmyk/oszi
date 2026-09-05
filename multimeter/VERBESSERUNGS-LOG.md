@@ -3,9 +3,9 @@
 Fortschrittsregister des Verbesserungs-Loops. Arbeitsanweisung:
 [`PROMPT-VERBESSERUNG.md`](PROMPT-VERBESSERUNG.md).
 
-**Rotation einmal vollständig durchlaufen (Runde 1–13).**
-Nächster Durchgang beginnt wieder bei Thema 1 – mit dem Anspruch, das zu finden,
-was beim ersten Mal durchgerutscht ist.
+**Zweiter Durchgang läuft.** Er arbeitet nicht Karte für Karte, sondern nutzt die
+vier Fehlermuster aus Durchgang 1 als systematische Suchraster über den gesamten
+Bestand.
 
 Format je Runde:
 
@@ -782,3 +782,56 @@ stattgefunden hat.
 stillschweigend von der Realität abweichen. Dazu die Normstände: ISO 8820-3:2015
 gültig, FDIS ausdrücklich nicht als publiziert, IEC 60751, ISO 11898-2:2026,
 ISO 17987-3:2025.
+
+---
+
+## Runde 14 · Zweiter Durchgang: Begriffsschärfe und Restgrenzen · 2026-09-05
+
+Baseline: 190/190 grün → Abschluss: 199/199 grün · Version 8.16-Profi → 8.17-Profi
+
+Methode: kein Einzelthema, sondern die vier Fehlermuster aus Durchgang 1 als
+Suchraster über alle 74 Karten, 15 Bäume und `FUSE_TYPES`.
+
+### Befunde
+
+- **„stromlos" statt „spannungsfrei" als Bedingung der Ohm-Messung**
+  (`widerstand` `was`, `magnetventil`, `can`, `ref5v-plusschluss`,
+  `ref5v-vergleich`)
+  Ein Ohmmeter speist einen eigenen Prüfstrom ein; eine anliegende
+  Fremdspannung überlagert ihn und verfälscht das Ergebnis — auch dann, wenn
+  gerade kein Strom fließt. Ein Kreis mit offenem Verbraucher ist stromlos und
+  trotzdem spannungsführend. Beleg intern: `widerstand` fordert im Feld `mess`
+  selbst „NUR spannungsfrei!", sagt im Feld `was` aber „im stromlosen Zustand".
+  Fix: alle fünf Stellen auf „spannungsfrei" gezogen; `magnetventil` erklärt den
+  Unterschied jetzt ausdrücklich, statt ihn nur zu vermeiden.
+  Nicht geändert, weil korrekt: `relais` („87 stromlos" = unbestromter
+  Ruhezustand der Spule), `spannung`, `sicherung`.
+
+- **Neun Festgrenzen, die alle bisherigen Prüfungen überlebt hatten**
+  Die projektweite Regel war über vier Runden gewachsen und jedes Mal
+  unvollständig: v8.7 prüfte `anl`/`fs` nur bei OEM-gebundenen Tabellen, v8.12
+  `anl`/`fs` projektweit — Kopffelder, Tabellenzeilen, Notizen, Meta-Listen und
+  Baumknoten blieben außen vor. Dort überlebten: `masse.good`
+  („< 0,1–0,2 V unter Last", während die eigene Tabelle korrekt OEM-gebunden
+  ist) sowie acht Tabellenzeilen in `ptc-heizung`, `luefter`,
+  `kraftstoffpumpe`, `motor-allg`, `leitung`, `hupe` (zwei) und `relais`.
+  Fix: alle neun an die Vorgabe des Kreises gebunden, Vergleichskreis als
+  Ersatzregel. Die Prüfung erfasst ab sofort den **gesamten** Bestand.
+
+- **`radsensor`: Ohm fehlte in der Geräteeinstellung**, obwohl die Karte für
+  sicher passive Geber eine Spulen-Ohm-Messung vorschreibt. Ergänzt mit dem
+  Vorbehalt „nur bei sicher passivem Geber".
+
+### Neu abgesichert, ohne Reparaturbedarf
+
+Die Tabelle „≈ mV pro 100 mA" (`ruhestrom-fuse`) ist aus `FUSE_TYPES` ableitbar
+(U = R/10) und war korrekt, aber nirgends gesichert. Der Validator rechnet jetzt
+alle sieben Zeilen nach; Zeilen wie „Mini/Standard 3 A" decken zwei Bauformen ab
+(ATOF 3,11 mV, MINI 3,38 mV), die Spanne folgt aus beiden. Dazu die
+Monotonieprüfung der Widerstandsreihen — ein Tippfehler in einem Einzelwert
+fiele sofort auf.
+
+### Ergebnislos geprüft
+
+Scan über alle Karten nach harten Entscheidungsgrenzen in anderen Einheiten
+(mV, mA, A, Ω, kΩ, °C, %): keine einzige ungebundene Stelle.
