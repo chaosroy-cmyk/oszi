@@ -598,8 +598,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.19-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-19';
+const APP_VERSION = '8.20-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-20';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -838,7 +838,7 @@ const TESTS = [
  good:"Wert liegt im Sollbereich der Fahrzeug-/Steuergerätevorgabe und bleibt stabil. Bei vielen Systemen liegt die Referenz nahe 5 V; die konkrete Toleranz steht nur im OEM-Prüfplan (Beispiele: 4,75–5,25 V oder 4,7–5,3 V – nicht allgemeingültig).",
  bad:"0 V oder eingebrochen: Verdacht auf Kurzschluss nach Masse oder Plus, Überlast oder defekte Versorgung – die Unterscheidung gelingt erst am isolierten Leiter beziehungsweise nach Power-down.",
  next:"Auf Schluss nach Masse UND nach Plus prüfen. Sensorversorgung NICHT belasten.",
- beg:"Mehrere Sensoren hängen an derselben 5-V-Leitung. Ein kaputter zieht alle runter → wirkt wie viele Defekte. Einzeln absteckmethode.",
+ beg:"Mehrere Sensoren hängen an derselben 5-V-Leitung. Ein kaputter zieht alle runter und wirkt dadurch wie viele Defekte gleichzeitig. Deshalb grenzt man ein, indem man die Sensoren einzeln absteckt und nach jedem Schritt erneut misst: Kommt die Spannung zurück, war es der zuletzt getrennte.",
  warn:[["danger","NIE mit Prüflampe auf 5-V-Referenz! Die Lampe belastet die empfindliche Versorgung und kann Sensorwerte/Steuergerät stören."]]
 },
 /* ---------- 5-V-REFERENZ: KURZSCHLUSS-DIAGNOSE ----------
@@ -1058,7 +1058,7 @@ const TESTS = [
  good:"Spulenwiderstand im Sollbereich. AC-Spannung steigt mit Drehzahl.",
  bad:"OL = Spule unterbrochen. Keine AC = kein Signal / Luftspalt zu groß.",
  next:"Signalform & Amplitude → Oszilloskop. Luftspalt & Polrad prüfen.",
- beg:"Der erzeugt seinen Strom selbst – wie ein Mini-Generator. Beim Drehen muss Wechselspannung kommen. Sonst Spule oder Abstand prüfen.",
+ beg:"Der erzeugt seine Spannung selbst – wie ein Mini-Generator. Genauer: Das vorbeilaufende Geberrad ändert das Magnetfeld in der Spule, und daraus entsteht eine Wechselspannung. Strom fließt dabei kaum, denn dein Multimeter belastet die Spule so gut wie nicht. Beim Drehen muss also Wechselspannung kommen; bleibt sie aus, prüfe Spule und Abstand zum Geberrad.",
  /* PRÜFEN: Suchbegriffe (Synonyme/DTC generisch nach SAE J2012) */
  syn:"Kurbelwellensensor Kurbelwellengeber OT-Geber CKP Drehzahlgeber P0335 P0336"
 },

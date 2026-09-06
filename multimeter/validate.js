@@ -1277,6 +1277,45 @@ const w = dom.window, d = w.document;
   ok("Glossar und Karte ptc-sensor nennen beide die Reihe KTY81-1xx",
      /KTY81-1xx/.test(JSON.stringify(DEEP["ptc-sensor"])) && /KTY81-1xx/.test(kty[1]));
 
+  section("37 · Runde 17 · Einsteigertexte: die Vereinfachung darf nicht falsch werden");
+  // Auslöser: Der Einsteigertext von kw-ind sagte "Der erzeugt seinen STROM selbst".
+  // Ein Induktivgeber erzeugt eine SPANNUNG; Strom fliesst erst in eine Last, und das
+  // Multimeter belastet die Spule praktisch nicht. Die Karte selbst sagt es im Feld
+  // "was" richtig ("erzeugt beim Drehen selbst eine Wechselspannung"), und der
+  // Glossareintrag "Induktivgeber" ebenso – nur die Vereinfachung für Anfänger war
+  // falsch, ausgerechnet auf einer Karte, deren Messung eine AC-SPANNUNGSmessung ist.
+  const kwi = TESTS.find(t => t.id === "kw-ind");
+  ok("kw-ind: Einsteigertext spricht von erzeugter Spannung, nicht von Strom",
+     /erzeugt seine Spannung selbst/.test(kwi.beg) && !/erzeugt seinen Strom/.test(kwi.beg));
+  ok("kw-ind: Einsteigertext erklärt die Induktion und die fehlende Belastung",
+     /Magnetfeld/.test(kwi.beg) && /belastet die Spule so gut wie nicht/.test(kwi.beg));
+  const glossInd = w.eval("GLOSS").find(g => g[0] === "Induktivgeber");
+  ok("kw-ind: Kartenzweck, Einsteigertext und Glossar nennen übereinstimmend Wechselspannung",
+     /Wechselspannung/.test(kwi.was) && /Wechselspannung/.test(kwi.beg) && /Wechselspannung/.test(glossInd[1]));
+
+  // Verallgemeinert: Wo das Feld "was" eine erzeugte Spannung nennt, darf der
+  // Einsteigertext nicht von erzeugtem Strom sprechen.
+  const quelleFalsch = TESTS.filter(t =>
+    /erzeugt[^.]{0,40}Spannung/i.test(t.was || "") &&
+    /erzeugt[^.]{0,30}\bStrom\b/i.test(t.beg || "")).map(t => t.id);
+  ok("kein Einsteigertext macht aus einer erzeugten Spannung einen erzeugten Strom",
+     quelleFalsch.length === 0, quelleFalsch.join(", "));
+
+  // Auslöser 2: ref5v endete mit dem Satzfragment "Einzeln absteckmethode." – im
+  // Einsteigertext, also genau dort, wo Verständlichkeit die einzige Aufgabe ist.
+  const r5b = TESTS.find(t => t.id === "ref5v").beg;
+  ok("ref5v: Einsteigertext enthält kein Satzfragment mehr",
+     !/Einzeln absteckmethode/.test(r5b));
+  ok("ref5v: Einsteigertext beschreibt das Absteckverfahren als Handlung",
+     /einzeln absteckt/.test(r5b) && /zuletzt getrennte/.test(r5b));
+
+  // Jeder Einsteigertext muss vorhanden und ein vollständiger Satz sein.
+  const begFehlt = TESTS.filter(t => !t.beg || t.beg.trim().length < 40).map(t => t.id);
+  ok("alle " + TESTS.length + " Karten haben einen ausformulierten Einsteigertext",
+     begFehlt.length === 0, begFehlt.join(", "));
+  const begEnde = TESTS.filter(t => !/[.!?]$/.test((t.beg || "").trim())).map(t => t.id);
+  ok("jeder Einsteigertext endet mit einem Satzzeichen", begEnde.length === 0, begEnde.join(", "));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");

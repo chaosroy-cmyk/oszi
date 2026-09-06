@@ -926,3 +926,51 @@ Flussspannung (identisch mit der Karte `diodentest`), Watt (P = U × I),
 Sicherungs-Innenwiderstand (I = U / R). Open Collector deckt sich mit der in
 Runde 6 korrigierten Karte `hall`. V⎓/V~, CAT-Messkategorie, True-RMS,
 Autorange, MIN/MAX und Polyfuse sachlich korrekt.
+
+---
+
+## Runde 17 · Zweiter Durchgang: Einsteigertexte · 2026-09-06
+
+Baseline: 218/218 grün → Abschluss: 226/226 grün · Version 8.19-Profi → 8.20-Profi
+
+Geprüft: alle 74 Einsteigertexte (`beg`) auf Fachrichtigkeit und
+Widerspruchsfreiheit zu Karte und Glossar. In beiden Durchgängen bisher nie
+systematisch geprüft — dabei ist das die Stelle, an der eine gut gemeinte
+Vereinfachung technisch falsch werden kann.
+
+### Befunde
+
+- **„erzeugt seinen Strom selbst"** (`kw-ind`)
+  Ein Induktivgeber erzeugt eine **Spannung**: Das Geberrad ändert das Magnetfeld
+  in der Spule, daraus entsteht die Induktionsspannung. Strom fließt erst in eine
+  Last, und das Multimeter belastet die Spule praktisch nicht.
+  Beleg intern und doppelt: Das Feld `was` derselben Karte sagt „erzeugt beim
+  Drehen selbst eine Wechselspannung", der Glossareintrag „Induktivgeber"
+  ebenfalls. Nur die Vereinfachung war falsch — auf einer Karte, deren Messung
+  eine AC-Spannungsmessung ist. Ein Einsteiger, der hier „Strom" liest, sucht am
+  Messgerät die falsche Betriebsart.
+  Fix: erzeugte Spannung benannt, Induktion in einem Satz erklärt, ausdrücklich
+  ergänzt, dass kaum Strom fließt, weil das Multimeter nicht belastet.
+  Regression: verallgemeinert — kein Einsteigertext darf aus einer erzeugten
+  Spannung einen erzeugten Strom machen, geprüft gegen `was` jeder Karte.
+
+- **Satzfragment im Einsteigertext** (`ref5v`)
+  Der Text endete mit „Einzeln absteckmethode." — kein Satz, sondern ein
+  Wortpaar, ausgerechnet dort, wo Verständlichkeit die einzige Aufgabe ist.
+  Fix: Das Verfahren steht jetzt als Handlung da, mit dem Abbruchkriterium
+  („kommt die Spannung zurück, war es der zuletzt getrennte").
+
+### Verdacht geprüft, nicht bestätigt
+
+`hupe` spricht im Einsteigertext von einer „Lampe, die schwach leuchtet" — sah
+nach Verwechslung aus. Die Karte heißt aber **„Hupe / Lampen / LED"** und deckt
+beides ab; ihre Ursachenliste nennt folgerichtig „Lampe schwach, Hupe leise".
+Kein Befund, keine Änderung.
+
+### Fachlich geprüft, ohne Befund
+
+Die übrigen 72 Texte. Bestätigt unter anderem: `pwm` (6 V bei 50 % Tastverhältnis
+an 12 V), `ptc-heizung` (kalt hoher, warm sinkender Strom), `stromzange-dc`
+(Feldaufhebung), `sensor-masseversatz`, `oeldruck`.
+Ein Scan nach Satzfragmenten in allen `beg`-Feldern lieferte nur Fehlalarme
+(legitime Kurzsätze wie „Sonst Kurzschluss!" oder „Zu hoch?").
