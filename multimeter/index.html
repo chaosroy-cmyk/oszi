@@ -598,8 +598,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.18-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-18';
+const APP_VERSION = '8.19-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-19';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -2599,7 +2599,7 @@ const GLOSS = [
  ["NTC","Widerstand sinkt bei steigender Temperatur."],
  ["PTC","Widerstand steigt bei steigender Temperatur."],
  ["PT200 / PT1000","Platin-PTC-Messwiderstand mit genormter Kennlinie (200 bzw. 1000 Ω bei 0 °C, ca. +0,39 %/°C) – häufig als Abgastemperatursensor."],
- ["KTY","Silizium-PTC-Temperatursensor (~1000 Ω bei 25 °C), z.B. in Generator- und E-Motor-Wicklungen."],
+ ["KTY","Silizium-PTC-Temperatursensor, z.B. in Generator- und E-Motor-Wicklungen. Der Nennwert gehört zur Reihe, nicht zum Namen: KTY81-1xx liegt bei ~1000 Ω, KTY81-2xx bei ~2000 Ω – jeweils bei 25 °C. Ohne die konkrete Type ist kein Sollwert ableitbar."],
  ["Polyfuse (PTC-Sicherung)","Selbstrückstellende PTC-Sicherung: wird bei Überstrom heiß und hochohmig, nach dem Abkühlen wieder leitend (z.B. in Fensterheber-/Wischermotoren)."],
  ["CAN","Schneller Zweidraht-Datenbus (High/Low)."],
  ["LIN","Langsamer einadriger Datenbus."],
@@ -2886,11 +2886,38 @@ function filterTests(){
 const BEG_BANNER=`<div class="beg-banner"><span class="bb-ic" aria-hidden="true">🎓</span><span><b>Einsteiger-Modus aktiv.</b> In jeder Prüfung steht oben ein Block „Einfach erklärt“. Zum Ausschalten unten erneut auf 🎓 Einsteiger tippen.</span></div>`;
 const COPY_FOOTER=`<div class="copy">© 2026 <b>R.S.</b> – Alle Rechte vorbehalten.<br>KFZ Multimeter Profi ${APP_VERSION} · Richtwerte ohne Gewähr, Herstellerangaben haben Vorrang.</div>`;
 
+/* Glossartreffer zur laufenden Suche. Das Glossar lebt in einem eigenen Overlay und
+   war deshalb über die Kartensuche nicht erreichbar: Begriffe wie True-RMS oder
+   CAT-Messkategorie stehen ausschliesslich dort und lieferten null Treffer, obwohl
+   die App sie erklärt. Jetzt erscheinen sie direkt im Suchergebnis – mit derselben
+   Auszeichnung wie in der Glossaransicht, also aufklappbar und ohne Umweg. */
+function glossHits(){
+  const toks=query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if(!toks.length)return [];
+  return GLOSS.filter(g=>{
+    const hay=(g[0]+' '+g[1]).toLowerCase();
+    return toks.every(t=>hay.includes(t));
+  });
+}
+function glossSection(hits){
+  if(!hits.length)return '';
+  return `<div class="section-title">Glossar<span class="ln"></span></div>`+
+    hits.map(g=>`<details class="gloss"><summary>${g[0]}<span class="ar">▶</span></summary><div class="gc">${g[1]}</div></details>`).join('');
+}
+
 function renderHome(){
   view="home";
   setNav('navHome');
   const list=filterTests();
-  if(!list.length){main.innerHTML=BEG_BANNER+`<div class="empty"><div class="be">🔍</div>Keine Prüfung gefunden.<br>Anderen Suchbegriff probieren.</div>`+COPY_FOOTER;return;}
+  const gh=glossHits();
+  if(!list.length){
+    main.innerHTML=BEG_BANNER+
+      (gh.length
+        ? `<div class="empty"><div class="be">🔍</div>Keine Prüfung gefunden – aber das Glossar kennt den Begriff.</div>`+glossSection(gh)
+        : `<div class="empty"><div class="be">🔍</div>Keine Prüfung gefunden.<br>Anderen Suchbegriff probieren.</div>`)
+      +COPY_FOOTER;
+    return;
+  }
   // group by category for nicer layout when 'alle'
   let html=BEG_BANNER;
   if(activeCat==='alle'&&!query){
@@ -2902,7 +2929,7 @@ function renderHome(){
   }else{
     html+=`<div class="grid">${list.map(tileHTML).join('')}</div>`;
   }
-  main.innerHTML=html+COPY_FOOTER;
+  main.innerHTML=html+glossSection(gh)+COPY_FOOTER;
 }
 
 function renderFavs(){

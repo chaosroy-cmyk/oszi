@@ -1232,6 +1232,51 @@ const w = dom.window, d = w.document;
   ok("jede Ampelspalte trägt eine Überschrift (Bewertung oder Prüfpriorität)",
      unbenannteWertung.length === 0, unbenannteWertung.join(" ; "));
 
+  section("36 · Runde 16 · Glossar: erreichbar und typgebunden");
+  // Auslöser 1: Das Glossar lebt in einem eigenen Overlay und war über die Kartensuche
+  // nicht erreichbar. Runde 11 hatte den Kartenindex auf die Tiefeninhalte erweitert,
+  // das Glossar aber nicht erfasst: True-RMS und CAT-Messkategorie stehen ausschliesslich
+  // dort und lieferten null Treffer, obwohl die App sie erklärt.
+  const GLOSS_ = w.eval("GLOSS");
+  const suchen2 = async q => {
+    const el = d.getElementById("search");
+    el.value = q;
+    el.dispatchEvent(new w.Event("input", { bubbles: true }));
+    await new Promise(r => setTimeout(r, 220));
+    const m = d.getElementById("main");
+    return { tiles: m.querySelectorAll(".tile").length, gloss: m.querySelectorAll("details.gloss").length };
+  };
+  for (const term of ["true-rms", "cat-messkategorie", "autorange", "pin-fit"]) {
+    const r = await suchen2(term);
+    ok('Suche "' + term + '" erreicht das Glossar', r.gloss > 0, JSON.stringify(r));
+  }
+  const leerR = await suchen2("");
+  ok("ohne Suchbegriff wird kein Glossarblock angehängt", leerR.gloss === 0 && leerR.tiles === TESTS.length,
+     JSON.stringify(leerR));
+  const unsinnR = await suchen2("zzzqqqxyz");
+  ok("Unsinnsbegriff liefert weder Karten noch Glossar", unsinnR.tiles === 0 && unsinnR.gloss === 0,
+     JSON.stringify(unsinnR));
+  // Begriff, den nur das Glossar kennt: die Leermeldung muss darauf hinweisen
+  await suchen2("true-rms");
+  ok("bei null Kartentreffern weist die Meldung auf das Glossar hin",
+     /Glossar kennt den Begriff/.test(d.getElementById("main").innerHTML));
+  await suchen2("");
+
+  // Auslöser 2: Der Glossareintrag "KTY" nannte ~1000 Ω bei 25 °C als generischen Wert.
+  // Das gilt nur für die Reihe KTY81-1xx; KTY81-2xx liegt bei ~2000 Ω. Die Karte
+  // ptc-sensor bindet korrekt an "KTY81-1xx", und SOURCES.md verbietet die
+  // Verallgemeinerung ausdrücklich ("Nur konkrete KTY81-Type").
+  const kty = GLOSS_.find(g => g[0] === "KTY");
+  ok("Glossar führt einen KTY-Eintrag", !!kty);
+  ok("KTY-Eintrag bindet den Nennwert an die Reihe statt an den Namen",
+     /KTY81-1xx/.test(kty[1]) && /KTY81-2xx/.test(kty[1]) && /2000 Ω/.test(kty[1]),
+     kty[1].slice(0, 90));
+  ok("KTY-Eintrag stellt klar, dass ohne Type kein Sollwert ableitbar ist",
+     /ohne die konkrete Type/i.test(kty[1]));
+  // Widerspruchsfreiheit zur Karte
+  ok("Glossar und Karte ptc-sensor nennen beide die Reihe KTY81-1xx",
+     /KTY81-1xx/.test(JSON.stringify(DEEP["ptc-sensor"])) && /KTY81-1xx/.test(kty[1]));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");

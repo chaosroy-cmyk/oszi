@@ -884,3 +884,45 @@ Baseline: 199/199 grün → Abschluss: 207/207 grün · Version 8.17-Profi → 8
   Tabellenzelle, keine ungültige Ampelwertung.
 - Querabgleich der Zahlenwerte über Kartengrenzen: Unterschiede bei „Heizung
   (Ohm, kalt)", „Spulen-Ohm" und „Ruhespannung" sind sachlich begründet.
+
+---
+
+## Runde 16 · Zweiter Durchgang: Glossar · 2026-09-06
+
+Baseline: 207/207 grün → Abschluss: 218/218 grün · Version 8.18-Profi → 8.19-Profi
+
+Geprüft: alle 53 Glossareinträge auf Fachrichtigkeit, Widerspruchsfreiheit zu den
+Karten und Erreichbarkeit.
+
+### Befunde
+
+- **Das Glossar war von der Suche nicht erreichbar**
+  Runde 11 hatte den Suchindex auf die gesamten Karteninhalte erweitert, das
+  Glossar aber nicht erfasst — es lebt in einem eigenen Overlay und wurde von
+  `filterTests` nie berührt. „True-RMS" und „CAT-Messkategorie" stehen
+  ausschließlich dort und lieferten null Treffer, obwohl die App sie erklärt.
+  Derselbe Fehlertyp wie in Runde 11, eine Ebene tiefer.
+  Fix: Glossartreffer erscheinen bei aktiver Suche direkt im Suchergebnis, mit
+  derselben aufklappbaren Auszeichnung wie in der Glossaransicht. Bei null
+  Kartentreffern sagt die Leermeldung ausdrücklich, dass das Glossar den Begriff
+  kennt. Ohne Suchbegriff wird kein Glossarblock angehängt.
+  Regression: sieben Prüfungen, beide Richtungen abgedeckt.
+
+- **`KTY`-Eintrag verallgemeinerte einen Reihenwert**
+  „Silizium-PTC-Temperatursensor (~1000 Ω bei 25 °C)" — dieser Nennwert gehört
+  zur Reihe, nicht zum Namen: KTY81-1xx ~1000 Ω, KTY81-**2xx** ~2000 Ω. Für die
+  halbe KTY81-Familie also um den Faktor zwei daneben. Widerspruch im eigenen
+  Bestand: Die Karte `ptc-sensor` bindet korrekt an „KTY81-1xx", und
+  `SOURCES.md` schreibt „Nur die konkrete KTY81-Type, nicht auf beliebige
+  Kfz-PTC übertragen".
+  Fix: Eintrag nennt beide Reihen mit Nennwerten und stellt klar, dass ohne die
+  konkrete Type kein Sollwert ableitbar ist.
+
+### Fachlich geprüft, ohne Befund
+
+Alle übrigen 52 Einträge. Nachgerechnet und bestätigt: PT200/PT1000
+(„200 bzw. 1000 Ω bei 0 °C, ca. +0,39 %/°C" deckt sich mit IEC 60751),
+Flussspannung (identisch mit der Karte `diodentest`), Watt (P = U × I),
+Sicherungs-Innenwiderstand (I = U / R). Open Collector deckt sich mit der in
+Runde 6 korrigierten Karte `hall`. V⎓/V~, CAT-Messkategorie, True-RMS,
+Autorange, MIN/MAX und Polyfuse sachlich korrekt.
