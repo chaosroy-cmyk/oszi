@@ -1316,6 +1316,83 @@ const w = dom.window, d = w.document;
   const begEnde = TESTS.filter(t => !/[.!?]$/.test((t.beg || "").trim())).map(t => t.id);
   ok("jeder Einsteigertext endet mit einem Satzzeichen", begEnde.length === 0, begEnde.join(", "));
 
+  section("38 · Runde 18 · Querverweise, Farbschema-Deklaration und Druckansicht");
+  // Auslöser 1: ref5v-vergleich – die Karte, deren einziger Zweck das Weiterleiten ist –
+  // erzeugte für drei Textverweise nur zwei Chips. Nicht der letzte scheiterte, sondern
+  // der ERSTE: "→ Prüfung: Kurzschluss nach Masse bzw." – das angehängte "bzw." brach
+  // die Auflösung ab. Ausgerechnet der häufigere der beiden Fehlerfälle (die Karte
+  // selbst führt "Häufigkeit: häufig") war damit nicht antippbar.
+  const vgl2 = TESTS.find(t => t.id === "ref5v-vergleich");
+  const vglHtml = w.linkifyRefs(String(vgl2.next));
+  const vglZiele = [...vglHtml.matchAll(/openDetail\('([^']+)'\)/g)].map(m => m[1]);
+  ok("ref5v-vergleich: alle drei Verweise erzeugen einen Chip",
+     (vglHtml.match(/class="xref"/g) || []).length === 3, vglZiele.join(", "));
+  ok("ref5v-vergleich: die Chips zeigen auf Masseschluss, Plusschluss und Grundprüfung",
+     ["ref5v-masseschluss", "ref5v-plusschluss", "ref5v-basis"].every(x => vglZiele.includes(x)),
+     vglZiele.join(", "));
+
+  // Verallgemeinert: Jeder Textverweis muss zu einem Chip werden – ausgenommen die
+  // bewusst generischen Platzhalter, die kein festes Ziel haben können.
+  const GENERISCH = [/jeweiliger Sensor/];
+  const zaehlRef = x => (String(x).match(/→\s*(Entscheidungsbaum\s*\/\s*Prüfung|Entscheidungsbaum|Prüfung)\s*:/g) || []).length;
+  const offeneRefs = [];
+  const pruefeRef = (quelle, txt) => {
+    const n = zaehlRef(txt);
+    if (!n) return;
+    if (GENERISCH.some(re => re.test(String(txt)))) return;
+    const c = (w.linkifyRefs(String(txt)).match(/class="xref"/g) || []).length;
+    if (c < n) offeneRefs.push(quelle + " (" + n + " Verweise / " + c + " Chips)");
+  };
+  TESTS.forEach(t => {
+    ["next", "mess", "good", "bad"].forEach(f => pruefeRef(t.id + "." + f, t[f]));
+    const dd = DEEP[t.id] || {};
+    (dd.anl || []).forEach((x, i) => pruefeRef(t.id + ".anl" + (i + 1), x));
+    if (dd.rt && dd.rt.note) pruefeRef(t.id + ".rt.note", dd.rt.note);
+    (dd.fs || []).forEach((f, i) => pruefeRef(t.id + ".fs" + (i + 1), (f.ok || "") + " " + (f.ng || "")));
+  });
+  Object.entries(TREES).forEach(([k, tr]) => tr.nodes.forEach((nd, i) => {
+    if (nd.r) pruefeRef(k + "[" + i + "]", nd.r);
+  }));
+  ok("jeder Textverweis wird zu einem Chip (ausser den generischen Platzhaltern)",
+     offeneRefs.length === 0, offeneRefs.join(" ; "));
+  // Der generische Platzhalter muss weiterhin bewusst OHNE Chip bleiben
+  ok("generischer Verweis „jeweiliger Sensor“ bleibt weiterhin Text",
+     !w.linkifyRefs("→ Prüfung: jeweiliger Sensor.").includes("xref"));
+
+  // Auslöser 2: Die Seite deklarierte color-scheme nur als "dark", obwohl sie ein
+  // vollständiges Hellschema mitbringt. Auf einem hell eingestellten Gerät hätte der
+  // Browser seine eigenen Bedienelemente und Scrollbalken dunkel gerendert, während
+  // das Stylesheet die helle Palette liefert.
+  const csMeta = (HTML.match(/<meta name="color-scheme" content="([^"]+)">/) || [])[1] || "";
+  ok("color-scheme deklariert beide Schemata", /light/.test(csMeta) && /dark/.test(csMeta), csMeta);
+  ok("die Seite bringt tatsächlich ein Hellschema mit",
+     /@media \(prefers-color-scheme: light\)/.test(HTML));
+
+  // Auslöser 3: Die Druckansicht setzte nur body-Farben. Die Karteninhalte färben sich
+  // aber über die Tokens – .meta-card behielt var(--card) als dunklen Hintergrund,
+  // .val-g/.val-w/.val-b ihre Signalfarben aus dem Dunkelschema.
+  const pIdx = HTML.indexOf("@media print");
+  const pBlock = HTML.slice(pIdx, HTML.indexOf("\n}", pIdx) + 2);
+  ok("Druckansicht stellt die Farbtokens um, nicht nur body",
+     /:root\{/.test(pBlock) && /--card:#fff/.test(pBlock) && /--txt:#/.test(pBlock));
+  const lumP = hex => {
+    let h = hex.replace("#", "");
+    if (h.length === 3) h = h.split("").map(c => c + c).join("");
+    const c = [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) / 255)
+      .map(v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  };
+  const kP = (a2, b2) => { const x = lumP(a2), y = lumP(b2); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  const druckSchwach = [];
+  [...pBlock.matchAll(/--(txt|txt2|acc|acc2|grn|red|blu|warn):(#[0-9a-f]{6})/g)].forEach(m => {
+    const k = kP(m[2], "#ffffff");
+    if (k < 4.5) druckSchwach.push("--" + m[1] + " " + m[2] + " = " + k.toFixed(2) + ":1");
+  });
+  ok("alle Druckfarben erreichen auf Papierweiß mindestens 4,5:1",
+     druckSchwach.length === 0, druckSchwach.join(" ; "));
+  ok("Druckansicht verhindert Seitenumbrüche mitten in Karten und Tabellen",
+     /break-inside:avoid/.test(pBlock) && /\.meta-card/.test(pBlock) && /table/.test(pBlock));
+
   if (notes.length) {
     section("Hinweise (kein Fehler)");
     console.log("  ℹ " + notes.length + "× TESTS.table liegt unter einem DEEP.rt und wird nicht gerendert");

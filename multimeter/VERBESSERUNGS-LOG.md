@@ -974,3 +974,53 @@ an 12 V), `ptc-heizung` (kalt hoher, warm sinkender Strom), `stromzange-dc`
 (Feldaufhebung), `sensor-masseversatz`, `oeldruck`.
 Ein Scan nach Satzfragmenten in allen `beg`-Feldern lieferte nur Fehlalarme
 (legitime Kurzsätze wie „Sonst Kurzschluss!" oder „Zu hoch?").
+
+---
+
+## Runde 18 · Zweiter Durchgang: Querverweise, Farbschema, Druck · 2026-09-06
+
+Baseline: 226/226 grün → Abschluss: 235/235 grün · Version 8.20-Profi → 8.21-Profi
+
+### Befunde
+
+- **Der häufigere Fehlerfall war nicht antippbar** (`ref5v-vergleich`)
+  Die Karte, deren einziger Zweck das Weiterleiten ist, erzeugte für drei
+  Textverweise nur zwei Chips. Nicht der letzte scheiterte, sondern der erste:
+  „→ Prüfung: Kurzschluss nach Masse **bzw.**" – das angehängte „bzw." brach die
+  Auflösung ab. Damit war ausgerechnet der Masseschluss nicht anklickbar, den
+  die Karte in ihrer eigenen Tabelle mit „Häufigkeit: häufig" führt (gegenüber
+  „selten" beim Plusschluss).
+  Fix: beide Wege als eigenständige Sätze mit ihrem Zuordnungskriterium.
+  Regression: verallgemeinert — jeder Textverweis muss zu einem Chip werden,
+  geprüft über `next`, `mess`, `good`, `bad`, Anleitungsschritte,
+  Tabellennotizen, Fehlersuchketten und alle Baumergebnisse. Die bisherige
+  Prüfung aus Abschnitt 6 stellte nur sicher, dass **erzeugte** Chips auf
+  gültige Ziele zeigen — nicht, dass jeder Verweis einen erzeugt. Genau dort saß
+  der Befund.
+
+- **`color-scheme` deklarierte nur „dark"**
+  Die App bringt ein vollständiges Hellschema mit (in v8.15 auf Kontrast
+  geprüft), sagte dem Browser aber, sie unterstütze nur Dunkel. Auf einem hell
+  eingestellten Gerät rendert der Browser seine eigenen Bedienelemente,
+  Scrollbalken und Eingabefelder dunkel, während das Stylesheet die helle
+  Palette liefert. Jetzt `light dark`.
+
+- **Die Druckansicht setzte nur `body`-Farben**
+  `body{color:#000}` erreicht die Karteninhalte nicht: `.meta-card` behält
+  `background:var(--card)` (#1c2230), `.val-g`/`.val-w`/`.val-b` ihre
+  Signalfarben aus dem Dunkelschema — auf Papier helle Schrift auf Weiß.
+  Fix: Der Druckblock stellt die Farbtokens um, mit den bereits geprüften
+  Werten des Hellschemas (6,25:1 bis 17,48:1 auf Papierweiß), dazu
+  `break-inside:avoid` für Karten, Tabellen und Anleitungsblöcke.
+
+### Geprüft und für korrekt befunden
+
+- Keine toten Sprungziele im gesamten Bestand.
+- PWA-Metadaten vollständig (Manifest mit `id`/`scope`/`start_url`/`display`/
+  `lang`, fünf Icons inkl. maskable, `apple-mobile-web-app-*`, 26
+  Startup-Images).
+- Der generische Verweis „jeweiliger Sensor" bleibt bewusst ohne Chip — ein Baum
+  kann nicht wissen, welcher Sensor gemeint ist. Der Validator bewacht das
+  weiterhin ausdrücklich.
+- `kurzschluss-plus-masse` hat als einzige Karte keinen Weiterverweis im Feld
+  `next`; dort steht stattdessen konkrete Handlungsanweisung. Kein Befund.

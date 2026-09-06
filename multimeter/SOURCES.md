@@ -1,6 +1,6 @@
 # SOURCES.md — Quellen- und Grenzwertmatrix
 
-Stand: **v8.20-Profi, geprüft am 05.09.2026**.
+Stand: **v8.21-Profi, geprüft am 05.09.2026**.
 
 Die Vollversion unterscheidet drei Evidenzstufen:
 

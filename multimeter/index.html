@@ -12,7 +12,7 @@
 <title>KFZ Multimeter Profi – Prüf-Tool</title>
 <meta name="description" content="Profi-Prüfguide für elektrische KFZ-Messungen mit Multimeter, Spannungsabfall, Sicherheitslogik, Diagnosebäumen und Oszilloskop-Grenzen.">
 <meta name="theme-color" content="#0d1117">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="light dark">
 <meta name="author" content="R.S.">
 <meta name="copyright" content="© 2026 R.S. – Alle Rechte vorbehalten.">
 <meta name="mobile-web-app-capable" content="yes">
@@ -457,8 +457,20 @@ body.beginner .beg-banner{display:flex}
 .calc-note{font-size:11px;color:var(--txt2);margin-top:10px;line-height:1.5}
 @media(min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
 @media print{
+  /* body{color:#000} allein erreicht die Karteninhalte nicht: .meta-card behält
+     var(--card) als dunklen Hintergrund, .val-g/.val-w/.val-b ihre Signalfarben aus
+     dem Dunkelschema – auf Papier also helle Schrift auf Weiß. Deshalb hier die
+     Tokens auf eine Druckpalette umstellen, dasselbe Mittel wie beim Hellschema.
+     Die Werte sind die des Hellschemas, deren Kontrast gegen Weiß bereits geprüft ist. */
+  :root{
+    --bg:#fff;--bg2:#fff;--card:#fff;--card2:#f4f6f8;--line:#b8c1ce;
+    --txt:#151a21;--txt2:#4c5868;
+    --acc:#754800;--acc2:#934f00;--grn:#12652b;--red:#a31d17;--blu:#075a9f;--warn:#744d00;
+  }
   header,.botnav,.cats,.search-wrap{display:none}
-  body{background:#fff;color:#000;padding:0}
+  body{background:#fff;color:var(--txt);padding:0}
+  /* Zusammengehöriges nicht über die Seitengrenze reißen */
+  .meta-card,.checkitem,.fstep,.urs-item,.tbl-wrap,table,details.anlbox{break-inside:avoid}
 }
 
 /* ---------- Profi-Ergänzungen v6 ---------- */
@@ -598,8 +610,8 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.20-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-20';
+const APP_VERSION = '8.21-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-21';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -906,7 +918,7 @@ const TESTS = [
  mess:"Vergleichsübersicht zur schnellen Zuordnung. Für die eigentliche Messung die jeweilige Karte verwenden.",
  good:"Fehlerbild eindeutig einem der beiden Pfade zugeordnet.",
  bad:"Messwert weder nahe 0 V noch erhöht: kein Kurzschluss, sondern Überlast, Kontaktproblem oder Masseversatz.",
- next:"Zuordnung getroffen → Prüfung: Kurzschluss nach Masse bzw. → Prüfung: Kurzschluss nach Plus. Unklarer Ausgangswert → Prüfung: 5-V-Referenz Grundprüfung.",
+ next:"Zuordnung getroffen: unterhalb des OEM-Solls → Prüfung: Kurzschluss nach Masse. Oberhalb des OEM-Solls → Prüfung: Kurzschluss nach Plus. Unklarer Ausgangswert → Prüfung: 5-V-Referenz Grundprüfung.",
  beg:"Diese Karte ist nur zum Nachschlagen: Sie zeigt auf einen Blick, woran man die beiden Kurzschlussarten unterscheidet und wie gefährlich sie sind.",
  quality:"Nachschlagekarte",risk:"niedrig",
  requires:["Ausgangsmesswert der Referenz aus der Grundprüfung"],

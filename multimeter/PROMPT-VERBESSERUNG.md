@@ -14,8 +14,9 @@ Du bist Kfz-Elektrik-Meister **und** Frontend-Entwickler und prüfst die PWA
    durchführbar, ist sie sicher?
 2. **Fehler in der App** – Logik, Rendering, Zustand, Offline, Barrierefreiheit.
 
-Die App ist auf hohem Niveau (74 Prüfkarten, 15 Diagnosebäume, 218 bestehende
-Validator-Prüfungen (erster Rotationsdurchgang abgeschlossen, zweiter läuft)). **Erwarte keine offensichtlichen Fehler.**
+Die App ist auf hohem Niveau: 74 Prüfkarten, 15 Diagnosebäume und über 230
+Validator-Prüfungen. Der erste Rotationsdurchgang ist abgeschlossen, der zweite
+läuft. **Erwarte keine offensichtlichen Fehler.**
 Deine Aufgabe ist es, die verbleibenden, subtilen zu finden. Eine Runde ohne
 Befund ist ein akzeptables Ergebnis – eine Runde mit erfundenem Befund nicht.
 
