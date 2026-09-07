@@ -16,7 +16,8 @@ Für Smartphone optimiert, ohne externe Abhängigkeiten.
 | `sw.js` | Service Worker – App-Shell-Cache, Offline-Betrieb |
 | `_headers` | Cloudflare-Pages-HTTP-Header (Cache/MIME) |
 | `icons/` | App-Icons (192/512 + maskable) |
-| `tools/validate.js` | Datenvalidierung (headless, für CI) |
+| `tools/validate.js` | Datenvalidierung des Kompendiums (headless, Playwright) |
+| `tools/validate-multimeter.mjs` | Datenvalidierung der Multimeter-PWA (ohne Abhängigkeiten, läuft in der CI) |
 | `DEPLOY.md` | Deployment über Cloudflare Pages |
 | `multimeter/` | Zweite, eigenständige PWA „KFZ Multimeter Profi" (s. u.) |
 
@@ -31,6 +32,21 @@ Prüfbericht und Änderungshistorie: `multimeter/REVIEW.md`.
 
 Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
 `CACHE_NAME` in `multimeter/sw.js` gemeinsam erhöhen.
+
+Validierung (ohne Abhängigkeiten, läuft auch in der CI bei jeder Änderung
+unter `multimeter/`):
+
+```
+node tools/validate-multimeter.mjs
+```
+
+Geprüft werden: Prüfkarten (eindeutige IDs, Pflichtfelder, Kategorie/Tag,
+Tabellenform, Warnstufen), 1:1-Abdeckung durch Detailblöcke, Spaltenzahl der
+Richtwerttabellen, Ursachen- und Fehlersuche-Struktur, Diagnosebäume (gültige
+Sprungziele, keine unerreichbaren Knoten), Glossar-Dubletten, der Rechenweg des
+mV-Drop-Rechners samt Plausibilität der Sicherungswiderstände sowie die
+Release-Hygiene (`APP_VERSION` ↔ `CACHE_NAME`, Manifest-Felder, Existenz aller
+gecachten Dateien und Icons).
 
 ## Nutzung
 

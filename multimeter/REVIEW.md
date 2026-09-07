@@ -46,9 +46,29 @@
 >
 > Neue Glossareinträge: Phantomspannung, Eingangswiderstand (10 MΩ), LowZ,
 > Bürdenspannung, Messgenauigkeit/Digits; True-RMS erweitert.
-> Offen bleibt Punkt 4 der Empfehlungsliste: `multimeter/` hängt weiterhin nicht
-> an `tools/validate.js`/CI – die hier gefahrenen Struktur-Checks (ID-Abdeckung,
-> Baumziele, Tabellenform, Glossar-Dubletten) sollten als Skript ins Repo.
+>
+> 8. **Punkt 4 der Empfehlungsliste umgesetzt:** `tools/validate-multimeter.mjs`
+>    prüft die Daten jetzt automatisiert – ohne Abhängigkeiten und ohne Browser.
+>    Der Skriptblock wird in einer VM mit minimalem DOM-Ersatz ausgeführt (fängt
+>    damit auch Syntax- und Ladefehler ab), danach laufen die inhaltlichen Checks:
+>    Prüfkarten (IDs, Pflichtfelder, Kategorie/Tag, Tabellenform, Warnstufen),
+>    1:1-Abdeckung durch Detailblöcke, Spaltenzahl der Richtwerttabellen,
+>    Ursachen-/Fehlersuche-Struktur, Diagnosebäume (gültige Sprungziele, keine
+>    unerreichbaren Knoten, keine Selbstsprünge), Glossar-Dubletten, Rechenweg des
+>    mV-Drop-Rechners gegen Referenzwerte samt Plausibilität der
+>    Sicherungswiderstände (Abfall bei Nennstrom ~0,1 V) sowie Release-Hygiene
+>    (`APP_VERSION` ↔ `CACHE_NAME`, Manifest-Pflichtfelder, Existenz aller
+>    gecachten Dateien und Icons). Eingebunden über `.github/workflows/validate.yml`
+>    bei jeder Änderung unter `multimeter/`. Gegen absichtlich eingebaute Fehler
+>    getestet (falsches Bewertungsflag, Versionsversatz, Glossar-Dublette,
+>    ungültiges Sprungziel, unerreichbarer Knoten, verfälschter
+>    Sicherungswiderstand, kaputtes JS) – alle wurden erkannt.
+>
+> Damit ist die Empfehlungsliste bis auf iOS-Splashscreens (P5), das optionale
+> Hell-Thema und die `openDetail`-Duplizierung abgearbeitet. Die Auslagerung der
+> Prüfdaten in eine separate JSON-Datei bleibt bewusst offen: Die Single-File-App
+> ist dadurch ohne Build-Schritt offline lauffähig, und die Validierung greift
+> auch so.
 
 > **Nachtrag v7.1:** Prüfkarte „Pull-up / Pull-down Signal" fachlich
 > vervollständigt: 0-V-Mehrdeutigkeit (Pull-down vs. Masseschluss vs.

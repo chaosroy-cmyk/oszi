@@ -1,0 +1,35 @@
+name: Validate
+
+# Datenvalidierung der Multimeter-PWA (multimeter/). Läuft ohne Abhängigkeiten
+# und ohne Browser, siehe tools/validate-multimeter.mjs.
+# Das Oszi-Kompendium wird über tools/validate.js geprüft – das braucht
+# Playwright und läuft bewusst lokal, nicht in dieser CI.
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "multimeter/**"
+      - "tools/validate-multimeter.mjs"
+      - ".github/workflows/validate.yml"
+  pull_request:
+    paths:
+      - "multimeter/**"
+      - "tools/validate-multimeter.mjs"
+      - ".github/workflows/validate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  multimeter:
+    name: Multimeter-PWA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Datenvalidierung
+        run: node tools/validate-multimeter.mjs
