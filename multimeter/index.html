@@ -465,7 +465,7 @@ body.beginner .beg-explain{display:block}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '7.3-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '7.4-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -492,9 +492,33 @@ const TESTS = [
  bad:"0 V = keine Versorgung/Unterbrechung. Zu niedrig = Spannungsabfall davor.",
  next:"Spannung da → Masse & Last prüfen. Spannung fehlt → rückwärts zur Quelle (Sicherung/Relais).",
  beg:"Du misst wie viel 'Druck' auf der Leitung ist. Schwarz an Masse, rot an den Punkt. Zahl muss zum Schaltplan passen.",
+ warn:[["info","Angezeigte Volt sind noch kein Beweis, dass Strom fließen kann: an offenen Leitungen zeigt das hochohmige Multimeter oft eingekoppelte Phantomspannung. Im Zweifel Prüfung 'Phantomspannung entlarven'."]],
  table:{head:["Zustand","Wert","Bewertung"],rows:[
-   ["Motor aus","12,5–12,8 V","g"],["Schwach","unter 12,2 V","w"],
+   ["Motor aus (voll)","12,6–12,8 V","g"],["Motor aus (teilentladen)","12,4–12,5 V","w"],
+   ["Schwach","unter 12,2 V","w"],
    ["Beim Starten","nicht dauerhaft < 9,6–10 V","w"],["Motor läuft","13,5–14,8 V","g"]]}
+},
+{
+ id:"phantom",cat:"basis",ic:"👻",nm:"Phantomspannung entlarven",tag:"mm",
+ was:"Das Multimeter zeigt Spannung, obwohl die Leitung unterbrochen ist. Der Voltmeter-Eingang ist sehr hochohmig (typisch ~10 MΩ) und 'fängt' Spannung von benachbarten, stromführenden Adern ein.",
+ set:{mode:"DC Volt (V⎓), dann Gegenprobe unter Last",buchse:"COM + V/Ω"},
+ probes:[["r","fraglicher Leitungspunkt"],["b","Masse (Batterieminus)"]],
+ mess:"Auffälligen Wert IMMER belasten, bevor du ihn glaubst: LED-Prüflampe/kleine Testlast parallel schalten oder – falls vorhanden – den LowZ-Modus des Multimeters einschalten und erneut ablesen.",
+ good:"Echte Spannung bleibt unter Last nahezu stehen: die Quelle kann Strom liefern.",
+ bad:"Wert bricht bei Belastung auf nahe 0 V zusammen = Phantomspannung. Die Leitung ist in Wahrheit offen/unterbrochen.",
+ next:"Nach dem Entlarven rückwärts zur Quelle messen und die echte Unterbrechung suchen (Steckkontakt, Crimp, Scheuerstelle, Sicherung/Relais).",
+ beg:"Ein Multimeter zieht fast keinen Strom. Deshalb kann eine abgerissene Leitung Spannung von der Nachbarleitung 'einfangen' – du siehst z.B. 7 V, obwohl gar nichts ankommt. Kurz eine Last dranhängen: bricht der Wert zusammen, war es nur ein Geist.",
+ quality:"MM gut – aber nur mit Lastgegenprobe",risk:"niedrig",
+ requires:["Gegenprobe mit Last (LED-Prüflampe/Testlast) oder LowZ-Modus","sicherer Massebezug (Batterieminus)"],
+ limits:["ohne Belastung ist Phantomspannung nicht von echter Spannung zu unterscheiden","typisch bei langen, parallel verlegten Leitungen und offenen Steckern"],
+ dont:["LowZ/Prüflampe an Sensor-, Bus-, PWM-, SRS- oder Steuergeräte-Signalleitungen"],
+ warn:[["caution","LowZ-Modus und Prüflampe belasten den Kreis absichtlich. An 5-V-Referenz, CAN/LIN, Airbag/SRS und empfindlichen Steuergeräte-Ausgängen ist beides tabu – dort stattdessen Schaltplan, Gegenmessung gegen bekannte Masse und Diagnose-Livedaten nutzen."],
+       ["info","Merksatz: Durchgang beweist keine Belastbarkeit – und eine Spannungsanzeige allein beweist keine Versorgung. Beides klärt erst die Messung unter Last."]],
+ table:{head:["Beobachtung","Bedeutung","Bewertung"],rows:[
+   ["Wert bleibt unter Last stabil","echte Versorgung","g"],
+   ["Wert fällt unter Last leicht","Übergangswiderstand → Spannungsabfall messen","w"],
+   ["Wert bricht auf ~0 V zusammen","Phantomspannung, Leitung offen","b"],
+   ["Unplausible Zwischenwerte (z.B. 4–8 V) an offener Leitung","typisches Einstreubild","b"]]}
 },
 {
  id:"widerstand",cat:"basis",ic:"〰️",nm:"Widerstand messen",tag:"mm",
@@ -590,7 +614,7 @@ const TESTS = [
  bad:"Keine Erhöhung beim Start = lädt nicht. Deutlich erhöhter AC-Anteil ist verdächtig, aber MM-abhängig.",
  next:"Plus- & Massespannungsabfall Generator→Batterie prüfen. Moderne Regelung läuft über LIN/BSD – BMS beachten.",
  beg:"Motor an = Spannung muss steigen (Richtung 14 V). Bleibt sie bei 12 V, lädt die Lichtmaschine nicht richtig.",
- warn:[["info","AC-Ripple mit dem Multimeter ist nur ein Grobtest. Viele MM zeigen bei Gleichspannung/Regler-PWM falsche AC-Werte. Sichere Dioden-/Ripplebewertung: Oszilloskop. Intelligente Generatorregelung (BMS/LIN/BSD) kann absichtlich variieren."]]
+ warn:[["info","AC-Ripple mit dem Multimeter ist nur ein Grobtest. Sinnvoll überhaupt nur mit einem True-RMS-Gerät (AC-Kopplung); Mittelwert-Multimeter ohne True-RMS zeigen bei der dem Gleichanteil überlagerten Diodenwelligkeit grob falsche Werte, ebenso bei Regler-PWM. Sichere Dioden-/Ripplebewertung: Oszilloskop. Intelligente Generatorregelung (BMS/LIN/BSD) kann absichtlich variieren."]]
 },
 {
  id:"starter",cat:"motor",ic:"🔘",nm:"Starter prüfen",tag:"gef",
@@ -667,7 +691,7 @@ const TESTS = [
  next:"Mit Sollwert-Tabelle (Herstellerdaten) vergleichen. Wackeltest beim Messen.",
  beg:"Warm = wenig Widerstand, kalt = viel. Beim Erwärmen muss der Ohm-Wert gleichmäßig fallen. Springt er, ist der Sensor hin.",
  table:{head:["Temperatur","Widerstand (typ.)",""],rows:[
-   ["~20 °C","~2,0–3,0 kΩ","g"],["~80 °C","~250–400 Ω","g"],["Tendenz","fällt mit Wärme","g"]]}
+   ["~20 °C","~2,0–2,5 kΩ","g"],["~80 °C","~300–380 Ω","g"],["Tendenz","fällt mit Wärme","g"]]}
 },
 {
  id:"ntc-ats",cat:"sensor",ic:"💨",nm:"NTC Ansauglufttemp.",tag:"mm",
@@ -1103,7 +1127,8 @@ const TESTS = [
  bad:"Dauerhaft deutlich höher = Verbraucher bleibt aktiv.",
  next:"Sicherungen einzeln ziehen, bis Strom fällt → Stromkreis gefunden. Stromzange schont die Verbindung.",
  beg:"Misst, was die Batterie über Nacht zieht. Auto muss erst 'einschlafen'. Zu hoch? Sicherungen einzeln ziehen, bis es fällt.",
- warn:[["danger","In Reihe messen – nie parallel. Verbindung beim Umstecken nicht trennen, sonst startet das Wachzeit-Verfahren neu. Stromzange ist sicherer."]]
+ warn:[["danger","In Reihe messen – nie parallel. Verbindung beim Umstecken nicht trennen, sonst startet das Wachzeit-Verfahren neu. Stromzange ist sicherer."],
+       ["caution","Bürdenspannung beachten: Das MM misst über einen Shunt und fällt dabei selbst Spannung ab – in der mA-Buchse je nach Gerät bis mehrere hundert mV, in der 10-A-Buchse nur wenige mV. Zu viel Bürde senkt die Bordspannung so weit, dass Steuergeräte anders reagieren oder nicht einschlafen. Deshalb im mA-Bereich nur bei bereits schlafendem Fahrzeug messen – oder mV-Drop-Methode/Stromzange nutzen."]]
 },
 {
  id:"ruhestrom-fuse",cat:"strom",ic:"🔢",nm:"Ruhestrom über Sicherung (mV-Drop)",tag:"mm",
@@ -1117,7 +1142,7 @@ const TESTS = [
  beg:"Statt die Sicherung zu ziehen, misst du die winzige Spannung ÜBER der Sicherung (sie bleibt stecken). Je mehr Strom fließt, desto größer der mV-Wert. Der Rechner unten macht daraus Milliampere.",
  calc:"mvdrop",
  warn:[["info","Vorteil gegenüber Sicherung ziehen: der Stromkreis wird nicht unterbrochen – das Fahrzeug bleibt im Schlafzustand und Steuergeräte werden nicht geweckt. Werte sind sehr klein (meist nur wenige mV, oft darunter) – MM mit 0,1-mV-Auflösung nötig, besser 0,01 mV."],
-       ["caution","Methode taugt zum Eingrenzen, nicht für absolute Präzision. Der Innenwiderstand der Sicherung schwankt mit Typ, Temperatur und Toleranz. Im Zweifel zusätzlich klassisch in Reihe oder mit Stromzange gegenmessen."]]
+       ["caution","Methode taugt zum Eingrenzen, nicht für absolute Präzision. Der hinterlegte Innenwiderstand ist aus dem maximalen Spannungsabfall bei Nennstrom abgeleitet (warmes Element) – die kalte Sicherung im Ruhestrombetrieb ist niederohmiger, der reale Strom liegt also eher am oberen Rand der ausgegebenen Spanne. Im Zweifel zusätzlich klassisch in Reihe oder mit Stromzange gegenmessen."]]
 },
 ];
 
@@ -1150,6 +1175,31 @@ const DEEP = {
      {s:"2 Sollpunkt messen",do:"Rote Spitze an Prüfpunkt, mit Schaltplan-Sollwert vergleichen",ok:"Spannung korrekt → Last/Masse prüfen",ng:"weiter"},
      {s:"3 Rückwärts zur Quelle",do:"Punkt für Punkt Richtung Sicherung/Relais messen, bis Spannung da ist",ok:"Letzter spannungsloser Abschnitt = Fehlerstelle",ng:"Bis Sicherung/Relais"},
      {s:"4 Unter Last gegenprüfen",do:"Verbraucher einschalten, Spannung erneut messen",ok:"Bleibt stabil → ok",ng:"Bricht ein → Spannungsabfall messen"}]
+},
+"phantom":{
+ anl:["Hintergrund: Der Spannungseingang eines Digital-Multimeters hat typisch <b>~10 MΩ</b> Innenwiderstand. Er entnimmt praktisch keinen Strom – deshalb reicht schon die kapazitive Kopplung zu einer benachbarten, stromführenden Ader, um an einer <b>offenen</b> Leitung mehrere Volt anzuzeigen.",
+   "Verdachtsmomente: unplausible Zwischenwerte (z.B. 4–8 V statt 0 V oder 12 V), Werte die beim Berühren der Messspitze wandern, Anzeige an einer Leitung, deren Verbraucher nicht arbeitet.",
+   "<b>Gegenprobe 1 – Last:</b> LED-Prüflampe oder eine kleine Testlast (z.B. 21-W-Lampe an geeigneten Lastkreisen) parallel zum Messpunkt schalten und erneut ablesen.",
+   "<b>Gegenprobe 2 – LowZ:</b> Falls das MM einen LowZ-/Vₗₒw-Modus hat (Eingang wird auf einige kΩ heruntergesetzt), diesen einschalten. Phantomspannung verschwindet sofort.",
+   "<b>Bewertung:</b> Bleibt der Wert stehen → echte Versorgung, weiter mit Spannungsabfall unter Last. Bricht er zusammen → Leitung ist offen, jetzt die Unterbrechung suchen.",
+   "<b>Grenze:</b> LowZ und Prüflampe belasten bewusst. An 5-V-Referenz, CAN/LIN, SRS/Airbag, PWM- und Steuergeräte-Signalleitungen ist beides verboten – dort nur hochohmig messen und über Schaltplan/Livedaten plausibilisieren.",
+   "Nicht verwechseln: Ein Wert, der unter Last nur <i>etwas</i> nachgibt, ist keine Phantomspannung, sondern ein Übergangswiderstand → Spannungsabfallmessung."],
+ rt:{head:["Messung","Befund","Bewertung"],rows:[
+   ["Leerlauf (nur MM)","z.B. 6 V an offener Leitung","w"],
+   ["Mit Last / LowZ","Wert bleibt ≈ gleich","g"],
+   ["Mit Last / LowZ","Wert bricht auf < 1 V zusammen","b"],
+   ["Mit Last / LowZ","Wert fällt um einige Zehntel Volt","w"],
+   ["MM-Eingangswiderstand V-Bereich","typ. 10 MΩ","g"]],
+   note:"Phantomspannung ist ein Messgerät-Effekt, kein Fahrzeugfehler – der eigentliche Fehler ist die Unterbrechung dahinter. LowZ-Modus niemals an empfindlichen Kreisen (Sensor/Bus/SRS/PWM) verwenden."},
+ urs:[["Leitungsbruch / offener Steckkontakt","klassischer Auslöser: die offene Ader koppelt ein","h"],
+      ["Lange, parallel verlegte Leitungen im selben Strang","hohe kapazitive Kopplung","h"],
+      ["Abgezogener Stecker beim Messen vergessen","Messung am toten Ende","m"],
+      ["Fehlender Massebezug / Messung gegen schlechte Masse","Anzeige unplausibel verschoben","m"]],
+ fs:[{s:"1 Wert plausibilisieren",do:"Passt die Anzeige zum Schaltplan-Sollwert?",ok:"plausibel → normal weitermessen",ng:"unplausibler Zwischenwert → weiter"},
+     {s:"2 Kreisart klären",do:"Lastkreis oder empfindlicher Kreis (Sensor/Bus/SRS/PWM)?",ok:"Lastkreis → Gegenprobe erlaubt",ng:"empfindlich → NICHT belasten, hochohmig + Livedaten/Schaltplan"},
+     {s:"3 Gegenprobe unter Last",do:"LED-Prüflampe/Testlast parallel oder LowZ-Modus einschalten",ok:"Wert bleibt → echte Spannung",ng:"Wert bricht zusammen → Phantomspannung"},
+     {s:"4 Unterbrechung suchen",do:"Rückwärts Richtung Quelle messen, Stecker/Crimp/Scheuerstellen prüfen",ok:"Fehlerstelle gefunden → instand setzen",ng:"nichts gefunden → Leitung spannungsfrei auf Durchgang prüfen"},
+     {s:"5 Nachkontrolle",do:"Nach Reparatur unter Last messen (Spannungsabfall)",ok:"Wert stabil, Abfall klein → erledigt",ng:"Abfall zu hoch → Kontakt/Leitung weiter prüfen"}]
 },
 "widerstand":{
  rt:{head:["Befund","Wert","Bedeutung"],rows:[
@@ -1234,7 +1284,7 @@ const DEEP = {
    ["Sensorsignal/-versorgung","< 0,1 V","g"],["Normalverbraucher Plus","< 0,2–0,3 V","g"],
    ["Masseband/Massepunkt","< 0,1–0,2 V","g"],["Kompletter Massepfad Verbraucher","< 0,3 V","g"],
    ["Starterkreis (Hochstrom)","< 0,5 V Plus, < 0,2 V Masse","w"],["> 0,5 V Signalkreis","kritisch","b"]],
-   note:"Faustregel: je 0,1 V Verlust = relevant bei kleinen Strömen. Bei Hochstrom (Starter) höhere Werte, aber im Verhältnis bewerten."},
+   note:"Faustregel: je 0,1 V Verlust = relevant bei kleinen Strömen. Bei Hochstrom (Starter) höhere Werte, aber im Verhältnis bewerten. Messgenauigkeit mitdenken: Hand-Multimeter sind im DC-V-Bereich typisch mit ±(0,5–1 % vom Messwert + 2–3 Digits) spezifiziert – bei 0,20 V Anzeige also schnell ±0,02 V. Kleine Unterschiede in dieser Größenordnung nicht überinterpretieren; aussagekräftig ist der Vergleich Plus- gegen Masseseite bzw. vor/nach der Reparatur."},
  urs:[["Korrodierte Klemme/Steckkontakt","klassischer Hochwiderstand unter Last","h"],
       ["Lockerer Massepunkt","verfälscht Sensoren, flackernde Lampen","h"],
       ["Unterdimensionierte/angeschmorte Leitung","Wärme + Verlust","m"],
@@ -1273,7 +1323,7 @@ const DEEP = {
 "generator":{
  anl:["<b>Ladespannung Leerlauf:</b> MM auf DC Volt an der Batterie, Motor im Leerlauf. Erwartung 13,5–14,8 V.",
    "<b>Unter Last:</b> Abblendlicht, Heckscheibenheizung und Gebläse einschalten. Die Spannung darf nicht unter ~13,2 V einbrechen.",
-   "<b>AC-Ripple:</b> MM auf <b>AC Volt</b> umschalten, an der Batterie bei laufendem Motor messen. Nur als Grobtest: viele Multimeter zeigen hier falsche Werte. Deutlich erhöhter AC-Anteil ist verdächtig; sichere Bewertung der Diodenwelligkeit per Oszilloskop.",
+   "<b>AC-Ripple:</b> MM auf <b>AC Volt</b> umschalten, an der Batterie bei laufendem Motor messen. Nur als Grobtest und nur mit <b>True-RMS</b>-Gerät sinnvoll: Multimeter ohne echte Effektivwertmessung zeigen den dem Gleichanteil überlagerten Wechselanteil grob falsch. Deutlich erhöhter AC-Anteil ist verdächtig; sichere Bewertung der Diodenwelligkeit per Oszilloskop.",
    "<b>Leitungsabfall Plus:</b> Spannungsabfall B+ (Generator) → Batterie-Plus unter Last. < 0,3 V.",
    "<b>Leitungsabfall Masse:</b> Generatorgehäuse → Batterie-Minus unter Last. < 0,2 V.",
    "Keine Spannungserhöhung beim Starten: Erregerkreis/Ladekontrollleuchte bzw. LIN-Ansteuerung prüfen.",
@@ -1394,10 +1444,10 @@ const DEEP = {
 /* ===== SENSOREN ===== */
 "ntc-kts":{
  rt:{head:["Temperatur","Widerstand (typ.)","Signal (typ.)"],rows:[
-   ["−10 °C","~9–10 kΩ","~4 V"],["20 °C","~2,0–2,5 kΩ","~3–3,5 V"],
+   ["−10 °C","~9–10 kΩ","~4,5 V"],["20 °C","~2,0–2,5 kΩ","~3–3,5 V"],
    ["40 °C","~1,1–1,2 kΩ","~2,5 V"],["80 °C","~300–380 Ω","~1,3 V"],
    ["100 °C","~180–200 Ω","~1 V"]],
-   note:"VAG: häufig 2-Stufen-Kennlinie (Umschaltung im STG) – Sprung im Signal ist normal. BMW: Sensor oft kombiniert (Kühlmittel/Ausgleichbehälter)."},
+   note:"Die Signalspannungen gelten für die übliche Beschaltung 5-V-Referenz mit ~1 kΩ Pull-up im Steuergerät (Spannungsteiler): U = 5 V × R_NTC/(R_NTC + 1 kΩ). Bei abweichendem Pull-up verschieben sich die Spannungen, die Widerstandswerte bleiben. VAG: häufig 2-Stufen-Kennlinie (Umschaltung im STG) – Sprung im Signal ist normal. BMW: Sensor oft kombiniert (Kühlmittel/Ausgleichbehälter)."},
  urs:[["Korrosion am Stecker","Wert springt, sporadische Fehler","h"],
       ["Sensor altert/driftet","Wert plausibel aber falsch","m"],
       ["Signalleitung Schluss/Bruch","0 V oder 5 V Anschlag","m"],
@@ -1880,11 +1930,14 @@ const DEEP = {
    "Fahrzeug <b>einschlafen lassen</b> – je nach Hersteller 15–45 min, teils länger. Während dieser Zeit nichts bedienen, Türen verriegelt halten.",
    "Wenn der Strom auf den Normalbereich (20–50 mA) gefallen ist: Wert notieren. Bleibt er hoch → Verbraucher aktiv.",
    "Zum Eingrenzen <b>Sicherungen einzeln ziehen</b> und beobachten, bei welcher der Strom fällt. Tipp: ein <b>Sicherungs-Adapter</b> erleichtert das Einschleifen einzelner Kreise.",
+   "<b>Bürdenspannung bedenken:</b> Das Multimeter misst Strom über einen internen Shunt und fällt dabei selbst Spannung ab. In der 10-A-Buchse sind das nur wenige mV, in der <b>mA-Buchse</b> je nach Gerät aber bis zu mehreren hundert mV. Diese fehlende Spannung kann Steuergeräte am Einschlafen hindern oder den gemessenen Strom verfälschen – im Zweifel im 10-A-Bereich messen oder auf mV-Drop/Stromzange ausweichen.",
    "Achtung: Jedes Trennen der Hauptverbindung startet die Einschlafzeit neu. Alternativ die mV-Drop-Methode (eigene Prüfung) nutzen, die den Schlaf nicht stört."],
  rt:{head:["Phase","Richtwert","Bewertung"],rows:[
    ["Direkt nach Abstellen","bis mehrere A","w"],["Nach Einschlafzeit","20–50 mA","g"],
-   ["Dauerhaft > 80 mA","verdächtig","b"],["Einzelkreis-Anstieg","Verbraucher in diesem Kreis","b"]],
-   note:"VAG: Einschlafzeit 15–45 min (Gateway). BMW: teils länger, Bus-Weckzyklen. Türen/Hauben simuliert verriegeln, Innenlicht aus."},
+   ["Dauerhaft > 80 mA","verdächtig","b"],["Einzelkreis-Anstieg","Verbraucher in diesem Kreis","b"],
+   ["Bürdenspannung mA-Buchse","bis mehrere 100 mV, kann Einschlafen verhindern","w"],
+   ["Bürdenspannung 10-A-Buchse","nur wenige mV","g"]],
+   note:"VAG: Einschlafzeit 15–45 min (Gateway). BMW: teils länger, Bus-Weckzyklen. Türen/Hauben simuliert verriegeln, Innenlicht aus. Bürdenspannung des eigenen Messgeräts kennen (Datenblatt) – sie geht als Fehler direkt in die Messung ein."},
  urs:[["Steuergerät schläft nicht ein","hängender Bus, weckt Netz","h"],
       ["Nachrüstung am Dauerplus","Radio/Tracker/Dashcam/Verstärker","h"],
       ["Defekter Schalter/Kontakt","Innenlicht/Kofferraum bleibt aktiv","m"],
@@ -1910,7 +1963,7 @@ const DEEP = {
    ["Standard 20 A","~ 0,5–0,6 mV","w"],
    ["Standard 25–30 A","~ 0,35–0,45 mV","w"],
    ["Hochstrom > 30 A","unter ~0,3 mV, ungenau","b"]],
-   note:"Richtwerte auf Basis typischer Kalt-Innenwiderstände von KFZ-Flachsicherungen (z.B. 10 A ≈ 11 mΩ, 20 A ≈ 6 mΩ). Der Innenwiderstand variiert je Hersteller, Bauform (Mini/Standard/Maxi) und Temperatur. Kleine Ruheströme (< 20 mA) erzeugen oft nur Hundertstel-mV – dafür ist ein MM mit 0,01-mV-Auflösung nötig. Faustregel: je kleiner der Nennwert, desto höher der mV-Wert pro mA und desto besser messbar."},
+   note:"Richtwerte abgeleitet aus dem maximalen Spannungsabfall bei Nennstrom laut Datenblatt (z.B. ATO 10 A: 0,110 V/10 A ≈ 11 mΩ, 20 A ≈ 5,8 mΩ). Das ist ein Warm-/Worst-Case-Wert: eine kalte Sicherung im Ruhestrombetrieb ist typisch nur 60–80 % davon, der reale Strom liegt also eher am oberen Rand der berechneten Spanne. Der Innenwiderstand variiert zusätzlich je Hersteller und Bauform (Mini/Standard/Maxi). Kleine Ruheströme (< 20 mA) erzeugen oft nur Hundertstel-mV – dafür ist ein MM mit 0,01-mV-Auflösung nötig. Faustregel: je kleiner der Nennwert, desto höher der mV-Wert pro mA und desto besser messbar."},
  urs:[["Ein Kreis mit hohem mV-Wert","Verbraucher in diesem Kreis aktiv","h"],
       ["Nachrüstgerät an abgesichertem Dauerplus","Radio/Verstärker/Tracker","h"],
       ["Steuergerät im Kreis schläft nicht ein","hängender Aufwach-Zustand","m"],
@@ -1967,7 +2020,12 @@ const GLOSS = [
  ["Stromzange","Misst Strom ohne Auftrennen über das Magnetfeld."],
  ["mV-Drop-Methode","Ruhestrom pro Kreis bestimmen, indem man den Spannungsabfall über der gesteckten Sicherung misst und per Innenwiderstand in Strom umrechnet – ohne den Kreis aufzutrennen."],
  ["Sicherungs-Innenwiderstand","Kleiner Widerstand (mΩ) einer Sicherung. Aus ihm und dem gemessenen mV-Wert lässt sich der Strom berechnen (I = U / R)."],
- ["True-RMS","Echte Effektivwertmessung – wichtig bei nicht-sinusförmigen Signalen."],
+ ["True-RMS","Echte Effektivwertmessung – wichtig bei nicht-sinusförmigen Signalen und beim AC-Ripple des Generators. Geräte ohne True-RMS zeigen dort grob falsche Werte."],
+ ["Phantomspannung","Scheinspannung an einer unterbrochenen Leitung: Der hochohmige MM-Eingang fängt Spannung von benachbarten Adern ein (kapazitive Kopplung). Bricht bei Belastung (LED-Prüflampe/LowZ) sofort zusammen – echte Spannung bleibt stehen."],
+ ["Eingangswiderstand (10 MΩ)","Innenwiderstand des Voltmeter-Eingangs, typisch ~10 MΩ. Er belastet die Schaltung fast nicht – deshalb sind Messwerte an offenen Leitungen mit Vorsicht zu genießen (Phantomspannung)."],
+ ["LowZ (Vₗₒw)","Messmodus mit absichtlich niedrigem Eingangswiderstand (einige kΩ). Unterdrückt Phantomspannungen. NICHT an 5-V-Referenz, CAN/LIN, PWM-, SRS- oder Steuergeräte-Signalleitungen verwenden – dort belastet er unzulässig."],
+ ["Bürdenspannung","Spannung, die das Multimeter bei der Strommessung selbst über seinen Shunt verliert: in der mA-Buchse bis mehrere 100 mV, in der 10-A-Buchse nur wenige mV. Zu viel Bürde verfälscht die Messung und kann Steuergeräte am Einschlafen hindern."],
+ ["Messgenauigkeit / Digits","Angabe wie ±(0,5 % vom Messwert + 3 Digits): Prozentanteil plus feste Stellen der letzten Anzeigestelle. Bei kleinen Spannungsabfällen ist der Digit-Anteil oft größer als der Prozentanteil – kleine Unterschiede nicht überbewerten."],
  ["CAT-Messkategorie","Sicherheitsklasse von Messgerät und Leitungen (CAT II–IV). Für 12-V-Bordnetz unkritisch, für HV-Systeme Pflicht (geeignetes Gerät + Leitungen)."],
  ["MIN/MAX-Funktion","Das MM speichert kleinsten/größten Messwert – ideal für Startspannungs-Einbruch und Wackeltest."],
  ["Autorange","Automatische Messbereichswahl. Bei schnellen Ereignissen träge – für Startspannung besser MIN/MAX oder fester Bereich."],
@@ -2238,8 +2296,16 @@ function fsHTML(fs){
 
 /* mV-Drop Rechner:
    Sicherung hat kleinen Innenwiderstand R (mΩ). Strom I = U / R.
-   Typische KALT-Innenwiderstände gängiger KFZ-Flachsicherungen
-   (Richtwerte in mΩ, angelehnt an Herstellerdaten ATO/Mini, z.B. Littelfuse). */
+
+   HERKUNFT DER WERTE (wichtig für die Bewertung): Die Richtwerte sind aus dem
+   im Datenblatt garantierten MAXIMALEN Spannungsabfall bei NENNSTROM abgeleitet
+   (Beispiel ATO 10 A: 0,110 V / 10 A = 11 mΩ). Das ist ein Worst-Case-Wert am
+   betriebswarmen Element. Bei Ruheströmen im mA-Bereich bleibt die Sicherung
+   dagegen kalt; der tatsächliche Innenwiderstand liegt dann typisch nur bei
+   rund 60–80 % davon. Der direkt aus R berechnete Strom ist deshalb eine
+   KONSERVATIVE UNTERGRENZE – der Rechner gibt zusätzlich eine realistische
+   Obergrenze aus, damit ein Verbraucher nicht übersehen wird. */
+const R_COLD_FACTOR = 0.6;   // kalt/warm-Verhältnis (untere Annahme) -> obere Stromschätzung
 const FUSE_R = [
   {v:"3 A (Mini/Std)",r:45},
   {v:"5 A (Mini/Std)",r:24},
@@ -2268,7 +2334,7 @@ function calcHTML(){
       <div class="big">– mA</div>
       <div class="sub">Wert in mV eingeben</div>
     </div>
-    <div class="calc-note">Eingabe in <b>Millivolt (mV)</b>. Der Innenwiderstand der Sicherung ist ein typischer Richtwert und schwankt je Hersteller/Temperatur – das Ergebnis dient dem <b>Eingrenzen</b>, nicht der Präzisionsmessung.</div>
+    <div class="calc-note">Eingabe in <b>Millivolt (mV)</b>. Der hinterlegte Innenwiderstand stammt aus dem maximalen Spannungsabfall bei Nennstrom (warmes Element) – bei kalter Sicherung liegt er niedriger. Deshalb wird eine <b>Spanne</b> ausgegeben: der linke Wert ist die konservative Untergrenze, der rechte die realistische Obergrenze. Das Ergebnis dient dem <b>Eingrenzen</b>, nicht der Präzisionsmessung.</div>
   </div>`;
 }
 function calcMvDrop(){
@@ -2279,16 +2345,21 @@ function calcMvDrop(){
   const mv=parseFloat(String(mEl.value).replace(',','.')); // mV
   if(isNaN(mv)||mv<=0){out.className='calc-out';out.innerHTML='<div class="big">– mA</div><div class="sub">Wert in mV eingeben</div>';return;}
   // I = U / R; mV/mΩ kürzt sich zu A (10⁻³V / 10⁻³Ω = V/Ω)
-  const amps = mv / r; // A
-  const ma = amps*1000;
+  // Untergrenze: R aus Datenblatt (warm, Worst Case). Obergrenze: kalte Sicherung -> kleineres R.
+  const maLo = (mv / r)*1000;
+  const maHi = (mv / (r*R_COLD_FACTOR))*1000;
   let cls='calc-out',hint='';
-  if(ma<5){cls='calc-out goodval';hint='sehr gering – unauffällig';}
-  else if(ma<50){cls='calc-out';hint='im normalen Ruhestrom-Bereich';}
-  else if(ma<200){cls='calc-out warnval';hint='erhöht – Kreis genauer prüfen';}
+  // Bewertung nach der Obergrenze, damit ein aktiver Verbraucher nicht übersehen wird
+  if(maHi<5){cls='calc-out goodval';hint='sehr gering – unauffällig';}
+  else if(maHi<50){cls='calc-out';hint='im normalen Ruhestrom-Bereich';}
+  else if(maHi<200){cls='calc-out warnval';hint='erhöht – Kreis genauer prüfen';}
   else{cls='calc-out warnval';hint='hoch – Verbraucher in diesem Kreis aktiv';}
   out.className=cls;
-  const disp = ma>=1000?(amps.toFixed(2)+' A'):(ma.toFixed(ma<10?1:0)+' mA');
-  out.innerHTML=`<div class="big">≈ ${disp}</div><div class="sub">${hint} · R≈${r} mΩ</div>`;
+  const de=(x,d)=>x.toFixed(d).replace('.',',');   // deutsches Dezimalkomma
+  const disp = (maHi>=1000 || maLo>=1000)
+    ? `${de(maLo/1000,2)} – ${de(maHi/1000,2)} A`
+    : `${de(maLo,maLo<10?1:0)} – ${de(maHi,maHi<10?1:0)} mA`;
+  out.innerHTML=`<div class="big">≈ ${disp}</div><div class="sub">${hint} · R≈${de(r,r<10?1:0)} mΩ (warm) · kalt bis ~${de(r*R_COLD_FACTOR,1)} mΩ</div>`;
 }
 window.calcMvDrop=calcMvDrop;
 

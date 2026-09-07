@@ -1,5 +1,55 @@
 # Prüfbericht: „KFZ Multimeter Profi" PWA (v6 → v7)
 
+> **Nachtrag v7.4 (externe Gegenprüfung, fachlich + technisch):** Unabhängiger
+> Prüfdurchgang über Daten, Rechner und PWA-Mechanik. Ergebnis der
+> Strukturprüfung: 65 Prüfkarten mit 65 passenden Detailblöcken (keine Waise in
+> beide Richtungen), keine doppelten IDs, 13 Diagnosebäume mit 76 Knoten und
+> ausnahmslos gültigen Sprungzielen, keine unerreichbaren Knoten, keine
+> Tabellenzeile mit abweichender Spaltenzahl, keine Glossar-Dubletten,
+> `APP_VERSION` und `CACHE_NAME` synchron. Fachliche Stichproben bestätigt:
+> PT1000/PT200 exakt nach IEC 60751, KTY81 plausibel, NTC-Kennlinie in sich
+> konsistent mit ~1 kΩ Pull-up, CAN 60/120 Ω, Ruhestrom 20–50 mA,
+> Injektor 12–16 Ω, Batterie-/Lade-/Startwerte, Spannungsfall-Grenzen,
+> Flussspannungen Si/Schottky/LED. Korrigiert bzw. ergänzt in v7.4:
+>
+> 1. **mV-Drop-Rechner – Herkunft der Sicherungswiderstände richtiggestellt.**
+>    Die `FUSE_R`-Werte sind aus dem *maximalen Spannungsabfall bei Nennstrom*
+>    abgeleitet (ATO 10 A: 0,110 V/10 A = 11 mΩ) und damit Warm-/Worst-Case-Werte,
+>    nicht die im Kommentar behaupteten Kalt-Innenwiderstände. Bei Ruheströmen
+>    bleibt die Sicherung kalt (typ. 60–80 % des Werts), der Rechner unterschätzte
+>    den Strom also weiterhin systematisch. Er gibt jetzt eine **Spanne** aus
+>    (konservative Untergrenze bis realistische Obergrenze, `R_COLD_FACTOR`), die
+>    Bewertungsstufe richtet sich nach der Obergrenze, damit ein aktiver
+>    Verbraucher nicht durchrutscht. Kommentar, Rechner-Hinweis, Kartentext und
+>    „mV pro 100 mA"-Tabellennote entsprechend korrigiert. Ausgabe zusätzlich mit
+>    deutschem Dezimalkomma.
+> 2. **Neue Prüfkarte „Phantomspannung entlarven"** (Grundmessungen) samt
+>    Detailblock, Richtwerttabelle, Ursachen und Fehlersuche. Die App erklärte
+>    zwar konsequent „Durchgang ist kein Lastbeweis", nicht aber das Gegenstück:
+>    Der ~10 MΩ hohe Voltmeter-Eingang zeigt an offenen Leitungen eingekoppelte
+>    Scheinspannung. Enthält Lastgegenprobe, LowZ-Modus und die Abgrenzung, wo
+>    Belasten verboten ist (5-V-Referenz, CAN/LIN, SRS, PWM, ECU-Ausgänge).
+>    Querverweis aus der Karte „Spannung messen".
+> 3. **Bürdenspannung ergänzt** (Karte und Detailblock „Ruhestrom messen"):
+>    mA-Buchse bis mehrere 100 mV, 10-A-Buchse nur wenige mV; zu viel Bürde
+>    verfälscht die Messung und kann Steuergeräte am Einschlafen hindern.
+> 4. **Messgenauigkeit** in der Spannungsabfall-Note verankert: ±(0,5–1 % +
+>    2–3 Digits) – kleine Differenzen nicht überinterpretieren.
+> 5. **True-RMS** dort ergänzt, wo es zählt (Generator-AC-Ripple in Karte und
+>    Anleitung), statt nur im Glossar zu stehen.
+> 6. **Ruhespannungs-Inkonsistenz behoben:** Karte „Spannung messen" nannte
+>    12,5–12,8 V pauschal als „gut", während die Batterietabelle 12,5 V als 75 %
+>    führt – jetzt einheitlich (12,6–12,8 V voll, 12,4–12,5 V teilentladen).
+> 7. **NTC-Werte vereinheitlicht** (Karte 2,0–3,0 kΩ / 250–400 Ω vs. Detailblock
+>    2,0–2,5 kΩ / 300–380 Ω) und Signalspannung bei −10 °C von ~4 V auf ~4,5 V
+>    korrigiert; die Pull-up-Annahme (~1 kΩ am 5-V-Teiler) steht jetzt in der Note.
+>
+> Neue Glossareinträge: Phantomspannung, Eingangswiderstand (10 MΩ), LowZ,
+> Bürdenspannung, Messgenauigkeit/Digits; True-RMS erweitert.
+> Offen bleibt Punkt 4 der Empfehlungsliste: `multimeter/` hängt weiterhin nicht
+> an `tools/validate.js`/CI – die hier gefahrenen Struktur-Checks (ID-Abdeckung,
+> Baumziele, Tabellenform, Glossar-Dubletten) sollten als Skript ins Repo.
+
 > **Nachtrag v7.1:** Prüfkarte „Pull-up / Pull-down Signal" fachlich
 > vervollständigt: 0-V-Mehrdeutigkeit (Pull-down vs. Masseschluss vs.
 > Leitungsbruch, Klärung per Ohm-Messung), Gegenprobe gegen Batterieminus,
