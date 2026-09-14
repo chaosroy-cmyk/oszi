@@ -22,15 +22,16 @@ Für Smartphone optimiert, ohne externe Abhängigkeiten.
 
 ## Zweite App: KFZ Multimeter Profi (`multimeter/`)
 
-Eigenständige Schwester-PWA mit Multimeter-Prüfanleitungen (Spannung,
-Strom, Widerstand, Diodentest, Spannungsabfall, Ruhestrom inkl.
-mV-Drop-Rechner), Diagnosebäumen, Sicherheits-Checks und Glossar.
+Eigenständige Schwester-PWA mit 77 Multimeter-Prüfkarten (Grundmessungen,
+Batterie/Laden/Start, Sensoren, Aktuatoren, Bus, Leitung/Masse, Sicherheit),
+Diagnosebäumen, Sicherheits-Checks, Glossar, Einsteiger-/Profi-Modus,
+„Warum messe ich das?“ und „Wann Oszilloskop?“ mit Links in dieses
+Kompendium sowie dem Kapitel „Schaltpläne verstehen“.
 Sie hat eigenes Manifest, eigenen Service Worker und eigenen Scope
 (`/multimeter/`) und ist damit getrennt vom Kompendium installierbar.
-Prüfbericht und Änderungshistorie: `multimeter/REVIEW.md`.
-
-Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
-`CACHE_NAME` in `multimeter/sw.js` gemeinsam erhöhen.
+Details, Validator und Versionierungsregeln: `multimeter/README.md`;
+Änderungen je Release: `multimeter/CHANGELOG-v8.*.md`; Loop-Prompt für die
+Weiterentwicklung: `multimeter/PROMPT.md`.
 
 ## Nutzung
 

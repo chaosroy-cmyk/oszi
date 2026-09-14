@@ -655,6 +655,76 @@ const w = dom.window, d = w.document;
      pkg.version.startsWith(numeric + "."),
      JSON.stringify({ appVer, appCacheN, pkg: pkg.version }));
 
+  section("21 · v8.6: Warum, Oszi-Abgrenzung, Einsteiger/Profi-Modus, Schaltplan-Hilfe");
+  const v86 = w.validateMultimeter();
+  ok("validateMultimeter(): keine strukturellen Fehler in Karten, Bäumen, Glossar, Schaltplan-Daten",
+     v86.errors.length === 0, v86.errors.slice(0, 5).join(" | "));
+  const noWarum = TESTS.filter(t => !t.warum || t.warum.length < 60).map(t => t.id);
+  ok("alle " + TESTS.length + " Karten haben „Warum messe ich das?“", noWarum.length === 0, noWarum.join(","));
+  const noOszi = TESTS.filter(t => t.tag === "osz" && !t.oszi).map(t => t.id);
+  ok("jede Oszi-Karte (tag osz) begründet die Grenze des Multimeters", noOszi.length === 0, noOszi.join(","));
+  // Oszi-Links gegen das Kompendium (../index.html): Messkarten (KARTEN) und Fehlermuster (FEHLERDB)
+  let deadLinks = [], linkCount = TESTS.filter(t => t.oszCard || t.oszFdb).length;
+  try {
+    const ROOT = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+    const rk = ROOT.slice(ROOT.indexOf("KARTEN=["), ROOT.indexOf("FEHLERDB=["));
+    const rf = ROOT.slice(ROOT.indexOf("FEHLERDB=["));
+    const cardIds = new Set([...rk.matchAll(/id:"([a-z0-9-]+)"/g)].map(m => m[1]));
+    const fdbIds = new Set([...rf.matchAll(/id:"([a-z0-9-]+)"/g)].map(m => m[1]));
+    deadLinks = TESTS.filter(t => (t.oszCard && !cardIds.has(t.oszCard)) || (t.oszFdb && !fdbIds.has(t.oszFdb))).map(t => t.id);
+    ok("alle " + linkCount + " Oszi-Links zeigen auf vorhandene Karten/Fehlermuster des Kompendiums", deadLinks.length === 0, deadLinks.join(","));
+  } catch (e) { note("Oszi-Links nicht geprüft: ../index.html nicht lesbar (" + e.message + ")"); }
+  // Profi-Modus: Erklärtexte weg, lange Abschnitte eingeklappt, Gefahren sichtbar
+  w.applyBeginner(false); w.openDetail("strom");
+  let body = d.getElementById("ovbody");
+  const hidden = [...body.querySelectorAll('.sec[data-pro="hide"]')];
+  ok("Profi-Modus: Einsteiger-Abschnitte (Einfach erklärt, 6-Schritte-Ablauf) ausgeblendet",
+     d.body.classList.contains("pro") && hidden.length >= 2 && hidden.every(el => w.getComputedStyle(el).display === "none"));
+  const folded = [...body.querySelectorAll(".sec.fold:not(.open) .fold-body")];
+  ok("Profi-Modus: Warum/Ursachen/Hinweise eingeklappt, Aufklapp-Button vorhanden",
+     folded.length >= 2 && folded.every(el => w.getComputedStyle(el).display === "none") && body.querySelectorAll(".sec.fold .fold-btn").length === folded.length);
+  const fb = body.querySelector(".sec.fold .fold-btn"); w.toggleFold(fb);
+  ok("Aufklappen zeigt den Inhalt und setzt aria-expanded",
+     w.getComputedStyle(fb.closest(".sec").querySelector(".fold-body")).display !== "none" && fb.getAttribute("aria-expanded") === "true");
+  ok("Profi-Modus: danger-Warnung, Messampel, Einstellung, Messpunkte, Gut/Schlecht, Nächster Schritt sichtbar",
+     ["warn danger", "Messampel", "Multimeter einstellen", "Messspitzen anhalten", "Guter Wert", "Schlechter Wert", "Nächster Schritt"].every(k => body.innerHTML.includes(k))
+     && [...body.querySelectorAll('.sec[data-pro="show"]')].every(el => w.getComputedStyle(el).display !== "none"));
+  w.applyBeginner(true); w.openDetail("kw-ind");
+  body = d.getElementById("ovbody");
+  ok("Einsteiger-Modus: Einfach erklärt, 6-Schritte-Ablauf, Warum und „Wann Oszilloskop?“ sichtbar",
+     d.body.classList.contains("beginner") && ["Einfach erklärt", "So gehst du vor", "Warum messe ich das?", "Wann Oszilloskop?"].every(k => body.innerHTML.includes(k))
+     && [...body.querySelectorAll(".sec")].every(el => w.getComputedStyle(el).display !== "none"));
+  ok("Oszi-Karte verlinkt ins Kompendium (kw-ind → Messkarte)", /href="\.\.\/index\.html#pg-karten~c-kw-ind"/.test(body.innerHTML));
+  ok("Modus-Umschalter im Kopf, in der Detailansicht und in der Schaltplan-Hilfe", d.querySelectorAll("[data-modebtn]").length >= 3);
+  w.toggleMode(); const m1 = d.body.classList.contains("pro"); w.toggleMode(); const m2 = d.body.classList.contains("pro");
+  ok("toggleMode() schaltet um und zurück", m1 !== m2 && !m2);
+  // Übersicht Multimeter/Oszi
+  w.openOszGuide();
+  ok("Übersicht „Multimeter oder Oszilloskop?“ listet alle Karten", d.querySelectorAll("#oszBody .oszrow").length === TESTS.length);
+  // Schaltplan-Hilfe
+  const SP = w.eval("SCHALTPLAN");
+  const tabs = ["lesen", "klemmen", "farben", "symbole", "relais", "stecker", "messplan", "fallen", "quiz"];
+  const tabBad = tabs.filter(t => { w.openSchaltplan(t); const c = d.getElementById("planContent"); return !c || c.innerHTML.length < 200 || c.innerHTML.includes("undefined"); });
+  ok("Schaltplan-Hilfe: alle " + tabs.length + " Kapitel rendern (" + Object.entries(v86.schaltplan || {}).map(([k, v]) => k + " " + v).join(", ") + ")", tabBad.length === 0, tabBad.join(","));
+  w.openSchaltplan("relais"); w.relaisPin("87a");
+  ok("Relais: Pin antippen zeigt Rolle und Messwert", /87a/.test(d.getElementById("relInfo").textContent) && d.querySelector(".relsvg .pin.on"));
+  w.openSchaltplan("messplan"); w.setMessplan(SP.messplan.length - 1);
+  ok("Vom Plan zur Messung: jeder Bauteiltyp hat Schritte mit Soll und Deutung",
+     d.querySelectorAll(".mp-step").length >= 4 && SP.messplan.every(m => m.schritte.every(x => x.soll && x.sonst)));
+  w.openSchaltplan("quiz");
+  SP.quiz.forEach(q => { w.quizAnswer(q.richtig); w.quizNext(); });
+  ok("Quiz: " + SP.quiz.length + " Fragen durchspielbar, Auswertung erscheint", !!d.querySelector(".quiz-score .big") && d.querySelector(".quiz-score .big").textContent.trim() === SP.quiz.length + " / " + SP.quiz.length);
+  w.quizReset();
+  const symNoSvg = SP.symbole.filter(x => { w.openSchaltplan("symbole"); return !d.querySelector("#planContent .sym svg"); });
+  ok("Schaltzeichen: jedes Symbol als SVG gerendert", symNoSvg.length === 0 && d.querySelectorAll("#planContent .sym svg").length === SP.symbole.length);
+  ok("Schaltplan-Hilfe: Startseiten-Kachel und Diagnose-Eintrag vorhanden",
+     (w.doCloseOverlays(), w.showHome(), !!d.querySelector("#main .oszbanner.plan")) && (w.openTreeMenu(), /Schaltplan zur Messung/.test(d.getElementById("treeBody").innerHTML)));
+  w.doCloseOverlays();
+  ok("Suche findet Warum-/Oszi-Texte und Schaltplan-Kapitel", (await doSearch("kollektorlamelle")) > 0 && (await doSearch("klemme 87a"), !!d.querySelector("#main .planhits")));
+  await doSearch("");
+  ok("Standard ohne gespeicherte Einstellung ist der Einsteiger-Modus (mm_mode leer → beginner)",
+     (w.localStorage.removeItem("mm_mode"), w.localStorage.removeItem("mm_beginner"), w.applyBeginner(true), d.body.classList.contains("beginner")));
+
   section("20 · Vollzähligkeit gegen den Vorzustand");
   // Grund für diesen Abschnitt: Beim Zusammenführen sind schon einmal drei Karten
   // ersatzlos entfallen, während alle Tests grün blieben. Eine Prüfsuite, die einen

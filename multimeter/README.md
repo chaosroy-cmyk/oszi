@@ -1,10 +1,25 @@
 # KFZ Multimeter Profi
 
 Lern- und Diagnosehilfe für Messungen mit dem Multimeter am Fahrzeug, als
-installierbare Progressive Web App. Sie richtet sich an beide Enden: Einsteiger
-bekommen zu jeder Prüfung eine ausklappbare Schritt-für-Schritt-Anleitung und
-einen Klartextblock „Einfach erklärt", Profis eine kompakte Karte mit
-Richtwerten, Fehlerursachen nach Häufigkeit und einer Fehlersuchkette.
+installierbare Progressive Web App. Sie richtet sich an beide Enden, und zwar
+mit derselben Karte:
+
+- **Einsteiger-Modus (Standard):** „Einfach erklärt“, ein 6-Schritte-Ablauf,
+  „Warum messe ich das?“ (welche Frage die Messung beantwortet, welches
+  Fehlerbild dahintersteckt), ausgeklappte Anleitung, Hinweise.
+- **Profi-Modus (Umschalter 🎓/🛠 oben rechts):** dieselbe Karte kompakt –
+  Messampel, Einstellung, Messpunkte, Gut-/Schlechtwert, Richtwerte,
+  Fehlersuche, nächster Schritt. Erklärtexte sind eingeklappt und per
+  „Aufklappen“ erreichbar, nie weg. Gefahrenhinweise bleiben immer sichtbar.
+
+Jede Karte sagt außerdem unter **„Wann Oszilloskop?“**, was das Multimeter an
+dieser Stelle nicht sieht, und verlinkt auf die passende Messkarte bzw. das
+Fehlermuster im Schwester-Tool „KFZ-Oszilloskop-Kompendium“ (`../index.html`).
+Die Übersicht **„Multimeter oder Oszilloskop?“** ordnet alle Karten nach Eignung.
+Das Kapitel **„Schaltpläne verstehen“** (eigener Navigationspunkt) erklärt
+Stromlaufpläne, Klemmen (DIN 72552), Leitungsfarben, Schaltzeichen, Relais,
+Stecker-/Herstellerkonventionen, liefert fertige Messpläne je Bauteiltyp,
+typische Fallen und ein Quiz für Lehrlinge.
 
 **Redaktionelle Grundlinie:** Die App gibt **keine universellen Grenzwerte als
 Entscheidungskriterium** vor. Wo es keine seriöse Universalgrenze gibt, verweist
@@ -16,10 +31,10 @@ Bauteiltausch steht erst nach einer Gegenprobe an. Diese Linie ist in
 
 | | |
 |---|---|
-| App-Version | `8.5-Profi` |
-| Inhaltsstand | 09.08.2026 |
-| Umfang | 77 Prüfkarten, 15 Diagnosebäume |
-| Validator | 153 Prüfungen |
+| App-Version | `8.6-Profi` |
+| Inhaltsstand | 14.09.2026 |
+| Umfang | 77 Prüfkarten, 15 Diagnosebäume, Übersicht „Multimeter oder Oszilloskop?“, Schaltplan-Hilfe mit 9 Kapiteln |
+| Validator | 174 Prüfungen |
 | Abhängigkeiten der App | keine |
 
 ## Projektaufbau
@@ -36,6 +51,7 @@ multimeter/
 ├── validate.js             Prüfsuite, läuft gegen den echten Renderer via jsdom
 ├── baseline.json           Vollzähligkeitsbasis (siehe unten)
 ├── SOURCES.md              Quellen- und Grenzwertmatrix
+├── PROMPT.md               Loop-Prompt für die iterative Weiterentwicklung
 ├── LICENSE                 Entwurf — Lizenzmodell noch offen
 ├── LEGAL/                  Rechtsentwürfe, nicht veröffentlicht
 └── CHANGELOG-v8.*.md       Änderungen je Release
@@ -110,10 +126,10 @@ Vier Stellen müssen zusammenpassen; der Validator prüft das:
 
 | Stelle | Beispiel |
 |---|---|
-| `index.html` → `APP_VERSION` | `8.5-Profi` |
-| `index.html` → `APP_CACHE_NAME` | `kfz-multimeter-profi-v8-5` |
-| `sw.js` → `CACHE_NAME` | `kfz-multimeter-profi-v8-5` |
-| `package.json` → `version` | `8.5.0` |
+| `index.html` → `APP_VERSION` | `8.6-Profi` |
+| `index.html` → `APP_CACHE_NAME` | `kfz-multimeter-profi-v8-6` |
+| `sw.js` → `CACHE_NAME` | `kfz-multimeter-profi-v8-6` |
+| `package.json` → `version` | `8.6.0` |
 
 Getrennt davon steht `DATA_STAND` in `index.html` — der **fachliche
 Inhaltsstand**, sichtbar in der Fußzeile und im Nutzungshinweis. Er muss mit der

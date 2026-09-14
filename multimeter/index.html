@@ -522,6 +522,160 @@ body.beginner .beg-banner{display:flex}
   .xref{background:#fff4dc;border-color:#b77a13}
 }
 
+/* ---------- v8: Einsteiger-/Profi-Modus ---------- */
+/* Einsteiger (Standard): alles sichtbar. Profi: data-pro="hide" weg, data-pro="fold" eingeklappt (aufklappbar). */
+body.pro .sec[data-pro="hide"]{display:none}
+.fold-btn{
+  display:none;margin-left:auto;background:var(--bg);border:1px solid var(--line);color:var(--txt2);
+  border-radius:8px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;
+  text-transform:none;letter-spacing:0;font-family:inherit;white-space:nowrap;
+}
+.fold-btn::before{content:"▸ ";color:var(--acc)}
+.sec.open .fold-btn::before{content:"▾ "}
+body.pro .sec.fold .fold-btn{display:inline-flex}
+body.pro .sec.fold:not(.open) .fold-body{display:none}
+body.pro .sec.fold:not(.open){padding-top:10px;padding-bottom:10px}
+body.pro .sec.fold:not(.open) .lbl{margin-bottom:0}
+body.pro .step .body{font-size:14px}
+body.pro .disc{font-size:11px;padding:8px 11px}
+.modepill{
+  flex:0 0 auto;background:var(--bg);border:1.5px solid var(--line);color:var(--txt2);
+  border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer;
+  font-family:inherit;white-space:nowrap;letter-spacing:.3px;
+}
+.modepill.on{border-color:#a371f7;color:#c8a8ff}
+body.pro .modepill{border-color:var(--acc);color:var(--acc)}
+.botnav button.tog.on{color:#c8a8ff}
+body.pro .botnav button.tog{color:var(--acc)}
+/* Ablaufübersicht (Einsteiger) */
+.plan{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.plan .pl{display:flex;gap:9px;align-items:flex-start;font-size:14px;line-height:1.4}
+.plan .pl .pn{
+  flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:#a371f7;color:#1a0a33;
+  font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:1px;
+}
+.plan .pl b{color:var(--txt)}
+.plan .pl span{color:var(--txt2)}
+/* Warum-Block */
+.step.why{border-left-color:#a371f7}
+.step.why .lbl,.step.why .lbl .num{color:#c8a8ff}
+.step.why .lbl .num{background:#a371f7;color:#1a0a33}
+/* Oszi-Abgrenzung */
+.step.osz{border-left-color:var(--blu)}
+.step.osz .lbl,.step.osz .lbl .num{color:var(--blu)}
+.step.osz .lbl .num{background:var(--blu);color:#031024}
+.osz-link{
+  display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:rgba(88,166,255,.12);
+  border:1.5px solid rgba(88,166,255,.45);color:var(--blu);border-radius:10px;padding:8px 12px;
+  font-size:13px;font-weight:800;text-decoration:none;
+}
+.osz-link:active{background:rgba(88,166,255,.22)}
+/* Banner auf der Startseite */
+.oszbanner{
+  width:100%;display:flex;align-items:center;gap:11px;text-align:left;cursor:pointer;
+  background:linear-gradient(145deg,rgba(88,166,255,.16),var(--card));border:1.5px solid rgba(88,166,255,.45);
+  border-radius:14px;padding:12px 13px;margin-bottom:14px;color:var(--txt);font-family:inherit;
+}
+.oszbanner .oi{font-size:24px;flex:0 0 auto}
+.oszbanner b{display:block;font-size:14px;font-weight:800}
+.oszbanner span{display:block;font-size:12px;color:var(--txt2);line-height:1.35}
+.oszbanner .ar{margin-left:auto;color:var(--blu);font-weight:800}
+/* Übersicht Multimeter vs. Oszi */
+.oszgrp{margin:18px 0 8px}
+.oszrow{
+  background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;margin-bottom:8px;
+}
+.oszrow .oh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.oszrow .oh button{
+  background:none;border:none;color:var(--txt);font-family:inherit;font-size:14px;font-weight:800;
+  cursor:pointer;padding:0;text-align:left;text-decoration:underline dotted var(--txt2);
+}
+.oszrow .oq{font-size:12px;color:var(--txt2);margin-top:4px;line-height:1.4}
+.oszrow .oz{font-size:13px;margin-top:6px;line-height:1.45}
+.oszrow .oz b{color:var(--blu)}
+.oszrow .osz-link{margin-top:8px;padding:6px 10px;font-size:12px}
+.rule{
+  display:grid;grid-template-columns:1fr auto auto;gap:6px 10px;align-items:center;
+  font-size:13px;margin-top:8px;
+}
+.rule .rh{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--txt2);font-weight:800}
+.rule .rc{text-align:center;font-weight:900;font-size:14px}
+.rule .rc.y{color:var(--grn)}.rule .rc.p{color:var(--warn)}.rule .rc.n{color:var(--red)}
+.rule .rt{color:var(--txt);line-height:1.35;padding:6px 0;border-bottom:1px solid var(--line)}
+.rule .rc{border-bottom:1px solid var(--line);padding:6px 0;align-self:stretch;display:flex;align-items:center;justify-content:center}
+
+/* ---------- v8.1: Modus-Umschalter im Kopf, Schaltplan-Hilfe ---------- */
+.htop .modepill{margin-left:auto}
+.homelinks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.homelinks .oszbanner{margin:0;padding:11px 12px;flex-direction:column;align-items:flex-start;gap:6px}
+.homelinks .oszbanner .ar{display:none}
+.homelinks .oszbanner.plan{background:linear-gradient(145deg,rgba(255,176,0,.16),var(--card));border-color:rgba(255,176,0,.5)}
+.plantabs{display:flex;gap:8px;overflow-x:auto;padding:0 0 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch;position:sticky;top:0;z-index:5;background:var(--bg);margin:-16px 0 0;padding-top:12px}
+.plantabs::-webkit-scrollbar{display:none}
+/* Klemmen */
+.klrow{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;margin-bottom:8px}
+.klrow .kl{flex:0 0 auto;min-width:46px;text-align:center;background:var(--acc);color:#1a1200;border-radius:9px;padding:6px 6px;font-weight:900;font-size:14px;line-height:1.1}
+.klrow .kn{font-weight:800;font-size:14px}
+.klrow .kb{font-size:13px;color:var(--txt2);line-height:1.45;margin-top:2px}
+.klrow .km{font-size:13px;margin-top:6px;line-height:1.45}
+.klrow .km b{color:var(--grn)}
+/* Farben */
+.farben{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.farbe{display:flex;gap:9px;align-items:flex-start;background:var(--card);border:1.5px solid var(--line);border-radius:11px;padding:9px 10px}
+.farbe .sw{flex:0 0 auto;width:26px;height:26px;border-radius:7px;border:1.5px solid rgba(255,255,255,.35);margin-top:1px}
+.farbe .fc{font-weight:900;font-size:14px}
+.farbe .fc small{color:var(--txt2);font-weight:700;margin-left:4px}
+.farbe .fn{font-size:12px;color:var(--txt2);line-height:1.35}
+/* Symbole */
+.symgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sym{background:var(--card);border:1.5px solid var(--line);border-radius:12px;overflow:hidden}
+.sym summary{list-style:none;cursor:pointer;padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.sym summary::-webkit-details-marker{display:none}
+.sym svg{width:80px;height:50px;color:var(--txt);display:block}
+.sym .sn{font-size:13px;font-weight:800;text-align:center;line-height:1.2}
+.sym[open]{grid-column:1 / -1}
+.sym[open] summary{flex-direction:row;justify-content:flex-start}
+.sym .sb{padding:0 12px 12px;font-size:13px;line-height:1.45;color:var(--txt2)}
+.sym .sb b{color:var(--acc)}
+.sym .sb .mm{color:var(--txt);margin-top:6px}
+.sym .sb .mm b{color:var(--grn)}
+/* Relais */
+.relsvg{width:100%;max-width:340px;display:block;margin:6px auto 4px;color:var(--txt)}
+.relsvg text{font-family:inherit;font-weight:800;fill:currentColor}
+.relsvg .pin{cursor:pointer}
+.relsvg .pin rect{fill:var(--bg);stroke:var(--line);stroke-width:2}
+.relsvg .pin.on rect{fill:var(--acc);stroke:var(--acc)}
+.relsvg .pin.on text{fill:#1a1200}
+.pinbtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.pinbtns button{background:var(--bg);border:1.5px solid var(--line);color:var(--txt);border-radius:9px;padding:7px 11px;font-weight:900;font-size:13px;cursor:pointer;font-family:inherit}
+.pinbtns button.on{background:var(--acc);border-color:var(--acc);color:#1a1200}
+.pininfo{background:var(--bg);border:1.5px solid var(--line);border-radius:11px;padding:11px 12px;margin-top:8px;font-size:14px;line-height:1.45;min-height:60px}
+.pininfo b{color:var(--acc)}
+/* Messplan-Assistent */
+.planpick{margin-bottom:8px}
+.mp-step{background:var(--bg);border:1.5px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:9px}
+.mp-step .mh{font-size:14px;font-weight:800;color:var(--acc);margin-bottom:6px}
+.mp-step .mr{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:13px;line-height:1.4}
+.mp-step .mr .k{color:var(--txt2);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.4px;padding-top:2px}
+.mp-step .mr .soll{color:var(--grn);font-weight:700}
+.mp-step .mr .sonst{color:#ffb3ae}
+/* Quiz */
+.quiz-q{font-size:16px;font-weight:800;line-height:1.35;margin-bottom:12px}
+.quiz-opt{display:block;width:100%;text-align:left;background:var(--bg);border:1.5px solid var(--line);color:var(--txt);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;font-family:inherit;line-height:1.35}
+.quiz-opt.right{border-color:var(--grn);background:rgba(63,185,80,.14)}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(248,81,73,.14)}
+.quiz-opt:disabled{cursor:default;opacity:.85}
+.quiz-ex{background:rgba(88,166,255,.1);border:1.5px solid rgba(88,166,255,.35);border-radius:11px;padding:11px 12px;font-size:14px;line-height:1.45;margin-top:4px}
+.quiz-bar{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--txt2);font-weight:700;margin-bottom:10px}
+.quiz-next{background:var(--acc);color:#1a1200;border:none;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:800;cursor:pointer;margin-top:10px;font-family:inherit}
+.quiz-score{text-align:center;padding:20px 10px}
+.quiz-score .big{font-size:40px;font-weight:900;color:var(--acc);line-height:1.1}
+/* Suchtreffer Schaltplan */
+.planhits{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.planhits button{background:var(--card);border:1.5px solid rgba(255,176,0,.5);color:var(--txt);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.planhits button b{color:var(--acc)}
+@media(min-width:560px){.symgrid{grid-template-columns:repeat(3,1fr)}.farben{grid-template-columns:repeat(3,1fr)}}
+
 </style>
 </head>
 <body>
@@ -550,6 +704,7 @@ body.beginner .beg-banner{display:flex}
       <h1>KFZ Multimeter-Prüfung</h1>
       <p>Antippen → Anleitung</p>
     </div>
+    <button type="button" class="modepill" data-modebtn onclick="toggleMode()" aria-pressed="false">🎓 Einsteiger</button>
   </div>
   <div class="search-wrap">
     <input class="search" id="search" type="search" enterkeyhint="search" aria-label="Prüfung suchen" placeholder="Prüfung suchen … (z.B. NTC, Masse, Starter)" autocomplete="off">
@@ -568,6 +723,7 @@ body.beginner .beg-banner{display:flex}
     <div class="ovbar">
       <button class="back" onclick="closeDetail()" aria-label="Zurück">←</button>
       <div class="t"><span id="ovcat"></span><h2 id="ovtitle"></h2></div>
+      <button type="button" class="modepill" data-modebtn onclick="toggleMode()" aria-pressed="false">🎓 Einsteiger</button>
       <button class="favbtn" id="ovfav" onclick="toggleFavCurrent()" aria-pressed="false" aria-label="Zur Merkliste hinzufügen">☆</button>
     </div>
   </div>
@@ -601,6 +757,25 @@ body.beginner .beg-banner{display:flex}
   <div class="ovbody" id="hinweisBody"></div>
 </div>
 
+<!-- Multimeter-oder-Oszilloskop Overlay -->
+<div class="overlay" id="oszOverlay" role="dialog" aria-modal="true" aria-label="Multimeter oder Oszilloskop">
+  <div class="ovhead"><div class="ovbar">
+    <button class="back" onclick="closeOsz()" aria-label="Zurück">←</button>
+    <div class="t"><span>Gerätewahl</span><h2>Multimeter oder Oszilloskop?</h2></div>
+  </div></div>
+  <div class="ovbody" id="oszBody"></div>
+</div>
+
+<!-- Schaltplan-Hilfe Overlay -->
+<div class="overlay" id="planOverlay" role="dialog" aria-modal="true" aria-label="Schaltpläne verstehen">
+  <div class="ovhead"><div class="ovbar">
+    <button class="back" onclick="closeSchaltplan()" aria-label="Zurück">←</button>
+    <div class="t"><span>Hilfe</span><h2>Schaltpläne verstehen</h2></div>
+    <button type="button" class="modepill" data-modebtn onclick="toggleMode()" aria-pressed="false">🎓 Einsteiger</button>
+  </div></div>
+  <div class="ovbody" id="planBody"></div>
+</div>
+
 <!-- Bottom Nav -->
 <nav class="botnav">
   <button class="active" id="navHome" onclick="showHome()"><span class="bi" aria-hidden="true">🔧</span>Prüfungen</button>
@@ -608,7 +783,7 @@ body.beginner .beg-banner{display:flex}
   <button id="navTree" onclick="openTreeMenu()"><span class="bi" aria-hidden="true">🌳</span>Diagnose</button>
   <button id="navGloss" onclick="openGloss()"><span class="bi" aria-hidden="true">📖</span>Glossar</button>
   <button id="navHinweis" onclick="openHinweis()"><span class="bi" aria-hidden="true">ℹ️</span>Hinweis</button>
-  <button class="tog" id="navBeg" onclick="toggleBeginner()" aria-pressed="false"><span class="bi" aria-hidden="true">🎓</span>Einsteiger</button>
+  <button id="navPlan" onclick="openSchaltplan()"><span class="bi" aria-hidden="true">📐</span>Schaltplan</button>
 </nav>
 
 <script>
@@ -618,12 +793,12 @@ body.beginner .beg-banner{display:flex}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.5-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-5';
+const APP_VERSION = '8.6-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-6';
 /* Stand der fachlichen Inhalte. Bewusst getrennt von der Versionsnummer:
    Sollwerte veralten unabhängig davon, ob am Code etwas geändert wurde.
    Muss mit der Datierung in SOURCES.md übereinstimmen (prüft der Validator). */
-const DATA_STAND = '09.08.2026';
+const DATA_STAND = '14.09.2026';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -3032,7 +3207,7 @@ function filterTests(){
 
 /* Einsteiger-Hinweis (nur sichtbar, wenn body.beginner gesetzt ist) und
    Copyright-Fußzeile – auf jeder Listenansicht gleich. */
-const BEG_BANNER=`<div class="beg-banner"><span class="bb-ic" aria-hidden="true">🎓</span><span><b>Einsteiger-Modus aktiv.</b> In jeder Prüfung steht oben ein Block „Einfach erklärt“. Zum Ausschalten unten erneut auf 🎓 Einsteiger tippen.</span></div>`;
+const BEG_BANNER=`<div class="beg-banner"><span class="bb-ic" aria-hidden="true">🎓</span><span><b>Einsteiger-Modus:</b> jede Prüfung mit „Einfach erklärt“, 6-Schritte-Ablauf und „Warum messe ich das?“. Für die kompakte Profi-Ansicht oben rechts auf 🎓 Einsteiger tippen.</span></div>`;
 const COPY_FOOTER=`<div class="copy">© 2026 <b>RS</b> – Alle Rechte vorbehalten.<br>KFZ Multimeter Profi ${APP_VERSION} · Inhaltsstand ${DATA_STAND} · Richtwerte ohne Gewähr, Herstellerangaben haben Vorrang.<br><button type="button" class="copy-link" onclick="openHinweis()">Nutzungshinweis lesen</button></div>`;
 
 function renderHome(){
@@ -3087,6 +3262,8 @@ function showToast(msg,cls){
 /* ---------- Detail ---------- */
 let currentId=null;
 const ov=document.getElementById('overlay');
+const oszOv=document.getElementById('oszOverlay');
+const planOv=document.getElementById('planOverlay');
 
 /* ---------- Overlay-/History-Verwaltung ----------
    Öffnen legt genau EINEN History-Eintrag an. Schließen (Button, Escape oder
@@ -3097,7 +3274,7 @@ let lastFocus=null;
    hier ein – sonst laufen Fokus-Trap, Inert-Schaltung und History auseinander.
    Die Elemente selbst werden erst später deklariert; ALL_OVERLAYS wird nur zur
    Laufzeit ausgewertet, nie beim Parsen. */
-function allOverlays(){return [ov,glossOv,treeOv,hinweisOv];}
+function allOverlays(){return [ov,glossOv,treeOv,hinweisOv,oszOv,planOv];}
 function anyOverlayOpen(){
   return allOverlays().some(o=>o&&o.classList.contains('open'));
 }
@@ -3553,29 +3730,9 @@ function setNav(id){
 function showHome(){closeAllOverlays();renderHome();window.scrollTo(0,0);}
 function showFavs(){closeAllOverlays();renderFavs();window.scrollTo(0,0);}
 window.showHome=showHome;window.showFavs=showFavs;
-function closeAllOverlays(){ov.classList.remove('open');glossOv.classList.remove('open');treeOv.classList.remove('open');}
+function closeAllOverlays(){allOverlays().forEach(o=>{if(o)o.classList.remove('open');});setBackgroundInert(false);}
 
-/* beginner (Einstellung wird gemerkt) */
-function applyBeginner(on){
-  document.body.classList.toggle('beginner',on);
-  const b=document.getElementById('navBeg');
-  b.classList.toggle('on',on);
-  b.setAttribute('aria-pressed',on?'true':'false');
-}
-function toggleBeginner(){
-  const on=!document.body.classList.contains('beginner');
-  applyBeginner(on);
-  try{localStorage.setItem('mm_beginner',on?'1':'0')}catch(e){}
-  // Sichtbare Rückmeldung: ohne sie wirkt der Schalter funktionslos,
-  // weil der Einsteiger-Text erst in der Detailansicht sichtbar wird.
-  showToast(on?'🎓 Einsteiger-Modus AN – „Einfach erklärt“ wird angezeigt':'Einsteiger-Modus AUS','beg');
-  // Ist gerade eine Prüfung offen, sofort mit/ohne Einsteiger-Block neu aufbauen
-  if(ov.classList.contains('open')&&currentId){
-    const y=ov.scrollTop;openDetail(currentId);ov.scrollTop=y;
-  }
-}
-window.toggleBeginner=toggleBeginner;
-try{if(localStorage.getItem('mm_beginner')==='1')applyBeginner(true);}catch(e){}
+/* Einsteiger-/Profi-Modus: siehe enhanceV8 (toggleMode / applyBeginner) */
 
 /* search: entprellt (130 ms), mit Lösch-X */
 let searchTimer=null;
@@ -4461,6 +4618,42 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
   };
   Object.entries(sourceRefs).forEach(([id,sourceRef])=>{const t=byId(id);if(t)t.sourceRef=sourceRef;});
 
+  // Abschnitt der Detailansicht. pro: show (immer) | hide (nur Einsteiger) | fold (Profi: eingeklappt, aufklappbar)
+  function sec(o){
+    const pro=o.pro||'show';
+    const fold=pro==='fold';
+    return `<div class="step ${o.cls||''} sec${fold?' fold':''}" data-pro="${pro}">`+
+      `<div class="lbl"><span class="num">${o.num}</span>${o.lbl}`+
+      (fold?`<button type="button" class="fold-btn" aria-expanded="false" onclick="toggleFold(this)">Aufklappen</button>`:'')+
+      `</div><div class="body fold-body">${o.body}</div></div>`;
+  }
+  window.toggleFold=function(btn){
+    const s=btn.closest('.sec');if(!s)return;
+    const open=s.classList.toggle('open');
+    btn.setAttribute('aria-expanded',open?'true':'false');
+    btn.textContent=open?'Einklappen':'Aufklappen';
+  };
+  // Kurz-Ablauf für Einsteiger: die Karte in 6 Schritten
+  function planHTML(t){
+    const pr=(t.probes||[]).map(p=>`<b>${p[0]==='r'?'Rot':'Schwarz'}</b> → ${p[1]}`).join(', ');
+    const first=s=>String(s||'').split(/(?<=[.!?])\s/)[0];
+    const steps=[
+      ['Sicherheit klären','12 V oder Hochvolt? Airbag/SRS? Stecker ab oder unter Last? <button type="button" class="fold-btn" style="display:inline-flex" onclick="openDetail(\'sicherheitscheck\')">Sicherheits-Check</button>'],
+      ['Multimeter einstellen',`${t.set&&t.set.mode?t.set.mode:'–'} · Buchsen: ${t.set&&t.set.buchse?t.set.buchse:'–'}`],
+      ['Messspitzen anhalten',pr||'siehe unten'],
+      ['Messen',t.mess?first(t.mess):'siehe Anleitung'],
+      ['Wert bewerten','Gut-/Schlechtwert und Richtwerte unten vergleichen'],
+      ['Nächster Schritt',t.next?first(t.next):'–']
+    ];
+    return `<div class="plan">`+steps.map((s,i)=>`<div class="pl"><span class="pn">${i+1}</span><div><b>${s[0]}</b><br><span>${s[1]}</span></div></div>`).join('')+`</div>`;
+  }
+  function osziHTML(t){
+    if(!t.oszi&&!t.oszCard&&!t.oszFdb)return '';
+    let h=t.oszi?`<div>${t.oszi}</div>`:'';
+    if(t.oszCard)h+=`<a class="osz-link" href="../index.html#pg-karten~c-${t.oszCard}" target="_blank" rel="noopener">🔬 Messkarte im Oszi-Kompendium öffnen ↗</a>`;
+    else if(t.oszFdb)h+=`<a class="osz-link" href="../index.html#pg-fdb~f-${t.oszFdb}" target="_blank" rel="noopener">🔬 Fehlermuster im Oszi-Kompendium öffnen ↗</a>`;
+    return h;
+  }
   function metaHTML(t){
     const riskCls=t.risk==="hoch"?"bad":t.risk==="mittel"?"warn":"good";
     const q=t.quality|| (t.tag==="mm"?"MM geeignet":t.tag==="osz"?"Oszi empfohlen":"Gefahrenprüfung");
@@ -4468,39 +4661,51 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
     h+=`<span class="${t.tag==='mm'?'ok':t.tag==='osz'?'warn':'bad'}">${t.tag==='mm'?'Multimeter geeignet':t.tag==='osz'?'Oszi/Tester empfohlen':'Gefahr / nur gezielt'}</span>`;
     h+=`<span class="${riskCls==='bad'?'bad':riskCls==='warn'?'warn':'ok'}">Risiko: ${t.risk||'normal'}</span>`;
     h+=`</div></div><div class="meta-card"><b>Sollwertquelle:</b> ${t.sourceRef||'Fahrzeug-/Bauteilhersteller. Zahlen in dieser Karte sind ohne konkrete Kennlinie nur Orientierung.'}</div></div>`;
-    if(t.requires&&t.requires.length) h+=`<div class="step"><div class="lbl"><span class="num">✅</span>Voraussetzungen</div><div class="body">${listHTML(t.requires,"ok")}</div></div>`;
-    if(t.limits&&t.limits.length) h+=`<div class="step next"><div class="lbl"><span class="num">⚖</span>Grenzen der Messung</div><div class="body">${listHTML(t.limits,"warn")}</div></div>`;
-    if(t.dont&&t.dont.length) h+=`<div class="step bad"><div class="lbl"><span class="num">⛔</span>Nicht machen</div><div class="body">${listHTML(t.dont,"dont")}</div></div>`;
+    if(t.requires&&t.requires.length) h+=sec({num:'✅',lbl:'Voraussetzungen',body:listHTML(t.requires,"ok"),pro:'fold'});
+    if(t.limits&&t.limits.length) h+=sec({cls:'next',num:'⚖',lbl:'Grenzen der Messung',body:listHTML(t.limits,"warn"),pro:'fold'});
+    if(t.dont&&t.dont.length) h+=sec({cls:'bad',num:'⛔',lbl:'Nicht machen',body:listHTML(t.dont,"dont")});
     return h;
   }
 
-  // Detailansicht erweitern, bestehende UI-Komponenten bleiben erhalten
+  // Detailansicht (einzige aktive Fassung). Einsteiger-Modus zeigt alles, Profi-Modus
+  // blendet Erklärtexte aus und klappt lange Abschnitte ein – Gefahrenhinweise,
+  // Messampel, Einstellung, Messpunkte, Gut/Schlecht, Richtwerte und Fehlersuche
+  // bleiben in beiden Modi sichtbar.
   openDetail=function(id){
     currentId=id;
     const t=TESTS.find(x=>x.id===id);
+    if(!t)return;
     document.getElementById('ovcat').textContent=(CATS.find(c=>c.id===t.cat)||{}).name||'';
     document.getElementById('ovtitle').textContent=t.nm;
     updateFavBtn();
-    let h='';
-    if(t.beg){h+=`<div class="beg-explain"><div class="step"><div class="lbl"><span class="num">🎓</span>Einfach erklärt</div><div class="body">${t.beg}</div></div></div>`;}
-    if(t.warn){t.warn.filter(w=>w[0]==='danger').forEach(w=>h+=warnHTML(w));}
-    h+=metaHTML(t);
-    h+=`<div class="step"><div class="lbl"><span class="num">?</span>Was prüfe ich?</div><div class="body">${t.was}</div></div>`;
-    h+=`<div class="step set"><div class="lbl"><span class="num">⚙</span>Multimeter einstellen</div><div class="body">${settingBadges(t)}</div></div>`;
     const d=DEEP[t.id];
-    h+=`<div class="step set"><div class="lbl"><span class="num">📍</span>Messspitzen anhalten</div><div class="body">${probeHTML(t)}<div style="margin-top:9px">${t.mess}</div></div></div>`;
+    let h='';
+    if(t.beg){h+=`<div class="beg-explain sec" data-pro="hide"><div class="step"><div class="lbl"><span class="num">🎓</span>Einfach erklärt</div><div class="body">${t.beg}</div></div></div>`;}
+    if(t.warn){t.warn.filter(w=>w[0]==='danger').forEach(w=>h+=warnHTML(w));}
+    h+=`<div class="sec" data-pro="hide">`+sec({cls:'why',num:'🗺',lbl:'So gehst du vor (6 Schritte)',body:planHTML(t)})+`</div>`;
+    h+=metaHTML(t);
+    h+=sec({num:'?',lbl:'Was prüfe ich?',body:t.was});
+    if(t.warum)h+=sec({cls:'why',num:'💡',lbl:'Warum messe ich das?',body:t.warum,pro:'fold'});
+    h+=sec({cls:'set',num:'⚙',lbl:'Multimeter einstellen',body:settingBadges(t)});
+    h+=sec({cls:'set',num:'📍',lbl:'Messspitzen anhalten',body:probeHTML(t)+`<div style="margin-top:9px">${t.mess}</div>`});
     if(d&&d.anl)h+=anlBoxHTML(d.anl);
-    if(t.warn){t.warn.filter(w=>w[0]!=='danger').forEach(w=>h+=warnHTML(w));}
-    h+=`<div class="step good"><div class="lbl"><span class="num">✓</span>Guter Wert</div><div class="body">${t.good}</div></div>`;
-    h+=`<div class="step bad"><div class="lbl"><span class="num">✗</span>Schlechter Wert</div><div class="body">${t.bad}</div></div>`;
-    if(d&&d.rt)h+=`<div class="step"><div class="lbl"><span class="num">📊</span>Richtwerte (typisch)</div><div class="body">${deepTableHTML(d.rt)}</div></div>`;
-    else if(t.table)h+=`<div class="step"><div class="lbl"><span class="num">📊</span>Richtwerte (typisch)</div><div class="body">${tableHTML(t.table)}</div></div>`;
+    if(t.warn){
+      t.warn.filter(w=>w[0]==='caution').forEach(w=>h+=warnHTML(w));
+      const infos=t.warn.filter(w=>w[0]==='info');
+      if(infos.length)h+=sec({num:'ℹ',lbl:`Hinweise (${infos.length})`,body:infos.map(warnHTML).join(''),pro:'fold'});
+    }
+    h+=sec({cls:'good',num:'✓',lbl:'Guter Wert',body:t.good});
+    h+=sec({cls:'bad',num:'✗',lbl:'Schlechter Wert',body:t.bad});
+    if(d&&d.rt)h+=sec({num:'📊',lbl:'Richtwerte (typisch)',body:deepTableHTML(d.rt)});
+    else if(t.table)h+=sec({num:'📊',lbl:'Richtwerte (typisch)',body:tableHTML(t.table)});
     // optionale Zweittabelle (Eingrenzungslogik / Lernübersicht) zusätzlich zu rt
-    if(d&&d.rt2)h+=`<div class="step set"><div class="lbl"><span class="num">🧩</span>${d.rt2.title||'Eingrenzung'}</div><div class="body">${deepTableHTML(d.rt2)}</div></div>`;
-    if(d&&d.urs)h+=`<div class="step"><div class="lbl"><span class="num">🔎</span>Häufige Fehlerursachen</div><div class="body">${ursHTML(d.urs)}</div></div>`;
-    if(d&&d.fs)h+=`<div class="step next"><div class="lbl"><span class="num">🧭</span>Fehlersuche Schritt für Schritt</div><div class="body">${fsHTML(d.fs)}</div></div>`;
-    if(t.calc==='mvdrop')h+=`<div class="step set"><div class="lbl"><span class="num">🧮</span>Rechner</div><div class="body">${calcHTML()}</div></div>`;
-    h+=`<div class="step next"><div class="lbl"><span class="num">→</span>Nächster Schritt</div><div class="body">${t.next}</div></div>`;
+    if(d&&d.rt2)h+=sec({cls:'set',num:'🧩',lbl:d.rt2.title||'Eingrenzung',body:deepTableHTML(d.rt2)});
+    if(d&&d.urs)h+=sec({num:'🔎',lbl:'Häufige Fehlerursachen',body:ursHTML(d.urs),pro:'fold'});
+    if(d&&d.fs)h+=sec({cls:'next',num:'🧭',lbl:'Fehlersuche Schritt für Schritt',body:fsHTML(d.fs)});
+    if(t.calc==='mvdrop')h+=sec({cls:'set',num:'🧮',lbl:'Rechner',body:calcHTML()});
+    const oz=osziHTML(t);
+    if(oz)h+=sec({cls:'osz',num:'🔬',lbl:'Wann Oszilloskop?',body:oz,pro:t.tag==='osz'?'show':'fold'});
+    h+=sec({cls:'next',num:'→',lbl:'Nächster Schritt',body:t.next});
     h+=`<div class="disc">⚠️ Alle Werte sind <b>typische Richtwerte</b> und teils marken-/modellabhängig. Fahrzeugspezifische Schaltpläne, Hersteller- und Diagnoseinformationen haben immer Vorrang. Dieses Tool ersetzt keine HV-, SRS- oder herstellerspezifische Freigabe.</div>`;
     document.getElementById('ovbody').innerHTML=linkifyRefs(h);
     if(t.calc==='mvdrop')calcMvDrop();
@@ -4509,7 +4714,7 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
   window.openDetail=openDetail;
 
   // Tile-Suche: Mehrwortsuche (alle Begriffe, Reihenfolge egal) über Name,
-  // Beschreibung, Mess-/Folgetexte, Meta-Felder und Synonyme (syn)
+  // Beschreibung, Mess-/Folgetexte, Meta-Felder, Synonyme (syn), Warum- und Oszi-Texte
   filterTests=function(){
     const q=query.trim().toLowerCase();
     const toks=q.split(/\s+/).filter(Boolean);
@@ -4517,12 +4722,879 @@ window.addEventListener('popstate',()=>{doCloseOverlays();});
       const okCat=activeCat==='alle'||t.cat===activeCat;
       if(!okCat)return false;
       if(!toks.length)return true;
-      const hay=[t.nm,t.was,t.id,t.mess,t.next,t.syn,t.quality,t.risk,(t.requires||[]).join(' '),(t.limits||[]).join(' '),(t.dont||[]).join(' ')].join(' ').toLowerCase();
+      const hay=[t.nm,t.was,t.id,t.mess,t.next,t.syn,t.warum,t.oszi,t.quality,t.risk,(t.requires||[]).join(' '),(t.limits||[]).join(' '),(t.dont||[]).join(' ')].join(' ').toLowerCase();
       return toks.every(tk=>hay.includes(tk));
     });
   };
 })();
 
+
+/* ============================================================
+   v8: Einsteiger-/Profi-Modus, „Warum messe ich das?“,
+   Multimeter-vs-Oszilloskop-Abgrenzung mit Link ins Oszi-Kompendium
+   ============================================================ */
+(function enhanceV8(){
+  /* ---- Pro Karte: warum (Zweck/Fehlerbild), oszi (Grenze des Multimeters),
+          oszCard = Messkarte bzw. oszFdb = Fehlermuster im Oszi-Kompendium ---- */
+  const X={
+  "spannung":{warum:"Ohne Versorgung arbeitet kein Bauteil. Die Spannungsmessung beantwortet die erste Frage jeder Fehlersuche: Liegt überhaupt Spannung an – und in der richtigen Höhe? Fehlt sie oder ist sie zu niedrig, liegt der Fehler <b>vor</b> dem Bauteil (Sicherung, Relais, Leitung, Stecker), nicht im Bauteil selbst.",
+    oszi:"Statische Spannung ist Multimeter-Domäne. Nur Einbrüche im Millisekundenbereich (Einschaltstoß eines Verbrauchers, Wackelkontakt, Steuergeräte-Reset) sieht das Oszilloskop, während das Multimeter sie glättet – Alternative: MIN/MAX-Funktion des Multimeters.",oszFdb:"versorgung-fehlt"},
+  "widerstand":{warum:"Viele Bauteile sind im Kern ein Widerstand (Spule, NTC, Glühkerze, Poti). Stimmt der Wert, ist das Bauteil elektrisch meist in Ordnung. OL beweist die Unterbrechung; ein deutlich zu niedriger Wert (im Vergleich zum Sollwert oder zu den Nachbarn) deutet auf Windungsschluss, ~0 Ω auf einen Vollschluss. So sparst du dir den Tausch auf Verdacht.",
+    oszi:"Widerstand misst nur das Multimeter. Das Oszilloskop kommt ins Spiel, wenn der Widerstand nur im Betrieb wegläuft (thermisch, Vibration) – dann Spannungsabfall oder Signal im Betrieb aufzeichnen."},
+  "durchgang":{warum:"Schnellste Antwort auf „Ist die Leitung von A nach B überhaupt durchgängig?“ – ideal beim Verfolgen einer Leitung durch den Kabelbaum oder beim Zuordnen von Pins. Kein Ton = Unterbrechung gefunden. Ein Piepton beweist aber keine Belastbarkeit: dafür Spannungsabfall messen.",
+    oszi:"Sporadische Unterbrechungen (Wackelkontakt beim Fahren) piepen im Stand brav. Dafür: Spannung am Verbraucher mit dem Oszilloskop oder MIN/MAX aufzeichnen und wackeln.",oszFdb:"wackelkontakt"},
+  "diodentest":{warum:"Dioden sitzen in Relais (Freilaufdiode), Generatoren, LED-Leuchten und Steuerleitungen. Eine durchgeschlagene Diode lässt die Sicherung fliegen, eine unterbrochene LED bleibt dunkel. Der Test zeigt in Sekunden, ob die Sperrschicht noch sperrt und leitet."},
+  "strom":{warum:"Die Stromaufnahme verrät den Zustand eines Verbrauchers <b>unter Last</b>: zu hoch = schwergängig, Windungsschluss oder Kurzschluss; zu niedrig = Übergangswiderstand oder Verbraucher arbeitet nicht voll. Spannung allein zeigt das nicht – ein Motor kann 12 V bekommen und trotzdem nicht laufen.",
+    oszi:"Einschaltströme (Starter, Injektoren, Zündspulen) dauern Millisekunden – das Multimeter mittelt sie weg. Stromverlauf über der Zeit nur mit Stromzange am Oszilloskop."},
+  "spannungsabfall":{warum:"Korrodierte Stecker, angescheuerte Litzen und schlechte Massepunkte haben oft 0 Ω im Ohm-Test und 12 V ohne Last – und brechen erst zusammen, wenn Strom fließt. Die Spannungsabfallmessung zeigt genau diesen Verlust unter Last in mV. Das ist die Messung, die die meisten „unerklärlichen“ Fehler löst.",
+    oszi:"Nur bei sporadischen Fehlern: Spannungsabfall während der Fahrt mit dem Oszilloskop aufzeichnen (Wackeltest), weil das Multimeter kurze Einbrüche nicht anzeigt.",oszFdb:"schlechte-masse"},
+  "batterie":{warum:"Die Batterie ist die Basis jeder Elektrik: Eine schwache Batterie erzeugt beim Starten Spannungseinbrüche, Steuergeräte-Resets und wirre Fehlercodes. Ruhe-, Start- und Ladespannung zeigen in drei Messungen, ob Batterie/Verbindungen oder Generator das Problem sind – ob der Starter selbst zu viel zieht, klärt erst die Stromzange. Und das, bevor du Fehlercodes jagst.",
+    oszi:"Der genaue Verlauf des Starteinbruchs (wie tief, wie lange) und Zylinder-Vergleich über den Anlasserstrom sind Oszilloskop-Aufgaben. Für die Batteriebewertung reicht das Multimeter plus Batterietester.",oszCard:"starter"},
+  "generator":{warum:"Lädt der Generator nicht richtig, entlädt sich die Batterie im Fahrbetrieb und Fehler treten „zufällig“ auf. Die Ladespannung unter Last beantwortet: Lädt er überhaupt, hält der Regler die Spannung, greift die intelligente Regelung (LIN/BSD)? Dioden lassen sich mit dem Multimeter nur grob über den AC-Anteil verdächtigen – sicher nur am Oszilloskop. So vermeidest du den unnötigen Batterietausch.",
+    oszi:"Defekte Generatordioden erzeugen Welligkeit (Ripple) und Störspitzen, die Steuergeräte und Busse stören. Das Multimeter zeigt AC-Ripple nur grob und oft falsch – das Oszilloskop zeigt die fehlende Diodenphase sofort.",oszCard:"generator-ripple"},
+  "starter":{warum:"„Klick, aber dreht nicht“ oder „dreht müde“ hat meist eine von drei Ursachen: Batterie, Kabel/Magnetschalter oder Starter. Mit Spannung an Kl.30 und Kl.50 unter Anlasslast trennst du das in zwei Messungen – und tauschst nicht den teuren Starter für einen korrodierten Massebolzen.",
+    oszi:"Anlasserstrom mit Stromzange am Oszilloskop zeigt Kompressionsunterschiede der Zylinder (relative Kompression) und den Einschaltstromstoß – das kann kein Multimeter.",oszCard:"starter"},
+  "sicherung":{warum:"Sicherungen und Relais sind die häufigste und billigste Fehlerstelle. Unter Last an beiden Seiten gemessen erkennst du auch angerissene Sicherungen und verbrannte Relaiskontakte, die optisch heil aussehen.",
+    oszi:"Prellende oder verzögert schaltende Relaiskontakte und getaktete Relaisansteuerungen zeigt das Oszilloskop (Spulen- und Kontaktseite gleichzeitig).",oszCard:"relais"},
+  "masse":{warum:"Ein großer Teil der Elektrikfehler hängt an schlechter Masse: Lampen glimmen, Steuergeräte melden unplausible Werte, Verbraucher laufen langsam. Die Massemessung unter Last (mV gegen Batterieminus) macht sichtbar, was Ohm-Messung und Sichtprüfung übersehen.",
+    oszi:"Masseversatz, der nur bei bestimmten Lastwechseln auftritt (Lüfter springt an, Heckscheibenheizung), zeichnet man mit dem Oszilloskop über längere Zeit auf.",oszFdb:"schlechte-masse"},
+  "ref5v":{warum:"Ein Kurzschluss in einem Sensor zieht die gemeinsame 5-V-Referenz herunter – und plötzlich melden fünf Sensoren gleichzeitig Fehler. Die Messung zeigt, ob das Steuergerät die Referenz liefert und ob ein Sensor sie belastet. Das erspart den Tausch mehrerer Sensoren.",
+    oszi:"Störungen (Rauschen, Einstreuung von Zündung/Generator) auf der Referenz sieht nur das Oszilloskop. Ein Multimeter zeigt trotzdem glatte 5,0 V.",oszFdb:"versorgung-fehlt"},
+  "pwm":{warum:"Steuergeräte steuern Lüfter, Ventile und Pumpen mit getakteter Spannung (PWM). Der Mittelwert am Multimeter beantwortet grob: Steuert das Steuergerät überhaupt an, und ändert sich das Verhältnis mit der Anforderung? Ob die Flanken sauber sind, sieht nur das Oszilloskop.",
+    oszi:"PWM ist ein schnelles Rechtecksignal: Das Multimeter zeigt nur den Mittelwert (12 V bei 50 % → ~6 V) oder einen ungefähren Tastgrad. Frequenz, Tastgrad, Flankenform, Spannungsspitzen beim Abschalten (Freilauf) und Aussetzer sind nur am Oszilloskop beurteilbar.",oszCard:"pwm-ventil"},
+  "ntc-kts":{warum:"Ein falscher Kühlmitteltemperaturwert lässt den Motor zu fett laufen, den Lüfter dauerlaufen oder den Kaltstart versagen – bei intaktem Motor. Der Widerstandsvergleich mit der realen Temperatur entlarvt Sensor und Leitung in einer Minute.",
+    oszi:"Nur bei sporadischen Sprüngen (Wackelkontakt im Stecker, Riss im Sensor bei Vibration): Signalspannung über Minuten mit dem Oszilloskop aufzeichnen.",oszCard:"ntc"},
+  "ntc-ats":{warum:"Der Ansauglufttemperatur-Wert fließt in Gemisch- und Zündberechnung ein. Ein Wert wie „−40 °C bei Sommerwetter“ ist ein klassischer Leitungs- oder Sensorfehler, der Leistungsmangel und Fehlercodes erzeugt. Widerstand gegen Temperatur prüfen klärt das.",oszCard:"ntc"},
+  "ptc-sensor":{warum:"PT-/KTY-Sensoren überwachen Abgastemperatur und Wicklungen. Ein fehlerhafter Wert kann DPF-Regeneration oder Generator-/E-Maschinen-Leistung sperren. Weil der Widerstand mit der Wärme <b>steigt</b>, ist die Verwechslung mit NTC die häufigste Fehldiagnose – die Messung schafft Klarheit.",oszCard:"agt"},
+  "poti-dk":{warum:"Ruckeln, Notlauf oder „Gas ohne Reaktion“ entstehen bei Potis oft durch abgenutzte Schleiferbahnen; bei berührungslosen Gebern (Hall/induktiv, kein Verschleiß) eher durch Stecker, Leitung oder Masseversatz. Die langsam durchgefahrene Signalspannung zeigt Sprünge und tote Stellen, die als Fehlercode nur „unplausibel“ heißen.",
+    oszi:"Kurze Aussetzer der Schleiferbahn (Millisekunden) übersieht das Multimeter beim Durchfahren. Das Oszilloskop zeigt beim langsamen Durchfahren jede Lücke als Spannungseinbruch.",oszCard:"pos-sensor"},
+  "map":{warum:"Der Saugrohrdruck ist die Lastinformation des Motors. Ein falscher MAP-Wert bedeutet falsches Gemisch, Leistungsmangel oder Ladedruckfehler. Versorgung, Signal bei Zündung an und Signaländerung beim Gasgeben trennen Sensor von Schlauch/Undichtigkeit und Leitung.",
+    oszi:"Die Druckpulsation im Leerlauf (Ventilarbeit) ist am Oszilloskop sichtbar und erlaubt Rückschlüsse auf Ventile/Zylinder – ein Multimeter zeigt nur den Mittelwert.",oszCard:"map"},
+  "lmm-a":{warum:"Ein verschmutzter oder alternder Luftmassenmesser meldet zu wenig Luft: Leistungsmangel, Ruß, Notlauf. Die Signalspannung im Leerlauf und beim Gasstoß zeigt, ob der LMM plausibel reagiert – vor dem teuren Tausch.",
+    oszi:"Die Reaktionsgeschwindigkeit beim Gasstoß und Signalrauschen (verschmutztes Heißfilmelement) beurteilt man sauber nur am Oszilloskop.",oszCard:"lmm-ana"},
+  "lmm-d":{warum:"Digitale LMM senden ihre Luftmasse als Frequenz. Mit der Hz-Funktion prüfst du, ob überhaupt ein Signal kommt und ob es mit der Luftmenge steigt. Versorgung und Masse sind hier häufiger die Ursache als der Sensor selbst.",
+    oszi:"Die Hz-Funktion des Multimeters zeigt nur die Frequenz, nicht ob das Rechteck sauber ist (Pegel, Flanken, Aussetzer). Bei sporadischen Fehlern das Frequenzsignal am Oszilloskop aufzeichnen.",oszCard:"lmm-ana"},
+  "lambda-sprung":{warum:"Die Sprungsonde regelt das Gemisch. Eine träge oder festhängende Sonde verursacht Mehrverbrauch, Kat-Schäden und Abgasfehler. Heizung (Ohm) und pendelnde Signalspannung zeigen, ob Sonde und Heizkreis noch arbeiten.",
+    oszi:"Wie schnell die Sonde von fett nach mager springt (neu typ. &lt; 100 ms, ab ~300 ms träge) und wie oft sie pendelt, sieht nur das Oszilloskop. Das Multimeter zeigt ein zappelndes Mittel und kann eine träge Sonde nicht sicher von einer guten unterscheiden.",oszCard:"lam-sprung"},
+  "lambda-breit":{warum:"Breitbandsonden liefern keinen einfachen Spannungswert, sondern arbeiten mit Pumpstrom. Mit dem Multimeter prüfst du sinnvoll nur Versorgung und Heizung – das erspart Fehlmessungen und die Verurteilung einer guten Sonde.",
+    oszi:"Der Pumpstrom (wenige mA, beide Richtungen) und die Nernstspannung sind vom Steuergerät geregelt – Funktionsbeurteilung über Livedaten (Lambda-Ist, Pumpstrom) oder Oszilloskop an der Heizungs-PWM und Pumpstromleitung.",oszCard:"lam-lsu"},
+  "radsensor":{warum:"ABS-/ESP-Leuchte mit Fehlercode „Signal unplausibel“ – Sensor, Polrad oder Leitung? Versorgung, Ruhepegel und Strommodulation grenzen das ein, ohne den Sensor blind zu tauschen. Aussetzer einzelner Zähne bleiben dem Oszilloskop vorbehalten.",
+    oszi:"Aktive Sensoren liefern Stromimpulse (~7↔14 mA), passive eine Wechselspannung mit einem Impuls je Zahn. Fehlende oder verbogene Zähne, beschädigte Magnetencoder und zu großer Luftspalt sind nur als Lücke bzw. Amplitudeneinbruch am Oszilloskop sichtbar.",oszCard:"raddreh-akt"},
+  "kw-ind":{warum:"Ohne Kurbelwellensignal keine Zündung, keine Einspritzung: Motor dreht, springt nicht an. Spulenwiderstand und AC-Spannung beim Anlassen zeigen, ob der Geber lebt, bevor du Kraftstoff- und Zündsystem zerlegst.",
+    oszi:"Das Multimeter zeigt beim Anlassen nur eine mittlere AC-Spannung (~1–5 V). Bezugsmarke (fehlende Zähne), Amplitudenverlauf, Störimpulse durch Metallspäne und Aussetzer einzelner Zähne zeigt nur das Oszilloskop.",oszCard:"kw-ind"},
+  "hall":{warum:"Nockenwellen- und viele Kurbelwellensensoren sind Hall-Geber: Ohne sie fehlt die Synchronisation, der Motor startet schlecht oder gar nicht. Versorgung, Masse und wechselnder Signalpegel beim Durchdrehen zeigen, ob Sensor und Leitung arbeiten.",
+    oszi:"Hall-Geber liefern ein Rechteck. Das Multimeter mittelt es zu einer Zwischenzahl. Flanken, Pegel (High/Low sauber?), Aussetzer und die Zuordnung Kurbel-/Nockenwelle (Synchronisation) sind nur am Oszilloskop beurteilbar.",oszCard:"kw-hall"},
+  "klopf":{warum:"Fehlt das Klopfsensorsignal, nimmt das Steuergerät sicherheitshalber Zündwinkel zurück: Leistungsmangel und Mehrverbrauch ohne spürbares Klopfen. Das Multimeter klärt nur Leitung und Abschirmung – das Signal selbst braucht das Oszilloskop.",
+    oszi:"Der Piezo-Sensor liefert bei Körperschall eine kleine Wechselspannung im kHz-Bereich. Beim Klopfen auf den Block sieht das Oszilloskop den Impuls; das Multimeter zeigt fast nichts. Auch Anzugsmoment-Fehler zeigen sich als schwaches Signal.",oszCard:"klopf"},
+  "raildruck":{warum:"Ein falscher Raildruckwert führt zu Startproblemen, Notlauf und Leistungsverlust, obwohl Pumpe und Injektoren gut sind. Versorgung, Masse und Signalspannung bei Zündung an und laufendem Motor zeigen, ob der Sensor plausibel misst.",
+    oszi:"Druckeinbrüche bei jeder Einspritzung und beim Lastwechsel (undichter Injektor, schwache Pumpe) sieht man nur im Zeitverlauf am Oszilloskop.",oszCard:"raildruck"},
+  "klimadruck":{warum:"Klimaanlage schaltet nicht ein? Bevor Kompressor oder Kältemittel verdächtigt werden: Der Drucksensor sperrt bei falschem Signal die Kompressorfreigabe. Versorgung und plausible Signalspannung zu prüfen ist schneller als jede Anlage zu befüllen."},
+  "agt":{warum:"Abgastemperatursensoren sichern DPF, Turbo und Kat. Ein Sensorfehler sperrt die DPF-Regeneration – der Filter setzt sich zu. Widerstand gegen Temperatur (Bauart beachten!) zeigt, ob Sensor und Leitung stimmen.",oszCard:"agt"},
+  "dpf-diff":{warum:"Der Differenzdruck bestimmt, wann der DPF regeneriert. Falsche Werte durch Sensor, geknickte oder verstopfte Schläuche führen zu Dauerregeneration oder Notlauf. Signalspannung bei Zündung an (Nulldruck) und unter Last prüfen trennt Sensor von Schlauch.",oszCard:"dpf"},
+  "nox":{warum:"NOx-Sensoren sind teuer und haben ein eigenes Steuermodul. Bevor das Modul getauscht wird: Versorgung, Masse und Buspegel prüfen – oft liegt der Fehler in Stecker oder Leitung, nicht im Sensor.",
+    oszi:"Der NOx-Sensor kommuniziert per CAN mit dem Motorsteuergerät. Ob er sendet, zeigen Livedaten bzw. CAN-Signal am Oszilloskop; der Sensorwert selbst ist nicht direkt messbar.",oszCard:"can-hs"},
+  "tankgeber":{warum:"Tankanzeige springt oder bleibt hängen? Der Widerstand des Schwimmergebers muss sich stetig mit dem Füllstand ändern. Sprünge und OL zeigen abgenutzte Schleiferbahnen – die Anzeige selbst ist selten schuld."},
+  "schalter":{warum:"Innenlicht bleibt an, Bremslicht fehlt, Rückfahrlicht flackert: Schalter und ihre Kontakte sind Verschleißteile. Spannung an beiden Seiten in beiden Stellungen zeigt, ob der Schalter schaltet und ob der Kontakt belastbar ist.",
+    oszi:"Prellende Kontakte und Schalter, die nur im Fahrbetrieb wackeln, zeigt das Oszilloskop bzw. MIN/MAX am Multimeter.",oszFdb:"wackelkontakt"},
+  "magnetventil":{warum:"Klemmt ein Magnetventil oder ist die Spule unterbrochen, fehlt die Funktion (AGR, Tankentlüftung, Nockenwellenverstellung). Spulenwiderstand und Ansteuerspannung trennen in zwei Messungen Ventil, Leitung und Steuergerät.",
+    oszi:"Ob der Anker wirklich zieht, zeigt der Stromverlauf (kleiner Knick beim Anziehen) am Oszilloskop mit Stromzange – elektrisch gut, mechanisch fest bleibt dem Multimeter verborgen.",oszCard:"relais"},
+  "taktventil":{warum:"Ladedruck- und AGR-Ventile werden getaktet – Ladedruck zu hoch/zu niedrig, Notlauf. Spulenwiderstand und Mittelwert der Ansteuerung zeigen, ob Ventil und Steuergerät grundsätzlich arbeiten. Tastgrad und Flanken sauber nur per Oszilloskop.",
+    oszi:"Das Steuergerät variiert den Tastgrad (z.B. 10–90 %). Das Multimeter zeigt nur einen Mittelwert: ~6 V können 50 % Tastgrad bedeuten – oder einen Ausgang/Kontakt mit Übergangswiderstand. Tastgrad, Frequenz, Abschaltspitze und Flanken nur am Oszilloskop.",oszCard:"pwm-ventil"},
+  "injektor-benzin":{warum:"Ein Zylinder läuft nicht mit: Injektor, Zündung oder Kompression? Der Spulenwiderstand im Vergleich zu den Nachbarn entlarvt eine unterbrochene oder kurzgeschlossene Spule – schnell und ohne Ausbau. Direkteinspritzer: niederohmig (Eigenwiderstand abziehen), Piezo-Typen nicht ohmisch messen – Herstellerangabe beachten.",
+    oszi:"Einspritzzeit (ms), Abschaltspitze (~60 V) und der Stromverlauf mit Nadelknick zeigen, ob der Injektor wirklich öffnet und wie lange. Direkteinspritzer (Boost-Spannung, Halte-Strom) nur am Oszilloskop beurteilen.",oszCard:"inj-saug"},
+  "injektor-diesel":{warum:"Diesel-Injektoren sind teuer und empfindlich. Typ (Magnet/Piezo) <b>vor</b> jeder Messung über Teilenummer, Schaltplan oder Herstellerdaten klären – nicht durch Messen. Das Multimeter dient nur dazu, die Leitungen Steuergerät↔Injektor beidseitig abgesteckt auf Durchgang und Schluss zu prüfen und beim Magnetinjektor den Spulenwiderstand mit dem Sollwert zu vergleichen. Piezo bleibt tabu.",
+    oszi:"Vor-, Haupt- und Nacheinspritzung mit Anzugs- und Haltestrom (Magnet) bzw. Lade-/Entladekurve (Piezo) sind reine Oszilloskop-Aufgaben. Der Vergleich der Zylinder untereinander findet den abweichenden Injektor.",oszCard:"inj-cr-mag"},
+  "zuendspule":{warum:"Zündaussetzer auf einem Zylinder: Spule, Kerze oder Ansteuerung? Versorgung an Kl.15 und Masse an der Spule schließen den Versorgungspfad aus. Nur bei 2-poligen Spulen ohne integrierte Endstufe entlarvt der Primärwiderstand im Vergleich eine defekte Spule; bei 3-/4-poligen Stabspulen ist er nicht messbar – dort Spulen tauschen (wandert der Aussetzer mit?). Zündbild und Brenndauer zeigt nur das Oszilloskop.",
+    oszi:"Schließzeit, Primärstromanstieg, Zündspannungsnadel und Brenndauer (~1–2 ms) sind der eigentliche Zündtest. Damit unterscheidet man Spule, Kerze, Kabel und Gemischfehler – das Multimeter sieht davon nichts.",oszCard:"zuend-prim"},
+  "gluehkerze":{warum:"Diesel startet kalt schlecht oder raucht weiß: Einzelne defekte Glühkerzen fallen in Sekunden auf – Widerstand je Kerze (spannungsfrei, Eigenwiderstand der Spitzen abziehen) oder Strom je Kerze mit der DC-Stromzange beim Vorglühen, nie über die 10-A-Buchse in Reihe. So tauschst du nur die defekte Kerze, nicht alle.",
+    oszi:"Moderne Glühsteuergeräte takten die Kerzen (PWM, Niedervolt). Ansteuerung und Stromverlauf je Kerze beim Vorglühen sieht man am Oszilloskop mit Stromzange.",oszCard:"gluehkerze"},
+  "ptc-heizung":{warum:"Zuheizer, Filter- und Düsenheizungen regeln sich selbst und ziehen kalt hohe Ströme. Fehlt die Heizung, gibt es Kaltstart-, Filter- oder Komfortprobleme. Widerstand kalt und Stromaufnahme im Betrieb zeigen, ob Element, Sicherung oder Ansteuerung fehlt.",
+    oszi:"Der Einschaltstrom fällt innerhalb von Sekunden ab (Selbstregelung). Diesen Verlauf und getaktete/stufige Ansteuerung zeichnet man mit Stromzange am Oszilloskop auf."},
+  "luefter":{warum:"Motor wird heiß oder Lüfter läuft dauernd: Versorgung, Masse und Ansteuerung am Lüfter unter Last trennen Motor, Relais/Steuergerät und Leitung. Ein Lüftermotor mit hoher Stromaufnahme ist schwergängig – das sagt die Stromzange.",
+    oszi:"PWM-geregelte Lüfter: Der Tastgrad des Steuersignals (oft niedrige Frequenz, invertiert) und die Rückmeldung sind am Oszilloskop eindeutig, am Multimeter nur als Mittelwert.",oszCard:"luefter-pwm"},
+  "kraftstoffpumpe":{warum:"Motor springt nicht an oder verliert unter Last Leistung: Kommt Spannung an der Pumpe an, hält sie unter Last, und ist die Stromaufnahme plausibel? Diese Messungen trennen Pumpe, Relais/Steuergerät und Spannungsabfall in den langen Leitungen zum Tank.",
+    oszi:"Bei Bürstenpumpen zeigt der Stromverlauf jede Kollektorlamelle: ausgefallene Wicklungen und Verschleiß erkennt man am Oszilloskop mit Stromzange, bevor die Pumpe ganz ausfällt. Bürstenlose Pumpen mit EKP-Modul: Ansteuerung/PWM und Laststrom bewerten.",oszCard:"kraftstoffpumpe"},
+  "stellmotor":{warum:"Drosselklappe, Drallklappen, Klimaklappen: Bleibt der Steller stehen, gibt es Notlauf oder falsche Luftverteilung. Wicklungswiderstand und Rückmeldepoti zeigen, ob der Steller elektrisch in Ordnung ist, bevor du eine Grundeinstellung oder einen Tausch machst.",
+    oszi:"H-Brücken-Ansteuerung (PWM in beide Richtungen) und Rückmeldepoti gleichzeitig am Oszilloskop zeigen, ob das Steuergerät ansteuert und der Steller folgt.",oszCard:"stellmotor"},
+  "ventil-tank":{warum:"Ein hängendes Tankentlüftungsventil verursacht unruhigen Leerlauf, Gemischfehler und Tankgeruch. Spulenwiderstand und Ansteuerung zu prüfen ist schneller, als die Aktivkohlefilter-Anlage zu zerlegen.",
+    oszi:"Das Ventil wird getaktet; Tastgrad und Frequenz nur am Oszilloskop beurteilbar.",oszCard:"pwm-ventil"},
+  "motor-allg":{warum:"Fensterheber langsam, Wischer bleibt stehen, ZV klackert nur: Motor, Schalter/Steuergerät oder Leitung? Spannung direkt zwischen Plus- und Massepin am Motor beim Betätigen und Stromaufnahme (Zange) trennen das sauber: volle Spannung und keine Bewegung → Motor oder Mechanik (Blockade, Bürsten, ausgelöste Thermosicherung); deutlich weniger als Bordspannung unter Last → Verlust auf Plus- oder Masseleitung.",
+    oszi:"Einklemmschutz und Hall-Positionsgeber in Fensterhebern/Schiebedächern: Zählimpulse nur am Oszilloskop sichtbar."},
+  "hupe":{warum:"Einfache Verbraucher sind das ideale Übungsfeld für Spannung, Masse und Spannungsabfall: Leuchtet nicht = Versorgung, Masse oder Verbraucher. Drei Messungen, klare Antwort, kein Bauteiltausch auf Verdacht.",
+    oszi:"LED-Leuchten werden oft gepulst (Tagfahrlicht gedimmt) – das Multimeter zeigt Zwischenwerte, die normal sind. Im Zweifel PWM am Oszilloskop prüfen."},
+  "can":{warum:"Mehrere Steuergeräte „nicht erreichbar“ oder Bus-Fehlercodes in vielen Steuergeräten deuten auf den Bus selbst. Abschlusswiderstand und Ruhepegel von CAN-High/Low zeigen Kurzschlüsse, fehlende Terminierung und Leitungsbrüche – bevor ein Steuergerät verdächtigt wird.",
+    oszi:"CAN sendet Bits im µs-Bereich. Das Multimeter zeigt nur Mittelwerte (~2,5 V). Ob die Pegel stimmen (High 3,5 V / Low 1,5 V dominant), ob ein Teilnehmer den Bus verzerrt, Reflexionen, Störspitzen und ein Teilnehmer, der dauernd sendet, sieht man nur am Oszilloskop (beide Leitungen gleichzeitig).",oszCard:"can-hs"},
+  "lin":{warum:"Ein LIN-Slave (Fensterheber, Regensensor, Generatorregler) antwortet nicht: Fehlt Versorgung, Masse oder der Ruhepegel? Diese Grundprüfung grenzt Leitung und Versorgung ein; die eigentliche Kommunikation zeigen Oszilloskop oder Tester.",
+    oszi:"LIN ist eine Einzelader mit 12-V-Pegel. Am Oszilloskop sieht man Header (Master) und Response (Slave) – antwortet der Slave nicht, ist die Ursache eingegrenzt. Das Multimeter zeigt nur den Ruhepegel.",oszCard:"lin"},
+  "leitung":{warum:"Unterbrechung, Kurzschluss oder Übergangswiderstand – jede Leitung kann alle drei Fehler haben, und jeder braucht eine andere Messung. Die systematische Reihenfolge (Spannung, Durchgang, Spannungsabfall, Isolation) findet auch Scheuerstellen und Wasser im Stecker.",
+    oszi:"Wackelkontakte, die nur beim Fahren auftreten, mit dem Oszilloskop oder MIN/MAX über längere Zeit aufzeichnen – im Stand ist meist alles unauffällig.",oszFdb:"wackelkontakt"},
+  "ruhestrom":{warum:"Batterie morgens leer, obwohl Batterie und Generator gut sind: Ein Verbraucher schläft nicht ein. Der Ruhestrom in mA sagt, ob ein Problem besteht; die Suche über Sicherungen zeigt, in welchem Kreis.",
+    oszi:"Kurzes zyklisches Aufwachen von Steuergeräten ist normal. Ein Verbraucher, der nur sporadisch einschaltet, ist erst über eine lange Aufzeichnung zu fassen: Multimeter in Reihe mit MIN/MAX bzw. Datenlogger – oder Oszilloskop mit mA-tauglicher Zange/Shunt. Eine normale 10-A-DC-Zange löst dafür nicht fein genug auf."},
+  "ruhestrom-fuse":{warum:"Sicherung ziehen weckt Steuergeräte auf und verfälscht die Messung. Der mV-Abfall über der Sicherung zeigt den Strom jedes Stromkreises, ohne etwas zu trennen – so findest du den schlafraubenden Verbraucher in Minuten statt Stunden."},
+  "sicherheitscheck":{warum:"Die meisten Schäden bei der Fehlersuche entstehen nicht durch den Fehler, sondern durch die Messung: falsche Buchse, Ohm an spannungsführender Leitung, Prüflampe am Steuergerät. Dieser Check kostet 30 Sekunden und schützt Messgerät, Steuergerät und dich."},
+  "srs-airbag":{warum:"Ein Multimeter kann Zünder nicht sicher prüfen, aber einen Airbag auslösen oder die Zündpille schädigen. Wer SRS-Leitungen erkennt und ausschließt, misst nur dort, wo es sicher ist."},
+  "hv-hybrid":{warum:"Ohne HV-Qualifikation, Freischaltprozedur und ein für CAT III ≥ 1000 V eingestuftes Messgerät samt Messleitungen ist am Hochvoltsystem (400–800 V) nichts zu messen; ein Fehler kann tödlich sein. Die Abgrenzung 12 V vs. Hochvolt (orange Leitungen) entscheidet, ob du überhaupt messen darfst."},
+  "prueflampe-last":{warum:"Die Prüflampe belastet die Leitung und findet dadurch schlechte Kontakte, die das hochohmige Multimeter übersieht – am falschen Kreis zerstört sie aber Sensoren oder Steuergeräteausgänge. Zu wissen, wo welches Werkzeug hingehört, ist Grundlage jeder sicheren Prüfung."},
+  "backprobe":{warum:"Aufgebogene Pins und durchstochene Isolierungen sind die Fehler von morgen. Richtig von hinten gemessen bleibt der Stecker gesteckt, der Verbraucher läuft, und du misst den echten Betriebszustand unter Last."},
+  "klemmen":{warum:"Schaltpläne sprechen in Klemmen: Wer 30, 15, 31, 50 sofort zuordnet, weiß bei jeder Messung, welche Spannung wann anliegen muss – Zündung aus, Zündung an, beim Starten. Das verhindert Fehlmessungen im falschen Fahrzeugzustand."},
+  "sensor-masseversatz":{warum:"Ein Sensor mit guter Versorgung liefert trotzdem falsche Werte, wenn seine Masse um 0,3 V „hochhängt“. Das Steuergerät sieht dann eine verschobene Signalspannung. Die Messung Sensor-Masse gegen Batterieminus deckt das auf – der Sensor ist dann meist unschuldig.",oszFdb:"schlechte-masse"},
+  "pullup-pulldown":{warum:"Ob 0 V an einer Signalleitung „Fehler“ oder „normal“ heißt, hängt davon ab, ob das Steuergerät die Leitung auf Plus oder Masse zieht. Wer den Ruhepegel richtig deutet, unterscheidet Leitungsbruch, Kurzschluss und normale Schalterstellung ohne Fehltausch.",
+    oszi:"Getaktete Pull-ups (Standby-Abfrage) und schnelle Schaltsignale zeigt das Multimeter als Zwischenwert. Pegel und Takt nur am Oszilloskop."},
+  "kurzschluss-plus-masse":{warum:"Sicherung fliegt, Verbraucher tot, Fehlercode „Kurzschluss nach Plus/Masse“: Die Reihenfolge Kreis spannungsfrei machen (Batterie/Steuergerät nach Herstellerangabe trennen) → Verbraucher abstecken → Leitung gegen Masse → Leitung gegen Plus findet die Ursache systematisch, statt zu raten, welches Kabel man als Nächstes freilegt.",oszFdb:"ks-masse"},
+  "stromzange-dc":{warum:"Stromaufnahme messen, ohne den Kreis aufzutrennen – bei Starter, Glühkerzen, Lüfter oder Ruhestrom die sicherste Methode. Ein schwergängiger Motor oder eine Wicklung mit Windungsschluss verraten sich über den Strom, nicht über die Spannung.",
+    oszi:"Die Stromzange am Oszilloskop statt am Multimeter macht aus dem Mittelwert einen Verlauf: Einschaltstrom, Kollektorwelligkeit, Injektor- und Zündspulenströme."},
+  "starter-drop-profi":{warum:"Bei 150–600 A Anlasserstrom (Diesel oben) werden aus wenigen mΩ mehrere Zehntel Volt Verlust: Der Starter dreht müde, obwohl Batterie und Starter gut sind. Plus- und Massepfad getrennt unter Last gemessen zeigt den korrodierten Bolzen oder das mürbe Kabel.",
+    oszi:"Spannungsabfall und Starterstrom gleichzeitig am Oszilloskop aufgezeichnet ergeben den Widerstand des Pfades in jedem Moment des Startvorgangs – das Multimeter zeigt nur einen Mittel- bzw. MIN/MAX-Wert.",oszCard:"starter"},
+  "generator-lin-bsd":{warum:"Moderne Generatoren laden bewusst mal 12,8 V, mal 15 V – Batteriemanagement, Rekuperation. Wer das nicht weiß, tauscht einen guten Generator. Versorgung, LIN/BSD-Pegel und Sollwertvergleich klären, ob Regler, Leitung oder Steuergerät das Problem ist.",
+    oszi:"Ob das Steuergerät eine Sollspannung sendet und der Regler antwortet, sieht man nur an den LIN-/BSD-Rahmen am Oszilloskop bzw. in den Livedaten.",oszCard:"generator-ripple"},
+  "ecu-nicht-erreichbar":{warum:"„Steuergerät antwortet nicht“ heißt selten „Steuergerät defekt“. Kl.30, Kl.15/Wake-up, Masse unter Last und Buspegel am Steuergerätestecker klären in wenigen Minuten, ob Versorgung, Aufwachpfad oder Bus fehlt – bevor ein teures Steuergerät bestellt wird.",
+    oszi:"Sendet das Steuergerät überhaupt auf dem Bus? Das zeigt nur das Oszilloskop am CAN/LIN direkt am Steuergerätestecker.",oszCard:"can-hs"},
+  "messprotokoll":{warum:"Messwerte ohne Bedingungen (Zündung an? unter Last? gegen welche Masse?) sind später wertlos. Ein sauberes Protokoll macht Vergleiche vor/nach Reparatur möglich und hilft dem Kollegen, der das Fahrzeug übernimmt."}
+  };
+  // v8.6: Karten, die es erst seit v7.4–v8.4 gibt
+  Object.assign(X,{
+  "relais":{warum:"Ein Relais schaltet den dicken Laststrom über den dünnen Steuerkreis. Klickt es nicht, fehlt Ansteuerung oder Spule; klickt es, aber der Verbraucher läuft schwach, ist der Kontakt verbrannt – ein Fehler, den nur die Messung <b>unter Last</b> zeigt. So ersparst du dir den blinden Relaistausch und findest die Ursache im richtigen Kreis: Steuerkreis oder Lastkreis.",
+    oszi:"Prellende Kontakte, verzögertes Anziehen und getaktete Ansteuerungen (Steuergerät taktet die Spule) zeigt das Oszilloskop, wenn Spulen- und Kontaktseite gleichzeitig aufgezeichnet werden.",oszCard:"relais"},
+  "relais-typen":{warum:"Ob an Pin 87a im Ruhezustand Spannung anliegen muss oder nicht, entscheidet die Bauart. Wer Schließer, Öffner und Wechsler nicht unterscheidet, hält einen normalen Ruhezustand für einen Fehler oder übersieht einen echten. Das aufgedruckte Schaltbild und die genormten Pinnummern sind die Grundlage jeder Relaismessung."},
+  "relais-leistung":{warum:"Bei hohen Strömen verheizt ein Übergangswiderstand von wenigen mΩ mehrere Zehntel Volt: Lüfter läuft langsam, Glühkerzen bleiben kalt, das Relais wird heiß. Ohne Last sieht der Kontakt gut aus. Die Spannungsabfallmessung über den Kontakt unter voller Last ist die einzige Messung, die das sicher zeigt.",
+    oszi:"Einschaltstromstoß und Kontaktprellen im Hochstromkreis sind nur mit Stromzange am Oszilloskop sichtbar.",oszCard:"relais"},
+  "relais-elektronisch":{warum:"Halbleiterrelais und Steuergeräte-Endstufen klicken nicht und haben keine messbare Spule – wer sie wie ein mechanisches Relais prüft, verurteilt ein intaktes Modul. Versorgung, Masse, Ansteuersignal und Ausgang unter Anforderung zu messen ist der einzige belastbare Weg.",
+    oszi:"Halbleiterausgänge sind oft getaktet (PWM) oder schalten in Millisekunden. Ob der Ausgang der Anforderung wirklich folgt, zeigen Ansteuersignal und Ausgang gleichzeitig am Oszilloskop.",oszCard:"pwm-ventil"},
+  "oeldruck":{warum:"Die Öldruckwarnung ist die letzte Warnung vor dem Motorschaden. Die elektrische Prüfung von Schalter, Sensor und Leitung klärt, ob eine Warnung echt oder ein Kabelfehler ist – und sie darf nie dazu führen, eine leuchtende Lampe wegzudiskutieren.",
+    oszi:"Bei analogen Öldrucksensoren zeigt das Oszilloskop Druckschwankungen und Aussetzer im Signal, z.B. Einbrüche beim Gaswegnehmen; für Schalter und Warnlampe reicht das Multimeter.",oszCard:"oeldruck"},
+  "agr-pos":{warum:"Ein falscher Positionswert lässt das Steuergerät das AGR-Ventil falsch regeln oder in den Notlauf gehen, obwohl das Ventil mechanisch in Ordnung ist. Versorgung aus der 5-V-Referenz, Masse und der gleichmäßige Signalverlauf über den Stellbereich trennen Sensor, Leitung und verkokte Mechanik.",
+    oszi:"Tote Zonen und Sprünge beim langsamen Verfahren (Stellgliedtest) sind am Oszilloskop als Einbruch im Signalverlauf eindeutig; das Multimeter zeigt bei schnellen Sprüngen nur einen Zwischenwert.",oszCard:"pos-sensor"},
+  "lenkwinkel":{warum:"ESP-Leuchte, Lenkwinkel „unplausibel“: Bevor ein teurer Sensor getauscht oder eine Grundeinstellung gemacht wird, klären Versorgung, Masse und Buspegel am Sensorstecker, ob der Sensor überhaupt arbeiten kann. Oft ist es die Wickelfeder oder ein Stecker – nicht der Sensor.",
+    oszi:"Der Lenkwinkel selbst wird per CAN gesendet. Ob der Sensor sendet, zeigt das Oszilloskop am CAN direkt am Stecker; den Wert liefert nur das Diagnosegerät.",oszCard:"can-hs"},
+  "ibs":{warum:"Der Batteriesensor steuert Ladestrategie und Start-Stopp. Ein Fehler an Versorgung, Klemmverbindung oder LIN-Leitung führt zu falscher Ladung, ausbleibendem Start-Stopp und Batteriefehlern – bei gesunder Batterie. Versorgung, Spannungsabfall über die Klemme und LIN-Ruhepegel schließen die Peripherie aus, bevor der Sensor verdächtigt wird.",
+    oszi:"Ob der Sensor auf dem LIN antwortet (Header vom Master, Response vom Sensor), zeigt nur das Oszilloskop bzw. die Livedaten des Energiemanagements.",oszCard:"lin"},
+  "ref5v-basis":{warum:"Alle Sensoren an derselben Referenz liefern falsche Werte, wenn die Referenz nicht stimmt. Der Sollwert aus der Fahrzeugvorgabe und die Abweichungsrichtung (zu niedrig, zu hoch) führen direkt in den richtigen Fehlerpfad – Masseschluss oder Plusschluss – statt Sensoren auf Verdacht zu tauschen.",oszFdb:"versorgung-fehlt"},
+  "ref5v-masseschluss":{warum:"Eine Referenz nahe 0 V legt gleichzeitig mehrere Sensoren lahm. Das Abstecken der Sensoren nacheinander zeigt, ob ein Sensor, die Leitung oder der Steuergeräteausgang die Referenz nach Masse zieht – die häufigste Ursache für „plötzlich fünf Fehlercodes“.",oszFdb:"ks-masse"},
+  "ref5v-plusschluss":{warum:"Fremdspannung auf der Referenz kann Sensoren und den Referenzausgang des Steuergeräts beschädigen – deshalb muss sie schnell gefunden werden. Die Messung klärt, ob die Überspannung aus einer Nachbarleitung im Stecker, einem Sensor oder dem Steuergerät kommt.",oszFdb:"ks-plus"},
+  "ref5v-vergleich":{warum:"Masseschluss und Plusschluss sehen im Fehlerspeicher ähnlich aus, brauchen aber unterschiedliche Prüfwege und haben unterschiedliches Schadenspotenzial. Wer beide Bilder nebeneinander kennt, wählt die richtige Messung als Erstes."}
+  });
+  Object.keys(X).forEach(id=>{const t=TESTS.find(x=>x.id===id);if(t)Object.assign(t,X[id]);});
+
+  /* ---- Modus: Einsteiger (Standard, ausführlich) / Profi (kompakt) ---- */
+  let mode='beg';
+  try{
+    const m=localStorage.getItem('mm_mode');
+    if(m==='pro'||m==='beg')mode=m;
+    else if(localStorage.getItem('mm_beginner')==='0')mode='pro'; // alte Einstellung übernehmen
+  }catch(e){}
+  function modeBtnHTML(m,compact){
+    return m==='pro'?(compact?'🛠 Profi':'<span class="bi">🛠</span>Profi'):(compact?'🎓 Einsteiger':'<span class="bi">🎓</span>Einsteiger');
+  }
+  function applyMode(m){
+    mode=m;
+    document.body.classList.toggle('pro',m==='pro');
+    document.body.classList.toggle('beginner',m!=='pro');
+    document.querySelectorAll('[data-modebtn]').forEach(b=>{
+      const compact=b.classList.contains('modepill');
+      b.innerHTML=modeBtnHTML(m,compact);
+      b.classList.toggle('on',m!=='pro');
+      b.setAttribute('aria-pressed',m==='pro'?'true':'false');
+      b.setAttribute('aria-label',m==='pro'?'Profi-Modus aktiv – auf Einsteiger-Modus umschalten':'Einsteiger-Modus aktiv – auf Profi-Modus umschalten');
+      b.title=m==='pro'?'Kompakt. Tippen für ausführliche Erklärungen.':'Ausführlich. Tippen für kompakte Profi-Ansicht.';
+    });
+  }
+  window.toggleMode=function(){
+    applyMode(mode==='pro'?'beg':'pro');
+    try{localStorage.setItem('mm_mode',mode);}catch(e){}
+    showToast(mode==='pro'?'🛠 Profi-Modus: kompakt – Abschnitte mit ▸ aufklappen':'🎓 Einsteiger-Modus: alles Schritt für Schritt erklärt','beg');
+    // Offene Karte sofort im neuen Modus aufbauen (Anleitungsblock auf/zu)
+    if(ov.classList.contains('open')&&currentId){const y=ov.scrollTop;openDetail(currentId);ov.scrollTop=y;}
+  };
+  window.toggleBeginner=window.toggleMode; // Kompatibilität
+  window.applyBeginner=function(on){applyMode(on?'beg':'pro');};
+  applyMode(mode);
+
+  /* ---- Übersicht: Multimeter oder Oszilloskop? ---- */
+  const RULES=[
+    ["Versorgung, Masse, Spannungsabfall unter Last","y","p"],
+    ["Widerstände: Spulen, NTC/PTC, Glühkerzen, Potis","y","n"],
+    ["Batterie, Ladespannung, Ruhestrom","y","p"],
+    ["Generator-Dioden (Ripple)","p","y"],
+    ["Analoge Sensoren (Poti, MAP, Druck, LMM analog)","y","y"],
+    ["Drehzahlgeber KW/NW/Rad (induktiv, Hall, aktiv)","p","y"],
+    ["PWM / getaktete Ventile, Lüfter, Pumpen","p","y"],
+    ["Zündung (Primär/Sekundär), Injektoren","p","y"],
+    ["CAN / LIN / FlexRay – Kommunikation","p","y"],
+    ["Lambdasonde Sprung (Dynamik), Breitband","p","y"],
+    ["NOx-Sensor (CAN-basiert, Werkzeug: Tester)","p","p"],
+    ["Klopfsensor","p","y"],
+    ["Sporadische Fehler, Wackelkontakte beim Fahren","p","y"],
+    ["Relais-/Schalterprellen, Einschaltströme","n","y"]
+  ];
+  const SYM={y:"✓",p:"(✓)",n:"✗"};
+  function oszRowHTML(t){
+    let h=`<div class="oszrow"><div class="oh"><button type="button" onclick="openDetail('${t.id}')">${t.ic} ${t.nm}</button>`;
+    h+=`<span class="tg ${t.tag}" style="position:static">${t.tag==='mm'?'MM':t.tag==='osz'?'OSZ':'⚠'}</span></div>`;
+    if(t.quality)h+=`<div class="oq">Messampel: ${t.quality}</div>`;
+    if(t.oszi)h+=`<div class="oz"><b>Oszi:</b> ${t.oszi}</div>`;
+    if(t.oszCard)h+=`<a class="osz-link" href="../index.html#pg-karten~c-${t.oszCard}" target="_blank" rel="noopener">🔬 Oszi-Messkarte ↗</a>`;
+    else if(t.oszFdb)h+=`<a class="osz-link" href="../index.html#pg-fdb~f-${t.oszFdb}" target="_blank" rel="noopener">🔬 Oszi-Fehlermuster ↗</a>`;
+    return h+`</div>`;
+  }
+  window.openOszGuide=function(){
+    let h=`<div class="step osz"><div class="lbl"><span class="num">🔬</span>Die Faustregel</div><div class="body">
+      <b>Multimeter = Zahl.</b> Es misst einen Wert und mittelt alles, was schneller ist als ein paar Messungen pro Sekunde. Perfekt für Versorgung, Masse, Widerstände, Spannungsabfall, Ruhestrom und langsame Sensoren.<br><br>
+      <b>Oszilloskop = Verlauf.</b> Es zeigt die Spannung über der Zeit. Nötig, sobald es um <b>Signalform, Flanken, Tastgrad, Aussetzer, Busrahmen oder Einschaltströme</b> geht – also bei allem, was getaktet ist oder in Millisekunden passiert.<br><br>
+      <b>Reihenfolge in der Werkstatt:</b> Erst Multimeter (Versorgung, Masse, Spulenwiderstand, Ruhepegel – das findet den Großteil der Fehler), dann Oszilloskop für die Signalqualität.
+    </div></div>`;
+    h+=`<div class="step"><div class="lbl"><span class="num">📊</span>Wann welches Gerät?</div><div class="body">
+      <div class="rule"><span class="rh">Messaufgabe</span><span class="rh">MM</span><span class="rh">Oszi</span>`+
+      RULES.map(r=>`<span class="rt">${r[0]}</span><span class="rc ${r[1]}">${SYM[r[1]]}</span><span class="rc ${r[2]}">${SYM[r[2]]}</span>`).join('')+
+      `</div><div class="micro">✓ = geeignet · (✓) = nur grob/Vorprüfung · ✗ = nicht sinnvoll</div></div></div>`;
+    h+=`<a class="osz-link" href="../index.html" target="_blank" rel="noopener" style="margin:0 0 6px">📘 KFZ-Oszilloskop-Kompendium öffnen (Schwester-App) ↗</a>`;
+    const grp=[["osz","Multimeter nur grob – Oszilloskop/Tester für die Signalqualität"],["gef","Nur gezielt und mit Vorsicht"],["mm","Multimeter reicht"]];
+    grp.forEach(g=>{
+      const items=TESTS.filter(t=>t.tag===g[0]);
+      if(!items.length)return;
+      h+=`<div class="section-title oszgrp">${g[1]}<span class="ln"></span></div>`+items.map(oszRowHTML).join('');
+    });
+    h+=`<div class="disc">Links öffnen das Oszi-Kompendium in einem neuen Tab. Beide Apps sind offline nutzbar, wenn sie einmal geladen wurden.</div>`;
+    document.getElementById('oszBody').innerHTML=h;
+    openOverlay(oszOv);
+  };
+  window.closeOsz=function(){requestClose();};
+
+  // Einstieg auf der Startseite (nur in der Gesamtansicht) und im Diagnose-Menü
+  const bannerHTML=`<button type="button" class="oszbanner" onclick="openOszGuide()"><span class="oi">🔬</span><span><b>Multimeter oder Oszilloskop?</b><span>Wann welches Gerät – Übersicht aller Prüfungen mit Links ins Oszi-Kompendium</span></span><span class="ar">→</span></button>`;
+  const _renderHome=renderHome;
+  renderHome=function(){
+    _renderHome();
+    if(activeCat==='alle'&&!query.trim()&&main.querySelector('.grid'))main.insertAdjacentHTML('afterbegin',bannerHTML);
+  };
+  window.renderHome=renderHome;
+  const _openTreeMenu=openTreeMenu;
+  openTreeMenu=function(){
+    _openTreeMenu();
+    const tb=document.getElementById('treeBody');
+    if(tb)tb.insertAdjacentHTML('beforeend',`<button class="tree-opt" onclick="openOszGuide()">🔬 Multimeter oder Oszilloskop?<span class="ar">→</span></button>`);
+  };
+  window.openTreeMenu=openTreeMenu;
+
+  /* ---- Validierung (index.html?validate oder tools/validate-multimeter.js) ---- */
+  window.validateMultimeter=function(){
+    const errors=[],warns=[];
+    const ids=new Set();
+    const req=['id','cat','ic','nm','tag','was','warum','set','probes','mess','good','bad','next','beg'];
+    TESTS.forEach(t=>{
+      req.forEach(k=>{if(t[k]===undefined||t[k]===null||t[k]==='')errors.push(`Karte ${t.id||'?'}: Feld "${k}" fehlt`);});
+      if(ids.has(t.id))errors.push(`Karte ${t.id}: doppelte id`);ids.add(t.id);
+      if(!['mm','osz','gef'].includes(t.tag))errors.push(`Karte ${t.id}: unbekanntes tag "${t.tag}"`);
+      if(!CATS.some(c=>c.id===t.cat))errors.push(`Karte ${t.id}: unbekannte Kategorie "${t.cat}"`);
+      if(t.tag==='osz'&&!t.oszi)errors.push(`Karte ${t.id}: tag osz ohne Oszi-Begründung (oszi)`);
+      if(t.oszCard&&t.oszFdb)errors.push(`Karte ${t.id}: oszCard und oszFdb gleichzeitig`);
+      if(t.warn)t.warn.forEach(w=>{if(!['danger','caution','info'].includes(w[0]))errors.push(`Karte ${t.id}: Warnstufe "${w[0]}"`);});
+      if(t.probes&&t.probes.some(p=>!['r','b'].includes(p[0])))errors.push(`Karte ${t.id}: probes ohne r/b`);
+      if(!DEEP[t.id]&&!t.table)warns.push(`Karte ${t.id}: keine Richtwerte (table/DEEP.rt)`);
+      if(!DEEP[t.id]||!DEEP[t.id].fs)warns.push(`Karte ${t.id}: keine Fehlersuche (DEEP.fs)`);
+    });
+    Object.keys(DEEP).forEach(k=>{if(!ids.has(k))errors.push(`DEEP.${k}: keine passende Karte`);});
+    Object.keys(TREES).forEach(k=>{
+      const tr=TREES[k];
+      if(!tr.nodes||!tr.nodes.length){errors.push(`TREE ${k}: keine Knoten`);return;}
+      tr.nodes.forEach((n,i)=>{
+        if(n.q){if(!n.opts||!n.opts.length)errors.push(`TREE ${k}[${i}]: Frage ohne Optionen`);
+          (n.opts||[]).forEach(o=>{if(typeof o.go!=='number'||!tr.nodes[o.go])errors.push(`TREE ${k}[${i}]: Ziel ${o.go} existiert nicht`);});}
+        else if(!n.r)errors.push(`TREE ${k}[${i}]: weder Frage noch Ergebnis`);
+      });
+    });
+    GLOSS.forEach((g,i)=>{if(!Array.isArray(g)||g.length<2)errors.push(`GLOSS[${i}]: kein [Begriff,Erklärung]`);});
+    const links=TESTS.filter(t=>t.oszCard||t.oszFdb).map(t=>({id:t.id,card:t.oszCard||null,fdb:t.oszFdb||null}));
+    return {errors,warns,tests:TESTS.length,deep:Object.keys(DEEP).length,trees:Object.keys(TREES).length,gloss:GLOSS.length,links};
+  };
+  if(/[?&]validate/.test(location.search)){
+    const r=window.validateMultimeter();
+    console.log('validateMultimeter:',JSON.stringify({tests:r.tests,deep:r.deep,trees:r.trees,gloss:r.gloss,errors:r.errors.length,warns:r.warns.length}));
+    r.errors.forEach(e=>console.error('FEHLER: '+e));
+    r.warns.forEach(w=>console.warn('Hinweis: '+w));
+  }
+})();
+
+/* ---------- Schaltplan-Hilfe: Daten ---------- */
+const SCHALTPLAN = {
+  intro: {
+    kurz: "Jede sinnvolle Messung beginnt im Schaltplan: Erst wenn du weißt, welcher Pin Plus, welcher Masse und welcher Signal führt, weißt du, wo Rot und Schwarz hin müssen und welcher Wert dort zu erwarten ist. Wer ohne Plan misst, stochert – wer mit Plan misst, prüft. Der Schaltplan sagt dir außerdem, ob ein Bauteil plus- oder massegeschaltet ist, welche Sicherung und welches Relais davor sitzen und wo der nächste zugängliche Stecker liegt.",
+    einsteiger: "Ein Stromlaufplan ist eine Landkarte für den Strom im Fahrzeug. Er zeigt nicht, wo die Kabel wirklich liegen, sondern wie sie elektrisch verbunden sind – das nennt man ‚aufgelöste Darstellung‘: Jedes Bauteil wird dort gezeichnet, wo es im Stromfluss logisch hingehört, auch wenn es im Auto ganz woanders sitzt. Oben im Plan liegen die Plusleitungen (Klemme 30 Dauerplus, Klemme 15 Zündungsplus), unten die Masse (Klemme 31). Dazwischen verlaufen senkrechte ‚Strompfade‘ von oben nach unten: Von Plus über Sicherung, Schalter oder Relais durch den Verbraucher bis zur Masse. Wenn du einen Strompfad von oben nach unten mit dem Finger verfolgen kannst, hast du den Stromkreis verstanden."
+  },
+
+  lesen: [
+    {
+      titel: "1. Kopfzeile und Gültigkeit prüfen",
+      text: "Bevor du liest: Passt der Plan zu <b>diesem</b> Fahrzeug? Prüfe Modell, Modelljahr, Motorkennbuchstabe, Ausstattung (z. B. Xenon/LED, Klimaautomatik) und die Plan-Version. Ein Plan vom falschen Modelljahr hat oft andere Pinnummern, andere Steckerfarben und andere Sicherungsplätze.",
+      tipp: "Fahrgestellnummer eingeben und im Herstellerportal (ELSA, ISTA, XENTRY …) den Plan fahrzeugspezifisch ziehen – Werkstattdatenbanken sind oft vereinfacht."
+    },
+    {
+      titel: "2. Aufgelöste Darstellung verstehen",
+      text: "Der Plan zeigt Bauteile nicht als Kasten am Einbauort, sondern in Funktionslogik. Ein Relais kann ‚zerlegt‘ sein: Spule in einem Strompfad, Kontakt in einem anderen. Ein Steuergerät erscheint als langer Kasten am oberen oder unteren Rand mit vielen Pins – und derselbe Steuergerätekasten taucht auf mehreren Seiten wieder auf.",
+      tipp: "Frag dich bei jedem Bauteil: Was ist Eingang (Plus), was Ausgang (Masse oder Signal)? Nicht: Wo sitzt es im Auto."
+    },
+    {
+      titel: "3. Potentialschienen Kl. 30 / 15 / 31 identifizieren",
+      text: "Oben verlaufen waagerechte Sammelschienen: Kl. 30 (Dauerplus, meist rot/dick), Kl. 15 (Zündungsplus), oft auch Kl. X oder Kl. 75. Unten verläuft Kl. 31 (Masse, meist braun). Alles, was an einer Schiene hängt, hat dasselbe Potential – egal, wie weit die Anschlüsse im Plan auseinanderliegen.",
+      tipp: "Mit dem Finger auf der Schiene entlangfahren: Jeder senkrechte Abgang ist ein Verbraucher oder ein Steuergerät, das dieses Potential braucht."
+    },
+    {
+      titel: "4. Strompfadnummern nutzen",
+      text: "Unten (bei VAG) oder am Rand stehen fortlaufende Zahlen: die Strompfade. Jede senkrechte Linie hat eine Nummer. Querverweise wie ‚→ 37‘ oder ‚(12)‘ neben einem Bauteil oder Kontakt sagen dir: Der Rest dieses Bauteils oder die Fortsetzung dieser Leitung steht in Strompfad 37.",
+      tipp: "Strompfadnummern sind dein Inhaltsverzeichnis. Notiere sie dir zum Bauteil, dann findest du im 80-seitigen Plan sofort wieder hin."
+    },
+    {
+      titel: "5. Sicherungen und Relais im Pfad finden",
+      text: "Von der Plusschiene aus verfolgst du den Pfad nach unten: Zuerst kommt meist die Sicherung (S-Nummer, Wert in A, Sicherungsträger/Platz), dann ein Relais oder Schalter, dann der Verbraucher. Merke dir Sicherungsplatz und Relaisplatz – das sind die ersten Messstellen, die du ohne Ausbau erreichst.",
+      tipp: "Steht im Plan ‚Sicherung im Steuergerät‘ oder ein Sicherungssymbol innerhalb des Steuergerätekastens, kannst du sie nicht tauschen – dann ist das Steuergerät selbst die Messgrenze."
+    },
+    {
+      titel: "6. Steckerbezeichnung und Pin lesen",
+      text: "An jeder Leitung, die in ein Bauteil geht, steht die Steckerbezeichnung mit Pin: z. B. ‚T94/3‘ (VAG), ‚X1234 Pin 5‘ (BMW), ‚C123 Pin 4‘ (Ford). Diese Angabe ist genau das, was du am Fahrzeug suchst. Daneben steht oft Leitungsfarbe und Querschnitt, z. B. ‚0,5 sw/ws‘.",
+      tipp: "Pinnummer + Farbe + Querschnitt zusammen prüfen. Stimmt nur die Nummer, aber nicht die Farbe, hast du eventuell den falschen Stecker oder die falsche Planversion."
+    },
+    {
+      titel: "7. Massepunkte und Leitungsverbindungen erkennen",
+      text: "Masse endet nicht ‚irgendwo‘, sondern an einem nummerierten Massepunkt (z. B. ‚Massepunkt 12, im Motorraum links‘, bei Ford ‚G102‘, bei Mercedes ‚W10‘). Verbindungen mehrerer Leitungen im Kabelstrang heißen Leitungs- oder Plusverbindung (z. B. ‚B123‘, ‚S123‘ bei Ford, ‚Z1/1‘ bei Mercedes). Sie sind keine Stecker, sondern verlötete oder gequetschte Knoten unter der Kabelstrangisolierung.",
+      tipp: "Fällt ein Fehler an mehreren scheinbar unabhängigen Verbrauchern gleichzeitig auf, suche im Plan den gemeinsamen Massepunkt oder die gemeinsame Verbindung."
+    },
+    {
+      titel: "8. Steuergeräte-Innenschaltung deuten",
+      text: "Im Steuergerätekasten sind oft vereinfachte Innenschaltungen gezeichnet: ein Transistor-Symbol (Endstufe schaltet nach Masse), ein Widerstand (Pull-up), ein Spannungsregler ‚5 V‘, ein Sicherungssymbol. Das verrät dir, was du am Pin erwarten musst: Eine Endstufe nach Masse bedeutet: Pin liegt im Ruhezustand auf ca. Batteriespannung, nur beim Ansteuern auf 0 V.",
+      tipp: "Ist im Kasten nichts gezeichnet, gilt: Pinfunktion aus der Pinbelegungstabelle des Herstellers holen, nicht raten."
+    },
+    {
+      titel: "9. Schaltzustand im Plan = Ruhezustand",
+      text: "Alle Schalter, Relais und Taster sind im Plan im unbetätigten, stromlosen Zustand gezeichnet (Zündung aus, Relais abgefallen, Taster nicht gedrückt). Ein Öffner ist also ‚geschlossen‘ gezeichnet, ein Schließer ‚offen‘. Willst du wissen, was bei eingeschalteter Zündung passiert, musst du die Schalter gedanklich umlegen.",
+      tipp: "Zeichne dir bei komplexen Relaisschaltungen den ‚Ein‘-Zustand mit Bleistift ein – das verhindert Fehldeutungen wie ‚87a führt ja gar keinen Strom‘."
+    },
+    {
+      titel: "10. Seitenwechsel und Querverweise verfolgen",
+      text: "Leitungen enden am Blattrand mit einem Verweis: Strompfadnummer, Seitenzahl oder Bezeichnung des Zielplans (z. B. ‚→ Stromlaufplan Motorsteuerung, Strompfad 22‘). Steuergeräte, die mehrere Systeme versorgen, kommen in mehreren Plänen vor. Erst mit allen Blättern ergibt sich der komplette Stromkreis.",
+      tipp: "Beim Sprung auf die nächste Seite immer Farbe und Querschnitt der Leitung vergleichen – so merkst du, ob du wirklich dieselbe Leitung verfolgst."
+    }
+  ],
+
+  klemmen: [
+    { kl: "30", name: "Dauerplus", bedeutung: "Direkt von der Batterie (Pluspol) kommend, ungeschaltet, liegt immer an. Versorgt Sicherungskästen, Relaiskontakte, Steuergeräte-Speicher, Innenlicht.", messen: "Gleichspannung gegen Masse: bei Zündung aus, an und beim Starten immer Batteriespannung, ca. 12,4–12,8 V (Motor läuft: 13,5–14,8 V). Fehlt sie: Sicherung, Batterieklemme, Hauptleitung." },
+    { kl: "30a / 30g", name: "Dauerplus über Relais / abschaltbares Dauerplus", bedeutung: "Nach DIN: Kl. 30a = Ausgang vom Batterie-Umschaltrelais (12/24 V). In der Praxis (z. B. VAG) steht 30a oder 30g für Dauerplus, das über ein Relais oder das Bordnetzsteuergerät geführt wird und im Ruhezustand nach einer Zeit abgeschaltet werden kann (Ruhestrommanagement).", messen: "Batteriespannung, solange das Fahrzeug ‚wach‘ ist (Tür auf, Zündung an). Nach Verriegeln und Wartezeit (je nach Hersteller 15–60 min) darf sie auf 0 V fallen – das ist dann kein Fehler." },
+    { kl: "15", name: "Zündungsplus", bedeutung: "Geschaltetes Plus, liegt bei Zündung ein an. Heute meist nicht mehr direkt vom Zündschloss, sondern vom Bordnetz-/Zündstartsteuergerät über Relais geschaltet.", messen: "Zündung aus: 0 V. Zündung an: Batteriespannung. Beim Starten: bleibt meist an (bei manchen Fahrzeugen kurzzeitig abgeschaltet – Plan prüfen)." },
+    { kl: "15a", name: "Zündungsplus, Ausgang am Vorwiderstand", bedeutung: "Nach DIN: Ausgang am Vorwiderstand zur Zündspule und zum Anlasser. In modernen Plänen oft als weiteres, von Kl. 15 abgeleitetes geschaltetes Plus benutzt (z. B. hinter einem eigenen Relais oder für Teilbereiche des Bordnetzes).", messen: "Wie Kl. 15: Zündung an = Batteriespannung. Welche Verbraucher dranhängen und ob beim Starten abgeschaltet wird, steht nur im Plan des jeweiligen Herstellers." },
+    { kl: "X", name: "Entlastungsklemme (Kl. X)", bedeutung: "Geschaltetes Plus für Verbraucher, die beim Starten abgeschaltet werden (Gebläse, Heckscheibenheizung, Licht bei manchen Modellen), damit der Anlasser die volle Batterieleistung bekommt. Wird über das Entlastungsrelais (X-Kontakt) geschaltet.", messen: "Zündung an: Batteriespannung. Beim Starten (Kl. 50 aktiv): 0 V. Nach dem Start: wieder Batteriespannung. Zeigt es beim Starten weiter 12 V, klebt das Relais oder der Plan passt nicht." },
+    { kl: "31", name: "Masse", bedeutung: "Rückleitung zum Batterie-Minuspol über Karosserie, Motorblock und Massebänder. Jeder Stromkreis endet hier.", messen: "Spannungsabfall-Messung: rot an Kl. 31 des Bauteils, schwarz an Batterie-Minus, Verbraucher eingeschaltet: Soll unter 0,1–0,2 V. Widerstandsmessung nur spannungsfrei (Bauteil abgesteckt): unter 1 Ω gegen Karosserie." },
+    { kl: "31b", name: "Geschaltete Masse", bedeutung: "Masse, die über einen Schalter oder ein Relais geführt wird (Rückleitung geschaltet). Klassisch z. B. Wischer-Parkstellung oder Hupentaster; heute bei vielen massegeschalteten Verbrauchern aus dem Steuergerät.", messen: "Bauteil aus: Batteriespannung am 31b-Pin (Plus kommt durch den Verbraucher). Bauteil an: nahe 0 V (unter 0,5 V). Das ist kein Kurzschluss, sondern der Normalzustand." },
+    { kl: "50", name: "Anlasser-Steuerleitung", bedeutung: "Steuerplus zum Magnetschalter des Anlassers, kommt vom Zündschloss (Stellung Start) oder heute vom Anlasserrelais/Motorsteuergerät.", messen: "Nur in Zündschloss-Stellung ‚Start‘ Spannung, sonst 0 V. Soll beim Starten mindestens ca. 9–10 V (Batteriespannung minus Leitungsverluste). Deutlich weniger: Zündschloss, Relais oder Anlasser-Sperrschalter (Automatik P/N, Kupplungsschalter) prüfen." },
+    { kl: "50a", name: "Anlasser-Steuerung, Ausgang Anlasser-Sperrrelais", bedeutung: "Ausgang des Anlasser-Sperr- oder Batterieumschaltrelais zur Kl. 50 des Anlassers. Bei Automatikfahrzeugen: hinter dem Sperrschalter (nur P/N).", messen: "Wie Kl. 50: nur beim Starten Batteriespannung. Liegt an Kl. 50 (Eingang) Spannung an, an 50a aber nicht, ist Relais, Sperrschalter oder Freigabe (Wegfahrsperre, Getriebestellung) das Problem." },
+    { kl: "49 / 49a", name: "Blinkgeber Eingang / Ausgang", bedeutung: "Kl. 49 = Plus-Eingang zum Blinkgeber (über Kl. 15). Kl. 49a = getakteter Ausgang des Blinkgebers zum Blinkerschalter. Bei modernen Fahrzeugen im Bordnetzsteuergerät integriert, die Bezeichnung taucht aber weiter auf.", messen: "Kl. 49: Zündung an = Batteriespannung dauerhaft. Kl. 49a: bei Blinker ein pendelt die Anzeige zwischen ca. 0 V und Batteriespannung (Multimeter zeigt einen unruhigen Mittelwert, ca. 5–8 V), bei Blinker aus 0 V oder je nach Bauart Batteriespannung." },
+    { kl: "56 / 56a / 56b", name: "Scheinwerferlicht / Fernlicht / Abblendlicht", bedeutung: "Kl. 56 = Ausgang Lichtschalter zum Abblend-/Fernlichtschalter. 56a = Fernlicht plus Fernlichtkontrolle. 56b = Abblendlicht. In modernen Fahrzeugen von Steuergeräten (Endstufen, oft mit PWM) geschaltet.", messen: "Am Scheinwerferstecker gegen Masse bei eingeschaltetem Licht: 56b bei Abblendlicht ca. Batteriespannung, 56a bei Fernlicht ca. Batteriespannung. Bei PWM-Ansteuerung (LED, Tagfahrlicht-Dimmung) zeigt das Multimeter einen niedrigeren Mittelwert – dann Tastgrad messen." },
+    { kl: "58", name: "Begrenzungs-, Schluss-, Kennzeichen- und Instrumentenbeleuchtung", bedeutung: "Standlichtkreis. 58d = dimmbare Instrumentenbeleuchtung (über Dimmer/Potentiometer, heute PWM aus dem Steuergerät).", messen: "Licht aus: 0 V. Standlicht an: ca. Batteriespannung. 58d: je nach Dimmerstellung 2–12 V bzw. veränderlicher Tastgrad." },
+    { kl: "61", name: "Ladekontrolle", bedeutung: "Leitung vom Generator (D+) zur Ladekontrollleuchte im Kombiinstrument. Über die Lampe fließt gleichzeitig der Vorerregerstrom zum Generator.", messen: "Zündung an, Motor aus: Leuchte an, an Kl. 61 gegen Masse nur ca. 1–3 V (Lampe liegt davor). Motor läuft: Leuchte aus, Kl. 61 ca. 13,5–14,5 V. Bleibt sie bei laufendem Motor deutlich niedriger: Generator/Regler oder D+-Leitung." },
+    { kl: "75", name: "Zubehörklemme (Radio, Zigarettenanzünder)", bedeutung: "Geschaltetes Plus in Zündschloss-Stellung ‚Zubehör/Radio‘ und ‚Zündung ein‘, oft auch für Steckdosen. Bei älteren Fahrzeugen identisch mit Kl. X, bei neueren separat über Relais.", messen: "Schlüssel abgezogen: 0 V. Stellung Radio/Zubehör und Zündung an: Batteriespannung. Beim Starten je nach Hersteller abgeschaltet." },
+    { kl: "85", name: "Relaisspule, Minus (Ausgang)", bedeutung: "Ende der Relaisspule. Liegt entweder fest an Masse (plusgesteuertes Relais) oder wird vom Steuergerät nach Masse geschaltet (massegesteuertes Relais).", messen: "Bei Ansteuerung gegen Masse: unter 0,5 V. Relais nicht angesteuert und Steuergerät schaltet Masse: ca. Batteriespannung (kommt über die Spule von 86). Spulenwiderstand 85–86 (Relais ausgebaut): typisch ca. 50–120 Ω bei 12-V-Standardrelais." },
+    { kl: "86", name: "Relaisspule, Plus (Eingang)", bedeutung: "Anfang der Relaisspule, bekommt meist Kl. 15 oder Kl. 30 über eine Sicherung. Bei Relais mit Freilaufdiode ist die Polung zwingend: 86 = Plus.", messen: "Im Relaissockel gegen Masse: Zündung an (oder immer, je nach Versorgung) Batteriespannung. 0 V: Sicherung oder Zuleitung." },
+    { kl: "87", name: "Relaiskontakt, Schließer-Ausgang", bedeutung: "Wird bei angezogenem Relais mit Kl. 30 verbunden. Führt den Laststrom zum Verbraucher.", messen: "Relais abgefallen: 0 V. Relais angezogen: Batteriespannung. Unter Last Spannungsabfall 30 → 87 messen: Soll unter ca. 0,2 V, sonst Kontakt abgebrannt." },
+    { kl: "87a", name: "Relaiskontakt, Öffner-Ausgang", bedeutung: "Beim Wechslerrelais: mit Kl. 30 verbunden, solange das Relais nicht angezogen ist. Wird beim Anziehen getrennt.", messen: "Relais abgefallen: Batteriespannung (wenn 30 versorgt ist). Relais angezogen: 0 V. Genau umgekehrt zu 87 – wer die beiden verwechselt, deutet den Fehler falsch." },
+    { kl: "87b", name: "Relaiskontakt, zweiter Schließer-Ausgang", bedeutung: "Zweiter, parallel geschalteter Schließerausgang (Doppelkontakt), z. B. um zwei Verbraucher getrennt abzusichern. Nicht mit 87a verwechseln.", messen: "Verhält sich wie 87: 0 V abgefallen, Batteriespannung angezogen. Beide Ausgänge einzeln prüfen, ein Kontakt kann abgebrannt sein, der andere nicht." },
+    { kl: "4", name: "Zündspule, Hochspannungsausgang", bedeutung: "Hochspannungsanschluss (Sekundärseite) der Zündspule zum Verteiler bzw. zur Zündkerze. Mehrere Kilovolt.", messen: "Keine Spannungsmessung mit dem Multimeter! Nur spannungsfrei: Sekundärwiderstand typisch einige kΩ (z. B. 5–15 kΩ, je nach Spule). Zündbild nur mit Oszilloskop und kapazitivem Abgriff." },
+    { kl: "1", name: "Zündspule, Niederspannung (Primär, Minus)", bedeutung: "Primärseite der Zündspule zum Unterbrecher bzw. heute zur Endstufe im Steuergerät oder in der Spule. Wird getaktet nach Masse geschaltet.", messen: "Zündung an, Motor aus: ca. Batteriespannung (kommt über die Primärwicklung von Kl. 15). Beim Drehen: pendelnder Wert. Primärwiderstand (spannungsfrei, Kl. 15 ↔ Kl. 1): typisch unter 1 Ω bis ca. 2 Ω." },
+    { kl: "L / R", name: "Blinker links / rechts", bedeutung: "Ausgänge des Blinkerschalters bzw. des Bordnetzsteuergeräts zu den Blinkleuchten links und rechts.", messen: "Blinker aus: 0 V. Blinker ein: Wechsel zwischen 0 V und Batteriespannung im Blinktakt, Multimeter zeigt unruhigen Mittelwert. Bei LED-Blinkern oft PWM-Ansteuerung (Kaltüberwachung) – niedrigerer Mittelwert ist normal." },
+    { kl: "B+", name: "Generator, Batterie-Plus", bedeutung: "Dicker Ausgang des Generators zur Batterie (Kl. 30). Meist über eine Hauptsicherung oder direkt am Anlasser-Plus angeschlossen.", messen: "Motor aus: Batteriespannung. Motor läuft: ca. 13,5–14,8 V (bei Fahrzeugen mit Lademanagement zeitweise auch 12,5–15,5 V). Spannungsabfall B+ ↔ Batterie-Plus unter Last: unter ca. 0,3–0,5 V." },
+    { kl: "D+", name: "Generator, Ladekontrolle / Vorerregung", bedeutung: "Anschluss für Ladekontrollleuchte und Vorerregerstrom. Über D+ wird der Generator beim Start ‚angeregt‘ und meldet, ob er lädt. Bei LIN-geregelten Generatoren durch die Busleitung ersetzt.", messen: "Zündung an, Motor aus: ca. 1–3 V (Leuchte an). Motor läuft: ca. 13,5–14,5 V (Leuchte aus). Motor läuft und D+ bleibt niedrig: Generator lädt nicht oder Ladekontrollleuchte defekt (dann fehlt auch die Vorerregung)." },
+    { kl: "DF", name: "Generator, Feldwicklung (Erregerwicklung)", bedeutung: "Verbindung zwischen Regler und Erregerwicklung (Rotor). Nur bei Generatoren mit externem Regler von außen zugänglich; sonst intern.", messen: "Nur bei ausgebautem Regler: Widerstand der Erregerwicklung über die Schleifringe typisch ca. 2–5 Ω. Am Fahrzeug wird DF selten gemessen – Ladeprüfung über B+ und D+." },
+    { kl: "W", name: "Generator, Drehzahlsignal (Wechselspannung)", bedeutung: "Abgriff einer Wechselspannung von einer Statorwicklung vor dem Gleichrichter. Liefert ein drehzahlproportionales Signal (z. B. für Drehzahlmesser bei Dieseln, Tachograf).", messen: "Motor läuft: Wechselspannung (AC) gegen Masse typisch ca. 4–10 V AC, Frequenz steigt mit der Drehzahl. Motor aus: 0 V. Sinnvoll auf Hz-Messbereich des Multimeters." }
+  ],
+
+  farben: [
+    { code: "sw", en: "BK", name: "schwarz", hex: "#111111", ueblich: "Bei VAG traditionell Kl. 15 (Zündungsplus) und Kl. 30-Ableitungen; bei vielen anderen Herstellern Masse (BK). Je nach Hersteller völlig unterschiedlich – nie allein an der Farbe ‚Plus‘ oder ‚Masse‘ festmachen." },
+    { code: "ws", en: "WH", name: "weiß", hex: "#f4f4f4", ueblich: "Häufig Signalleitungen, Lichtkreise (z. B. Fernlicht bei VAG), als Streifenfarbe ‚sw/ws‘ zur Unterscheidung. Je nach Hersteller." },
+    { code: "rt", en: "RD", name: "rot", hex: "#d62828", ueblich: "Meist Dauerplus (Kl. 30), Batterie- und Sicherungszuleitungen. Rot mit Streifen (rt/sw, rt/ge …) oft abgesicherte Dauerplus-Abzweige. Bei asiatischen Herstellern nicht zwingend Plus – Plan prüfen." },
+    { code: "bl", en: "BU", name: "blau", hex: "#1e5bc6", ueblich: "Häufig Kl. 15-Ableitungen, Sensorsignale, Licht (z. B. Abblendlicht) oder Hilfsleitungen. Achtung: Toyota und andere asiatische Hersteller kürzen Blau mit ‚L‘ ab, ‚B‘ ist dort Schwarz." },
+    { code: "ge", en: "YE", name: "gelb", hex: "#f2c500", ueblich: "Oft Signalleitungen (z. B. Fernlicht, Sensorsignale, Rückfahrlicht). Gelbe Leitungen und gelbe Stecker sind bei fast allen Herstellern Airbag/Rückhaltesystem – dort niemals mit Prüflampe oder Ohmmeter messen." },
+    { code: "gn", en: "GN", name: "grün", hex: "#2a9d3f", ueblich: "Häufig Signal- und Sensorleitungen (z. B. Drehzahl-, Temperaturgeber), Bremslicht bei einigen Herstellern, Blinker rechts. Je nach Hersteller." },
+    { code: "gr", en: "GY", name: "grau", hex: "#8a8a8a", ueblich: "Oft Standlicht (Kl. 58), Instrumentenbeleuchtung, Sensor- und Signalleitungen, bei VAG traditionell Standlicht/Kennzeichenleuchte. Je nach Hersteller." },
+    { code: "br", en: "BN", name: "braun", hex: "#7a4a1d", ueblich: "Bei VAG, BMW, Mercedes meist Masse (Kl. 31). Braun mit Streifen (br/ws, br/bl …) oft Sensormasse oder geschaltete Masse. Bei Ford/asiatischen Herstellern kann Braun etwas anderes bedeuten." },
+    { code: "vi", en: "VT", name: "violett", hex: "#7b2fbf", ueblich: "Häufig Signal- oder Steuerleitungen, bei einigen Herstellern Anlasser-Steuerung (Kl. 50) oder Sensorsignale. Je nach Hersteller." },
+    { code: "or", en: "OG", name: "orange", hex: "#f27a1a", ueblich: "Bei Hybrid- und Elektrofahrzeugen herstellerübergreifend Hochvolt (> 60 V DC / 30 V AC): Orange = Stopp, nur mit HV-Qualifikation und Freischaltung. Bei konventionellen Fahrzeugen auch als CAN-Leitung (z. B. or/gn, or/br bei VAG) verwendet." },
+    { code: "li", en: "VT / PU", name: "lila", hex: "#a64ac9", ueblich: "Wird in deutschen Plänen teilweise synonym mit violett verwendet (vi), teils als eigene Farbe. Meist Signal- und Steuerleitungen. Je nach Hersteller und Plan-Legende." },
+    { code: "rs", en: "PK", name: "rosa", hex: "#f28cb1", ueblich: "Seltener; z. B. Signal- oder Steuerleitungen, bei einigen Herstellern Kraftstoffpumpen-Ansteuerung oder Kl. 15-Ableitungen. Je nach Hersteller." },
+    { code: "nf", en: "NA", name: "natur (unlackiert)", hex: "#e8dcc4", ueblich: "Unpigmentierte Isolierung, wird selten verwendet, z. B. bei Sonderleitungen oder in älteren Plänen. Kein einheitliches englisches Kürzel – in der Plan-Legende nachsehen." },
+    { code: "el", en: "IV", name: "elfenbein", hex: "#f1e9d2", ueblich: "Selten; taucht z. B. bei Mercedes oder in älteren Plänen für Signal- und Sonderleitungen auf. Nicht mit weiß (ws) verwechseln – in der Legende des jeweiligen Plans nachsehen." }
+  ],
+
+  farbregeln: [
+    { titel: "Grundfarbe / Streifenfarbe", text: "Die Angabe ‚sw/ws‘ bedeutet: Grundfarbe schwarz, Kennfarbe (Streifen) weiß. Die erste Farbe ist immer die Grundfarbe, die zweite der Streifen. Englisch ‚BK/WH‘ oder ‚BK-WH‘ ist dasselbe. Manche Hersteller schreiben die Streifenfarbe klein oder mit Bindestrich – die Reihenfolge Grundfarbe zuerst gilt aber fast überall." },
+    { titel: "Querschnitt in mm²", text: "Vor der Farbe steht meist der Leiterquerschnitt: 0,35 / 0,5 / 0,75 / 1,0 / 1,5 / 2,5 / 4 / 6 / 10 / 16 / 25 / 35 mm². Faustregel: 0,35–0,5 = Signal, Sensor, Bus; 0,75–1,5 = Leuchten, kleine Motoren; 2,5–6 = Gebläse, Heizungen, Pumpen; 10–35 = Generator, Anlasser, Massebänder. Angloamerikanische Pläne nutzen AWG (z. B. 18 AWG ≈ 0,75 mm², 22 AWG ≈ 0,35 mm²)." },
+    { titel: "Leitungsnummern und Stromkreiskennung", text: "Einige Hersteller (z. B. Ford, Stellantis) drucken zusätzlich eine Leitungs- oder Stromkreisnummer auf die Leitung oder in den Plan (z. B. ‚CE123‘ oder ‚1320‘). Damit lässt sich eine Leitung auch bei gleicher Farbe eindeutig verfolgen. Bei VAG/BMW/Mercedes identifizierst du die Leitung stattdessen über Stecker + Pin + Farbe + Querschnitt." },
+    { titel: "Verdrillte Leitungen (CAN, LIN, FlexRay)", text: "Zwei verdrillt gezeichnete Leitungen (Schraffur oder Wellenlinie) sind ein Datenbus, meist CAN-High und CAN-Low (z. B. or/sw und or/br bei VAG, ge/sw und gn/sw bei anderen). Sie dürfen nicht getrennt geführt, nicht verlängert und nie mit Prüflampe belastet werden. Spannung im Ruhezustand: CAN-High ca. 2,5–3,5 V, CAN-Low ca. 1,5–2,5 V gegen Masse (Multimeter zeigt Mittelwerte). Widerstand zwischen High und Low spannungsfrei: ca. 60 Ω (zwei 120-Ω-Abschlusswiderstände parallel)." },
+    { titel: "Geschirmte Leitungen", text: "Ein gestrichelter Kreis oder eine Umrandung um die Leitung im Plan bedeutet Abschirmung (z. B. Klopfsensor, Kurbelwellengeber, Antennen, Audio). Der Schirm wird nur an einer Seite auf Masse gelegt (meist steuergeräteseitig). Wenn du misst: Signal gegen Sensormasse, nicht gegen den Schirm. Beim Reparieren Schirm wieder nur einseitig anschließen." },
+    { titel: "Orange = Hochvolt", text: "Orange Leitungen, orange Stecker und orange Wellrohre kennzeichnen Hochvoltsysteme (Hybrid, Elektro, teils 48-V-Systeme ebenfalls markiert). Hier gilt: Stopp – keine Messung ohne HV-Qualifikation, Freischaltung, Spannungsfreiheit-Prüfung nach den fünf Sicherheitsregeln und geeignetes CAT-III-Messgerät. Im Schaltplan sind HV-Stromkreise meist gesondert dargestellt." },
+    { titel: "Gelb = Airbag / Rückhaltesystem", text: "Gelbe Steckergehäuse, gelbe Wellrohre und im Plan meist ein gesondertes Symbol oder ein Hinweis (Airbag, Gurtstraffer, Zünder) markieren pyrotechnische Stromkreise. Niemals Ohmmeter, Prüflampe oder Fremdspannung anlegen – der Prüfstrom kann den Zünder auslösen. Prüfung nur über Diagnosetester bzw. mit Prüfwiderständen nach Herstellervorgabe, Batterie abgeklemmt und Wartezeit eingehalten." },
+    { titel: "Gleiche Farbe ≠ gleiche Leitung", text: "In einem Kabelstrang können zehn Leitungen ‚0,5 sw‘ heißen. Die Farbe grenzt nur ein, eindeutig wird die Leitung erst über Stecker und Pin. Und: Farben verblassen, Reparaturleitungen haben oft eine andere Farbe, und nach Kabelstrang-Tausch kann die Belegung vom Plan abweichen." }
+  ],
+
+  symbole: [
+    { id: "batterie", name: "Batterie", beschreibung: "Lange dünne Linie (Plus) und kurze dicke Linie (Minus) nebeneinander, oft mehrere Paare hintereinander für Zellen. Plus meist mit ‚+‘ markiert, Anschlüsse als Kl. 30 (Plus) und Kl. 31 (Minus).", messen: "Gleichspannung DC direkt an den Polen: Ruhespannung ca. 12,4–12,8 V (voll), unter 12,0 V entladen. Beim Starten darf sie nicht unter ca. 9,5–10 V einbrechen." },
+    { id: "masse", name: "Masse / Massepunkt", beschreibung: "Kurze waagerechte Linie mit zwei bis drei kürzeren darunter (Erdungssymbol) oder ein Dreieck aus Linien, mit Massepunkt-Nummer daneben. Bei VAG Kreis mit Nummer auf der Kl.-31-Schiene.", messen: "Spannungsabfall-Messung unter Last: Multimeter DC, rot an Massepunkt bzw. Bauteilmasse, schwarz an Batterie-Minus, Verbraucher ein: Soll unter 0,1–0,2 V. Widerstand nur spannungsfrei: unter 1 Ω." },
+    { id: "sicherung", name: "Sicherung", beschreibung: "Rechteck mit einer durchgehenden Linie durch die Längsachse; daneben Bezeichnung (z. B. S12 oder F23), Nennwert in A und oft Sicherungsträger/Steckplatz.", messen: "Spannung DC an beiden Seiten der eingesteckten Sicherung gegen Masse: beide Seiten Batteriespannung = ok. Eine Seite 0 V = Sicherung durch. Beide 0 V = Zuleitung. Durchgang (spannungsfrei, ausgebaut): unter 1 Ω." },
+    { id: "relais", name: "Relais", beschreibung: "Rechteck mit Spule (Kl. 85/86) und daneben ein Kontakt (30 zu 87 bzw. 87a). In aufgelöster Darstellung stehen Spule und Kontakt oft in verschiedenen Strompfaden, verbunden durch eine gestrichelte Linie oder den gleichen Kennbuchstaben (z. B. J17, K5).", messen: "Spulenwiderstand 85–86 spannungsfrei: typisch ca. 50–120 Ω. Im Sockel: 86 gegen Masse Batteriespannung, 85 bei Ansteuerung unter 0,5 V. Kontakt unter Last: Spannungsabfall 30 → 87 unter ca. 0,2 V." },
+    { id: "schalter", name: "Schalter (rastend)", beschreibung: "Ein schräg stehender Strich, der zwei Anschlüsse verbindet (offen = Schließer, geschlossen gezeichnet = Öffner). Mehrstufige Schalter mit mehreren Stellungen und Kontaktbahnen als Tabelle oder Kontaktplan.", messen: "Spannungsmessung DC an beiden Anschlüssen gegen Masse: Schalter aus: Eingang Batteriespannung, Ausgang 0 V (bei plusgeschaltetem Kreis). Schalter ein: beide Batteriespannung, Spannungsabfall über den Schalter unter 0,2 V. Spannungsfrei: Durchgang unter 1 Ω." },
+    { id: "taster", name: "Taster (nicht rastend)", beschreibung: "Wie ein Schalter, aber mit einem Pfeil oder einer Betätigungslinie; der Kontakt kehrt nach Loslassen zurück. Oft mit Ruhezustand ‚offen‘ gezeichnet (z. B. Bremslichtschalter, Hupentaster).", messen: "Bei modernen Tastern am Steuergerät: unbetätigt liegt meist Pull-up-Spannung an (ca. 5 V oder 12 V), betätigt ca. 0 V (Massetaster). Bei Widerstandscodierten Tastern (Lenkradtasten) ändert sich der Widerstand stufenweise – Wert aus Plan." },
+    { id: "lampe", name: "Glühlampe", beschreibung: "Kreis mit einem ‚X‘ darin (zwei Diagonalen). Zweifadenlampen (Brems-/Schlusslicht) haben drei Anschlüsse. Nennleistung oft daneben (z. B. 21 W, 5 W).", messen: "Spannung DC am Lampenstecker bei eingeschaltetem Licht: nahe Batteriespannung (mindestens 11–12 V bei laufendem Motor deutlich mehr). Widerstand kalt spannungsfrei: 21 W ca. 0,4–0,8 Ω, 55 W ca. 0,2–0,3 Ω – Werte klein, aber messbar; unendlich = Faden durch." },
+    { id: "led", name: "Leuchtdiode (LED)", beschreibung: "Diodensymbol (Dreieck mit Querstrich) mit zwei kleinen Pfeilen nach außen. In Kfz-Plänen oft als LED-Modul oder Kasten dargestellt, da Vorwiderstand und Treiber integriert sind.", messen: "Spannung DC am Modul bei Ansteuerung: meist Batteriespannung oder PWM (Mittelwert niedriger, Tastgrad messen). Einzelne LED nur mit Diodentest: ca. 1,6–3,5 V Flussspannung, je nach Farbe. Keine Ohmmessung an LED-Modulen – die Elektronik verfälscht alles." },
+    { id: "motor", name: "Elektromotor", beschreibung: "Kreis mit ‚M‘ darin. Bei Gleichstrommotoren mit Anschlüssen für Rechts-/Linkslauf (Fensterheber: zwei Leitungen, Polung wechselt). Bei Stellmotoren mit Potentiometer oder Hallgeber im gleichen Kasten.", messen: "Spannung DC am Motorstecker bei Ansteuerung: nahe Batteriespannung, je nach Richtung Polung vertauscht. Strom mit Zangenamperemeter (Fensterheber typisch 3–8 A, Gebläse 10–25 A). Widerstand spannungsfrei: meist unter 5 Ω, Kohlestellung beeinflusst den Wert." },
+    { id: "spule", name: "Spule / Wicklung", beschreibung: "Rechteck (DIN) oder Wellenlinie mit mehreren Bögen. Kennzeichnet Relaisspulen, Zündspulen (mit zwei Wicklungen), Einspritzventile und Magnetkupplungen.", messen: "Widerstand spannungsfrei, Bauteil abgesteckt: Relaisspule ca. 50–120 Ω, Einspritzventil (Saugrohr) ca. 12–16 Ω, Klimakompressor-Magnetkupplung ca. 3–5 Ω. Werte je nach Bauteil laut Hersteller. Im Betrieb: Spannung DC an der Spule bei Ansteuerung." },
+    { id: "magnetventil", name: "Magnetventil", beschreibung: "Spulensymbol kombiniert mit einem Ventilsymbol (Quadrat mit Pfeil oder Dreiecke), Kennbuchstabe N (VAG) oder Y (Mercedes). Zwei Anschlüsse: Plus (oft Kl. 15/87) und Steuerleitung zum Steuergerät.", messen: "Widerstand spannungsfrei: typisch 10–40 Ω (z. B. Tankentlüftungsventil ca. 20–30 Ω, Einspritzventil 12–16 Ω). Im Betrieb: Plus-Pin Batteriespannung; Steuer-Pin bei PWM Mittelwert zwischen 0 und 12 V, Tastgrad-Messung sinnvoll." },
+    { id: "widerstand", name: "Widerstand (Vorwiderstand, Abschlusswiderstand)", beschreibung: "Schmales Rechteck (DIN) oder Zickzacklinie (US-Pläne). Wert oft daneben (z. B. 120 Ω CAN-Abschluss, Gebläsevorwiderstand mit mehreren Anzapfungen).", messen: "Widerstand spannungsfrei mit Multimeter, Bauteil abgesteckt: Sollwert laut Plan ±10 %. Gebläsevorwiderstand: Stufen typisch 0,3–3 Ω, Thermosicherung darin oft der Fehler (unendlich). Im Betrieb: Spannungsabfall über den Widerstand = Nachweis, dass Strom fließt." },
+    { id: "ntc", name: "NTC-Temperatursensor", beschreibung: "Widerstandssymbol mit schrägem Pfeil durch (veränderlich) und einem ‚ϑ‘ oder ‚−t°‘ daneben. Kennbuchstabe G (VAG) oder B (Mercedes). Zwei Anschlüsse: Sensormasse und Signal.", messen: "Widerstand spannungsfrei, abgesteckt: sinkt mit der Temperatur, typisch Kühlmittel-NTC ca. 2–3 kΩ bei 20 °C, ca. 200–400 Ω bei 80–90 °C. Im Betrieb: Signalspannung am Steuergerät-Pin ca. 3–4 V kalt, unter 1 V warm (Pull-up im Steuergerät). 5 V = Kabelbruch/abgesteckt, 0 V = Kurzschluss nach Masse." },
+    { id: "ptc", name: "PTC-Widerstand / PTC-Heizelement", beschreibung: "Widerstandssymbol mit Pfeil und ‚+t°‘. Als Sensor (selten) oder als selbstregelndes Heizelement (Zuheizer, Drosselklappenheizung, Kurbelgehäuseentlüftungsheizung).", messen: "Widerstand spannungsfrei: steigt mit der Temperatur. PTC-Heizung kalt nur wenige Ohm (z. B. 1–20 Ω), warm deutlich höher. Im Betrieb: Spannung DC Batteriespannung bei Ansteuerung, Strom mit Zange (Zuheizer bis mehrere 10 A, Kleinheizungen 0,5–3 A)." },
+    { id: "poti", name: "Potentiometer", beschreibung: "Widerstandssymbol mit einem Pfeil, der als dritter Anschluss (Schleifer) auf den Widerstand zeigt. Drei Leitungen: Plus (meist 5 V), Masse, Schleifer (Signal). Z. B. Drosselklappen-, Pedalwert-, Tankgeber (dort 2-Draht).", messen: "Betrieb: Versorgung 5 V, Signal am Schleifer gleitet stetig (z. B. 0,5–4,5 V) ohne Sprünge beim langsamen Bewegen. Spannungsfrei: Gesamtwiderstand konstant (z. B. 1–5 kΩ), Schleiferwiderstand stetig ändernd – Aussetzer = Verschleißstelle." },
+    { id: "diode", name: "Diode / Freilaufdiode", beschreibung: "Dreieck (Pfeil) mit Querstrich an der Spitze; Stromrichtung in Pfeilrichtung, der Querstrich ist die Kathode. Als Freilaufdiode parallel zur Relaisspule, als Entkopplungsdiode in Plusleitungen, im Generator als Gleichrichter.", messen: "Diodentest am Multimeter, spannungsfrei: in Durchlassrichtung ca. 0,4–0,7 V, in Sperrrichtung OL/unendlich. In beide Richtungen Durchgang = Kurzschluss, in beide Richtungen OL = unterbrochen. Achtung bei Relais mit Diode: Kl. 86 ist Plus, sonst Diode zerstört." },
+    { id: "kondensator", name: "Kondensator", beschreibung: "Zwei parallele Striche mit Anschlüssen (bei Elektrolytkondensatoren einer gebogen und ‚+‘ markiert). Im Kfz: Entstörkondensator am Generator/Zündspule, Pufferkondensator im Steuergerät.", messen: "Mit Kapazitätsmessbereich (falls vorhanden), spannungsfrei und entladen: Entstörkondensator typisch 1–2,2 µF. Ohmmessung: kurz Durchgang, dann unendlich (Ladevorgang) = ok; dauernd Durchgang = Kurzschluss. Vor dem Messen entladen." },
+    { id: "stecker", name: "Steckverbindung", beschreibung: "Zwei sich gegenüberstehende Halbkreise oder Pfeilspitzen (Stift und Buchse), daneben Steckerbezeichnung und Pinnummer (z. B. T94/3, X1234/5, C123-4). Mehrpolige Stecker als Kasten mit vielen Pinbezeichnungen.", messen: "Spannung DC am Pin (Rückseitenmessung mit dünner Prüfspitze, nie Pins aufweiten). Spannungsabfall über den Stecker unter Last: unter 0,1 V. Kontaktprobleme zeigen sich als Wackelkontakt beim Bewegen des Steckers während der Messung." },
+    { id: "steuergeraet", name: "Steuergerät", beschreibung: "Großes Rechteck (oft grau hinterlegt oder gestrichelt) mit Pinnummern am Rand und Steckerbezeichnung. Innen manchmal vereinfachte Schaltung: Spannungsregler ‚5 V‘, Transistor (Endstufe), Widerstand (Pull-up), Sicherung, Bus-Transceiver.", messen: "Versorgung prüfen: Kl. 30 und Kl. 15 gegen Masse Batteriespannung, Massepins unter 0,1 V Spannungsabfall gegen Batterie-Minus. Ausgangs- und Sensorpins nur per Spannungsmessung mit hochohmigem Multimeter (≥ 10 MΩ), nie Prüflampe, nie Ohmmeter am angeschlossenen Steuergerät." },
+    { id: "sensor-hall", name: "Hallgeber (3-Draht-Sensor)", beschreibung: "Rechteck mit Hall-Symbol (H oder Magnetzeichen) und drei Anschlüssen: Versorgung (5 V oder 12 V), Masse, Signal. Oft mit angedeutetem Geberrad. Kennbuchstabe G (VAG) oder B (Mercedes).", messen: "Betrieb: Versorgung 5 V (oder ca. 12 V) gegen Sensormasse, Signal wechselt beim langsamen Drehen zwischen ca. 0 V und 5 V (bzw. Versorgung); Multimeter zeigt beim Drehen einen Mittelwert bzw. Frequenz in Hz. Keine Ohmmessung am Hallgeber – die Elektronik liefert keine aussagekräftigen Werte." },
+    { id: "sensor-induktiv", name: "Induktivgeber (2-Draht, passiv)", beschreibung: "Spulensymbol mit Dauermagnet (Balken mit N/S) neben einem Geberrad, zwei Anschlüsse, meist geschirmt dargestellt. Kurbelwellen-, Nockenwellen- (älter), passive Raddrehzahlsensoren.", messen: "Widerstand spannungsfrei, abgesteckt: typisch ca. 200–1500 Ω (Wert laut Hersteller, z. B. 800–1000 Ω). Beim Durchdrehen des Motors: Wechselspannung AC typisch 0,5–3 V (steigt mit Drehzahl), Frequenz messbar. Isolation gegen Masse: unendlich." },
+    { id: "lambdasonde", name: "Lambdasonde", beschreibung: "Rechteck mit Sondensymbol und meist vier Anschlüssen: zwei für die Heizung (Plus über Relais/Kl. 87, Masse getaktet vom Steuergerät), zwei für das Signal (Signal, Sondenmasse). Breitbandsonden haben fünf bis sechs Leitungen.", messen: "Heizung spannungsfrei: typisch ca. 2–15 Ω (je nach Sonde). Heizungs-Plus: Batteriespannung nach dem Start. Sprungsonde Signal DC bei betriebswarmem Motor: pendelt zwischen ca. 0,1 und 0,9 V, mehrmals pro 10 s. Breitbandsonde nur per Tester (Pumpstrom) beurteilen." },
+    { id: "hupe", name: "Signalhorn / Hupe", beschreibung: "Trichter- oder Lautsprechersymbol (Halbkreis mit Rechteck), zwei Anschlüsse. Meist über Huprelais, Taster im Lenkrad schaltet Masse (Kl. 31b) über Wickelfeder/Schleifring.", messen: "Spannung DC am Horn beim Drücken der Hupe: Batteriespannung. Am Relais Kl. 85: beim Drücken unter 0,5 V (Tastermasse). Widerstand Hupe spannungsfrei: wenige Ohm (z. B. 1–3 Ω); Strom ca. 3–6 A pro Horn." },
+    { id: "heizung", name: "Heizelement (Heckscheibe, Sitz, Spiegel)", beschreibung: "Widerstandssymbol, oft als Mäander (Schlangenlinie) oder Rechteck mit ‚Heizung‘, mit zwei Anschlüssen. Bei Sitzheizung zusätzlich NTC im gleichen Kasten.", messen: "Widerstand spannungsfrei: Heckscheibe ca. 1–3 Ω, Sitzheizung ca. 1–5 Ω, Spiegelheizung ca. 5–15 Ω (Richtwerte). Im Betrieb: Batteriespannung an der Zuleitung, Strom mit Zange (Heckscheibe 10–20 A). Heckscheibe: Spannungsabfall entlang der Heizdrähte suchen – Sprung von 12 V auf 0 V = Bruchstelle." },
+    { id: "sicherungsautomat", name: "Sicherungsautomat / Thermoschutzschalter", beschreibung: "Sicherungssymbol kombiniert mit einem Schaltersymbol oder Rechteck mit geknicktem Kontakt und ‚ϑ‘ (thermisch). Selbstrückstellend (Fensterheber-, Sitzverstellungsmotoren) oder manuell rückstellbar.", messen: "Spannung DC beidseitig gegen Masse: beidseitig Batteriespannung = geschlossen. Nach Überlast einseitig 0 V, nach Abkühlen (30 s bis wenige Minuten) wieder Batteriespannung. Spannungsabfall im Betrieb unter 0,2 V, sonst Kontakt verschlissen." }
+  ],
+
+  relais: {
+    pins: [
+      { pin: "30", rolle: "Eingang Laststrom (Dauerplus oder abgesichertes Plus)", messen: "Gegen Masse: Batteriespannung, unabhängig vom Relaiszustand. 0 V = Sicherung oder Zuleitung vor dem Relais." },
+      { pin: "85", rolle: "Spule Minus (Ausgang der Spule), fest an Masse oder vom Steuergerät geschaltet", messen: "Relais angesteuert: unter 0,5 V gegen Masse. Bei Steuergeräte-Ansteuerung und Relais aus: ca. Batteriespannung (kommt über die Spule von 86 – normal, kein Fehler)." },
+      { pin: "86", rolle: "Spule Plus (Eingang der Spule), meist Kl. 15 oder Kl. 30 über Sicherung", messen: "Gegen Masse: Batteriespannung (Zündung an, wenn über Kl. 15 versorgt). 0 V = Steuersicherung oder Zuleitung. Bei plusgesteuerten Relais liegt hier erst bei Ansteuerung Spannung an." },
+      { pin: "87", rolle: "Schließer-Ausgang zum Verbraucher, wird bei angezogenem Relais mit 30 verbunden", messen: "Relais aus: 0 V. Relais an: Batteriespannung. Unter Last Spannungsabfall 30 → 87 unter 0,2 V (bei Strömen über 20 A bis 0,3 V tolerierbar)." },
+      { pin: "87a", rolle: "Öffner-Ausgang (nur Wechsler), mit 30 verbunden, solange das Relais NICHT angezogen ist", messen: "Relais aus: Batteriespannung. Relais an: 0 V. Genau umgekehrt zu 87 – im Plan die Zahl genau lesen, 87a und 87 werden ständig verwechselt." },
+      { pin: "87b", rolle: "Zweiter Schließer-Ausgang (Doppelkontakt), parallel zu 87, für getrennt abgesicherte Verbraucher", messen: "Verhält sich wie 87: 0 V aus, Batteriespannung an. Beide Ausgänge einzeln unter Last prüfen." }
+    ],
+    typen: [
+      { name: "Schließer (4-polig)", text: "Pins 30, 85, 86, 87. Der Kontakt 30–87 ist im Ruhezustand offen und schließt, wenn die Spule (85/86) bestromt wird. Das Standardrelais für Scheinwerfer, Kraftstoffpumpe, Gebläse, Hupe. Spulenwiderstand 12 V typisch ca. 70–90 Ω, Kontakt für 20–40 A." },
+      { name: "Wechsler (5-polig)", text: "Pins 30, 85, 86, 87, 87a. Im Ruhezustand ist 30 mit 87a verbunden (Öffner), bei Ansteuerung mit 87 (Schließer). Anwendung: Umschaltung zwischen zwei Verbrauchern, Fensterheber-Umpolung, Entlastungsrelais Kl. X. Ein 4-poliges Schließerrelais passt mechanisch oft in denselben Sockel – aber der 87a-Kreis bleibt dann tot." },
+      { name: "Relais mit Freilaufdiode (Polung!)", text: "Parallel zur Spule sitzt eine Diode, die die Abschaltspannungsspitze (bis über 100 V) kurzschließt und so das Steuergerät schützt. Polung ist zwingend: 86 = Plus, 85 = Minus. Vertauscht angeschlossen fließt der Strom über die Diode – Sicherung fliegt, Diode oder Steuergeräte-Endstufe stirbt. Erkennbar am Diodensymbol auf dem Gehäuse und im Plan. Nie durch ein Relais ohne Diode ersetzen, wenn ein Steuergerät ansteuert." },
+      { name: "Relais mit Widerstand", text: "Parallel zur Spule sitzt ein Widerstand (typisch einige hundert Ohm bis wenige kΩ), der die Abschaltspitze dämpft. Vorteil: polungsunabhängig. Bei der Spulenmessung liegt dieser Widerstand parallel – der gemessene Wert ist etwas niedriger als die reine Spule. Auf dem Gehäuse als Widerstandssymbol erkennbar." },
+      { name: "Mikrorelais", text: "Kleinere Bauform (z. B. ISO-Micro, ISO-Mini/Maxi), gleiche Pinlogik (30/85/86/87/87a), aber engeres Pinraster und geringere Strombelastbarkeit (meist 10–25 A). Spulenwiderstand höher, typisch ca. 100–250 Ω bei 12 V. Oft direkt auf Leiterplatten in Sicherungskästen gelötet – dann nicht steckbar, im Plan als Relais im Steuergerätekasten gezeichnet." },
+      { name: "Elektronisches Relais / Halbleiter", text: "Statt Spule und Kontakt schaltet ein MOSFET oder ein Smart-Power-Baustein (High-Side- oder Low-Side-Schalter). Keine Spulenmessung möglich, im ausgeschalteten Zustand oft kleine Leckspannung (einige Volt am unbelasteten Ausgang – normal, bricht unter Last zusammen). Häufig mit Strommessung, Überlast-Abschaltung und Diagnosefähigkeit (Fehlerspeicher). Prüfung nur per Spannungsmessung unter Last und Tester." },
+      { name: "Sicherungs-Relais-Kombis", text: "Relais und Sicherung in einem Steckmodul (z. B. Kraftstoffpumpen- oder Glühkerzenmodul) oder Relais mit integrierter Sicherung. Im Plan als Kasten mit Relais- und Sicherungssymbol. Prüfung: erst Sicherung (beidseitig Spannung), dann Relais wie üblich. Achtung: Bei Modulen auf Leiterplatten kann nur das gesamte Modul getauscht werden." }
+    ],
+    pruefung: [
+      { schritt: "1. Im Plan Pins zuordnen: Wo kommt Plus für 30 und 86 her, was schaltet 85 (Masse fest oder Steuergerät), was hängt an 87/87a?", soll: "Du kennst Sicherung, Versorgungsklemme (30/15) und den Steuerweg, bevor du das Relais ziehst.", sonst: "Ohne diese Zuordnung deutest du eine Messung am Sockel falsch, z. B. 12 V an 85 als Fehler." },
+      { schritt: "2. Relais ziehen, im Sockel Pin 30 und Pin 86 gegen Masse messen (Spannung DC, Zündung wie im Plan gefordert).", soll: "Beide ca. Batteriespannung (86 bei Kl.-15-Versorgung erst mit Zündung an).", sonst: "0 V an 30: Lastsicherung/Zuleitung. 0 V an 86: Steuersicherung, Zündschloss/Bordnetzsteuergerät." },
+      { schritt: "3. Ansteuerung prüfen: Spannung an Pin 85 im Sockel gegen Masse, Funktion anfordern (z. B. Zündung an für Kraftstoffpumpe, Licht ein).", soll: "Bei fest verdrahteter Masse: dauerhaft unter 0,5 V. Bei Steuergeräte-Ansteuerung: ohne Anforderung offen/undefiniert, mit Anforderung unter 0,5 V. Ersatzweise Spannung 86 ↔ 85 direkt: bei Anforderung ca. Batteriespannung.", sonst: "Bleibt 85 bei Anforderung hoch: Steuergerät schaltet nicht (Freigabebedingung fehlt, Endstufe defekt, Leitung 85 unterbrochen). Nie Pin 85 einfach auf Masse brücken, ohne zu wissen, dass die Masse dort wirklich hin darf." },
+      { schritt: "4. Relais ausgebaut prüfen: Spulenwiderstand 85–86 mit Ohmmeter, Kontakt 30–87 im Ruhezustand.", soll: "Spule typisch ca. 50–120 Ω (Mikrorelais bis ca. 250 Ω), kein Kurzschluss, keine Unterbrechung. 30–87 ohne Spannung: OL (Schließer offen), 30–87a: Durchgang.", sonst: "Spule OL = Wicklung gebrochen. 30–87 schon im Ruhezustand Durchgang = Kontakt verklebt (Verbraucher läuft dauernd, Batterie leer)." },
+      { schritt: "5. Kontakt unter Last prüfen: Relais eingesteckt, Verbraucher an, Spannungsabfall zwischen Pin 30 und Pin 87 messen (rot an 30, schwarz an 87, Rückseitenmessung oder Messadapter).", soll: "Unter ca. 0,2 V bei Nennlast (bei Gebläse/Heckscheibe bis 0,3 V tolerierbar).", sonst: "0,5 V und mehr: Kontakt abgebrannt oder oxidiert – Relais tauschen. Spannung an 30, aber 0 V an 87 obwohl Relais klickt: Kontakt unterbrochen." },
+      { schritt: "6. Verbraucherseite prüfen: Spannung an Pin 87 gegen Masse unter Last und am Verbraucher selbst vergleichen.", soll: "Beide nahezu gleich, Differenz unter 0,3 V; Verbraucher läuft.", sonst: "Große Differenz = Leitung, Stecker oder Sicherung zwischen Relais und Verbraucher. Spannung am Verbraucher ok, aber er läuft nicht: Massepfad des Verbrauchers oder Verbraucher selbst." },
+      { schritt: "7. Gegencheck mit Fremdrelais oder Relaisprüfer, erst danach Tausch.", soll: "Mit einem bekannt guten Relais gleichen Typs (Pins, Diode, Strom) läuft der Verbraucher.", sonst: "Läuft er auch mit dem Ersatzrelais nicht, liegt der Fehler außerhalb des Relais – Sockelkontakte (ausgeleiert, verschmort) sind hier ein Klassiker." }
+    ]
+  },
+
+  stecker: [
+    { format: "T94/3 (VAG)", bedeutung: "‚T‘ = Steckverbindung, ‚94‘ = 94-polig, ‚/3‘ = Pin 3. Gleichpolige Stecker werden zusätzlich mit Buchstaben unterschieden: T2a, T2b, T10n. Manchmal steht die Farbe daneben, z. B. ‚T10n, schwarz‘.", hinweis: "Am Fahrzeug steht die Pinnummer im Steckergehäuse klein eingeprägt – Kabelseite und Bauteilseite sind spiegelbildlich, immer die Nummern im Gehäuse lesen, nicht abzählen." },
+    { format: "X1234 Pin 5 (BMW)", bedeutung: "‚X‘ = Steckverbindung (gilt bei BMW auch für Massepunkte und Steckerleisten am Steuergerät), Nummer identifiziert den Stecker fahrzeugweit eindeutig, dahinter die Pinnummer. ISTA zeigt zu jedem X-Stecker Ansicht, Farbe, Polzahl und Einbauort.", hinweis: "Nummern wie X10xxx sind meist Massepunkte, Xxxxx an Steuergeräten die Steckerleisten – in ISTA ‚Steckverbindung‘ anklicken, dann erscheint die Steckeransicht mit Pin-Nummerierung." },
+    { format: "N3/10x1/5 (Mercedes, Beispiel)", bedeutung: "Bauteil ‚N3/10‘ (Kennbuchstabe N = Steuergerät, Nummer = Bauteil), ‚x1‘ = erster Stecker an diesem Bauteil, ‚/5‘ = Pin 5. Kennbuchstaben: B = Sensor, Y = Ventil/Aktor, M = Motor, K = Relais, S = Schalter, E = Leuchte, F = Sicherung, W = Massepunkt, X = Stecker, Z = Verbindung im Kabelstrang.", hinweis: "In WIS/XENTRY gibt es zu jedem Bauteil eine ‚Stecker- und Bauteilansicht‘ mit Belegungstabelle; Pinnummern dort mit dem Gehäuse am Fahrzeug abgleichen." },
+    { format: "C123 Pin 4 bzw. C123-4 (Ford)", bedeutung: "‚C‘ = Connector, Nummer eindeutig, dann Pin. Zusätzlich hat jede Leitung eine Stromkreisnummer (z. B. ‚CE123‘) und einen zweistelligen Farbcode (BK/WH). Massepunkte heißen ‚G102‘, Verbindungen im Kabelstrang ‚S123‘ (Splice).", hinweis: "Ford-Pläne sind funktionsbezogen und in Zellen (Cells) gegliedert; der Connector-Index zeigt den Stecker mit Einbauort und Pinansicht – dort steht, ob die Ansicht Kabelseite oder Steckseite zeigt." },
+    { format: "Massepunkt 12 / G102 / W10 / X10123", bedeutung: "Nummerierter Massepunkt, je nach Hersteller: ‚Massepunkt 12‘ mit Ortsangabe (VAG), ‚G102‘ (Ford, G = Ground), ‚W10‘ (Mercedes), ‚X10xxx‘ (BMW). Mehrere Leitungen enden hier an einer Schraube/Bolzen an der Karosserie.", hinweis: "Massepunkte sind Sammelstellen: Ein korrodierter Massepunkt legt alle daran hängenden Verbraucher gleichzeitig lahm oder erzeugt ‚Geisterfehler‘ (Rückströme über andere Verbraucher)." },
+    { format: "B123 / Plusverbindung / Leitungsverbindung (VAG)", bedeutung: "‚B‘ = Plusverbindung (z. B. ‚B123 – Plusverbindung 1 (15) im Leitungsstrang Innenraum‘), ‚Leitungsverbindung 1 (31)‘ für Masse-Knoten. Keine Steckverbindung, sondern verlötete oder gecrimpte Verbindung unter dem Klebeband, im Plan als dicker Punkt oder Kreis mit Bezeichnung.", hinweis: "Nicht mit ‚T‘ (Stecker) verwechseln – eine Leitungsverbindung kannst du nicht abziehen und messen, nur die davon abgehenden Leitungen an ihren Steckern." },
+    { format: "S123 (Ford) / Z1/1 (Mercedes) – Splice", bedeutung: "Verbindungspunkt mehrerer Leitungen im Kabelstrang. Ford: ‚S‘ + Nummer, mit Ortsangabe im Splice-Index. Mercedes: ‚Z‘ = Trennstelle/Verbindung. Im Plan als Punkt, an dem sich mehrere Leitungen treffen.", hinweis: "Wenn im Plan mehrere Stecker gemeinsam ‚tot‘ sind, ist der gemeinsame Splice die erste Verdächtigung – häufig hinter Kabelstrang-Knickstellen (Türübergang, Heckklappe)." },
+    { format: "A20-5 / E12 / M02 (Toyota, Nissan, Hyundai/Kia – Beispiele)", bedeutung: "Buchstabe + Nummer bezeichnet den Stecker (Buchstabe steht oft für den Kabelstrangbereich: A = Motorraum, E = Engine Room bei Nissan …), dahinter die Pinnummer. Farbcodes einbuchstabig: B = schwarz, L = blau, W = weiß, R = rot, G = grün, Y = gelb, BR = braun, GR = grau, P = rosa, V = violett, O = orange, SB = himmelblau, LG = hellgrün.", hinweis: "Größte Falle: ‚B‘ ist Schwarz (Black), nicht Blau – Blau ist ‚L‘. Die Pinansichten im EWD zeigen fast immer die Kabelseite; im Plan-Vorspann steht, welche Seite dargestellt ist." },
+    { format: "1320 / BSI 1201 / V-Nummer (PSA / Stellantis)", bedeutung: "Bauteile haben vierstellige Nummern (z. B. 1320 = Motorsteuergerät, 1201 = BSI/Bordnetzsteuergerät, 1220 = Kühlmitteltemperaturgeber, je nach Modell). Stecker werden über Farbe und Polzahl beschrieben (z. B. ‚16V GR‘ = 16-polig grau), Pins als ‚Voie‘ (V) nummeriert.", hinweis: "Bei Opel (GM-Erbe) dagegen Stecker als ‚X‘ und Massepunkte als ‚G‘; bei Fiat/eLearn eigene Nummernlogik. Innerhalb von Stellantis also erst prüfen, aus welcher ‚Welt‘ der Plan stammt." }
+  ],
+
+  hersteller: [
+    { name: "VAG (VW, Audi, Seat, Škoda, Cupra) – ELSA / erWin", eigenheiten: [
+      "Klassische aufgelöste Darstellung: Kl. 30 (rot), Kl. 15 (schwarz) und Kl. X oben als Schienen, Kl. 31 unten (braun), Strompfadnummern am unteren Rand.",
+      "Kennbuchstaben: J = Steuergerät, G = Geber/Sensor, N = Ventil/Magnet, V = Motor, F = Schalter, E = Bedienelement, M/L = Leuchten, S = Sicherung, K = Kontrollleuchte, T = Steckverbindung, B = Plusverbindung, Massepunkte als Kreis mit Nummer.",
+      "Leitung: Querschnitt und Farbe in Kurzform, z. B. ‚0,5 sw/ws‘ (Grundfarbe/Streifen), Farbkürzel deutsch (sw, ws, rt, bl, ge, gn, gr, br, vi, li, or, rs).",
+      "Pinbelegung steht direkt am Steuergerätekasten (T94/3 usw.), Steckeransichten und Einbauorte in ELSA unter ‚Einbauorte‘ bzw. ‚Stromlaufplan – Steckverbindungen‘.",
+      "Pläne sind nach Ausstattung getrennt (z. B. ‚Motor 1,4 l TSI, ab MJ 2019‘); Querverweise auf andere Pläne stehen als Text im Strompfad.",
+      "Massepunkte und Leitungsverbindungen haben eigene Ortslisten (‚Massepunkt 12 – im Wasserkasten links‘)."
+    ] },
+    { name: "BMW / Mini – WDS / ISTA", eigenheiten: [
+      "Funktionsorientierte Pläne (ein System pro Plan), eher blockförmige Darstellung als Strompfade; Bauteile als Kästen mit Bezeichnung (z. B. A6 = Steuergerät, B = Sensor, K = Relais, S = Schalter, je nach Baureihe).",
+      "Stecker heißen ‚X‘ + Nummer, Pinnummer dahinter; Massepunkte und Leitungsverbindungen ebenfalls X-Nummern (z. B. X10xxx).",
+      "Leitungsfarben deutsch in Großbuchstaben mit Querschnitt (z. B. ‚SW/BR 0,5‘ oder ‚0.5 SW/BR‘, Grundfarbe zuerst), Bus-Leitungen verdrillt gezeichnet.",
+      "Pinbelegung und Steckeransicht: in ISTA auf Bauteil oder Stecker klicken – ‚Steckverbindungsansicht‘ mit Polzahl, Farbe, Einbauort und Pin-Nummerierung.",
+      "Spannungsversorgung ist oft in einem separaten ‚Stromversorgung‘-Plan (Kl. 30, 30g, 30B, 15, 15N, 15WUP) – Klemmenbezeichnungen weichen von DIN ab (z. B. 15WUP = Wake-up).",
+      "ISTA bietet Messwertsollwerte und Prüfabläufe direkt aus dem Plan heraus (‚Prüfplan‘)."
+    ] },
+    { name: "Mercedes-Benz – WIS / XENTRY (EPC/WIS-Schaltpläne)", eigenheiten: [
+      "Pläne nach Funktionsgruppen (z. B. ‚Motorsteuerung‘, ‚Beleuchtung‘), Bauteile mit Kennbuchstabe + Nummer: N = Steuergerät, B = Sensor, Y = Ventil, M = Motor, K = Relais, S = Schalter, E = Leuchte, F = Sicherung, G = Generator/Batterie, A = Baugruppe.",
+      "Stecker als ‚Bauteil + x + Nummer‘ (z. B. N3/10x1), Massepunkte ‚W‘ + Nummer, Verbindungen im Kabelstrang ‚Z‘ + Nummer, Trennstellen ‚X‘ + Nummer.",
+      "Leitungen mit Querschnitt und deutschem Farbcode (z. B. ‚0.5 br/bl‘), teils zusätzlich Leitungskennzahl.",
+      "Sicherungs- und Relaisbelegung sind in eigenen Übersichten (SAM/Sicherungs- und Relaismodul vorn/hinten) mit Sicherungsnummern wie ‚f23‘ dokumentiert.",
+      "Pinbelegung: WIS ‚Steckerbelegung‘ bzw. ‚Bauteilansicht‘ mit Tabelle je Pin; XENTRY verlinkt Messsollwerte in der geführten Fehlersuche.",
+      "Viele Verbraucher werden über SAM/Bordnetz-Steuergeräte massegeschaltet oder mit PWM angesteuert – Plan zeigt dann Endstufe im N-Kasten."
+    ] },
+    { name: "Ford – Werkstattinformationssystem (PTS / Etis-Nachfolger)", eigenheiten: [
+      "Englischsprachige Struktur auch in deutschen Ausgaben: Connector ‚C‘ + Nummer, Ground ‚G‘ + Nummer, Splice ‚S‘ + Nummer, Fuse ‚F‘ + Nummer mit Angabe des Sicherungskastens (z. B. BCM, BJB).",
+      "Jede Leitung trägt eine Stromkreisnummer (z. B. ‚CE123‘, ‚GD130‘) plus Farbcode aus zwei Buchstaben (BK, WH, GN-YE); Querschnitt in mm² oder AWG.",
+      "Pläne in ‚Cells‘ (Zellen) je Funktion, mit Power-Distribution- und Ground-Distribution-Übersichten getrennt vom Funktionsplan.",
+      "Connector-Index zeigt Steckeransicht, Pinbelegung und Einbauort; angegeben ist, ob Kabelseite (harness side) oder Steckseite dargestellt ist.",
+      "Viele Module (BCM, PCM) schalten nach Masse (Low-Side) oder liefern PWM/LIN – im Plan als Modulkasten mit Pinnummern.",
+      "Bei EU-Modellen mit US-Basis gelegentlich AWG-Angaben und andere Klemmenbegriffe (‚Run/Start‘ statt Kl. 15, ‚Battery‘ statt Kl. 30)."
+    ] },
+    { name: "Stellantis (PSA: Peugeot/Citroën/DS, Opel, Fiat/Alfa/Jeep) – Service Box / Opel TIS-Nachfolger / eLearn", eigenheiten: [
+      "PSA-Welt: Bauteile mit vierstelligen Nummern (z. B. 1320 Motorsteuergerät, 1201 BSI), Stecker nach Farbe und Polzahl (z. B. ‚16V NR‘ = 16-polig schwarz), Pins als ‚Voie‘; Farbcodes teils französisch (NR = noir, BA = blanc, RG = rouge, BE = bleu, JN = jaune, VE = vert, GR = gris, MR = marron, VI = violet).",
+      "Opel-Welt (GM-Erbe): Stecker ‚X‘ + Nummer, Massepunkte ‚G‘ + Nummer, Leitungsfarben mit Zahlencodes oder deutschen Kürzeln, Pläne stark funktionsorientiert.",
+      "Fiat-Welt (eLearn): Bauteile mit Buchstaben-/Zahlencodes, Stecker mit Buchstabe + Zahl, Pläne mit Positionsplänen (Einbauort) direkt verknüpft.",
+      "Wichtig bei allen: Die BSI/BCM (Bordnetzsteuergerät) übernimmt Kl.-15-Verteilung, viele Verbraucher sind massegeschaltet oder PWM-gesteuert; ‚Zündungsplus‘ heißt oft ‚+APC‘ (PSA) oder ‚+ACC‘.",
+      "Pinbelegung: im jeweiligen Portal über den Bauteilcode – bei PSA ‚Anschlussschema‘ (Schéma de câblage) und ‚Steckerbelegung‘ getrennt aufrufen.",
+      "Seit Konzernzusammenlegung mischen sich Systeme (z. B. Opel auf PSA-Plattform mit PSA-Nummernlogik) – immer die Plattform des Fahrzeugs beachten."
+    ] },
+    { name: "Asiatische Hersteller (Toyota/Lexus, Hyundai/Kia, Nissan, Honda, Mazda) – EWD / GSW / ESM", eigenheiten: [
+      "Meist blockorientierte, funktionsbezogene Darstellung ähnlich US-Plänen, mit ‚Power Source‘-Übersicht (Sicherungen, Relais, Zündschlossstellungen ACC/IG1/IG2/ST) am Anfang.",
+      "Farbcodes einbuchstabig/zweibuchstabig: B = schwarz, L = blau, W = weiß, R = rot, G = grün, Y = gelb, BR = braun, GR = grau, P = rosa, V = violett, O = orange, SB = himmelblau, LG = hellgrün – ‚B‘ ist Schwarz, ‚L‘ ist Blau!",
+      "Stecker als Buchstabe + Zahl (z. B. Toyota ‚A20‘, Nissan ‚E12‘/‚M02‘ nach Kabelstrangbereich), Pinnummer in Klammern oder mit Bindestrich; Junction Connectors (J/C) als gemeinsame Verteiler.",
+      "Massepunkte mit zweibuchstabigen Codes (z. B. Toyota ‚EA‘, ‚IF‘) und Ortsliste; Steckeransichten zeigen meist die Kabelseite (‚wire harness side‘) – im Vorspann steht es.",
+      "Hyundai/Kia (GSW/GDS): Stecker ‚M02‘, ‚E11‘ usw., Farben wie oben, Pläne mit ‚Schematic Diagram‘ und getrennter ‚Connector Configuration‘ für Pinbelegung.",
+      "Klemmen werden nicht nach DIN bezeichnet, sondern ‚B+‘ (Dauerplus), ‚IG‘/‚IGN‘ (Zündung), ‚ACC‘ (Zubehör), ‚ST‘ (Start), ‚GND‘ (Masse)."
+    ] },
+    { name: "Werkstattdatenbanken (Autodata, Haynes Pro, Bosch ESI[tronic], Hella Gutmann, TecDoc)", eigenheiten: [
+      "Herstellerübergreifend vereinheitlichte, oft vereinfachte Pläne: gleiche Symbole und Farbkürzel für alle Marken – gut zum schnellen Einstieg, aber Steckerbezeichnungen und Pinnummern nicht immer identisch mit dem Originalplan.",
+      "Autodata: systembezogene Pläne (Motormanagement, ABS, Klima …) mit Pinbelegungstabelle und Sollwerten (Spannung, Widerstand) – ideal zum Ableiten von Messungen; Fahrzeugzuordnung über Motorcode prüfen.",
+      "Haynes Pro: Pläne verlinkt mit Einbauorten, Sicherungsbelegung und ‚Smart‘-Fehlersuchbäumen; teils interaktive Hervorhebung von Strompfaden.",
+      "Bosch ESI[tronic] und Hella Gutmann: Schaltpläne integriert in den Diagnosetester, mit Messsollwerten und Bauteilbildern; Umfang je nach Lizenz.",
+      "TecDoc ist ein Ersatzteilkatalog, kein Schaltplan-System – hilft aber bei Bauteilidentifikation (Relais-, Sensor-, Steckertypen) und Ersatzteilnummern.",
+      "Regel: Bei Abweichungen (Farbe, Pin, Sicherungsplatz) hat der herstellerspezifische Plan zur Fahrgestellnummer Vorrang; Datenbankpläne sind oft ‚typisch‘, nicht fahrzeuggenau."
+    ] }
+  ],
+
+  messplan: [
+    {
+      typ: "Verbraucher plusgeschaltet (Lampe, Motor über Relais/Schalter)",
+      pins: "Im Plan finden: Plusquelle (Kl. 30 oder 15), Sicherung (Nummer, Wert), Schalter bzw. Relaiskontakt 30/87, Verbraucher-Plus-Pin, Verbraucher-Masse-Pin und den zugehörigen Massepunkt. Der Verbraucher hängt fest an Masse, geschaltet wird die Plusleitung.",
+      schritte: [
+        { was: "Versorgungsspannung am Verbraucher", wo: "Rot an Plus-Pin des Verbrauchers (Rückseitenmessung), Schwarz an Batterie-Minus", zustand: "Verbraucher eingeschaltet (Zündung an, Schalter ein)", soll: "Batteriespannung, mindestens ca. 11,5 V (Motor aus)", sonst: "0 V: Sicherung, Schalter/Relais oder Plusleitung. Deutlich unter Batteriespannung: Übergangswiderstand – Spannungsabfall-Messung weiter oben im Pfad." },
+        { was: "Sicherung prüfen", wo: "Rot nacheinander an beide Sicherungskontakte (von oben), Schwarz an Masse", zustand: "Verbraucher eingeschaltet", soll: "Beide Seiten Batteriespannung", sonst: "Eine Seite 0 V: Sicherung durch – vor dem Tausch Ursache (Kurzschluss) suchen. Beide 0 V: Zuleitung zum Sicherungskasten." },
+        { was: "Relaiskontakt / Schalter unter Last", wo: "Rot an Eingang (Pin 30 bzw. Schalter-Eingang), Schwarz an Ausgang (Pin 87 bzw. Schalter-Ausgang)", zustand: "Verbraucher eingeschaltet", soll: "Spannungsabfall unter 0,2 V", sonst: "Über 0,5 V: Kontakt abgebrannt/oxidiert. Volle Batteriespannung: Kontakt schließt nicht – Ansteuerung (85/86) prüfen." },
+        { was: "Massepfad des Verbrauchers", wo: "Rot an Masse-Pin des Verbrauchers, Schwarz an Batterie-Minus", zustand: "Verbraucher eingeschaltet (muss Strom ziehen wollen)", soll: "Unter 0,1–0,2 V", sonst: "Mehrere Volt bis Batteriespannung: Masseleitung, Massepunkt korrodiert oder lose. Spannung liegt am Plus-Pin an, Verbraucher tut nichts, Masse ok: Verbraucher selbst defekt." },
+        { was: "Verbraucher spannungsfrei prüfen", wo: "Ohmmeter an beide Verbraucher-Pins, Stecker abgezogen", zustand: "Zündung aus, Verbraucher abgesteckt", soll: "Lampe: wenige Ohm; Motor: unter 5 Ω; Heizung: 1–15 Ω (je nach Bauteil)", sonst: "OL/unendlich: Unterbrechung im Verbraucher. Nahe 0 Ω bei Lampe/Heizung: Kurzschluss – erklärt eine durchgebrannte Sicherung." }
+      ]
+    },
+    {
+      typ: "Verbraucher massegeschaltet (Steuergerät schaltet Masse)",
+      pins: "Im Plan finden: Plus-Pin des Verbrauchers (meist Kl. 15 oder Kl. 87 über Sicherung, oft dauerhaft anliegend), Steuerleitung vom Verbraucher zum Steuergeräte-Pin (Endstufe/Transistorsymbol nach Masse im Steuergerätekasten), Steuergeräte-Masse und -Versorgung. Typisch: Einspritzventile, Magnetventile, Relaisspulen, Lüfter über Steuergerät.",
+      schritte: [
+        { was: "Plusversorgung am Verbraucher", wo: "Rot an Plus-Pin des Verbrauchers, Schwarz an Batterie-Minus", zustand: "Zündung an (oder Motor läuft, wenn Kl. 87 erst nach Start kommt)", soll: "Batteriespannung", sonst: "0 V: Sicherung, Hauptrelais oder Plusleitung – nicht das Steuergerät." },
+        { was: "Ruhezustand der Steuerleitung", wo: "Rot an Steuer-Pin des Verbrauchers (Leitung zum Steuergerät), Schwarz an Batterie-Minus", zustand: "Zündung an, Verbraucher nicht angefordert", soll: "Ca. Batteriespannung (kommt durch den Verbraucher, weil die Endstufe offen ist) – das ist normal!", sonst: "0 V bei nicht angefordertem Verbraucher: Endstufe klemmt auf Masse oder Leitung hat Masseschluss (Verbraucher läuft dann dauernd). 0 V UND Verbraucher läuft nicht: Verbraucher selbst unterbrochen (dann fehlt der Weg vom Plus)." },
+        { was: "Ansteuerung aktiv", wo: "Gleiche Messstelle wie Schritt 2", zustand: "Verbraucher angefordert (per Tester Stellgliedtest oder Funktion auslösen)", soll: "Unter 0,5–1 V (bei Dauerbestromung), bei PWM ein Mittelwert zwischen 0 und 12 V", sonst: "Bleibt Batteriespannung: Steuergerät schaltet nicht (Freigabe fehlt, Endstufe defekt) oder Leitung Verbraucher ↔ Steuergerät unterbrochen. Zur Unterscheidung: gleiche Messung direkt am Steuergeräte-Pin." },
+        { was: "Spannungsabfall über die Endstufe", wo: "Rot an Steuergeräte-Pin, Schwarz an Steuergeräte-Masse-Pin", zustand: "Verbraucher angesteuert", soll: "Unter ca. 1 V", sonst: "Mehrere Volt: Endstufe hochohmig oder Steuergeräte-Masse schlecht – dann zuerst Steuergeräte-Massepins gegen Batterie-Minus messen (Soll unter 0,1 V)." },
+        { was: "Verbraucher spannungsfrei prüfen", wo: "Ohmmeter an beide Verbraucher-Pins, Stecker abgezogen", zustand: "Zündung aus, Stecker ab", soll: "Sollwert laut Plan (z. B. Einspritzventil 12–16 Ω, Magnetventil 10–40 Ω, Relaisspule 50–120 Ω)", sonst: "Nahe 0 Ω: Kurzschluss – kann die Endstufe zerstört haben (Steuergerät prüfen). OL: Unterbrechung. Nie Ohmmeter an die Steuerleitung bei angestecktem Steuergerät." }
+      ]
+    },
+    {
+      typ: "3-Draht-Sensor (5 V / Masse / Signal) – Hallgeber, Drucksensor, Potentiometer",
+      pins: "Im Plan finden: Versorgungs-Pin (im Steuergerätekasten am ‚5 V‘-Regler, seltener 12 V), Sensormasse-Pin (führt zum Steuergerät, nicht zur Karosserie!), Signal-Pin (zum Eingang des Steuergeräts). Pinnummern am Sensorstecker und am Steuergerätestecker notieren.",
+      schritte: [
+        { was: "Versorgungsspannung", wo: "Rot an Versorgungs-Pin des Sensors (Stecker angesteckt, Rückseitenmessung), Schwarz an Sensormasse-Pin", zustand: "Zündung an", soll: "Ca. 5,0 V (4,8–5,2 V); bei 12-V-versorgten Sensoren Batteriespannung", sonst: "0 V: Leitung zum Steuergerät unterbrochen oder 5-V-Regler überlastet (dann sind oft mehrere Sensoren betroffen – Kurzschluss in einem anderen Sensor). Deutlich unter 5 V: Kurzschluss/Überlast auf der 5-V-Schiene." },
+        { was: "Sensormasse", wo: "Rot an Sensormasse-Pin, Schwarz an Batterie-Minus", zustand: "Zündung an", soll: "Unter 0,1–0,2 V", sonst: "Mehrere Volt: Sensormasse-Leitung zum Steuergerät unterbrochen oder Steuergeräte-Masse schlecht. Sensormasse nie einfach mit Karosserie brücken – sie ist im Steuergerät oft getrennt geführt." },
+        { was: "Signalspannung statisch", wo: "Rot an Signal-Pin, Schwarz an Sensormasse-Pin", zustand: "Zündung an, Sensor in Ruhestellung", soll: "Poti: ca. 0,5–1,0 V (Ruhe) bis ca. 4,0–4,5 V (Vollausschlag); Drucksensor: Wert laut Kennlinie (z. B. MAP ca. 1,0 V Saugrohr / ca. 4 V Atmosphäre je Typ); Hallgeber: 0 V oder 5 V je nach Zahnstellung", sonst: "Dauerhaft 5 V: Signalleitung unterbrochen (Pull-up im Steuergerät) oder Sensor defekt. Dauerhaft 0 V: Signal nach Masse kurzgeschlossen oder Sensor ohne Versorgung." },
+        { was: "Signal dynamisch", wo: "Gleiche Messstelle, Multimeter auf DC bzw. Hz/Tastgrad", zustand: "Sensor langsam betätigen bzw. Motor durchdrehen", soll: "Poti: stetiger Anstieg ohne Sprünge; Hall: Wechsel 0/5 V bzw. messbare Frequenz beim Starten; Drucksensor: plausible Änderung mit Druck", sonst: "Sprünge/Aussetzer beim Poti: Schleifbahn verschlissen. Keine Frequenz beim Hallgeber: Sensor, Geberrad oder Luftspalt. Multimeter zu träge für Details – Oszilloskop nutzen." },
+        { was: "Leitung Sensor ↔ Steuergerät", wo: "Ohmmeter zwischen Sensorstecker-Pin (Kabelseite) und Steuergerätestecker-Pin, beide Stecker abgezogen", zustand: "Zündung aus, Sensor und Steuergerät abgesteckt", soll: "Unter 1 Ω je Leitung, kein Durchgang zwischen den drei Leitungen untereinander und gegen Masse", sonst: "Hochohmig: Leitungsbruch. Durchgang zur Nachbarleitung/Masse: Kabelstrang beschädigt (Scheuerstelle, Marderbiss)." }
+      ]
+    },
+    {
+      typ: "2-Draht-Sensor passiv (NTC-Temperaturfühler, Induktivgeber)",
+      pins: "Im Plan finden: Beide Leitungen führen zum Steuergerät – eine ist Sensormasse (im Steuergerät auf Masse), die andere Signal mit Pull-up-Widerstand (NTC) bzw. Eingang des Auswerteverstärkers (Induktivgeber). Kein 5-V-Versorgungspin. Induktivgeber oft mit Schirm gezeichnet.",
+      schritte: [
+        { was: "Widerstand des Sensors", wo: "Ohmmeter an beide Sensor-Pins, Stecker abgezogen", zustand: "Zündung aus, Sensor abgesteckt", soll: "NTC: ca. 2–3 kΩ bei 20 °C, ca. 200–400 Ω bei 80–90 °C (Kennlinie laut Hersteller). Induktivgeber: ca. 200–1500 Ω (Wert laut Plan/Datenbank)", sonst: "OL: Unterbrechung im Sensor. Nahe 0 Ω: Kurzschluss. NTC: Wert passt nicht zur Temperatur – Kennlinie verschoben, Sensor tauschen." },
+        { was: "Signalspannung am NTC (Steuergerät angesteckt)", wo: "Rot an Signal-Pin des Sensors (Stecker angesteckt), Schwarz an Sensormasse-Pin", zustand: "Zündung an", soll: "Kalt ca. 3–4 V, betriebswarm unter ca. 1 V (Spannungsteiler aus Pull-up und NTC)", sonst: "Dauerhaft ca. 5 V: Sensor oder Leitung unterbrochen (Steuergerät nimmt Ersatzwert). Dauerhaft 0 V: Kurzschluss nach Masse oder Sensormasse-Leitung falsch verdrahtet." },
+        { was: "Leerlaufspannung bei abgezogenem Stecker", wo: "Rot an Signal-Pin am Kabelstecker (Kabelseite), Schwarz an Sensormasse-Pin", zustand: "Zündung an, Sensor abgesteckt", soll: "Ca. 5 V (Pull-up-Spannung des Steuergeräts)", sonst: "0 V: Leitung zum Steuergerät unterbrochen oder Steuergerät ohne Versorgung/Masse. Damit trennst du ‚Sensor defekt‘ von ‚Leitung/Steuergerät defekt‘." },
+        { was: "Wechselspannung des Induktivgebers", wo: "Multimeter auf AC-Volt, Rot und Schwarz an beide Geber-Pins (Stecker abgezogen oder Rückseitenmessung)", zustand: "Motor per Anlasser durchdrehen", soll: "Typisch 0,5–3 V AC beim Starten, steigt mit Drehzahl; Frequenzmessung liefert Impulse", sonst: "0 V: Geber, Geberrad (Zahn fehlt, Verschmutzung) oder Luftspalt zu groß. Sehr niedrig: Luftspalt oder Metallspäne am Geber." },
+        { was: "Isolation gegen Masse und Schirm", wo: "Ohmmeter zwischen jedem Sensor-Pin und Karosserie bzw. Schirm", zustand: "Zündung aus, Sensor und Steuergerät abgesteckt", soll: "OL/unendlich", sonst: "Durchgang: Masseschluss im Sensor oder in der Leitung – erzeugt unplausible Signale und Fehlerspeichereinträge." }
+      ]
+    },
+    {
+      typ: "2-Draht-Sensor aktiv (Raddrehzahlsensor, Stromsignal)",
+      pins: "Im Plan finden: Versorgungsleitung vom ABS-/ESP-Steuergerät zum Sensor (ca. 12 V, teils 5–8 V) und Rückleitung/Signal. Der Sensor moduliert seinen Stromverbrauch (typisch ca. 7 mA / 14 mA), das Steuergerät wertet den Strom aus. Im Plan oft mit Hall-Symbol und nur zwei Leitungen – Unterschied zum passiven Induktivgeber: Versorgung aus dem Steuergerät.",
+      schritte: [
+        { was: "Versorgungsspannung am Sensor", wo: "Rot an Versorgungs-Pin des Sensors (Stecker angesteckt, Rückseitenmessung), Schwarz an Batterie-Minus", zustand: "Zündung an", soll: "Ca. Batteriespannung bzw. Wert laut Plan (je nach System 5–12 V)", sonst: "0 V: Steuergerät liefert keine Versorgung (Leitung unterbrochen, Steuergerät hat Kanal abgeschaltet wegen Kurzschluss, Steuergeräte-Versorgung fehlt)." },
+        { was: "Strom des Sensors", wo: "Multimeter auf mA DC, in Reihe in die Versorgungsleitung (Stecker mit Messadapter/Prüfkabel aufgetrennt)", zustand: "Zündung an, Rad langsam drehen", soll: "Wechsel zwischen ca. 7 mA und 14 mA (Richtwert, je nach Sensor auch andere zwei Stromstufen)", sonst: "0 mA: Sensor ohne Versorgung oder unterbrochen. Konstanter Strom ohne Wechsel beim Drehen: Sensor defekt, Luftspalt, Encoderring beschädigt/verschmutzt." },
+        { was: "Signal indirekt über Spannung", wo: "Rot an Signal-/Rückleitungs-Pin, Schwarz an Batterie-Minus", zustand: "Zündung an, Rad langsam drehen", soll: "Kleine Spannungsänderung (einige hundert mV bis ca. 1–2 V) im Takt des Encoders; Multimeter zeigt flackernden Wert", sonst: "Keine Änderung: wie oben – Sensor, Encoderring oder Luftspalt. Multimeter ist hier nur Grobcheck; das Oszilloskop zeigt das Rechtecksignal sauber." },
+        { was: "Leitung zum Steuergerät", wo: "Ohmmeter zwischen Sensorstecker (Kabelseite) und Steuergerätestecker, jede Leitung einzeln", zustand: "Zündung aus, Sensor und Steuergerät abgesteckt", soll: "Unter 1 Ω, keine Verbindung zur Nachbarleitung oder Masse", sonst: "Hochohmig oder Masseschluss: Kabelbruch im Radhausbereich (Scheuerstelle, Federweg) – häufigster Fehlerort." },
+        { was: "Sicherheitsregel", wo: "–", zustand: "–", soll: "Keine Ohmmessung am aktiven Sensor: Er ist ein Halbleiter, das Ohmmeter zeigt beliebige Werte (oft OL) – das ist keine Aussage. Keine Prüflampe an den Leitungen des ABS-Steuergeräts.", sonst: "Wer den aktiven Sensor wegen ‚OL‘ im Ohmmeter tauscht, tauscht oft ein intaktes Teil." }
+      ]
+    },
+    {
+      typ: "Aktor mit PWM (Ventil, Lüfter, Pumpe)",
+      pins: "Im Plan finden: Plus-Pin des Aktors (Kl. 15/87 fest oder vom Steuergerät High-Side getaktet), Steuerleitung zum Steuergerät (Low-Side getaktet, Endstufensymbol) bzw. bei Lüftermodulen: Kl. 30 dick, Masse dick, dünne PWM-Steuerleitung (Soll-Signal) und ggf. Rückmeldeleitung.",
+      schritte: [
+        { was: "Versorgung des Aktors", wo: "Rot an Plus-Pin, Schwarz an Batterie-Minus", zustand: "Zündung an (Lüfter: Kl. 30 dauerhaft)", soll: "Batteriespannung", sonst: "0 V: Sicherung, Relais, Zuleitung. Große Lüfter: Spannungsabfall auf der dicken Leitung unter Last unter 0,5 V." },
+        { was: "Mittelwert der PWM-Leitung", wo: "Rot an Steuer-Pin, Schwarz an Batterie-Minus bzw. Aktor-Masse", zustand: "Aktor angesteuert (Stellgliedtest oder Betrieb)", soll: "Mittelwert zwischen 0 V und Batteriespannung, ändert sich mit der Anforderung (z. B. Lüfterstufe). Bei Low-Side-Taktung: 100 % Anforderung = nahe 0 V, 0 % = Batteriespannung", sonst: "Immer Batteriespannung: Steuergerät steuert nicht an oder Leitung unterbrochen. Immer 0 V: Masseschluss oder Endstufe durchlegiert." },
+        { was: "Tastgrad und Frequenz", wo: "Multimeter auf ‚%‘ (Duty) bzw. ‚Hz‘, Rot an Steuer-Pin, Schwarz an Masse", zustand: "Aktor angesteuert, Anforderung ändern", soll: "Tastgrad folgt der Anforderung (z. B. 10–90 %); Frequenz stabil (typisch 100 Hz bis einige kHz je nach Aktor, Lüftersteuerleitung oft ca. 100–200 Hz)", sonst: "Tastgrad ändert sich nicht bei Änderung der Anforderung: Steuergerät bekommt keine Änderung (Sensorwert, Bus) oder Endstufe defekt. Achte auf die Polarität der Tastgradmessung (positiv/negativ) am Multimeter." },
+        { was: "Aktor spannungsfrei prüfen", wo: "Ohmmeter an die Aktor-Pins, Stecker abgezogen", zustand: "Zündung aus, Aktor abgesteckt", soll: "Ventil/Spule: Sollwert laut Plan (typisch 10–40 Ω). Lüfter mit Elektronikmodul: keine sinnvolle Ohmmessung möglich", sonst: "Kurzschluss/OL bei Spulen: Aktor tauschen. Bei Elektronikmodulen nur Spannungs-/Tastgradmessung und Funktionstest." },
+        { was: "Strom im Betrieb", wo: "Zangenamperemeter um die Plus- oder Masseleitung des Aktors", zustand: "Aktor angesteuert", soll: "Plausibler Strom (Ventil 0,3–1,5 A; Lüfter 10–40 A je nach Größe), steigt mit Tastgrad", sonst: "Kein Strom trotz PWM-Signal: Aktor oder Zuleitung. Überhöhter Strom: Aktor schwergängig/blockiert – Endstufe oder Sicherung gefährdet." }
+      ]
+    },
+    {
+      typ: "Relais im Kreis (Spule vom Steuergerät, Kontakt schaltet Verbraucher)",
+      pins: "Im Plan finden: Relaisbezeichnung (J…, K…), Sockelplatz, Pin 30 (Versorgung + Sicherung), Pin 86 (Spulenplus, Kl. 15/30 + Sicherung), Pin 85 (Spulenmasse: fest oder Steuergeräte-Pin), Pin 87/87a (Ausgang zu welchem Verbraucher). Spule und Kontakt können in verschiedenen Strompfaden gezeichnet sein.",
+      schritte: [
+        { was: "Versorgung Last und Spule", wo: "Rot an Sockel-Pin 30 und dann Pin 86, Schwarz an Batterie-Minus (Relais gezogen)", zustand: "Zündung an", soll: "Beide Batteriespannung (86 ggf. erst mit Zündung an)", sonst: "Fehlt eine: entsprechende Sicherung/Zuleitung. Nicht das Relais tauschen." },
+        { was: "Ansteuerung an Pin 85", wo: "Rot an Sockel-Pin 86, Schwarz an Sockel-Pin 85 (Spannung über die Spulenanschlüsse)", zustand: "Funktion anfordern (z. B. Zündung an für Hauptrelais, Klimataste für Kompressor)", soll: "Ca. Batteriespannung bei Anforderung, 0 V ohne Anforderung", sonst: "0 V trotz Anforderung: Steuergerät gibt keine Masse (Freigabe fehlt – Tester lesen; Leitung 85 unterbrochen; Endstufe defekt). Achtung: Manche Steuergeräte erkennen ein gezogenes Relais und steuern nicht an – dann Messung mit gestecktem Relais per Rückseitenmessung." },
+        { was: "Relais selbst", wo: "Ohmmeter an 85/86 des ausgebauten Relais; Diodentest zur Erkennung einer Freilaufdiode", zustand: "Relais ausgebaut", soll: "Spule ca. 50–120 Ω; Diodentest 86→85 OL und 85→86 ca. 0,5–0,7 V (mit Diode) bzw. beide Richtungen gleicher Widerstand (ohne Diode)", sonst: "OL: Spule unterbrochen. Diode leitet in beide Richtungen: Diode durch – Relais tauschen, typgleich (mit Diode!)." },
+        { was: "Kontakt unter Last", wo: "Rot an Pin 30, Schwarz an Pin 87 (Rückseitenmessung oder Messadapter im Sockel)", zustand: "Relais angesteuert, Verbraucher läuft (oder soll laufen)", soll: "Spannungsabfall unter 0,2 V", sonst: "Batteriespannung: Kontakt schließt nicht obwohl Spule bestromt (Relais klickt?) – Relais tauschen. 0,3–2 V: Kontakt verbrannt." },
+        { was: "Ausgang zum Verbraucher", wo: "Rot an Pin 87, Schwarz an Batterie-Minus, dann dieselbe Messung am Verbraucher-Plus-Pin", zustand: "Relais angesteuert", soll: "Beide Batteriespannung, Differenz unter 0,3 V", sonst: "Am Relais ja, am Verbraucher nein: Leitung/Sicherung/Stecker dazwischen. Beides ja, Verbraucher tot: Verbraucher-Masse oder Verbraucher." }
+      ]
+    },
+    {
+      typ: "Bus-Steuergerät (Kl. 30 / Kl. 15 / Masse / CAN)",
+      pins: "Im Plan finden: alle Versorgungspins (Kl. 30 – oft mehrere, Kl. 15 oder Wake-up-Leitung), alle Massepins (Leistungsmasse und Signalmasse getrennt), CAN-High und CAN-Low (verdrillt gezeichnet, ggf. mehrere Busse: Antrieb, Komfort, Diagnose) und ob im Steuergerät ein Abschlusswiderstand (120 Ω) gezeichnet ist. Sicherungsnummern notieren.",
+      schritte: [
+        { was: "Kl. 30 an allen Versorgungspins", wo: "Rot an jeden Kl.-30-Pin (Rückseitenmessung am Steuergerätestecker), Schwarz an Batterie-Minus", zustand: "Zündung aus und an", soll: "Batteriespannung an jedem Pin, in beiden Zuständen", sonst: "Ein Pin 0 V: zugehörige Sicherung/Leitung – ein Steuergerät kann mit einem fehlenden Kl.-30-Pin teilweise arbeiten und trotzdem Busfehler produzieren." },
+        { was: "Kl. 15 / Wake-up", wo: "Rot an Kl.-15-Pin, Schwarz an Batterie-Minus", zustand: "Zündung aus → 0 V, Zündung an → Batteriespannung", soll: "Sauberer Wechsel mit der Zündung", sonst: "Bleibt 0 V: Kl.-15-Relais/Bordnetzsteuergerät/Sicherung. Steuergerät ‚schläft nicht ein‘ (Ruhestrom): bleibt Kl. 15 oder Wake-up nach Zündung aus hoch?" },
+        { was: "Massepins", wo: "Rot an jeden Masse-Pin des Steuergeräts, Schwarz an Batterie-Minus", zustand: "Zündung an, möglichst mit Verbrauchern des Steuergeräts aktiv", soll: "Unter 0,1 V an jedem Massepin", sonst: "Über 0,3 V: Massepunkt/Masseleitung – Ursache vieler sporadischer Busfehler und ‚Steuergerät nicht erreichbar‘-Einträge. Massepins nicht per Ohmmeter am angesteckten Steuergerät prüfen." },
+        { was: "CAN-Pegel", wo: "Rot an CAN-High, Schwarz an Batterie-Minus; dann Rot an CAN-Low, Schwarz an Batterie-Minus", zustand: "Zündung an, Bus aktiv", soll: "CAN-High ca. 2,5–3,5 V (Mittelwert), CAN-Low ca. 1,5–2,5 V; Summe beider ca. 5 V (Highspeed-CAN). Andere Busse (LIN ca. 12 V Ruhepegel, Komfort-CAN Lowspeed andere Pegel) laut Plan", sonst: "Beide 2,5 V starr: Bus im Ruhezustand oder keine Kommunikation. Eine Leitung 0 V oder 12 V: Kurzschluss nach Masse/Plus. Beide gleich hoch/gleich niedrig: Leitungen untereinander kurzgeschlossen. Prüflampe hier verboten." },
+        { was: "Abschlusswiderstand", wo: "Ohmmeter zwischen CAN-High und CAN-Low an der Diagnosebuchse (Pin 6/14) oder am Steuergerätestecker", zustand: "Zündung aus, Batterie abgeklemmt bzw. Bus vollständig eingeschlafen", soll: "Ca. 60 Ω (zwei 120-Ω-Abschlüsse parallel)", sonst: "Ca. 120 Ω: ein Abschluss fehlt (Steuergerät mit Abschluss abgesteckt/defekt oder Leitung dorthin unterbrochen). OL: Bus unterbrochen oder beide Abschlüsse fehlen. Nahe 0 Ω: Kurzschluss High–Low." },
+        { was: "Ruhestrom nach Zündung aus", wo: "Zangenamperemeter (mA-fähig) an der Batterie-Minusleitung oder Sicherung des Steuergeräts per Spannungsabfallmethode", zustand: "Fahrzeug verriegelt, 15–60 min gewartet", soll: "Gesamtruhestrom typisch unter ca. 30–50 mA (je nach Fahrzeug)", sonst: "Zu hoch: ein Steuergerät hält den Bus wach – Sicherung für Sicherung Spannungsabfall messen, Busaktivität per Tester beobachten." }
+      ]
+    }
+  ],
+
+  fallen: [
+    { titel: "Massegeschalteter Verbraucher: 12 V auf beiden Seiten = normal aus", text: "Misst du am Einspritzventil oder Magnetventil an beiden Pins Batteriespannung, ist das kein Fehler: Plus liegt dauerhaft an, und die Steuerleitung liegt über die Spule ebenfalls auf Plus, solange die Endstufe im Steuergerät offen ist. Erst bei Ansteuerung geht der Steuer-Pin auf 0 V. Wer hier ‚Kurzschluss nach Plus‘ diagnostiziert, tauscht Steuergeräte, die nichts haben. Der Plan zeigt das am Transistorsymbol nach Masse im Steuergerätekasten." },
+    { titel: "Kl. 15 direkt vs. Kl. 15 über Relais/Steuergerät", text: "Steht im Plan ‚Kl. 15‘, heißt das heute selten ‚direkt vom Zündschloss‘. Meist erzeugt ein Bordnetzsteuergerät oder ein Kl.-15-Relais diese Klemme, oft in mehreren Gruppen (15, 15a, 15WUP, 15R …), die zeitversetzt oder beim Starten abgeschaltet werden. Misst du 0 V, prüfe erst: Ist das die richtige Kl.-15-Gruppe, welches Relais/Steuergerät erzeugt sie, und hängt ihre Freigabe an Busbotschaften (Schlüssel erkannt, Wegfahrsperre)?" },
+    { titel: "Gemeinsame Sensormasse", text: "Mehrere Sensoren (Kühlmittel, Ansaugluft, Drosselklappe, Nockenwelle) teilen sich im Plan häufig eine Sensormasse-Leitung, die im Steuergerät endet – nicht an der Karosserie. Ein Wackler in dieser Leitung erzeugt gleichzeitig mehrere ‚unplausible‘ Sensorwerte, obwohl kein Sensor defekt ist. Deshalb: Sensormasse immer als Spannungsabfall gegen Batterie-Minus messen und im Plan die Verbindung (Leitungsverbindung/Splice) der Sensormassen suchen." },
+    { titel: "Spannungsteiler und Codierpins", text: "Manche Pins im Plan führen weder Plus noch Masse, sondern z. B. 2,5 V oder 1,2 V – das ist gewollt: Spannungsteiler (z. B. Lenkradtasten, Gebläseschalter mit Widerstandsleiter, Codierpins zur Variantenerkennung des Steuergeräts). Solche Pins sind im Plan oft als Widerstandsnetzwerk oder mit ‚Codierung‘ beschriftet. Ein ‚halber‘ Wert ist hier kein Übergangswiderstand, sondern die Information selbst. Sollwerttabelle des Herstellers verwenden." },
+    { titel: "Interne Pull-ups: 5 V bei abgestecktem Sensor", text: "Ziehst du einen NTC oder Schalter ab und misst an der Kabelseite 5 V (oder 12 V), ist das der Pull-up-Widerstand im Steuergerät – kein Fehler. Umgekehrt: Misst du 5 V bei angestecktem Sensor, ist die Verbindung Sensor ↔ Steuergerät unterbrochen oder der Sensor hochohmig. Der Pull-up erklärt auch, warum ein Schalter ‚gegen Masse‘ im Plan ohne eigene Plusleitung funktioniert." },
+    { titel: "Sicherung im Steuergerät", text: "Sicherungssymbole innerhalb des Steuergerätekastens (oder ‚interne Sicherung‘, ‚elektronische Sicherung‘ im Plan) kannst du nicht tauschen und oft nicht messen. Elektronische Sicherungen schalten nach Überlast ab und kommen erst nach Zündung aus/Batterie ab zurück. Ein Ausgang mit 0 V kann also eine abgeschaltete elektronische Sicherung sein – Fehlerspeicher lesen (‚Kurzschluss nach Masse‘), Ursache beseitigen, dann Reset." },
+    { titel: "Steckerseite: Kabelseite vs. Bauteilseite, Pin-Nummerierung gespiegelt", text: "Die Steckeransicht im Plan zeigt entweder die Kabelseite (Blick auf die Leitungen) oder die Steckseite (Blick auf die Kontakte). Dreht man den Stecker um, ist die Nummerierung spiegelverkehrt: Pin 1 liegt dann rechts statt links. Verlässlich sind nur die im Kunststoff eingeprägten Nummern – und die Farbe der Leitung zum Gegencheck. Nie nach Gefühl abzählen, besonders bei 40- bis 100-poligen Steuergerätesteckern." },
+    { titel: "Alte vs. neue Plan-Version (Modelljahr, Ausstattung)", text: "Innerhalb einer Baureihe ändern sich Pinnummern, Steckerfarben, Sicherungsplätze und sogar Schaltkonzepte (plus- zu massegeschaltet, Relais durch Halbleiterendstufe ersetzt). Stimmt eine gemessene Leitungsfarbe nicht mit dem Plan überein, ist der Plan meist falsch gewählt – nicht das Fahrzeug umgebaut. Immer über Fahrgestellnummer und Modelljahr/Ausstattungscode den Plan ziehen; Werkstattdatenbanken können ‚typisch‘ statt fahrzeuggenau sein." },
+    { titel: "Verbindungen im Kabelstrang sind keine Messstellen", text: "Leitungsverbindungen, Plusverbindungen, Splices (B…, S…, Z…) sitzen unter der Kabelstrangumwicklung. Im Plan sehen sie wie Knotenpunkte aus, am Fahrzeug findest du sie nur mit der Ortsangabe und Aufschneiden der Umwicklung. Messen kannst du nur die von dort abgehenden Leitungen an ihren Steckern. Ein Fehler, der mehrere Verbraucher gleichzeitig betrifft, deutet aber genau auf so einen Knoten." },
+    { titel: "Schaltzustand im Plan = Ruhezustand", text: "Alles ist stromlos und unbetätigt gezeichnet: Relais abgefallen (30 auf 87a), Taster offen, Zündschloss aus, Wischer in Parkstellung. Wer den Plan als ‚Betriebszustand‘ liest, erwartet an 87a Spannung im Betrieb – dabei ist 87a im Betrieb tot. Bei Öffnern (z. B. Bremslichtschalter mit Öffner-Kontakt für die Motorsteuerung) ist es umgekehrt: ‚geschlossen‘ im Plan bedeutet Durchgang ohne Pedaldruck." },
+    { titel: "Prüflampe am falschen Pin", text: "Der Plan sagt dir, welche Pins ein Steuergerät, einen Sensor, einen Bus oder eine Airbag-Zündleitung führen – an all diesen ist eine Prüflampe (Glühlampe) verboten: Sie zieht 100–300 mA, überlastet 5-V-Regler, zerstört Endstufen und kann Zünder auslösen. Prüflampe nur an reinen Leistungskreisen (Kl. 30/15 hinter Sicherungen, Lampen, Motoren). Sonst: hochohmiges Multimeter (≥ 10 MΩ) oder LED-Prüfstift mit Vorwiderstand." },
+    { titel: "Ohmmessung im bestromten Kreis", text: "Widerstandsmessung funktioniert nur spannungsfrei und am freigelegten Bauteil: Bei angeschlossenem Steuergerät fließt der Prüfstrom des Ohmmeters über interne Pull-ups, Dioden und parallele Pfade – das Ergebnis ist Zufall, und das Steuergerät kann Schaden nehmen. Der Plan zeigt dir die Parallelpfade (andere Verbraucher an derselben Masse). Regel: Für Ohm immer Stecker ziehen, sonst Spannungsabfall messen." }
+  ],
+
+  quiz: [
+    { frage: "Wo liegt in einem aufgelösten Stromlaufplan (z. B. VAG) die Masse (Kl. 31)?", optionen: ["Oben als waagerechte Schiene", "Unten als waagerechte Schiene", "Am linken Rand als senkrechte Linie"], richtig: 1, erklaerung: "Plus-Schienen (Kl. 30, 15, X) verlaufen oben, die Masse-Schiene Kl. 31 unten. Die Strompfade verlaufen dazwischen senkrecht von Plus nach Masse." },
+    { frage: "An einem Einspritzventil misst du bei Zündung an, Motor aus, an beiden Pins ca. 12 V. Was bedeutet das?", optionen: ["Kurzschluss nach Plus, Steuergerät defekt", "Normalzustand: Ventil ist massegeschaltet und nicht angesteuert", "Ventilspule unterbrochen"], richtig: 1, erklaerung: "Plus liegt dauerhaft an, die Steuerleitung liegt über die intakte Spule ebenfalls auf Plus, solange die Endstufe im Steuergerät offen ist. Wäre die Spule unterbrochen, läge am Steuer-Pin keine Spannung an." },
+    { frage: "Was bedeutet die Angabe ‚T94/3‘ in einem VAG-Plan?", optionen: ["Leitung Nr. 94, 3 mm² Querschnitt", "94-polige Steckverbindung, Pin 3", "Massepunkt 94, Verbindung 3"], richtig: 1, erklaerung: "T = Steckverbindung, die Zahl vor dem Schrägstrich ist die Polzahl, die Zahl danach der Pin. Gleichpolige Stecker werden zusätzlich mit Buchstaben unterschieden (T2a, T2b)." },
+    { frage: "Welche Aussage zu Relais-Pin 87a ist richtig?", optionen: ["87a führt Spannung, wenn das Relais angezogen ist", "87a ist der zweite Spulenanschluss", "87a ist mit 30 verbunden, solange das Relais NICHT angezogen ist"], richtig: 2, erklaerung: "87a ist der Öffner-Ausgang eines Wechslerrelais: Ruhezustand 30–87a verbunden, bei Ansteuerung wechselt der Kontakt auf 87. 87b wäre ein zweiter Schließer-Ausgang." },
+    { frage: "Die Leitung ist mit ‚0,5 sw/ws‘ beschriftet. Was bedeutet das?", optionen: ["0,5 mm², Grundfarbe schwarz, Streifen weiß", "0,5 mm², Grundfarbe weiß, Streifen schwarz", "0,5 A Belastbarkeit, schwarz-weiß gestreift"], richtig: 0, erklaerung: "Zuerst der Querschnitt in mm², dann Grundfarbe, nach dem Schrägstrich die Kennfarbe (Streifen). Englisch entspricht das ‚0.5 BK/WH‘." },
+    { frage: "Du ziehst den Stecker eines Kühlmittel-NTC ab und misst an der Kabelseite ca. 5 V. Was ist los?", optionen: ["Kurzschluss nach Plus in der Leitung", "Normal: Pull-up-Spannung des Steuergeräts, Leitung zum Steuergerät ist in Ordnung", "Steuergerät defekt, es dürfte nur 0 V anliegen"], richtig: 1, erklaerung: "Der NTC bildet mit einem Pull-up-Widerstand im Steuergerät einen Spannungsteiler. Ohne Sensor liegt die volle Referenz (ca. 5 V) an – das beweist, dass Leitung und Steuergeräte-Eingang funktionieren." },
+    { frage: "In welchem Zustand sind Schalter und Relais im Stromlaufplan gezeichnet?", optionen: ["Im Betriebszustand bei laufendem Motor", "Im stromlosen, unbetätigten Ruhezustand", "Im Zustand mit eingeschalteter Zündung"], richtig: 1, erklaerung: "Pläne zeigen den Ruhezustand: Relais abgefallen, Taster nicht gedrückt, Zündung aus. Für den Betriebszustand musst du die Kontakte gedanklich umlegen." },
+    { frage: "Wie prüfst du einen Massepunkt am besten?", optionen: ["Ohmmeter zwischen Massepunkt und Karosserie bei eingeschaltetem Verbraucher", "Spannungsabfall zwischen Bauteilmasse und Batterie-Minus bei eingeschaltetem Verbraucher, Soll unter 0,1–0,2 V", "Prüflampe zwischen Kl. 30 und Massepunkt – leuchtet sie, ist alles gut"], richtig: 1, erklaerung: "Nur unter Last zeigt sich ein Übergangswiderstand. Die Spannungsabfall-Messung ist aussagekräftig; Ohmmessung funktioniert nur spannungsfrei, und eine Prüflampe leuchtet auch bei mehreren Ohm noch fast normal." },
+    { frage: "Welche Spannung zeigt das Multimeter typischerweise auf CAN-High und CAN-Low (Highspeed-CAN, Bus aktiv)?", optionen: ["CAN-High ca. 2,5–3,5 V, CAN-Low ca. 1,5–2,5 V", "Beide ca. 12 V", "CAN-High 5 V, CAN-Low 0 V"], richtig: 0, erklaerung: "Der Highspeed-CAN arbeitet um 2,5 V herum: High geht auf ca. 3,5 V, Low auf ca. 1,5 V. Das Multimeter zeigt Mittelwerte. Zwischen High und Low sind spannungsfrei ca. 60 Ω zu messen." },
+    { frage: "Was bedeutet eine orange Leitung oder ein oranger Stecker im Fahrzeug?", optionen: ["Kl. 15 Zündungsplus", "Hochvolt – Stopp, nur mit HV-Qualifikation und Freischaltung arbeiten", "Airbag-Zündkreis"], richtig: 1, erklaerung: "Orange ist herstellerübergreifend die Kennzeichnung für Hochvoltkomponenten. Gelbe Stecker/Leitungen kennzeichnen dagegen Airbag- und Gurtstraffersysteme – dort keine Ohmmessung und keine Prüflampe." },
+    { frage: "In einem Toyota-Plan steht an einer Leitung ‚B‘. Welche Farbe ist gemeint?", optionen: ["Blau", "Braun", "Schwarz"], richtig: 2, erklaerung: "Bei asiatischen Herstellern steht B für Black (schwarz), L für Blue (blau) und BR für Brown (braun). Wer hier deutsch denkt (bl = blau), sucht die falsche Leitung." },
+    { frage: "Warum darf an einer Steuergeräte-Sensorleitung keine Prüflampe verwendet werden?", optionen: ["Weil die Prüflampe zu hell ist und den Sensor blendet", "Weil der Lampenstrom (100–300 mA) 5-V-Regler und Endstufen überlasten und Werte verfälschen kann", "Weil Prüflampen nur an Masse angeschlossen werden dürfen"], richtig: 1, erklaerung: "Sensor- und Steuerleitungen sind für wenige mA ausgelegt. Eine Glühlampe belastet sie mit dem Hundertfachen. Deshalb hochohmiges Multimeter (≥ 10 MΩ) verwenden; die Prüflampe gehört nur an reine Leistungskreise." }
+  ]
+};
+
+/* ============================================================
+   v8.1: Schaltplan-Hilfe (Lesen, Klemmen, Farben, Symbole, Relais,
+   Stecker/Hersteller, Vom Plan zur Messung, Fallen, Quiz)
+   Daten: SCHALTPLAN (oben). Symbole: SYM_SVG.
+   ============================================================ */
+(function enhanceV81(){
+  const SP=(typeof SCHALTPLAN==='object'&&SCHALTPLAN)||{};
+  const A=k=>Array.isArray(SP[k])?SP[k]:[];
+  const planOv=document.getElementById('planOverlay');
+  const S1='stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  const W=(inner)=>`<svg viewBox="0 0 64 40" aria-hidden="true"><g ${S1}>${inner}</g></svg>`;
+  const T=(x,y,t,s)=>`<text x="${x}" y="${y}" font-size="${s||8}" font-weight="800" fill="currentColor" stroke="none" text-anchor="middle" font-family="inherit">${t}</text>`;
+  const SYM_SVG={
+    "batterie":W(`<path d="M6 20h16M22 10v20M28 14v12" /><path d="M28 14v12" stroke-width="4"/><path d="M34 10v20M40 14v12" /><path d="M40 14v12" stroke-width="4"/><path d="M40 20h18"/>`+T(12,13,'+')+T(52,13,'−')),
+    "masse":W(`<path d="M32 6v16M20 22h24M24 28h16M28 34h8"/>`),
+    "sicherung":W(`<path d="M4 20h12M48 20h12"/><rect x="16" y="14" width="32" height="12"/><path d="M16 20h32"/>`),
+    "relais":W(`<rect x="6" y="12" width="20" height="16"/><path d="M16 4v8M16 28v8M40 8v8M40 16l10 8M52 24v8"/><path d="M26 20h6" stroke-dasharray="2 2"/><path d="M32 20h6" stroke-dasharray="2 2"/>`+T(16,23,'85/86',5)),
+    "schalter":W(`<path d="M6 24h16M22 24l18-10M42 24h16"/><circle cx="22" cy="24" r="2"/><circle cx="42" cy="24" r="2"/>`),
+    "taster":W(`<path d="M6 24h16M42 24h16M20 16h24M32 16v-8"/><circle cx="22" cy="24" r="2"/><circle cx="42" cy="24" r="2"/><path d="M28 8h8"/>`),
+    "lampe":W(`<path d="M6 20h14M44 20h14"/><circle cx="32" cy="20" r="12"/><path d="M23.5 11.5l17 17M40.5 11.5l-17 17"/>`),
+    "led":W(`<path d="M6 20h14M44 20h14M20 10v20M20 20l20-10v20zM40 10v20"/><path d="M44 6l6-6M50 8l6-6" stroke-width="1.5"/><path d="M50 0l-2 3M56 2l-2 3" stroke-width="1.5"/>`),
+    "motor":W(`<path d="M6 20h12M46 20h12"/><circle cx="32" cy="20" r="14"/>`+T(32,24,'M',13)),
+    "spule":W(`<path d="M4 20h8"/><path d="M12 20a5 5 0 0 1 10 0a5 5 0 0 1 10 0a5 5 0 0 1 10 0a5 5 0 0 1 10 0"/><path d="M52 20h8"/>`),
+    "magnetventil":W(`<rect x="6" y="10" width="20" height="20"/><path d="M8 20h16" stroke-dasharray="2 2"/><path d="M26 20h6M32 20l10-8v16zM52 12v16l-10-8"/><path d="M52 20h8"/>`),
+    "widerstand":W(`<path d="M4 20h14M46 20h14"/><rect x="18" y="14" width="28" height="12"/>`),
+    "ntc":W(`<path d="M4 20h14M46 20h14"/><rect x="18" y="14" width="28" height="12"/><path d="M14 32l36-24"/>`+T(50,38,'−t°',7)),
+    "ptc":W(`<path d="M4 20h14M46 20h14"/><rect x="18" y="14" width="28" height="12"/><path d="M14 32l36-24"/>`+T(50,38,'+t°',7)),
+    "poti":W(`<path d="M4 20h14M46 20h14"/><rect x="18" y="14" width="28" height="12"/><path d="M32 4v8M28 12l4 2 4-2"/>`),
+    "diode":W(`<path d="M6 20h14M44 20h14M20 10l20 10-20 10zM40 10v20"/>`),
+    "kondensator":W(`<path d="M6 20h20M38 20h20M26 8v24M38 8v24"/>`),
+    "stecker":W(`<path d="M4 20h20M40 20h20"/><path d="M24 20a6 6 0 0 1 0 0M24 14v12M40 14a6 6 0 0 0 0 12" /><path d="M26 14l6 6-6 6"/>`+T(32,36,'T10/3',6)),
+    "steuergeraet":W(`<rect x="10" y="6" width="44" height="28"/><path d="M18 34v6M26 34v6M34 34v6M42 34v6"/>`+T(32,18,'J…',9)+T(32,29,'STG',6)),
+    "sensor-hall":W(`<rect x="14" y="8" width="36" height="24"/><path d="M4 14h10M4 20h10M4 26h10"/>`+T(32,23,'Hall',8)),
+    "sensor-induktiv":W(`<path d="M4 14h10M4 26h10"/><path d="M14 14v12"/><path d="M14 14a4 3 0 0 1 8 0a4 3 0 0 1 8 0a4 3 0 0 1 8 0"/><path d="M14 26a4 3 0 0 0 8 0a4 3 0 0 0 8 0a4 3 0 0 0 8 0"/><rect x="42" y="10" width="14" height="20"/>`+T(49,23,'N S',6)),
+    "lambdasonde":W(`<rect x="14" y="8" width="36" height="24"/><path d="M4 12h10M4 20h10M4 28h10"/>`+T(32,25,'λ',14)),
+    "hupe":W(`<path d="M6 14h10M6 26h10"/><path d="M16 12v16h10l14 10V2L26 12z"/>`),
+    "heizung":W(`<path d="M4 20h10M50 20h10"/><rect x="14" y="10" width="36" height="20"/><path d="M18 16h28M18 20h28M18 24h28" stroke-dasharray="3 2"/>`),
+    "sicherungsautomat":W(`<path d="M4 20h12M48 20h12"/><rect x="16" y="14" width="32" height="12"/><path d="M22 20l10-8M40 20h4"/><circle cx="22" cy="20" r="1.5"/>`)
+  };
+
+  const TABS=[["lesen","📖 Lesen"],["klemmen","🔤 Klemmen"],["farben","🎨 Farben"],["symbole","▭ Symbole"],["relais","🔁 Relais"],["stecker","🔌 Stecker & Hersteller"],["messplan","🧭 Plan → Messung"],["fallen","🪤 Fallen"],["quiz","🎓 Quiz"]];
+  let planTab='lesen';
+  let relPin=null;
+  let mpIdx=0;
+  let quiz={i:0,score:0,done:false,answered:null};
+
+  function stepCard(cls,num,lbl,body,pro){
+    const fold=pro==='fold';
+    return `<div class="step ${cls||''} sec${fold?' fold':''}" data-pro="${pro||'show'}"><div class="lbl"><span class="num">${num}</span>${lbl}${fold?'<button type="button" class="fold-btn" aria-expanded="false" onclick="toggleFold(this)">Aufklappen</button>':''}</div><div class="body fold-body">${body}</div></div>`;
+  }
+
+  /* ---- Tabs ---- */
+  function tabLesen(){
+    let h='';
+    if(SP.intro){
+      h+=`<div class="beg-explain sec" data-pro="hide"><div class="step"><div class="lbl"><span class="num">🎓</span>Einfach erklärt</div><div class="body">${SP.intro.einsteiger||''}</div></div></div>`;
+      h+=stepCard('','?','Warum Schaltplan lesen?',SP.intro.kurz||'');
+    }
+    h+=stepCard('next','📖','So lese ich einen Stromlaufplan',A('lesen').map((s,i)=>`<div class="fstep"><div class="fh">${i+1} ${s.titel||''}</div><div class="fdo">${s.text||''}</div>${s.tipp?`<div class="fline fok"><span class="fi">💡</span><span class="ft">${s.tipp}</span></div>`:''}</div>`).join(''));
+    h+=stepCard('','🧭','Und dann messen',`Bauteil im Plan gefunden? Unter <b>Plan → Messung</b> steht für jeden Bauteiltyp der fertige Messplan: welcher Pin, welcher Zustand, welcher Sollwert. <button type="button" class="fold-btn" style="display:inline-flex" onclick="setPlanTab('messplan')">Plan → Messung öffnen</button>`);
+    return h;
+  }
+  function tabKlemmen(){
+    return `<div class="disc">Klemmenbezeichnungen nach DIN 72552 – sagen dir, <b>welche Spannung wann</b> an einer Leitung anliegen muss. Das ist der Schlüssel zu jeder Spannungsmessung.</div>`+
+      A('klemmen').map(k=>`<div class="klrow"><div class="kl">${k.kl}</div><div><div class="kn">${k.name||''}</div><div class="kb">${k.bedeutung||''}</div>${k.messen?`<div class="km"><b>Messen:</b> ${k.messen}</div>`:''}</div></div>`).join('')+
+      `<div class="disc">Ausführlich mit Messwerten je Zustand: Prüfkarte <button type="button" class="fold-btn" style="display:inline-flex" onclick="openDetail('klemmen')">Klemmen 30/15/31/50</button></div>`;
+  }
+  function tabFarben(){
+    let h=`<div class="disc">Leitungsfarben sind <b>nicht genormt</b> – jeder Hersteller hat eigene Gewohnheiten. Verlass dich auf den Schaltplan des Fahrzeugs, die Farbe hilft nur beim Finden der Leitung im Stecker.</div>`;
+    h+=`<div class="farben">`+A('farben').map(f=>`<div class="farbe"><span class="sw" style="background:${f.hex||'#888'}"></span><div><div class="fc">${f.code||''}<small>${f.en||''}</small></div><div class="fn"><b>${f.name||''}</b>${f.ueblich?' – '+f.ueblich:''}</div></div></div>`).join('')+`</div>`;
+    h+=stepCard('','🧵','So sind Leitungen beschriftet',A('farbregeln').map((r,i)=>`<div class="fstep"><div class="fh">${r.titel||''}</div><div class="fdo">${r.text||''}</div></div>`).join(''),'fold');
+    return h;
+  }
+  function tabSymbole(){
+    return `<div class="disc">Antippen zeigt, was das Symbol bedeutet und <b>welche Multimeter-Messung</b> dazu passt.</div><div class="symgrid">`+
+      A('symbole').map(s=>`<details class="sym"><summary>${SYM_SVG[s.id]||W(T(32,24,'?',14))}<span class="sn">${s.name||s.id}</span></summary><div class="sb">${s.beschreibung||''}${s.messen?`<div class="mm"><b>Messen:</b> ${s.messen}</div>`:''}</div></details>`).join('')+`</div>`;
+  }
+  function relSVG(){
+    const P=[["30",8,4],["87a",28,4],["87",48,4],["86",8,52],["85",48,52]];
+    return `<svg class="relsvg" viewBox="0 0 120 70" aria-hidden="true">
+      <rect x="4" y="16" width="112" height="38" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+      <rect x="14" y="30" width="26" height="14" fill="none" stroke="currentColor" stroke-width="2"/>
+      <text x="27" y="40" font-size="7" text-anchor="middle">Spule</text>
+      <path d="M22 30v-6M32 44v6" stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M62 24v6M62 30l14 10M78 40v-6M96 24v10" stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M40 37h18" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 2" fill="none"/>
+      ${P.map(p=>`<g class="pin ${relPin===p[0]?'on':''}" onclick="relaisPin('${p[0]}')"><rect x="${p[1]}" y="${p[2]}" width="20" height="12" rx="3"/><text x="${p[1]+10}" y="${p[2]+9}" font-size="7" text-anchor="middle">${p[0]}</text></g>`).join('')}
+    </svg>`;
+  }
+  function relInfo(){
+    const R=SP.relais||{};
+    const p=(R.pins||[]).find(x=>x.pin===relPin);
+    if(!p)return `<div class="pininfo">Pin antippen: Was hängt dran, was muss das Multimeter zeigen?</div>`;
+    return `<div class="pininfo"><b>Pin ${p.pin} – ${p.rolle||''}</b><br>${p.messen||''}</div>`;
+  }
+  function tabRelais(){
+    const R=SP.relais||{};
+    let h=stepCard('set','🔁','Standard-Kfz-Relais: Pin antippen',relSVG()+`<div class="pinbtns">`+(R.pins||[]).map(p=>`<button type="button" class="${relPin===p.pin?'on':''}" onclick="relaisPin('${p.pin}')">${p.pin}</button>`).join('')+`</div><div id="relInfo">${relInfo()}</div>`);
+    h+=stepCard('','🔀','Relais-Bauarten',(R.typen||[]).map(t=>`<div class="fstep"><div class="fh">${t.name||''}</div><div class="fdo">${t.text||''}</div></div>`).join(''),'fold');
+    h+=stepCard('next','🧭','Relais am Fahrzeug prüfen',(R.pruefung||[]).map((s,i)=>`<div class="fstep"><div class="fh">${i+1} ${s.schritt||''}</div><div class="fbranch"><div class="fline fok"><span class="fi">✓</span><span class="ft">${s.soll||''}</span></div><div class="fline fng"><span class="fi">✗</span><span class="ft">${s.sonst||''}</span></div></div></div>`).join('')+`<div class="micro">Ausführlich: Prüfkarte <button type="button" class="fold-btn" style="display:inline-flex" onclick="openDetail('relais')">Relais prüfen</button></div>`);
+    return h;
+  }
+  window.relaisPin=function(p){relPin=p;const b=document.getElementById('planContent');if(b)b.innerHTML=tabRelais();};
+  function tabStecker(){
+    let h=stepCard('','🔌','Stecker, Pins, Massepunkte im Plan',A('stecker').map(s=>`<div class="fstep"><div class="fh">${s.format||''}</div><div class="fdo">${s.bedeutung||''}</div>${s.hinweis?`<div class="fline fok"><span class="fi">💡</span><span class="ft">${s.hinweis}</span></div>`:''}</div>`).join(''));
+    h+=`<div class="section-title">Herstellerspezifisch<span class="ln"></span></div>`;
+    h+=A('hersteller').map(m=>`<details class="gloss"><summary>${m.name||''}<span class="ar">▶</span></summary><div class="gc"><ul style="padding-left:18px;display:flex;flex-direction:column;gap:5px">${(m.eigenheiten||[]).map(e=>`<li>${e}</li>`).join('')}</ul></div></details>`).join('');
+    h+=`<div class="disc">Pin-Zählung am Stecker: Kabelseite und Bauteilseite sind <b>spiegelverkehrt</b>. Immer die Nummern am Steckergehäuse lesen – nie zählen. Siehe Prüfkarte <button type="button" class="fold-btn" style="display:inline-flex" onclick="openDetail('backprobe')">Backprobe</button>.</div>`;
+    return h;
+  }
+  function tabMessplan(){
+    const M=A('messplan');
+    if(!M.length)return '<div class="empty">Keine Messpläne hinterlegt.</div>';
+    if(mpIdx>=M.length)mpIdx=0;
+    const m=M[mpIdx];
+    let h=`<div class="calc planpick"><h4>🧭 Vom Schaltplan zur Messung</h4><div class="calc-row"><label for="mpSel">Bauteiltyp im Plan</label><select id="mpSel" onchange="setMessplan(this.value)">${M.map((x,i)=>`<option value="${i}" ${i===mpIdx?'selected':''}>${x.typ}</option>`).join('')}</select></div>`;
+    h+=`<div class="calc-note"><b>Im Plan identifizieren:</b> ${m.pins||''}</div></div>`;
+    h+=(m.schritte||[]).map((s,i)=>`<div class="mp-step"><div class="mh">${i+1} ${s.was||''}</div><div class="mr"><span class="k">Wo</span><span>${s.wo||''}</span><span class="k">Zustand</span><span>${s.zustand||''}</span><span class="k">Soll</span><span class="soll">${s.soll||''}</span><span class="k">Sonst</span><span class="sonst">${s.sonst||''}</span></div></div>`).join('');
+    h+=`<div class="disc">Sollwerte sind typische Richtwerte; der Schaltplan und die Herstellerangabe des Fahrzeugs haben Vorrang.</div>`;
+    return h;
+  }
+  window.setMessplan=function(v){mpIdx=parseInt(v,10)||0;const b=document.getElementById('planContent');if(b)b.innerHTML=tabMessplan();};
+  function tabFallen(){
+    return `<div class="disc">Die häufigsten Fehldeutungen beim Lesen – jede davon hat schon gute Bauteile in den Müll befördert.</div>`+
+      A('fallen').map((f,i)=>`<div class="step bad"><div class="lbl"><span class="num">${i+1}</span>${f.titel||''}</div><div class="body">${f.text||''}</div></div>`).join('');
+  }
+  function tabQuiz(){
+    const Q=A('quiz');
+    if(!Q.length)return '<div class="empty">Kein Quiz hinterlegt.</div>';
+    if(quiz.done){
+      const pct=Math.round(100*quiz.score/Q.length);
+      return `<div class="step"><div class="quiz-score"><div class="big">${quiz.score} / ${Q.length}</div><div style="margin-top:6px;color:var(--txt2)">${pct>=80?'Stark – du liest Schaltpläne sicher.':pct>=50?'Solide Basis. Die Fallen-Seite noch einmal durchgehen.':'Dranbleiben: „Lesen" und „Klemmen" wiederholen, dann nochmal.'}</div><button type="button" class="quiz-next" onclick="quizReset()">Nochmal</button></div></div>`;
+    }
+    const q=Q[quiz.i];
+    let h=`<div class="step"><div class="quiz-bar"><span>Frage ${quiz.i+1} von ${Q.length}</span><span>Richtig: ${quiz.score}</span></div><div class="quiz-q">${q.frage||''}</div>`;
+    h+=(q.optionen||[]).map((o,i)=>{
+      let cls='';
+      if(quiz.answered!==null){if(i===q.richtig)cls='right';else if(i===quiz.answered)cls='wrong';}
+      return `<button type="button" class="quiz-opt ${cls}" ${quiz.answered!==null?'disabled':''} onclick="quizAnswer(${i})">${String.fromCharCode(65+i)}) ${o}</button>`;
+    }).join('');
+    if(quiz.answered!==null){
+      h+=`<div class="quiz-ex">${quiz.answered===q.richtig?'✅ Richtig. ':'❌ Leider nein. '}${q.erklaerung||''}</div><button type="button" class="quiz-next" onclick="quizNext()">${quiz.i+1<Q.length?'Nächste Frage →':'Auswertung'}</button>`;
+    }
+    return h+`</div>`;
+  }
+  window.quizAnswer=function(i){if(quiz.answered!==null)return;quiz.answered=i;const q=A('quiz')[quiz.i];if(q&&i===q.richtig)quiz.score++;rerender();};
+  window.quizNext=function(){quiz.i++;quiz.answered=null;if(quiz.i>=A('quiz').length)quiz.done=true;rerender();const ob=planOv.querySelector('.ovbody');if(ob)planOv.scrollTop=0;};
+  window.quizReset=function(){quiz={i:0,score:0,done:false,answered:null};rerender();};
+
+  const RENDER={lesen:tabLesen,klemmen:tabKlemmen,farben:tabFarben,symbole:tabSymbole,relais:tabRelais,stecker:tabStecker,messplan:tabMessplan,fallen:tabFallen,quiz:tabQuiz};
+  function rerender(){
+    const b=document.getElementById('planContent');if(!b)return;
+    b.innerHTML=(RENDER[planTab]||tabLesen)();
+    document.querySelectorAll('#planTabs .chip').forEach(c=>c.classList.toggle('active',c.dataset.tab===planTab));
+  }
+  window.setPlanTab=function(t){planTab=t;rerender();planOv.scrollTop=0;};
+  window.openSchaltplan=function(tab){
+    if(tab)planTab=tab;
+    setNav('navPlan');
+    document.getElementById('planBody').innerHTML=`<div class="plantabs" id="planTabs">${TABS.map(t=>`<button type="button" class="chip ${t[0]===planTab?'active':''}" data-tab="${t[0]}" onclick="setPlanTab('${t[0]}')">${t[1]}</button>`).join('')}</div><div id="planContent"></div>`;
+    rerender();
+    openOverlay(planOv);
+  };
+  window.closeSchaltplan=function(){requestClose();};
+
+  /* ---- Startseite: zwei Einstiege nebeneinander ---- */
+  const _renderHome2=renderHome;
+  renderHome=function(){
+    _renderHome2();
+    const old=main.querySelector('.oszbanner');
+    if(old&&old.parentElement===main){
+      old.remove();
+      main.insertAdjacentHTML('afterbegin',`<div class="homelinks"><button type="button" class="oszbanner plan" onclick="openSchaltplan()"><span class="oi">📐</span><span><b>Schaltpläne verstehen</b><span>Klemmen, Farben, Symbole, Relais – und vom Plan zur Messung</span></span></button>${old.outerHTML}</div>`);
+    }
+    // Suchtreffer in der Schaltplan-Hilfe
+    const q=query.trim().toLowerCase();
+    if(q.length>=2){
+      const hits=[];
+      A('klemmen').forEach(k=>{if((k.kl+' '+(k.name||'')).toLowerCase().includes(q))hits.push(['klemmen',`Kl. <b>${k.kl}</b> ${k.name||''}`]);});
+      A('farben').forEach(f=>{if((f.code+' '+(f.name||'')+' '+(f.en||'')).toLowerCase().includes(q))hits.push(['farben',`Farbe <b>${f.code}</b> ${f.name||''}`]);});
+      A('symbole').forEach(s=>{if((s.name||'').toLowerCase().includes(q))hits.push(['symbole',`Symbol <b>${s.name}</b>`]);});
+      if(/relais|87|85|86/.test(q))hits.push(['relais','<b>Relais</b> Pins & Prüfung']);
+      if(/schaltplan|stromlauf|stecker|pin|plan/.test(q))hits.push(['lesen','<b>Schaltplan</b> lesen']);
+      if(hits.length){
+        main.insertAdjacentHTML('afterbegin',`<div class="section-title">Schaltplan-Hilfe<span class="ln"></span></div><div class="planhits">${hits.slice(0,6).map(h=>`<button type="button" onclick="openSchaltplan('${h[0]}')">${h[1]}</button>`).join('')}</div>`);
+        const e=main.querySelector('.empty');if(e)e.remove();
+      }
+    }
+  };
+  window.renderHome=renderHome;
+  const _openTreeMenu2=openTreeMenu;
+  openTreeMenu=function(){
+    _openTreeMenu2();
+    const tb=document.getElementById('treeBody');
+    if(tb)tb.insertAdjacentHTML('beforeend',`<button class="tree-opt" onclick="openSchaltplan('messplan')">📐 Vom Schaltplan zur Messung<span class="ar">→</span></button>`);
+  };
+  window.openTreeMenu=openTreeMenu;
+
+  /* ---- Validierung der Schaltplan-Daten ---- */
+  const _validate=window.validateMultimeter;
+  window.validateMultimeter=function(){
+    const r=_validate();
+    const need={lesen:6,klemmen:12,farben:10,farbregeln:4,symbole:20,stecker:5,hersteller:5,messplan:6,fallen:6,quiz:8};
+    Object.keys(need).forEach(k=>{if(A(k).length<need[k])r.errors.push(`SCHALTPLAN.${k}: ${A(k).length} Einträge (mind. ${need[k]})`);});
+    if(!SP.intro||!SP.intro.kurz)r.errors.push('SCHALTPLAN.intro fehlt');
+    if(!SP.relais||!(SP.relais.pins||[]).length)r.errors.push('SCHALTPLAN.relais.pins fehlt');
+    A('symbole').forEach(s=>{if(!SYM_SVG[s.id])r.errors.push(`SCHALTPLAN.symbole: kein SVG für "${s.id}"`);});
+    A('quiz').forEach((q,i)=>{if(!Array.isArray(q.optionen)||q.optionen.length<2||typeof q.richtig!=='number'||!q.optionen[q.richtig])r.errors.push(`SCHALTPLAN.quiz[${i}]: Optionen/richtig ungültig`);});
+    A('messplan').forEach((m,i)=>{if(!(m.schritte||[]).length)r.errors.push(`SCHALTPLAN.messplan[${i}]: keine Schritte`);});
+    r.schaltplan=Object.keys(need).reduce((o,k)=>(o[k]=A(k).length,o),{});
+    return r;
+  };
+})();
 
 /* init */
 renderCats();renderHome();

@@ -1,6 +1,16 @@
 # SOURCES.md — Quellen- und Grenzwertmatrix
 
-Stand: **v8.5-Profi, Quellen geprüft am 09.08.2026**.
+Stand: **v8.6-Profi, Inhaltsstand 14.09.2026** (Primärquellen zuletzt geprüft am 09.08.2026).
+
+**Nachtrag v8.6:** Neu sind die Abschnitte „Warum messe ich das?“ und „Wann
+Oszilloskop?“ auf allen Karten sowie das Kapitel „Schaltpläne verstehen“.
+Sie enthalten keine neuen Freigabegrenzen. Zahlen darin sind
+**Orientierungswerte der Evidenzstufe 3** (Klemmenbezeichnungen nach
+DIN 72552, Buspegel nach ISO 11898/ISO 17987 wie oben, Relais-, Sicherungs-
+und Batteriewerte wie in den bestehenden Karten) und im Kapitel selbst als
+solche gekennzeichnet; der Schaltplan und die Herstellervorgabe des Fahrzeugs
+haben Vorrang. Die Primärquellen der Tabelle unten wurden für v8.6 nicht
+erneut abgerufen.
 
 Dieses Datum ist zugleich der in der App sichtbare **Inhaltsstand**
 (`DATA_STAND` in `index.html`, Fußzeile und Nutzungshinweis). Beide Angaben

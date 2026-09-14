@@ -41,7 +41,8 @@ Daten verlassen das Gerät nicht und werden von der App nirgendwohin übertragen
 | Schlüssel | Inhalt | Zweck |
 |---|---|---|
 | `mm_favs` | Liste von Karten-Kennungen der Merkliste | Merkliste bleibt nach dem Schließen erhalten |
-| `mm_beginner` | `1` oder nicht gesetzt | Einsteiger-Modus ein- oder ausgeschaltet |
+| `mm_mode` | `beg`, `pro` oder nicht gesetzt | Gewählte Ansicht: Einsteiger (ausführlich) oder Profi (kompakt) |
+| `mm_beginner` | `1`, `0` oder nicht gesetzt | Ältere Form derselben Einstellung (bis v8.5); wird nur noch gelesen, um die Wahl beim Update zu übernehmen |
 | `mm_hinweis_ok` | `1` oder nicht gesetzt | Nutzungshinweis wurde bestätigt und erscheint nicht erneut von selbst |
 | `ib_dismissed` | `1` oder nicht gesetzt | Installationsbanner wurde weggetippt |
 
