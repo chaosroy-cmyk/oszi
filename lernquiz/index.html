@@ -331,7 +331,7 @@ th{background:var(--panel2)}
 
 <script>
 'use strict';
-const APP_VERSION = '1.1';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '1.2';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 
 /* =====================================================================
    DATEN – Themen
@@ -1041,8 +1041,9 @@ function answer(val){
     ok = true;
     $$('#qBody .mrow').forEach(r => { const i = +r.dataset.i; const cor = q.items[i].c; const chosen = val[i];
       r.querySelectorAll('button').forEach(b => { const c = +b.dataset.c; b.disabled = true; b.classList.remove('sel'); if (c === cor) b.classList.add('ok'); else if (c === chosen) b.classList.add('bad'); });
-      if (chosen !== cor) { ok = false; }
+      if (chosen !== cor) { ok = false; r.insertAdjacentHTML('beforeend', `<span class="fix">✗ Deine Antwort: ${esc(q.cats[chosen])} · ✓ Richtig: ${esc(q.cats[cor])}</span>`); }
     });
+    if (!ok) $('#qBody').insertAdjacentHTML('beforeend', `<p class="hint">Grün = richtige Zuordnung, rot = deine falsche Wahl.</p>`);
   }
   const st = stat(q.id);
   if (ok) { st.ok++; st.streak++; } else { st.bad++; st.streak = 0; }
