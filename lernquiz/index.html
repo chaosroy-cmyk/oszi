@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<meta name="description" content="Lernquiz KFZ-Technik: Gemischbildung, Motormanagement, Sensoren & Aktoren – Selbstüberprüfung mit Quiz, Karteikarten und Merkzetteln. Offline als PWA.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KFZ Lernquiz">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>KFZ Lernquiz – Gemischbildung, Sensoren & Aktoren</title>
+<style>
+:root{
+  --bg:#0d1117; --panel:#161d27; --panel2:#1d2633; --line:#2a3646;
+  --tx:#e6edf5; --mut:#93a4b8; --acc:#4fd2ff; --acc2:#ffd24a;
+  --ok:#3ecf8e; --okbg:#153426; --bad:#ff6b6b; --badbg:#3a1f22;
+  --warn:#ffb454; --sel:#24405a;
+  --r:14px; --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#eef2f6; --panel:#ffffff; --panel2:#f3f6fa; --line:#cfd8e3;
+  --tx:#14212f; --mut:#4a5a6e; --acc:#0a6ea0; --acc2:#8a6800;
+  --ok:#1c8a5a; --okbg:#dff2e8; --bad:#c5343d; --badbg:#fbe3e3;
+  --warn:#b26a00; --sel:#d6e8f7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--tx);font:16px/1.5 var(--sans);min-height:100vh;
+  padding-bottom:calc(66px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+h1{font-size:1.25rem}
+h2{font-size:1.15rem;margin:.4rem 0 .6rem}
+h3{font-size:1rem;margin:.9rem 0 .3rem;color:var(--acc)}
+p{margin:.4rem 0}
+ul{margin:.3rem 0 .5rem 1.2rem}
+li{margin:.15rem 0}
+b{font-weight:700}
+.mut{color:var(--mut)}
+.small{font-size:.85rem}
+header{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);
+  padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:10px}
+header h1{flex:1;display:flex;align-items:center;gap:8px}
+header h1 span.lg{font-size:1.4rem}
+.ib{width:40px;height:40px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);
+  display:inline-flex;align-items:center;justify-content:center;font-size:1.15rem}
+main{max-width:720px;margin:0 auto;padding:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;border-radius:12px;
+  background:var(--panel2);border:1px solid var(--line);font-weight:600;min-height:46px}
+.btn.p{background:var(--acc);color:#04141c;border-color:var(--acc)}
+.btn.w{width:100%}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:420px){.grid2{grid-template-columns:1fr}}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;border:1px solid var(--line);
+  background:var(--panel2);font-size:.9rem}
+.chip.on{background:var(--sel);border-color:var(--acc);color:var(--tx)}
+.chip .n{font-size:.75rem;color:var(--mut)}
+.bar{height:8px;background:var(--panel2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width .3s}
+.bar i.ok{background:var(--ok)}
+nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--panel);border-top:1px solid var(--line);
+  display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+nav.bottom button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:10px;
+  font-size:.72rem;color:var(--mut)}
+nav.bottom button.on{color:var(--acc);background:var(--panel2)}
+nav.bottom button span.i{font-size:1.25rem;line-height:1}
+.view{display:none}.view.on{display:block}
+/* Topic list */
+.topic{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;
+  background:var(--panel2);margin-bottom:8px;text-align:left;width:100%}
+.topic .ic{font-size:1.5rem;width:36px;text-align:center}
+.topic .t{flex:1;min-width:0}
+.topic .t b{display:block}
+.topic .t .mut{display:block}
+.topic .t .bar{display:block;margin-top:6px}
+.topic input{width:22px;height:22px;accent-color:var(--acc)}
+/* Quiz */
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;font-size:.85rem;color:var(--mut)}
+.qtype{display:inline-block;padding:2px 8px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);font-size:.75rem;color:var(--acc2);margin-bottom:8px}
+.qtext{font-size:1.12rem;font-weight:600;line-height:1.4;margin-bottom:14px}
+.opt{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:12px;
+  border:1px solid var(--line);background:var(--panel2);margin-bottom:8px;min-height:50px;line-height:1.35;transition:background .15s,border-color .15s}
+.opt .k{flex:none;width:28px;height:28px;border-radius:8px;background:var(--panel);border:1px solid var(--line);
+  display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:var(--mut)}
+.opt.sel{background:var(--sel);border-color:var(--acc)}
+.opt.sel .k{background:var(--acc);color:#04141c;border-color:var(--acc)}
+.opt.ok{background:var(--okbg);border-color:var(--ok)}
+.opt.ok .k{background:var(--ok);color:#04140c;border-color:var(--ok)}
+.opt.bad{background:var(--badbg);border-color:var(--bad)}
+.opt.bad .k{background:var(--bad);color:#fff;border-color:var(--bad)}
+.opt:disabled{cursor:default}
+.tfrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tfrow .opt{justify-content:center;align-items:center;font-size:1.1rem;font-weight:600;margin:0}
+input.gap,input.num{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--tx);font:inherit;font-size:1.05rem}
+.numrow{display:flex;gap:10px;align-items:center}
+.numrow input{flex:1}
+.numrow .unit{color:var(--mut);font-weight:600}
+.mrow{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.mrow:last-child{border-bottom:0}
+.mrow .lbl{flex:1 1 180px;font-weight:500}
+.mrow .cats{display:flex;gap:6px;flex-wrap:wrap}
+.mrow .cats button{padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);font-size:.85rem}
+.mrow .cats button.sel{background:var(--sel);border-color:var(--acc)}
+.mrow .cats button.ok{background:var(--okbg);border-color:var(--ok)}
+.mrow .cats button.bad{background:var(--badbg);border-color:var(--bad)}
+.mrow .fix{font-size:.8rem;color:var(--ok);flex-basis:100%}
+.fb{margin-top:14px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel2)}
+.fb.ok{border-color:var(--ok);background:var(--okbg)}
+.fb.bad{border-color:var(--bad);background:var(--badbg)}
+.fb .hd{font-weight:700;margin-bottom:4px}
+.fb .src{font-size:.78rem;color:var(--mut);margin-top:6px}
+.acts{display:flex;gap:10px;margin-top:14px}
+.acts .btn{flex:1}
+.hint{font-size:.85rem;color:var(--mut);margin-top:6px}
+/* Result */
+.score{text-align:center;padding:10px 0}
+.score .big{font-size:3rem;font-weight:800;color:var(--acc);line-height:1.1}
+.score .grade{font-size:1.1rem;font-weight:600;margin-top:4px}
+.tstat{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.tstat:last-child{border:0}
+.tstat .n{flex:1}
+.tstat .bar{width:110px}
+.wrongq{padding:10px 0;border-bottom:1px solid var(--line)}
+.wrongq:last-child{border:0}
+.wrongq b{display:block}
+/* Flashcards */
+.fc{perspective:1200px;margin-bottom:12px}
+.fc .in{position:relative;min-height:260px;transition:transform .45s;transform-style:preserve-3d}
+.fc.flip .in{transform:rotateY(180deg)}
+.fc .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:var(--r);
+  border:1px solid var(--line);background:var(--panel);padding:18px;display:flex;flex-direction:column;justify-content:center;gap:8px;overflow:auto}
+.fc .face.back{transform:rotateY(180deg);background:var(--panel2)}
+.fc .face .lab{font-size:.75rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+.fc .face .txt{font-size:1.1rem;line-height:1.45}
+.fc .face.back .txt{font-size:1rem}
+.fc .face .tap{margin-top:auto;font-size:.8rem;color:var(--mut);text-align:center}
+.rate{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.rate .btn{padding:10px 6px}
+.rate .btn.b{background:var(--badbg);border-color:var(--bad)}
+.rate .btn.m{background:var(--panel2);border-color:var(--warn)}
+.rate .btn.g{background:var(--okbg);border-color:var(--ok)}
+.boxes{display:flex;gap:6px;margin:8px 0}
+.boxes span{flex:1;text-align:center;font-size:.72rem;padding:4px 2px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);color:var(--mut)}
+.boxes span b{display:block;font-size:.95rem;color:var(--tx)}
+/* Notes */
+details.note{border:1px solid var(--line);border-radius:12px;background:var(--panel);margin-bottom:10px;overflow:hidden}
+details.note summary{padding:12px 14px;font-weight:700;cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px}
+details.note summary::-webkit-details-marker{display:none}
+details.note summary::after{content:"›";margin-left:auto;font-size:1.3rem;color:var(--mut);transition:transform .2s}
+details.note[open] summary::after{transform:rotate(90deg)}
+details.note .bd{padding:0 14px 14px;font-size:.95rem}
+table{width:100%;border-collapse:collapse;font-size:.9rem;margin:.4rem 0}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--panel2)}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:.78rem;font-weight:700}
+.tag.f{background:var(--badbg);color:var(--bad)}
+.tag.m{background:#1f3a5a;color:var(--acc)}
+:root[data-theme="light"] .tag.m{background:#d6e8f7}
+.merke{border-left:4px solid var(--acc2);padding:8px 12px;background:var(--panel2);border-radius:0 10px 10px 0;margin:.6rem 0}
+.formula{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--panel2);padding:6px 10px;border-radius:8px;display:inline-block;margin:.2rem 0}
+/* Banners */
+.banner{display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;margin-bottom:12px}
+.banner.on{display:flex}
+.banner .t{flex:1;font-size:.9rem}
+.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);
+  padding:10px 16px;border-radius:10px;font-size:.9rem;z-index:30;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+.stk{display:flex;gap:10px;margin:8px 0}
+.stk .card{flex:1;text-align:center;padding:10px 4px;margin:0}
+.stk .card b{display:block;font-size:1.3rem;color:var(--acc);white-space:nowrap}
+.stk .card span{font-size:.78rem;color:var(--mut)}
+.kbd{font-size:.75rem;color:var(--mut);margin-top:10px}
+@media(prefers-reduced-motion:reduce){.fc .in{transition:none}.bar i{transition:none}}
+@media print{header,nav.bottom,.banner,.acts{display:none}body{padding:0;background:#fff;color:#000}.card,details.note{border-color:#999;background:#fff}details.note{page-break-inside:avoid}details.note .bd{display:block}}
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="lg" aria-hidden="true">🎓</span><span>KFZ Lernquiz</span></h1>
+  <button class="ib" id="installBtn" hidden title="App installieren" aria-label="App installieren">⬇️</button>
+  <button class="ib" id="themeBtn" title="Hell/Dunkel" aria-label="Farbschema wechseln">🌗</button>
+</header>
+
+<main>
+  <div class="banner" id="updateBanner" role="status"><div class="t">Neue Version verfügbar.</div><button class="btn" id="ubBtn">Aktualisieren</button></div>
+  <div class="banner" id="iosBanner"><div class="t">Auf iPhone/iPad: <b>Teilen → „Zum Home-Bildschirm"</b>, dann läuft die App offline.</div><button class="btn" id="iosClose" aria-label="Schließen">✕</button></div>
+
+  <!-- ===== HOME ===== -->
+  <section class="view on" id="v-home">
+    <div class="card">
+      <h2>Selbstüberprüfung</h2>
+      <p class="mut small">Kraftfahrzeugtechnik · Gemischbildung, Motormanagement, Sensoren &amp; Aktoren (Landesberufsschule, Sept. 2026). Deine Fortschritte werden nur auf diesem Gerät gespeichert.</p>
+      <div class="stk">
+        <div class="card"><b id="stQ">0</b><span>Fragen gesamt</span></div>
+        <div class="card"><b id="stDone">0 %</b><span>schon richtig</span></div>
+        <div class="card"><b id="stWeak">0</b><span>Wackelkandidaten</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Themen wählen</h2>
+      <div id="topicList"></div>
+      <div class="row" style="margin-top:8px">
+        <button class="chip" id="selAll">Alle</button>
+        <button class="chip" id="selNone">Keine</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Quiz starten</h2>
+      <div class="row" id="countRow">
+        <span class="mut small">Anzahl:</span>
+        <button class="chip" data-n="10">10</button>
+        <button class="chip on" data-n="20">20</button>
+        <button class="chip" data-n="0">Alle</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label class="chip"><input type="checkbox" id="onlyWeak" style="accent-color:var(--acc)"> nur Wackelkandidaten</label>
+        <label class="chip"><input type="checkbox" id="instant" checked style="accent-color:var(--acc)"> sofortiges Feedback</label>
+      </div>
+      <p class="hint" id="startHint"></p>
+      <div class="acts">
+        <button class="btn p" id="startQuiz">▶ Quiz starten</button>
+        <button class="btn" id="startCards">🃏 Karteikarten</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>So lernst du am besten</h2>
+      <ul class="small">
+        <li><b>Merkzettel</b> lesen (1 Thema), dann direkt das <b>Quiz</b> zum Thema.</li>
+        <li>Falsche Antworten landen bei den <b>Wackelkandidaten</b>. Die wiederholst du, bis sie zweimal richtig waren.</li>
+        <li><b>Karteikarten</b> mit Leitner-Boxen: Was du kannst, kommt seltener dran.</li>
+        <li>Mit <span class="tag m">Test</span> markierte Inhalte hat der Lehrer als prüfungsrelevant hervorgehoben.</li>
+      </ul>
+      <p class="kbd">Tastatur: 1–6 Antwort wählen · Enter weiter · Leertaste Karte drehen</p>
+    </div>
+  </section>
+
+  <!-- ===== QUIZ ===== -->
+  <section class="view" id="v-quiz">
+    <div class="card">
+      <div class="qhead"><span id="qPos"></span><span id="qTopic"></span></div>
+      <div class="bar"><i id="qBar" style="width:0%"></i></div>
+      <div id="qBody" style="margin-top:14px"></div>
+      <div id="qFb"></div>
+      <div class="acts" id="qActs"></div>
+    </div>
+    <button class="btn w" id="quitQuiz">✕ Quiz abbrechen</button>
+  </section>
+
+  <!-- ===== RESULT ===== -->
+  <section class="view" id="v-result">
+    <div class="card">
+      <div class="score"><div class="big" id="rPct">0 %</div><div class="grade" id="rGrade"></div><div class="mut small" id="rSub"></div></div>
+      <div class="acts">
+        <button class="btn p" id="rAgain">🔁 Falsche wiederholen</button>
+        <button class="btn" id="rHome">🏠 Start</button>
+      </div>
+    </div>
+    <div class="card"><h2>Nach Thema</h2><div id="rTopics"></div></div>
+    <div class="card" id="rWrongCard"><h2>Das solltest du nochmal anschauen</h2><div id="rWrong"></div></div>
+  </section>
+
+  <!-- ===== FLASHCARDS ===== -->
+  <section class="view" id="v-cards">
+    <div class="card">
+      <div class="qhead"><span id="cPos"></span><span id="cTopic"></span></div>
+      <div class="boxes" id="cBoxes"></div>
+      <div class="fc" id="fc" tabindex="0" role="button" aria-label="Karte umdrehen">
+        <div class="in">
+          <div class="face front"><div class="lab">Frage</div><div class="txt" id="cFront"></div><div class="tap">Tippen zum Umdrehen</div></div>
+          <div class="face back"><div class="lab">Antwort</div><div class="txt" id="cBack"></div></div>
+        </div>
+      </div>
+      <div class="rate" id="cRate" hidden>
+        <button class="btn b" data-r="0">😕 Nicht gewusst</button>
+        <button class="btn m" data-r="1">🤔 Unsicher</button>
+        <button class="btn g" data-r="2">😀 Gewusst</button>
+      </div>
+      <p class="hint" id="cHint">Erst überlegen, dann umdrehen und ehrlich bewerten.</p>
+    </div>
+    <div class="row">
+      <button class="btn" id="cShuffle">🔀 Neu mischen</button>
+      <button class="btn" id="cHome">🏠 Start</button>
+    </div>
+  </section>
+
+  <!-- ===== NOTES ===== -->
+  <section class="view" id="v-notes">
+    <div class="card"><h2>Merkzettel</h2><p class="mut small">Der Stoff aus den Unterlagen – kompakt zum Nachlesen. Danach: Quiz zum Thema.</p></div>
+    <div id="notes"></div>
+  </section>
+
+  <!-- ===== STATS ===== -->
+  <section class="view" id="v-stats">
+    <div class="card">
+      <h2>Fortschritt</h2>
+      <div id="sTopics"></div>
+    </div>
+    <div class="card">
+      <h2>Letzte Quiz-Durchgänge</h2>
+      <div id="sHist" class="small"></div>
+    </div>
+    <div class="card">
+      <h2>Daten</h2>
+      <p class="small mut">Alles wird lokal im Browser gespeichert. Zurücksetzen löscht deinen Lernstand.</p>
+      <div class="acts"><button class="btn" id="resetStats">🗑 Lernstand löschen</button></div>
+      <p class="small mut" style="margin-top:10px">Version <span id="ver"></span> · <span id="swState">–</span></p>
+    </div>
+  </section>
+</main>
+
+<nav class="bottom" aria-label="Hauptnavigation">
+  <button data-v="home" class="on"><span class="i">🏠</span>Start</button>
+  <button data-v="notes"><span class="i">📖</span>Merkzettel</button>
+  <button data-v="cards"><span class="i">🃏</span>Karten</button>
+  <button data-v="stats"><span class="i">📊</span>Fortschritt</button>
+</nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+const APP_VERSION = '1.0';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+
+/* =====================================================================
+   DATEN – Themen
+   ===================================================================== */
+const TOPICS = [
+  {id:'verbrennung', ic:'🔥', name:'Vollständige Verbrennung & Schadstoffe', src:'Gemischbildung S. 1–2'},
+  {id:'lambda',      ic:'⚖️', name:'Mischungsverhältnis & Lambda',            src:'Gemischbildung S. 2'},
+  {id:'otto',        ic:'🔌', name:'Otto-Prinzip & Direkteinspritzer',          src:'Gemischbildung S. 3'},
+  {id:'diesel',      ic:'🛢️', name:'Diesel-Prinzip',                            src:'Gemischbildung S. 4'},
+  {id:'betrieb',     ic:'🌡️', name:'Betriebszustände (Otto)',                   src:'Gemischbildung S. 4 + Notizen'},
+  {id:'motorman',    ic:'🧠', name:'Motormanagement, Sensoren & Aktoren',       src:'Sensoren & Aktoren S. 5 + FB 721'},
+  {id:'drehzahl',    ic:'🌀', name:'Drehzahlerfassung & Induktivsensor',        src:'Sensoren & Aktoren S. 6'},
+  {id:'hall',        ic:'📶', name:'Hallsensor & Vergleich',                    src:'Sensoren & Aktoren S. 7'},
+];
+
+/* =====================================================================
+   DATEN – Fragen
+   type: mc (eine richtig, c=Index) | multi (mehrere, c=[Indizes]) | tf (c=true/false)
+         gap (Texteingabe, c=[akzeptierte Antworten]) | num (Zahl, c=Wert, tol=Toleranz, unit)
+         match (items:[{t, c:KategorieIndex}], cats:[...])
+   e = Erklärung/Merksatz, src = Fundstelle, test = vom Lehrer als "Test" markiert
+   ===================================================================== */
+const Q = [
+/* ---------- Vollständige Verbrennung & Schadstoffe ---------- */
+{id:'vb01',t:'verbrennung',type:'mc',q:'Was versteht man unter „Verbrennung"?',
+ a:['Die Verbindung eines Brennstoffes mit Sauerstoff, dabei wird Energie frei','Das Verdampfen des Kraftstoffes im Saugrohr','Die Verdichtung von Luft im Zylinder','Das Zerlegen von Kraftstoff in Kohlenstoff und Wasserstoff'],c:0,
+ e:'Verbrennung = Brennstoff + Sauerstoff. Dabei wird eine große Menge Energie frei (Energie = Temperatur).',src:'Gemischbildung S. 2',test:true},
+{id:'vb02',t:'verbrennung',type:'gap',q:'Wie lautet die chemische Formel des Oktan-Moleküls?',c:['C8H18','C 8 H 18'],
+ e:'Oktan: C₈H₁₈ – 8 Kohlenstoff- und 18 Wasserstoffatome. Es steht im Unterricht stellvertretend für Benzin.',src:'Vollständige Verbrennung S. 1'},
+{id:'vb03',t:'verbrennung',type:'mc',q:'Welche Endprodukte entstehen bei der vollständigen Verbrennung eines Oktan-Moleküls?',
+ a:['8 CO₂ und 9 H₂O','9 CO₂ und 8 H₂O','8 CO und 9 H₂','CO₂, CO und HC'],c:0,
+ e:'Aus 8 C-Atomen werden 8 CO₂, aus 18 H-Atomen werden 9 H₂O (je 2 H pro Wassermolekül).',src:'Vollständige Verbrennung S. 1'},
+{id:'vb04',t:'verbrennung',type:'num',q:'Wie viele Sauerstoff-Moleküle (O₂) werden zur vollständigen Verbrennung von 1 Oktan-Molekül benötigt?',c:12.5,tol:0.01,unit:'O₂-Moleküle',
+ e:'8 CO₂ brauchen 16 O, 9 H₂O brauchen 9 O → 25 O-Atome = 12,5 O₂-Moleküle.',src:'Vollständige Verbrennung S. 1',test:true},
+{id:'vb05',t:'verbrennung',type:'multi',q:'Welche Idealbedingungen sind für eine vollständige Verbrennung nötig? (mehrere richtig)',
+ a:['Optimale Durchmischung von Treibstoff und Sauerstoff','Ausreichend Zeit für die Verbrennungsreaktion','Richtige Brennraumtemperatur','Möglichst hoher Schwefelgehalt im Kraftstoff','Möglichst geschlossene Drosselklappe'],c:[0,1,2],
+ e:'Die drei Idealbedingungen: Durchmischung, Zeit, Temperatur. Sind sie nicht erfüllt, kommt es zur unvollständigen Verbrennung.',src:'Vollständige Verbrennung S. 1'},
+{id:'vb06',t:'verbrennung',type:'mc',q:'Warum gilt CO₂ nicht als Schadstoff „im eigentlichen Sinne"?',
+ a:['Es ist für den Menschen nicht direkt schädlich, trägt aber zur Klimaerwärmung bei','Es entsteht nur bei unvollständiger Verbrennung','Es wird vom Katalysator vollständig abgebaut','Es ist ein Edelgas'],c:0,
+ e:'CO₂ ist ein Produkt der vollständigen Verbrennung, nicht giftig, aber klimawirksam – daher soll es vermieden werden.',src:'Vollständige Verbrennung S. 1'},
+{id:'vb07',t:'verbrennung',type:'mc',q:'Wie entsteht Kohlenmonoxid (CO) und welche Eigenschaft hat es?',
+ a:['Unvollständige Verbrennung von C mit O – toxisch, sehr giftig','Vollständige Verbrennung – ungiftig','Schwefel im Kraftstoff – stark riechend','Stickstoff und Sauerstoff bei hoher Temperatur – krebserregend'],c:0,
+ e:'CO = unvollständige Verbrennung (zu wenig Sauerstoff, fettes Gemisch). Geruchlos und sehr giftig!',src:'Vollständige Verbrennung S. 1'},
+{id:'vb08',t:'verbrennung',type:'mc',q:'Was bedeutet der Schadstoff „HC"?',
+ a:['Unverbrannter Treibstoff (Kohlenwasserstoffe); krebserregend','Wasserstoffchlorid aus dem Katalysator','Hoch-Kompressions-Rückstände','Hartes Kondensat an den Zylinderwänden'],c:0,
+ e:'HC = Kohlenwasserstoffe = unverbrannter Kraftstoff. Typisch bei fettem Gemisch und Zündaussetzern.',src:'Vollständige Verbrennung S. 1'},
+{id:'vb09',t:'verbrennung',type:'mc',q:'Bei welchen Motoren sind NOx (Stickoxide) und PM (Rußpartikel) besonders ein Problem?',
+ a:['Bei Luftüberschuss – Diesel und Benzin-Direkteinspritzer','Nur bei Otto-Motoren mit Saugrohreinspritzung','Nur bei Zweitaktmotoren','Nur bei Motoren ohne Katalysator'],c:0,
+ e:'NOx und PM entstehen bei Luftüberschuss (mager, heiß) – also bei Diesel und Benzin-DI mit Schichtladung.',src:'Vollständige Verbrennung S. 1',test:true},
+{id:'vb10',t:'verbrennung',type:'mc',q:'Woher kommt Schwefeldioxid (SO₂) im Abgas?',
+ a:['Nur durch den Schwefelgehalt im Treibstoff bzw. Öl','Aus dem Stickstoff der Luft','Aus dem Katalysator','Durch zu hohe Verdichtung'],c:0,
+ e:'SO₂ ist giftig und stammt ausschließlich aus Schwefel im Kraftstoff oder Motoröl.',src:'Vollständige Verbrennung S. 1'},
+{id:'vb11',t:'verbrennung',type:'match',q:'Ordne die Schadstoffe ihrer Beschreibung zu.',
+ cats:['CO','HC','NOx','PM'],
+ items:[{t:'Rußpartikel, krebserregend weil lungengängig',c:3},{t:'Unvollständige Verbrennung von C mit O, sehr giftig',c:0},{t:'Stickstoff-Sauerstoff-Verbindungen, Problem bei Luftüberschuss',c:2},{t:'Unverbrannter Treibstoff (Kohlenwasserstoffe)',c:1}],
+ e:'CO = giftig (Luftmangel), HC = unverbrannt, NOx = Stickoxide (Luftüberschuss), PM = Partikel/Ruß (Luftüberschuss, Diesel/DI).',src:'Vollständige Verbrennung S. 1'},
+{id:'vb12',t:'verbrennung',type:'mc',q:'Was ist die Explosionsgrenze eines Gemisches?',
+ a:['Die Grenzen (untere und obere), innerhalb derer ein Gemisch überhaupt brennt','Der Druck, bei dem der Motor klopft','Die maximale Verdichtung eines Ottomotors','Die Temperatur, ab der sich Diesel selbst entzündet'],c:0,
+ e:'Bei zu wenig Luft, aber auch bei zu hohem Luftanteil brennt ein Treibstoff nicht → untere (UEG) und obere (OEG) Explosionsgrenze.',src:'Gemischbildung S. 2',test:true},
+{id:'vb13',t:'verbrennung',type:'mc',q:'Innerhalb welcher Kraftstoffanteile (Volumen) ist ein Benzin-Luft-Gemisch zündfähig?',
+ a:['0,6 % bis 8,0 %','0,6 % bis 7,5 %','1 % bis 14,8 %','5 % bis 50 %'],c:0,
+ e:'Benzin: unter 0,6 % zu wenig, über 8,0 % zu viel. Diesel: 0,6 % bis 7,5 %.',src:'Gemischbildung S. 2'},
+{id:'vb14',t:'verbrennung',type:'num',q:'Ab welchem Brennstoffanteil ist ein Diesel-Luft-Gemisch zu fett (obere Explosionsgrenze)?',c:7.5,tol:0.05,unit:'%',
+ e:'Diesel: über 7,5 % zu viel Brennstoff. Benzin: über 8,0 %.',src:'Gemischbildung S. 2'},
+{id:'vb15',t:'verbrennung',type:'tf',q:'Links im Explosionsbereich-Balken (0 % Kraftstoff) ist das Gemisch zu fett.',c:false,
+ e:'Falsch. 0 % Kraftstoff = zu mager. Rechts bei 100 % Kraftstoff ist es zu fett. Dazwischen liegt der Explosionsbereich (UEG bis OEG).',src:'Gemischbildung S. 2'},
+
+/* ---------- Mischungsverhältnis & Lambda ---------- */
+{id:'la01',t:'lambda',type:'mc',q:'Was bedeutet Lambda (λ) = 1?',
+ a:['Stöchiometrisches Gemisch – die zugeführte Luftmenge entspricht genau dem theoretischen Luftbedarf','Doppelte Luftmenge','Luftmangel von 30 %','Das Gemisch ist außerhalb der Explosionsgrenze'],c:0,
+ e:'λ = zugeführte Luftmenge / theoretischer Luftbedarf. λ = 1 → theoretisch richtiges Gemisch, vollständige Verbrennung.',src:'Gemischbildung S. 2',test:true},
+{id:'la02',t:'lambda',type:'num',q:'Wie viel kg Luft braucht man theoretisch für die vollständige Verbrennung von 1 kg Benzin?',c:14.8,tol:0.15,unit:'kg Luft',
+ e:'Etwa 14,8 kg Luft pro 1 kg Benzin (Mischungsverhältnis 1 : 14,8) → λ = 1.',src:'Gemischbildung S. 2',test:true},
+{id:'la03',t:'lambda',type:'mc',q:'Wie lautet die Formel für die Luftzahl λ?',
+ a:['λ = zugeführte Luftmenge ÷ theoretischer Luftbedarf','λ = Kraftstoffmenge ÷ Luftmenge','λ = Drehmoment ÷ Drehzahl','λ = Sauerstoff ÷ Stickstoff'],c:0,
+ e:'λ vergleicht die tatsächlich zugeführte Luft mit der theoretisch nötigen Luft. λ < 1 fett, λ > 1 mager.',src:'Gemischbildung S. 2'},
+{id:'la04',t:'lambda',type:'multi',q:'Was kennzeichnet ein fettes Gemisch (λ < 1)? (mehrere richtig)',
+ a:['Höheres Motordrehmoment','Höherer Kraftstoffverbrauch','Hoher Schadstoffanteil an CO und HC','Geringerer Kraftstoffverbrauch','NOx-Anteil steigt stark'],c:[0,1,2],
+ e:'Fett = Luftmangel: mehr Drehmoment, mehr Verbrauch, viel CO und HC (unvollständige Verbrennung).',src:'Gemischbildung S. 2'},
+{id:'la05',t:'lambda',type:'multi',q:'Was kennzeichnet ein mageres Gemisch (λ > 1)? (mehrere richtig)',
+ a:['Motordrehmoment sinkt','Geringerer Kraftstoffverbrauch','Heiße Verbrennung','Schadstoffanteil NOx steigt','Hoher CO-Anteil'],c:[0,1,2,3],
+ e:'Mager = Luftüberschuss: weniger Drehmoment, weniger Verbrauch, heiße Verbrennung, NOx steigt.',src:'Gemischbildung S. 2'},
+{id:'la06',t:'lambda',type:'mc',q:'Bei welcher Luftzahl liefert der Ottomotor die Höchstleistung (max. Drehmoment)?',
+ a:['λ ≈ 0,9 (1 : 13,3)','λ = 1,0 (1 : 14,8)','λ ≈ 1,2','λ ≈ 0,5'],c:0,
+ e:'Höchstleistung bei leicht fettem Gemisch λ ≈ 0,9. Im Diagramm: 1 : 13,3.',src:'Gemischbildung S. 2',test:true},
+{id:'la07',t:'lambda',type:'mc',q:'Bei welcher Luftzahl ist der spezifische Kraftstoffverbrauch am geringsten?',
+ a:['Bei leicht magerem Gemisch, λ ≈ 1,1 – 1,2','Bei λ = 0,9','Bei λ = 0,5','Bei λ = 1,6'],c:0,
+ e:'Der Verbrauch (b_eff) ist im mageren Bereich am niedrigsten – im Diagramm um λ 1,1 bis 1,2 (Teillast, höchste Wirtschaftlichkeit).',src:'Gemischbildung S. 2',test:true},
+{id:'la08',t:'lambda',type:'match',q:'Ordne die Luftzahlen den Bereichen im Diagramm zu.',
+ cats:['λ ≈ 0,5','λ ≈ 0,9','λ = 1,0','λ ≈ 1,3'],
+ items:[{t:'Theoretisch richtiges Gemisch',c:2},{t:'Höchstleistung',c:1},{t:'Zündgrenze fett',c:0},{t:'Zündgrenze mager (normaler Motor)',c:3}],
+ e:'Zündgrenze fett 1 : 7,4 (λ 0,5) · Höchstleistung 1 : 13,3 (λ 0,9) · richtig 1 : 14,8 (λ 1,0) · Zündgrenze mager λ 1,3, bei Magermotor bis λ 1,6.',src:'Gemischbildung S. 2'},
+{id:'la09',t:'lambda',type:'mc',q:'Welches Mischungsverhältnis gilt im Kaltstart und warum?',
+ a:['Ca. 1 : 3 – der Treibstoff kondensiert zum Teil am Saugrohr und an den Zylinderwänden','1 : 14,8 – wie immer','1 : 20 – kalte Luft ist dichter','1 : 8,9 – wegen der Schubabschaltung'],c:0,
+ e:'Kaltstart: extrem fett (1 : 3, bis λ = 0,3), weil ein Teil des Kraftstoffs an kalten Wänden kondensiert und nicht verbrennt.',src:'Gemischbildung S. 2 + 4',test:true},
+{id:'la10',t:'lambda',type:'mc',q:'Wie ist das Gemisch im Leerlauf?',
+ a:['Fett – 30 bis 40 % Luftmangel','Mager – 10 bis 30 % Luftüberschuss','Genau λ = 1','Extrem fett – 1 : 3'],c:0,
+ e:'Leerlauf: 30 … 40 % Luftmangel = fett (λ ≈ 0,7 – 0,8).',src:'Gemischbildung S. 2',test:true},
+{id:'la11',t:'lambda',type:'mc',q:'Wie ist das Gemisch bei Teillast und was ist der Vorteil?',
+ a:['Mager – 10 bis 30 % Luftüberschuss, höchste Wirtschaftlichkeit','Fett – 5 bis 10 % Luftmangel, höchste Leistung','Fett – 30 bis 40 % Luftmangel','Stöchiometrisch – geringste Emissionen'],c:0,
+ e:'Teillast: 10 … 30 % Luftüberschuss = mager → geringster spezifischer Verbrauch.',src:'Gemischbildung S. 2',test:true},
+{id:'la12',t:'lambda',type:'mc',q:'Wie ist das Gemisch bei Volllast?',
+ a:['Fett – 5 bis 10 % Luftmangel, Anstieg des spezifischen Kraftstoffverbrauchs','Mager – 10 bis 30 % Luftüberschuss','Fett – 30 bis 40 % Luftmangel','1 : 3'],c:0,
+ e:'Volllast: 5 … 10 % Luftmangel = fett (λ ≈ 0,85 – 0,95) für maximale Leistung, der Verbrauch steigt.',src:'Gemischbildung S. 2 + 4',test:true},
+{id:'la13',t:'lambda',type:'match',q:'Fett oder mager? Ordne die Betriebsbereiche zu.',
+ cats:['fett','mager'],
+ items:[{t:'Kaltstart',c:0},{t:'Leerlauf',c:0},{t:'Teillast',c:1},{t:'Volllast',c:0}],
+ e:'Nur die Teillast läuft mager (Wirtschaftlichkeit). Kaltstart, Leerlauf und Volllast laufen fett.',src:'Gemischbildung S. 2 + Notizen 15.9.',test:true},
+{id:'la14',t:'lambda',type:'tf',q:'Ein Magermotor hat seine Zündgrenze bei etwa λ = 1,6 (1 : 23,7).',c:true,
+ e:'Richtig. Im Diagramm: „Zündgrenze bei Magermotor" bei 1 : 23,7 → λ 1,6. Normale Motoren: λ ≈ 1,3.',src:'Gemischbildung S. 2'},
+{id:'la15',t:'lambda',type:'mc',q:'Was bedeutet „Luftüberschuss" bezogen auf λ?',
+ a:['λ > 1 – mehr Luft als theoretisch nötig (mager)','λ < 1 – weniger Luft als nötig (fett)','λ = 1','λ = 0'],c:0,
+ e:'Luftüberschuss = mager = λ > 1. Luftmangel = fett = λ < 1.',src:'Gemischbildung S. 2'},
+
+/* ---------- Otto-Prinzip & Direkteinspritzer ---------- */
+{id:'ot01',t:'otto',type:'mc',q:'Wie wird das Gemisch beim Otto-Prinzip gezündet?',
+ a:['Fremdzündung durch die Zündkerze','Selbstzündung durch die heiße, verdichtete Luft','Durch die Glühstiftkerze','Durch den Einspritzdruck'],c:0,
+ e:'Otto = Fremdzünder: Benzin-Luft-Gemisch (λ = 1) wird mit der Zündkerze gezündet.',src:'Gemischbildung S. 3'},
+{id:'ot02',t:'otto',type:'mc',q:'Was bedeutet „äußere Gemischbildung"?',
+ a:['Luft und Benzin werden außerhalb des Brennraums (im Saugrohr) vollständig vermischt – homogenes Gemisch','Der Kraftstoff wird direkt in den Brennraum eingespritzt','Die Luft wird außerhalb des Motors verdichtet','Das Gemisch wird außerhalb des Fahrzeugs hergestellt'],c:0,
+ e:'Äußere Gemischbildung → homogenes (gleichmäßiges) Gemisch. Typisch: klassischer Ottomotor mit Saugrohreinspritzung.',src:'Gemischbildung S. 3',test:true},
+{id:'ot03',t:'otto',type:'mc',q:'Wie wird beim klassischen Ottomotor die Leistung geregelt?',
+ a:['Quantitätsregelung – über die angesaugte Gemischmenge (Drosselklappe)','Qualitätsregelung – über die eingespritzte Kraftstoffmenge','Über den Zündzeitpunkt allein','Über die Verdichtung'],c:0,
+ e:'Quantität = Menge. Die Drosselklappe dosiert die Luftmenge → Füllungsgrad des Brennraums verändert sich, λ bleibt ≈ 1.',src:'Gemischbildung S. 3',test:true},
+{id:'ot04',t:'otto',type:'mc',q:'Welche Aufgabe hat die Drosselklappe beim Ottomotor?',
+ a:['Sie dosiert die Luftmenge und verändert damit den Füllungsgrad des Brennraums','Sie regelt den Einspritzdruck','Sie verhindert das Klopfen','Sie mischt Kraftstoff und Luft'],c:0,
+ e:'Leerlauf: Drosselklappe fast zu → wenig Gemisch. Volllast: Drosselklappe offen → viel Gemisch. Beides bei λ ≈ 1.',src:'Gemischbildung S. 3'},
+{id:'ot05',t:'otto',type:'mc',q:'Warum darf ein Ottomotor nicht beliebig hoch verdichten?',
+ a:['Das Kraftstoff-Luft-Gemisch wird verdichtet – das kann zu klopfender Verbrennung führen','Die Zündkerze würde schmelzen','Die Drosselklappe würde beschädigt','Es entstünde zu viel SO₂'],c:0,
+ e:'Beim Otto wird das fertige Gemisch verdichtet → Selbstentzündung/Klopfen möglich. Beim Diesel wird nur reine Luft verdichtet.',src:'Gemischbildung S. 3 + 4'},
+{id:'ot06',t:'otto',type:'mc',q:'Wann wird beim Otto-Direkteinspritzer mit Schichtladung der Kraftstoff hauptsächlich eingespritzt?',
+ a:['Zu Beginn des Verdichtungstaktes, direkt in den Brennraum','Im Ansaugtakt ins Saugrohr','Im Arbeitstakt','Im Ausstoßtakt'],c:0,
+ e:'Direkteinspritzung in den Brennraum → das Gemisch entsteht im Brennraum = innere Gemischbildung.',src:'Gemischbildung S. 3'},
+{id:'ot07',t:'otto',type:'mc',q:'Wie sieht das Gemisch beim Schichtladungs-Betrieb aus?',
+ a:['Heterogen: um die Zündkerze ca. λ 1, mit zunehmendem Abstand immer magerer','Homogen: überall λ 1','Überall extrem fett','Überall extrem mager'],c:0,
+ e:'Heterogen = ungleichmäßig. Die zündfähige „Wolke" liegt an der Kerze, außen herum Luftüberschuss.',src:'Gemischbildung S. 3',test:true},
+{id:'ot08',t:'otto',type:'mc',q:'Wie wird die Leistung beim Otto-Direkteinspritzer (Schichtladung) geregelt?',
+ a:['Qualitätsregelung – über die eingespritzte Kraftstoffmenge (Gemischqualität)','Quantitätsregelung – über die Drosselklappe','Über die Zündspannung','Über die Nockenwelle'],c:0,
+ e:'Drosselklappe vollständig geöffnet (Luftüberschuss), Leistung über Kraftstoffmenge = Qualitätsregelung wie beim Diesel.',src:'Gemischbildung S. 3',test:true},
+{id:'ot09',t:'otto',type:'mc',q:'Welchen Nebeneffekt hat das Einspritzen des Kraftstoffs direkt in den Brennraum?',
+ a:['Der Brennraum wird gekühlt','Der Brennraum wird stärker erhitzt','Die Verdichtung sinkt','Die Drosselklappe wird entlastet'],c:0,
+ e:'Der verdampfende Kraftstoff entzieht dem Brennraum Wärme → Kühlung, weniger Klopfneigung.',src:'Gemischbildung S. 3'},
+{id:'ot10',t:'otto',type:'match',q:'Quantitäts- oder Qualitätsregelung?',
+ cats:['Quantitätsregelung','Qualitätsregelung'],
+ items:[{t:'Leistung über angesaugte Gemischmenge (Drosselklappe)',c:0},{t:'Leistung über eingespritzte Kraftstoffmenge',c:1},{t:'Klassischer Ottomotor (Saugrohreinspritzung)',c:0},{t:'Dieselmotor',c:1},{t:'Otto-Direkteinspritzer mit Schichtladung',c:1}],
+ e:'Quantität = Menge des Gemisches (Otto). Qualität = Zusammensetzung des Gemisches, Luft immer voll (Diesel, Otto-DI Schichtladung).',src:'Gemischbildung S. 3 + 4',test:true},
+{id:'ot11',t:'otto',type:'tf',q:'Beim Otto-Direkteinspritzer mit Schichtladung ist die Drosselklappe vollständig geöffnet.',c:true,
+ e:'Richtig – dadurch Luftüberschuss; die Leistung wird über die Kraftstoffmenge geregelt.',src:'Gemischbildung S. 3'},
+{id:'ot12',t:'otto',type:'match',q:'Homogen oder heterogen?',
+ cats:['homogenes Gemisch','heterogenes Gemisch'],
+ items:[{t:'Äußere Gemischbildung (Saugrohr)',c:0},{t:'Diesel',c:1},{t:'Otto-Direkteinspritzer Schichtladung',c:1},{t:'Vollständige Vermischung von Luft und Benzin',c:0}],
+ e:'Homogen = überall gleich (äußere Gemischbildung). Heterogen = geschichtet/ungleich (innere Gemischbildung: Diesel, Otto-DI).',src:'Notizen 15.9.'},
+
+/* ---------- Diesel-Prinzip ---------- */
+{id:'di01',t:'diesel',type:'mc',q:'Warum ist der Zylinder beim Dieselmotor immer vollständig mit Luft gefüllt?',
+ a:['Weil es keine Drosselklappe gibt → Luftüberschuss','Weil der Turbolader immer läuft','Weil der Kraftstoff die Luft verdrängt','Weil die Glühkerze die Luft ausdehnt'],c:0,
+ e:'Diesel: keine Drosselklappe, daher Zylinder immer vollständig mit Luft gefüllt – Luftüberschuss.',src:'Gemischbildung S. 4',test:true},
+{id:'di02',t:'diesel',type:'mc',q:'Wann wird beim Diesel der Kraftstoff eingespritzt?',
+ a:['Zum Zündzeitpunkt direkt in den Brennraum','Im Ansaugtakt ins Saugrohr','Zu Beginn des Verdichtungstaktes','Im Ausstoßtakt'],c:0,
+ e:'Kraftstoff wird zum Zündzeitpunkt direkt in den Brennraum eingespritzt (innere Gemischbildung).',src:'Gemischbildung S. 4'},
+{id:'di03',t:'diesel',type:'mc',q:'Was ist der Zündverzug beim Diesel und wie lang ist er ungefähr?',
+ a:['Ca. 1 ms – der Kraftstoff muss erst verdampfen und sich mit der Luft mischen','Ca. 1 s – die Glühkerze braucht Zeit','Ca. 10 ms – die Zündspule muss laden','Es gibt keinen Zündverzug'],c:0,
+ e:'Zündverzug ≈ 1 ms: Verdampfen + Mischen, dann Selbstentzündung.',src:'Gemischbildung S. 4',test:true},
+{id:'di04',t:'diesel',type:'mc',q:'Wie entzündet sich der Kraftstoff beim Dieselmotor?',
+ a:['Selbstzündung durch die heiße, hoch verdichtete Luft im Brennraum','Fremdzündung durch eine Zündkerze','Durch die Glühstiftkerze im Normalbetrieb','Durch den Einspritzdruck'],c:0,
+ e:'Diesel = Selbstzünder. Die Glühstiftkerze hilft nur beim Kaltstart.',src:'Gemischbildung S. 4',test:true},
+{id:'di05',t:'diesel',type:'mc',q:'Warum kann beim Diesel so hoch verdichtet werden?',
+ a:['Es wird reine Luft verdichtet – die kann theoretisch beliebig verdichtet werden (kein Klopfen)','Weil Diesel eine höhere Oktanzahl hat','Weil die Drosselklappe geschlossen ist','Weil das Gemisch homogen ist'],c:0,
+ e:'Reine Luft kann nicht „klopfen". Daher hohe Verdichtung möglich → Kraftstoff über Einspritzdüse (Injektor) erst am Ende eingespritzt.',src:'Gemischbildung S. 4'},
+{id:'di06',t:'diesel',type:'multi',q:'Was hat der Diesel mit dem Otto-Direkteinspritzer (Schichtladung) gemeinsam? (mehrere richtig)',
+ a:['Heterogenes Gemisch','Leistungsregelung über die eingespritzte Kraftstoffmenge (Qualitätsregelung)','Innere Gemischbildung','Fremdzündung durch Zündkerze','Homogenes Gemisch'],c:[0,1,2],
+ e:'Beide: innere Gemischbildung, heterogenes Gemisch, Qualitätsregelung. Unterschied: Diesel = Selbstzünder.',src:'Gemischbildung S. 4',test:true},
+{id:'di07',t:'diesel',type:'match',q:'Otto oder Diesel? Ordne die Merkmale zu.',
+ cats:['Otto (Saugrohreinspritzung)','Diesel'],
+ items:[{t:'Heterogenes Gemisch',c:1},{t:'Äußere Gemischbildung',c:0},{t:'Innere Gemischbildung',c:1},{t:'Arbeitet mit Luftüberschuss',c:1},{t:'Unterschiedlicher Füllungsgrad des Brennraums (Drosselklappe)',c:0},{t:'Kraftstoff wird direkt in den Brennraum gespritzt',c:1}],
+ e:'Das ist die Zuordnungsübung aus den Notizen vom 15.9. Direkt in den Brennraum spritzen auch Benzin-Direkteinspritzer.',src:'Notizen 15.9.',test:true},
+{id:'di08',t:'diesel',type:'gap',q:'Wie heißt das Bauteil, das den Kraftstoff beim Diesel in den Brennraum spritzt (Fachbegriff, auch „Einspritzdüse")?',c:['Injektor','Einspritzdüse','Injektoren'],
+ e:'Einspritzdüse = Injektor. Beim Kaltstart unterstützt die Glühstiftkerze.',src:'Gemischbildung S. 4'},
+{id:'di09',t:'diesel',type:'tf',q:'Beim Dieselmotor wird das Kraftstoff-Luft-Gemisch verdichtet und dann mit der Zündkerze gezündet.',c:false,
+ e:'Falsch. Beim Diesel wird nur Luft verdichtet, der Kraftstoff kommt erst zum Zündzeitpunkt und entzündet sich selbst.',src:'Gemischbildung S. 4'},
+{id:'di10',t:'diesel',type:'mc',q:'Welches Bauteil ist im Diesel-Bild bei „Leerlauf" zusätzlich eingezeichnet und wofür ist es?',
+ a:['Glühstiftkerze – Starthilfe bei kaltem Motor','Zündkerze – Fremdzündung','Drosselklappe – Luftdosierung','Lambdasonde – Gemischregelung'],c:0,
+ e:'Glühstiftkerze heizt den Brennraum beim Kaltstart vor. Kein Zünden im Normalbetrieb.',src:'Gemischbildung S. 4'},
+
+/* ---------- Betriebszustände ---------- */
+{id:'bz01',t:'betrieb',type:'mc',q:'Warum muss beim Kaltstart mehr Kraftstoff eingespritzt werden?',
+ a:['Ein Teil des Kraftstoffs kondensiert an den kalten Zylinderwänden und steht nicht für die Verbrennung zur Verfügung','Die Batterie ist kalt','Die Luft ist im Winter dünner','Der Katalysator braucht Kraftstoff zum Aufheizen'],c:0,
+ e:'Kaltstart: Anfettung bis λ = 0,3 (ca. 1 : 3), weil Kraftstoff an kalten Wänden kondensiert.',src:'Gemischbildung S. 4',test:true},
+{id:'bz02',t:'betrieb',type:'num',q:'Bis zu welcher Luftzahl λ wird beim Kaltstart angefettet?',c:0.3,tol:0.01,unit:'λ',
+ e:'Kaltstart bis λ = 0,3.',src:'Gemischbildung S. 4'},
+{id:'bz03',t:'betrieb',type:'mc',q:'Was passiert im Warmlauf mit dem Gemisch?',
+ a:['Vom Kaltstart bis zum Erreichen der Betriebstemperatur wird die Anfettung stufenweise zurückgenommen','Das Gemisch wird schlagartig auf λ = 1 gestellt','Das Gemisch wird weiter angefettet','Die Einspritzung wird ausgesetzt'],c:0,
+ e:'Warmlauf: Anfettung wird stufenweise zurückgenommen, bis Betriebstemperatur erreicht ist.',src:'Gemischbildung S. 4'},
+{id:'bz04',t:'betrieb',type:'mc',q:'Was passiert beim Beschleunigen (Übergang) und wie reagiert das Steuergerät?',
+ a:['Durch Öffnen der Drosselklappe magert das Gemisch kurzzeitig ab – es wird mehr Kraftstoff eingespritzt, um einen Leistungseinbruch zu verhindern','Das Gemisch wird zu fett – die Einspritzung wird reduziert','Die Zündung wird abgeschaltet','Der Zündzeitpunkt wird auf spät gestellt'],c:0,
+ e:'Beschleunigungsanreicherung: Drosselklappe auf → kurz mager → mehr Kraftstoff.',src:'Gemischbildung S. 4',test:true},
+{id:'bz05',t:'betrieb',type:'mc',q:'Welches λ gilt bei Volllast und warum?',
+ a:['λ = 0,85 – 0,95, das Gemisch wird für maximale Motorleistung angereichert','λ = 1,1 – 1,3 für geringen Verbrauch','λ = 0,3 wegen Kondensation','λ = 1,0 für beste Abgaswerte'],c:0,
+ e:'Volllast: leicht fett (λ 0,85 – 0,95) → maximale Leistung.',src:'Gemischbildung S. 4',test:true},
+{id:'bz06',t:'betrieb',type:'mc',q:'Was ist die Schubabschaltung?',
+ a:['Bei erhöhter Drehzahl und geschlossener Drosselklappe (z. B. Bergabfahren) wird die Einspritzung ausgesetzt, um Kraftstoff zu sparen','Das Abschalten des Turboladers bei Volllast','Das Abschalten einzelner Zylinder im Leerlauf','Die Notabschaltung bei Überhitzung'],c:0,
+ e:'Schub = Motor wird vom Fahrzeug geschoben. Drosselklappe zu + Drehzahl hoch → keine Einspritzung.',src:'Gemischbildung S. 4',test:true},
+{id:'bz07',t:'betrieb',type:'mc',q:'Nenne je einen Betriebszustand mit fettem und einen mit magerem Gemisch (Frage aus dem Unterricht).',
+ a:['Fett: Kaltstart – Mager: Teillast','Fett: Teillast – Mager: Kaltstart','Fett: Schubabschaltung – Mager: Volllast','Fett: Leerlauf – Mager: Volllast'],c:0,
+ e:'Fett: Kaltstart (auch Leerlauf, Volllast). Mager: Teillast.',src:'Notizen 15.9.',test:true},
+{id:'bz08',t:'betrieb',type:'match',q:'Ordne die Beschreibung dem Betriebszustand zu.',
+ cats:['Kaltstart','Warmlauf','Beschleunigung','Volllast','Schubabschaltung'],
+ items:[{t:'Einspritzung wird ausgesetzt (Bergabfahren)',c:4},{t:'Anfettung wird stufenweise zurückgenommen',c:1},{t:'Kraftstoff kondensiert an kalten Zylinderwänden',c:0},{t:'Gemisch magert kurz ab, mehr Kraftstoff nötig',c:2},{t:'λ = 0,85 – 0,95 für maximale Leistung',c:3}],
+ e:'Die fünf Betriebszustände des Ottomotors mit ihren Auswirkungen auf das Gemisch.',src:'Gemischbildung S. 4',test:true},
+{id:'bz09',t:'betrieb',type:'tf',q:'Im Teillastbereich läuft der Ottomotor mit 10 bis 30 % Luftüberschuss, weil das am wirtschaftlichsten ist.',c:true,
+ e:'Richtig. Teillast = mager = höchste Wirtschaftlichkeit.',src:'Gemischbildung S. 2'},
+
+/* ---------- Motormanagement, Sensoren & Aktoren ---------- */
+{id:'mm01',t:'motorman',type:'multi',q:'Welche Ansprüche werden an das Motormanagement gestellt? (mehrere richtig)',
+ a:['Stabilen und komfortablen Motorlauf gewährleisten','Treibstoffverbrauch so gering wie möglich halten','Maximale Motorleistung ermöglichen','Schädliche Abgase vermeiden','Sicheren Motorstart gewährleisten','Den Reifendruck überwachen'],c:[0,1,2,3,4],
+ e:'Fünf Ansprüche: Motorlauf, Verbrauch, Leistung, Abgase, Motorstart.',src:'Sensoren & Aktoren S. 5'},
+{id:'mm02',t:'motorman',type:'mc',q:'Wie versucht das Motorsteuergerät die Ansprüche zu erfüllen?',
+ a:['Durch ständiges Anpassen von Zündzeitpunkt und eingespritzter Treibstoffmenge','Durch Erhöhen der Bordspannung','Durch Abschalten des Katalysators','Durch mechanische Verstellung des Vergasers'],c:0,
+ e:'Betriebszustand erfassen → mit Kennfeld im EPROM vergleichen → ZZP, Einspritzmenge und Luftmasse anpassen.',src:'Sensoren & Aktoren S. 5',test:true},
+{id:'mm03',t:'motorman',type:'mc',q:'Wo ist das Kennfeld im Steuergerät abgelegt?',
+ a:['Im EPROM','Im Arbeitsspeicher','Im Prozessor','In der Lambdasonde'],c:0,
+ e:'Das Kennfeld liegt im EPROM (Festwertspeicher). Steuergerät: Prozessor, Arbeitsspeicher, EPROM.',src:'Sensoren & Aktoren S. 5'},
+{id:'mm04',t:'motorman',type:'mc',q:'Welche Achsen hat das Zündkennfeld-Diagramm (Motronic)?',
+ a:['Zündwinkel über Motorlast und Motordrehzahl','Drehmoment über Verbrauch','Lambda über Temperatur','Einspritzdruck über Zeit'],c:0,
+ e:'3D-Kennfeld: für jede Kombination aus Last und Drehzahl ein Zündwinkel.',src:'Sensoren & Aktoren S. 5'},
+{id:'mm05',t:'motorman',type:'mc',q:'Wie ist der richtige Zündzeitpunkt (ZZP) gewählt?',
+ a:['So, dass der höchste Verbrennungsdruck kurz nach OT auftritt','So, dass der höchste Druck genau in UT auftritt','So, dass die Verbrennung vor OT abgeschlossen ist','So, dass der Druck möglichst spät im Arbeitstakt auftritt'],c:0,
+ e:'Höchster Verbrennungsdruck kurz nach OT → Kolben wird optimal nach unten gedrückt.',src:'Sensoren & Aktoren S. 5',test:true},
+{id:'mm06',t:'motorman',type:'match',q:'Hauptgröße oder Korrekturgröße für ZZP und Gemischbildung?',
+ cats:['Hauptgröße','Korrekturgröße'],
+ items:[{t:'Drehzahl',c:0},{t:'Last',c:0},{t:'Motortemperatur',c:1},{t:'Abgasregelung (Lambda)',c:1},{t:'Klopfregelung',c:1}],
+ e:'Hauptgrößen: Drehzahl und Last. Korrekturgrößen: Motortemperatur, Abgasregelung, Klopfregelung, Leerlauf/Volllast.',src:'Sensoren & Aktoren S. 5',test:true},
+{id:'mm07',t:'motorman',type:'mc',q:'Welche Aufgabe haben Sensoren?',
+ a:['Sie erfassen Betriebszustände (physikalische Größen) und wandeln sie in elektrische Signale um','Sie verstellen den Betriebszustand des Motors','Sie speichern das Kennfeld','Sie erzeugen die Bordspannung'],c:0,
+ e:'Sensor = Fühler: physikalische Größe (z. B. Drehzahl) → elektrisches Signal für das Steuergerät.',src:'Sensoren & Aktoren S. 5',test:true},
+{id:'mm08',t:'motorman',type:'num',q:'Mit welcher Spannung (DC) arbeiten die Sensoren am Steuergerät?',c:5,tol:0.01,unit:'V',
+ e:'Sensorspannung 5 V DC – eine abgesicherte, stabilisierte Spannung.',src:'FB 721 / Notizen 15.9.',test:true},
+{id:'mm09',t:'motorman',type:'mc',q:'Warum werden Sensoren mit 5 V und nicht mit Bordspannung versorgt?',
+ a:['Weil 5 V auch bei Spannungsabfall unter 12 V (z. B. beim Starten) stabil erhalten bleiben','Weil 5 V billiger sind','Weil Sensoren bei 12 V durchbrennen','Weil die Lambdasonde 5 V erzeugt'],c:0,
+ e:'Abgesicherte Spannung: das Bordnetz schwankt, die 5 V bleiben konstant → Messwerte bleiben genau.',src:'FB 721 / Notizen 15.9.',test:true},
+{id:'mm10',t:'motorman',type:'mc',q:'Was sind Aktoren?',
+ a:['Elektrische Stellglieder, die vom Steuergerät (überwiegend mit Bordspannung ca. 12 V) angesteuert werden und den Sollzustand herstellen','Fühler, die den Istzustand messen','Speicher für das Kennfeld','Sicherungen im Bordnetz'],c:0,
+ e:'Aktor = Stellglied, z. B. Einspritzventil. Istzustand → über Aktoren → Sollzustand.',src:'Sensoren & Aktoren S. 5',test:true},
+{id:'mm11',t:'motorman',type:'match',q:'Sensor oder Aktor?',
+ cats:['Sensor','Aktor'],
+ items:[{t:'Einspritzventil',c:1},{t:'Drehzahlgeber (Kurbelwelle)',c:0},{t:'Arbeitet mit 5 V',c:0},{t:'Arbeitet überwiegend mit Bordspannung ca. 12 V',c:1},{t:'Erfasst den Istzustand',c:0},{t:'Stellt den Sollzustand her',c:1}],
+ e:'Sensoren messen (5 V, Istzustand), Aktoren stellen (12 V, Sollzustand).',src:'Sensoren & Aktoren S. 5',test:true},
+{id:'mm12',t:'motorman',type:'mc',q:'Welche Größen passt das Steuergerät an, wenn Ist- und Kennfeld-Wert abweichen?',
+ a:['Zündzeitpunkt, Einspritzmenge und Luftmasse','Nur den Zündzeitpunkt','Nur die Bordspannung','Reifendruck und Kühlmittelstand'],c:0,
+ e:'ZZP, Einspritzmenge und Luftmasse werden bei Bedarf angepasst.',src:'Sensoren & Aktoren S. 5'},
+{id:'mm13',t:'motorman',type:'gap',q:'Wie heißen die drei Anschlüsse eines Transistors? (B, C, E ausgeschrieben: Basis, Kollektor, …)',c:['Emitter'],
+ e:'B = Basis, C = Kollektor (Collector), E = Emitter.',src:'FB 721 / Notizen 15.9.'},
+{id:'mm14',t:'motorman',type:'mc',q:'Was bedeutet U (Spannung) physikalisch?',
+ a:['Potentialunterschied zwischen zwei Punkten','Anzahl der Elektronen pro Sekunde','Widerstand eines Leiters','Magnetische Feldstärke'],c:0,
+ e:'Spannung U = Potentialunterschied. Beim Hallsensor entsteht er an den Rändern des Plättchens.',src:'FB 721 / Notizen 15.9.'},
+
+/* ---------- Drehzahlerfassung & Induktivsensor ---------- */
+{id:'dz01',t:'drehzahl',type:'multi',q:'Wovon hängt der Ablauf der Verbrennung (Flammfrontausbreitung) ab? (mehrere richtig)',
+ a:['Vom Mischungsverhältnis – fettes Gemisch = raschere Flammfrontausbreitung','Von der Brennraumtemperatur','Von der Verwirbelung (Turbulenz) im Brennraum','Von der Bordspannung','Von der Reifengröße'],c:[0,1,2],
+ e:'Mischungsverhältnis, Temperatur, Turbulenz. Die Verbrennung braucht ca. 1,5 ms bis zum maximalen Druck.',src:'Sensoren & Aktoren S. 6'},
+{id:'dz02',t:'drehzahl',type:'num',q:'Wie lange dauert es ungefähr, bis nach der Zündung der maximale Druck erreicht ist?',c:1.5,tol:0.05,unit:'ms',
+ e:'Ca. 1,5 ms – unabhängig von der Drehzahl! Deshalb muss bei hoher Drehzahl früher gezündet werden.',src:'Sensoren & Aktoren S. 6',test:true},
+{id:'dz03',t:'drehzahl',type:'num',q:'Wie viel Grad Kurbelwinkel legt die Kurbelwelle bei 600 1/min in 1 ms zurück?',c:3.6,tol:0.05,unit:'°KW',
+ e:'600 U/min = 10 U/s = 3600 °/s → 3,6 °KW pro ms. Bei 6000 1/min sind es 36 °KW/ms.',src:'Sensoren & Aktoren S. 6',test:true},
+{id:'dz04',t:'drehzahl',type:'num',q:'Wie viel Grad Kurbelwinkel legt die Kurbelwelle bei 6000 1/min in 1 ms zurück?',c:36,tol:0.5,unit:'°KW',
+ e:'6000 U/min = 100 U/s = 36 000 °/s → 36 °KW pro ms. Zehnmal so viel wie bei 600 1/min.',src:'Sensoren & Aktoren S. 6',test:true},
+{id:'dz05',t:'drehzahl',type:'mc',q:'Warum muss mit steigender Drehzahl der Zündzeitpunkt früher (weiter vor OT) liegen?',
+ a:['Weil die Verbrennung immer ca. 1,5 ms braucht, die Kurbelwelle in dieser Zeit aber mehr Grad zurücklegt','Weil der Kraftstoff bei hoher Drehzahl langsamer verbrennt','Weil die Zündspule länger laden muss','Weil die Drosselklappe weiter offen ist'],c:0,
+ e:'Höhere Drehzahl → früherer ZZP vor OT (Benzin) bzw. frühere Einspritzung vor OT (Diesel). Angabe in °KW.',src:'Sensoren & Aktoren S. 6',test:true},
+{id:'dz06',t:'drehzahl',type:'mc',q:'In welcher Einheit wird die Vorzündung angegeben?',
+ a:['In °KW (Grad Kurbelwelle) vor OT','In Millisekunden nach UT','In Volt','In Prozent der Drehzahl'],c:0,
+ e:'Vorzündung = Winkel vor dem oberen Totpunkt, gemessen in Grad Kurbelwelle.',src:'Sensoren & Aktoren S. 6'},
+{id:'dz07',t:'drehzahl',type:'mc',q:'Was kann der Drehzahlsensor außer der Drehzahl noch erkennen?',
+ a:['Zündaussetzer – weil die Beschleunigung der Kurbelwelle im Arbeitstakt jedes Zylinders registriert wird','Den Reifendruck','Die Öltemperatur','Den Kraftstoffstand'],c:0,
+ e:'Die Drehzahlerfassung ist so exakt, dass jeder Arbeitstakt als kleine Beschleunigung erkennbar ist. Fehlt sie → Zündaussetzer.',src:'Sensoren & Aktoren S. 6',test:true},
+{id:'dz08',t:'drehzahl',type:'mc',q:'Was versteht man unter Induktion?',
+ a:['Das Beeinflussen von Elektronen mit einem Magnetfeld','Das Aufladen eines Kondensators','Die Verstärkung eines Signals im Transistor','Die Erwärmung eines Leiters durch Strom'],c:0,
+ e:'Induktion: ein sich veränderndes Magnetfeld „schiebt" Elektronen im Leiter → Spannung entsteht.',src:'Sensoren & Aktoren S. 6'},
+{id:'dz09',t:'drehzahl',type:'multi',q:'Wovon hängt die Höhe der induzierten Spannung ab? (mehrere richtig)',
+ a:['Von der Stärke des Magnetfeldes','Von der Geschwindigkeit, mit der sich das Magnetfeld verändert','Von der Anzahl der betroffenen Elektronen (Windungszahl der Wicklung)','Von der Bordspannung','Von der Farbe des Kabels'],c:[0,1,2],
+ e:'Drei Faktoren: Feldstärke, Änderungsgeschwindigkeit, Windungszahl. Deshalb: höhere Drehzahl → höhere Spannung.',src:'Sensoren & Aktoren S. 6',test:true},
+{id:'dz10',t:'drehzahl',type:'mc',q:'Woraus besteht der Induktivsensor?',
+ a:['Dauermagnet und Kupferwicklung mit Weicheisenkern','Dauermagnet und Halbleiterplättchen','Zündspule und Kondensator','Zwei Elektroden und Keramik'],c:0,
+ e:'Induktivsensor = Dauermagnet + Spule (Kupferwicklung) + Weicheisenkern. Kein Strom nötig.',src:'Sensoren & Aktoren S. 6',test:true},
+{id:'dz11',t:'drehzahl',type:'mc',q:'Wodurch wird der Induktivsensor beeinflusst?',
+ a:['Von einem Geberrad mit gleichmäßig verteilten Zähnen (Inkrementenrad) und einer Zahnlücke als Bezugsmarke (OT)','Von der Lambdasonde','Vom Öldruck','Von der Kühlmitteltemperatur'],c:0,
+ e:'Geberrad = Inkrementenrad. Die Zahnlücke ist die Bezugsmarke für OT.',src:'Sensoren & Aktoren S. 6'},
+{id:'dz12',t:'drehzahl',type:'mc',q:'Was passiert, wenn sich ein Zahn dem Induktivsensor nähert?',
+ a:['Er wirkt als Eisenkern, verstärkt das Magnetfeld → Induktion, die Spannung an der Wicklung steigt','Das Magnetfeld bricht zusammen, die Spannung wird 0','Der Sensor schaltet auf 5 V','Der Sensor wird kurzgeschlossen'],c:0,
+ e:'Zahn nähert sich → Feld stärker → Spannung steigt. Zahnlücke → umgekehrte Wirkung.',src:'Sensoren & Aktoren S. 6'},
+{id:'dz13',t:'drehzahl',type:'mc',q:'Wie erkennt das Steuergerät beim Induktivsensor eine Motorumdrehung?',
+ a:['Die Bezugsmarke (Zahnlücke) bewirkt eine besonders hohe Induktion – ein deutlich größerer Spannungsimpuls','Durch Zählen der Zylinder','Durch die Nockenwelle allein','Durch einen Timer im Steuergerät'],c:0,
+ e:'Bezugsmarke = auffälliger Spannungsverlauf im Signal → einmal pro Umdrehung.',src:'Sensoren & Aktoren S. 6',test:true},
+{id:'dz14',t:'drehzahl',type:'mc',q:'Welche Signalform liefert der Induktivsensor?',
+ a:['Analoge Wechselspannung (Sinus, AC)','Binäres Rechtecksignal 0/5 V','Gleichspannung 12 V','PWM-Signal'],c:0,
+ e:'Induktiv = Analog-Sensor → Wechselspannung. Muss vom Steuergerät erst umgeformt werden.',src:'FB 721 / Notizen 15.9.',test:true},
+{id:'dz15',t:'drehzahl',type:'mc',q:'Welches Schaltzeichen gehört zum Induktivsensor?',
+ a:['Ein Zahnrad (Kreis mit Zähnen) neben einer Spule','Ein Rechteck mit Kreuz','Ein Kreis mit Blitz','Ein Dreieck mit Strich'],c:0,
+ e:'Induktivsensor: Zahnrad + Spule. Hallsensor: Rechteck mit Kreuz (Hall-Element).',src:'Sensoren & Aktoren S. 6 + 7'},
+
+/* ---------- Hallsensor & Vergleich ---------- */
+{id:'ha01',t:'hall',type:'mc',q:'Woraus besteht ein Hallsensor?',
+ a:['Dauermagnet und einem stromdurchflossenen Halbleiterplättchen','Dauermagnet und Kupferwicklung','Spule und Kondensator','Zwei Platinelektroden'],c:0,
+ e:'Hallsensor = Dauermagnet + Halbleiterplättchen, durch das Strom fließt (braucht also Spannungsversorgung).',src:'Sensoren & Aktoren S. 7',test:true},
+{id:'ha02',t:'hall',type:'mc',q:'Was passiert, wenn der Strom im Halbleiterplättchen vom Magnetfeld geschnitten wird?',
+ a:['Die Elektronen weichen aus – an den Rändern entsteht eine unterschiedliche Spannung (Hallspannung)','Der Strom wird unterbrochen','Das Plättchen wird magnetisch','Die Elektronen werden schneller'],c:0,
+ e:'Lorentz-Kraft schiebt die Elektronen zur Seite → Potentialunterschied an den Rändern = Hallspannung.',src:'Sensoren & Aktoren S. 7 + FB 721',test:true},
+{id:'ha03',t:'hall',type:'mc',q:'Welche Kraft schiebt die Elektronen im Hallsensor zur Seite?',
+ a:['Die Lorentz-Kraft','Die Fliehkraft','Die Gewichtskraft','Die Federkraft'],c:0,
+ e:'Lorentz-Kraft: Kraft auf bewegte Ladung im Magnetfeld. Stichwort in den Notizen: Lenzsche Regel / Lorentz-Kraft.',src:'FB 721 / Notizen 15.9.'},
+{id:'ha04',t:'hall',type:'mc',q:'Welche Signalform liefert der Hallgeber?',
+ a:['Binäres Rechtecksignal zwischen 0 und 5 V (1-0-1-0)','Sinusförmige Wechselspannung','Gleichspannung proportional zur Drehzahl','Dreieckspannung'],c:0,
+ e:'Die Hallspannung wird verstärkt → binär: 0 V oder 5 V. Zähne = 5 V, Zahnlücke = 0 V.',src:'Sensoren & Aktoren S. 7',test:true},
+{id:'ha05',t:'hall',type:'mc',q:'Wie sieht die Bezugsmarke beim Hallgeber-Signal aus?',
+ a:['Eine größere Zahnlücke – ein längerer 0-V-Abschnitt im Signal','Ein besonders hoher Spannungsimpuls','Ein negativer Impuls','Sie ist nicht sichtbar'],c:0,
+ e:'Beim Hall: Bezugsmarke = größere Zahnlücke = längere Pause. Beim Induktiv: besonders hoher Impuls.',src:'Sensoren & Aktoren S. 7',test:true},
+{id:'ha06',t:'hall',type:'mc',q:'Wozu dient der Nockenwellensensor zusätzlich zum Kurbelwellensensor?',
+ a:['Das Steuergerät kann dadurch den Zylinder zuordnen (welcher Zylinder ist im Arbeitstakt)','Er misst die Drehzahl genauer','Er erkennt Klopfen','Er misst die Ventiltemperatur'],c:0,
+ e:'Die Kurbelwelle dreht sich 2× pro Arbeitsspiel, die Nockenwelle 1× → eindeutige Zylinderzuordnung.',src:'Sensoren & Aktoren S. 7',test:true},
+{id:'ha07',t:'hall',type:'multi',q:'Vorteile des Induktivsensors? (mehrere richtig)',
+ a:['Keine Spannungsversorgung erforderlich','Einfacher Aufbau, günstig, robust','Signal auch ohne Bewegung','Rechtecksignal direkt auswertbar'],c:[0,1],
+ e:'Induktiv: braucht keinen Strom, einfach, günstig, robust. Nachteile: ohne Bewegung kein Signal, Wechselspannung muss umgeformt werden.',src:'Sensoren & Aktoren S. 7',test:true},
+{id:'ha08',t:'hall',type:'multi',q:'Nachteile des Induktivsensors? (mehrere richtig)',
+ a:['Ohne Bewegung kein Signal','Wechselspannung muss umgeformt werden','Elektronische Verstärkung erforderlich','Teuer'],c:[0,1],
+ e:'Ohne Bewegung keine Induktion → kein Signal. AC muss erst ins Steuergerät-Format gebracht werden.',src:'Sensoren & Aktoren S. 7'},
+{id:'ha09',t:'hall',type:'multi',q:'Vorteile des Hallsensors? (mehrere richtig)',
+ a:['Immer ein Signal, auch ohne Bewegung','Rechteckspannung kann vom Steuergerät direkt ausgewertet werden','Keine Spannungsversorgung nötig','Besonders günstig'],c:[0,1],
+ e:'Hall: Signal auch im Stillstand (→ auch als Endlagensensor nutzbar), Rechteck direkt auswertbar.',src:'Sensoren & Aktoren S. 7',test:true},
+{id:'ha10',t:'hall',type:'multi',q:'Nachteile des Hallsensors? (mehrere richtig)',
+ a:['Elektronische Verstärkung erforderlich','Aufwändiger','Teurer','Ohne Bewegung kein Signal'],c:[0,1,2],
+ e:'Hall braucht Elektronik (Verstärker) → aufwändiger und teurer.',src:'Sensoren & Aktoren S. 7'},
+{id:'ha11',t:'hall',type:'match',q:'Induktiv- oder Hallsensor?',
+ cats:['Induktivsensor','Hallsensor'],
+ items:[{t:'Keine Spannungsversorgung nötig',c:0},{t:'Signal auch ohne Bewegung',c:1},{t:'Sinusförmige Wechselspannung',c:0},{t:'Rechtecksignal 0/5 V',c:1},{t:'Halbleiterplättchen',c:1},{t:'Kupferwicklung mit Weicheisenkern',c:0},{t:'Kann als Endlagensensor verwendet werden',c:1},{t:'Bezugsmarke = besonders hoher Impuls',c:0}],
+ e:'Induktiv = analog, passiv, Spule. Hall = binär, aktiv (5 V), Halbleiter.',src:'Sensoren & Aktoren S. 7',test:true},
+{id:'ha12',t:'hall',type:'multi',q:'Wo werden Drehzahlsensoren eingesetzt? (mehrere richtig)',
+ a:['Motordrehzahlsensor und Nockenwellensensor','Getriebedrehzahlsensor','ABS-Raddrehzahlsensor','Zündimpulsgeber','Reifendrucksensor'],c:[0,1,2,3],
+ e:'Einsatz: Motor-/Nockenwelle, Getriebe, ABS-Räder, Zündimpulsgeber.',src:'Sensoren & Aktoren S. 7'},
+{id:'ha13',t:'hall',type:'tf',q:'Der Hallsensor liefert auch bei stehendem Motor ein Signal.',c:true,
+ e:'Richtig – deshalb kann er auch als Endlagensensor eingesetzt werden. Der Induktivsensor braucht Bewegung.',src:'Sensoren & Aktoren S. 7',test:true},
+{id:'ha14',t:'hall',type:'tf',q:'Beim Hallgeber liegen bei den Zähnen 0 V und bei der Zahnlücke 5 V an.',c:false,
+ e:'Falsch, umgekehrt: Zähne = 5 V (Hallspannung entsteht), Zahnlücke = 0 V.',src:'Sensoren & Aktoren S. 7'},
+{id:'ha15',t:'hall',type:'mc',q:'Welches Schaltzeichen gehört zum Hallsensor?',
+ a:['Ein Rechteck mit einem Kreuz (X) darin','Ein Zahnrad neben einer Spule','Ein Kreis mit Sinuswelle','Ein Dreieck (Verstärker)'],c:0,
+ e:'Hall-Element: Rechteck mit Kreuz. Induktivsensor: Zahnrad + Spule.',src:'Sensoren & Aktoren S. 7'},
+];
+
+/* =====================================================================
+   DATEN – Karteikarten (Frage → Antwort, Leitner-Boxen)
+   ===================================================================== */
+const CARDS = [
+{t:'verbrennung',f:'Was ist Verbrennung?',b:'Die Verbindung eines Brennstoffes mit Sauerstoff. Dabei wird viel Energie (Wärme) frei.'},
+{t:'verbrennung',f:'Oktan-Molekül – Formel und Verbrennungsprodukte?',b:'C₈H₁₈ + 12,5 O₂ → 8 CO₂ + 9 H₂O'},
+{t:'verbrennung',f:'Die 3 Idealbedingungen für vollständige Verbrennung?',b:'1. Optimale Durchmischung Treibstoff/Sauerstoff · 2. Ausreichend Zeit · 3. Richtige Brennraumtemperatur'},
+{t:'verbrennung',f:'CO – Entstehung und Gefahr?',b:'Unvollständige Verbrennung von C mit O (Luftmangel). Toxisch, sehr giftig, geruchlos.'},
+{t:'verbrennung',f:'HC – was ist das?',b:'Unverbrannter Treibstoff (Kohlenwasserstoffe). Krebserregend.'},
+{t:'verbrennung',f:'NOx – was und wann?',b:'Stickoxide (Stickstoff-Sauerstoff-Verbindungen). Krebserregend. Problem bei Luftüberschuss: Diesel und Benzin-Direkteinspritzer.'},
+{t:'verbrennung',f:'PM – was und wann?',b:'Rußpartikel = unverbrannter Treibstoff. Krebserregend, weil lungengängig. Nur bei Luftüberschuss (Diesel, Benzin-DI).'},
+{t:'verbrennung',f:'SO₂ – woher?',b:'Schwefeldioxid, giftig. Nur durch Schwefelgehalt im Treibstoff bzw. Öl.'},
+{t:'verbrennung',f:'CO₂ – Schadstoff?',b:'Kein Schadstoff im eigentlichen Sinne (nicht direkt schädlich), trägt aber zur Klimaerwärmung bei → vermeiden.'},
+{t:'verbrennung',f:'Explosionsgrenzen Benzin / Diesel (Vol.-% Brennstoff)?',b:'Benzin: 0,6 % – 8,0 %. Diesel: 0,6 % – 7,5 %. Darunter zu mager, darüber zu fett → brennt nicht.'},
+{t:'verbrennung',f:'UEG und OEG?',b:'Untere und obere Explosionsgrenze. Dazwischen: Explosionsbereich = richtiges Luft-Brennstoff-Gemisch.'},
+{t:'lambda',f:'Formel für Lambda λ?',b:'λ = zugeführte Luftmenge ÷ theoretischer Luftbedarf. λ = 1 stöchiometrisch, λ < 1 fett, λ > 1 mager.'},
+{t:'lambda',f:'Theoretisch richtiges Gemisch bei Benzin?',b:'14,8 kg Luft für 1 kg Benzin (1 : 14,8) → λ = 1 → vollständige Verbrennung.'},
+{t:'lambda',f:'Fettes Gemisch – 3 Auswirkungen?',b:'Höheres Motordrehmoment · höherer Kraftstoffverbrauch · hoher Schadstoffanteil CO und HC.'},
+{t:'lambda',f:'Mageres Gemisch – 4 Auswirkungen?',b:'Drehmoment sinkt · geringerer Verbrauch · heiße Verbrennung · NOx steigt.'},
+{t:'lambda',f:'λ für Höchstleistung?',b:'λ ≈ 0,9 (1 : 13,3) – leicht fett.'},
+{t:'lambda',f:'λ für geringsten Verbrauch?',b:'λ ≈ 1,1 – 1,2 (Teillast, leicht mager) – höchste Wirtschaftlichkeit.'},
+{t:'lambda',f:'Zündgrenzen fett / mager?',b:'Fett: λ ≈ 0,5 (1 : 7,4). Mager: λ ≈ 1,3 (1 : 19,2), Magermotor bis λ 1,6 (1 : 23,7).'},
+{t:'lambda',f:'Kaltstart – Mischungsverhältnis?',b:'1 : 3 (bis λ = 0,3). Treibstoff kondensiert am Saugrohr und an den Zylinderwänden.'},
+{t:'lambda',f:'Leerlauf – Gemisch?',b:'30 … 40 % Luftmangel = fett (λ ≈ 0,7 – 0,8).'},
+{t:'lambda',f:'Teillast – Gemisch?',b:'10 … 30 % Luftüberschuss = mager. Höchste Wirtschaftlichkeit.'},
+{t:'lambda',f:'Volllast – Gemisch?',b:'5 … 10 % Luftmangel = fett (λ 0,85 – 0,95). Anstieg des spezifischen Kraftstoffverbrauchs.'},
+{t:'otto',f:'Otto-Prinzip in 5 Punkten?',b:'1. Gemisch λ 1 wird fremdgezündet (Zündkerze) · 2. Homogenes Gemisch durch äußere Gemischbildung · 3. Drosselklappe dosiert Luft → Füllungsgrad · 4. Quantitätsregelung (Gemischmenge) · 5. Gemisch wird verdichtet → Klopfgefahr'},
+{t:'otto',f:'Äußere vs. innere Gemischbildung?',b:'Äußere: Vermischung im Saugrohr → homogen (Otto klassisch). Innere: Einspritzung in den Brennraum → heterogen (Diesel, Otto-DI).'},
+{t:'otto',f:'Quantitäts- vs. Qualitätsregelung?',b:'Quantität: Leistung über Menge des angesaugten Gemisches (Drosselklappe, Otto). Qualität: Leistung über eingespritzte Kraftstoffmenge, Luft immer voll (Diesel, Otto-DI Schichtladung).'},
+{t:'otto',f:'Otto-Direkteinspritzer mit Schichtladung – 5 Merkmale?',b:'1. Einspritzung zu Beginn des Verdichtungstaktes in den Brennraum (innere Gemischbildung) · 2. Drosselklappe voll offen → Luftüberschuss · 3. Heterogen: an der Kerze λ 1, außen magerer · 4. Qualitätsregelung · 5. Brennraum wird durch Einspritzen gekühlt'},
+{t:'diesel',f:'Diesel-Prinzip – 6 Merkmale?',b:'1. Keine Drosselklappe → immer Luftüberschuss · 2. Einspritzung zum ZZP direkt in den Brennraum · 3. Zündverzug ca. 1 ms (verdampfen + mischen) · 4. Heterogen + Qualitätsregelung · 5. Selbstzünder (heiße Luft) · 6. Reine Luft beliebig verdichtbar → Injektor'},
+{t:'diesel',f:'Zündverzug?',b:'Ca. 1 ms zwischen Einspritzbeginn und Zündung: Kraftstoff muss erst verdampfen und sich mit der Luft mischen.'},
+{t:'diesel',f:'Warum kann Diesel hoch verdichten, Otto nicht?',b:'Diesel verdichtet reine Luft (kein Klopfen möglich). Otto verdichtet das fertige Gemisch → Klopfgefahr.'},
+{t:'betrieb',f:'Kaltstart?',b:'Kraftstoff kondensiert an kalten Zylinderwänden → mehr einspritzen, bis λ = 0,3.'},
+{t:'betrieb',f:'Warmlauf?',b:'Vom Kaltstart bis Betriebstemperatur wird die Anfettung stufenweise zurückgenommen.'},
+{t:'betrieb',f:'Übergang / Beschleunigung?',b:'Drosselklappe öffnet → Gemisch magert kurz ab → mehr Kraftstoff einspritzen gegen Leistungseinbruch.'},
+{t:'betrieb',f:'Volllast?',b:'Gemisch angereichert auf λ 0,85 – 0,95 für maximale Leistung.'},
+{t:'betrieb',f:'Schubabschaltung?',b:'Hohe Drehzahl + Drosselklappe zu (Bergabfahren) → Einspritzung ausgesetzt → Kraftstoff sparen.'},
+{t:'betrieb',f:'Betriebszustand fett / mager (Unterrichtsfrage)?',b:'Fett: Kaltstart. Mager: Teillast.'},
+{t:'motorman',f:'5 Ansprüche an das Motormanagement?',b:'Stabiler, komfortabler Motorlauf · geringer Verbrauch · maximale Leistung · schädliche Abgase vermeiden · sicherer Motorstart.'},
+{t:'motorman',f:'Wie arbeitet das Motorsteuergerät?',b:'Betriebszustand erfassen → mit Kennfeld im EPROM vergleichen → ZZP, Einspritzmenge und Luftmasse anpassen.'},
+{t:'motorman',f:'Bestandteile des Steuergeräts?',b:'Prozessor, Arbeitsspeicher, EPROM (Kennfeld).'},
+{t:'motorman',f:'Richtiger Zündzeitpunkt?',b:'So gewählt, dass der höchste Verbrennungsdruck kurz nach OT auftritt.'},
+{t:'motorman',f:'Haupt- und Korrekturgrößen für ZZP/Gemisch?',b:'Haupt: Drehzahl, Last. Korrektur: Motortemperatur, Abgasregelung, Klopfregelung, Leerlauf/Volllast.'},
+{t:'motorman',f:'Sensoren – Aufgabe und Spannung?',b:'Erfassen Betriebszustände und wandeln sie in elektrische Signale um. Arbeiten mit 5 V DC (abgesichert, bleibt auch bei Spannungsabfall unter 12 V stabil).'},
+{t:'motorman',f:'Aktoren – Definition?',b:'Elektrische Stellglieder, vom Steuergerät überwiegend mit Bordspannung (ca. 12 V) angesteuert. Stellen den Sollzustand her (z. B. Einspritzventil).'},
+{t:'motorman',f:'Transistor-Anschlüsse?',b:'B = Basis, C = Kollektor, E = Emitter.'},
+{t:'drehzahl',f:'Wovon hängt die Flammfrontausbreitung ab?',b:'Mischungsverhältnis (fett = schneller), Brennraumtemperatur, Verwirbelung. Dauer bis max. Druck: ca. 1,5 ms.'},
+{t:'drehzahl',f:'°KW pro ms bei 600 und 6000 1/min?',b:'600 1/min → 3,6 °KW/ms. 6000 1/min → 36 °KW/ms. Deshalb: mehr Drehzahl → früherer ZZP vor OT.'},
+{t:'drehzahl',f:'Was erkennt der Drehzahlsensor außer Drehzahl?',b:'Zündaussetzer – die Beschleunigung der Kurbelwelle im Arbeitstakt wird registriert.'},
+{t:'drehzahl',f:'Induktion?',b:'Das Beeinflussen von Elektronen mit einem Magnetfeld.'},
+{t:'drehzahl',f:'Höhe der induzierten Spannung hängt ab von…?',b:'1. Stärke des Magnetfeldes · 2. Geschwindigkeit der Feldänderung · 3. Anzahl der Elektronen (Windungszahl).'},
+{t:'drehzahl',f:'Aufbau Induktivsensor?',b:'Dauermagnet + Kupferwicklung mit Weicheisenkern. Geberrad mit Zähnen (Inkrementenrad) und Zahnlücke = Bezugsmarke OT.'},
+{t:'drehzahl',f:'Signal Induktivsensor?',b:'Analoge Wechselspannung (Sinus). Zahn → Spannung steigt, Lücke → umgekehrt, Bezugsmarke → besonders hoher Impuls = 1 Umdrehung.'},
+{t:'hall',f:'Aufbau Hallsensor?',b:'Dauermagnet + stromdurchflossenes Halbleiterplättchen.'},
+{t:'hall',f:'Wie entsteht die Hallspannung?',b:'Magnetfeld schneidet den Strom im Plättchen → Elektronen weichen aus (Lorentz-Kraft) → Potentialunterschied an den Rändern.'},
+{t:'hall',f:'Signal Hallgeber?',b:'Verstärkt → binär 0 V / 5 V (Rechteck). Zähne = 5 V, Zahnlücke = 0 V, Bezugsmarke = größere Zahnlücke.'},
+{t:'hall',f:'Wozu Nockenwellensensor?',b:'Steuergerät kann den Zylinder zuordnen.'},
+{t:'hall',f:'Induktivsensor – Vor- und Nachteile?',b:'+ keine Spannungsversorgung, einfach, günstig, robust. − ohne Bewegung kein Signal, Wechselspannung muss umgeformt werden.'},
+{t:'hall',f:'Hallsensor – Vor- und Nachteile?',b:'+ immer Signal (auch ohne Bewegung), Rechteck direkt auswertbar, auch als Endlagensensor. − elektronische Verstärkung nötig, aufwändiger, teurer.'},
+{t:'hall',f:'Einsatz von Drehzahlsensoren?',b:'Motordrehzahl- und Nockenwellensensor, Getriebedrehzahlsensor, ABS-Raddrehzahlsensor, Zündimpulsgeber.'},
+];
+
+/* =====================================================================
+   DATEN – Merkzettel (HTML je Thema)
+   ===================================================================== */
+const NOTES = {
+verbrennung:`
+<h3>Was ist Verbrennung? <span class="tag m">Test</span></h3>
+<p>Verbindung eines <b>Brennstoffes mit Sauerstoff</b>. Dabei wird eine große Menge Energie frei (Energie = Temperatur).</p>
+<h3>Beispiel Oktan (Benzin)</h3>
+<p class="formula">C₈H₁₈ + 12,5 O₂ → 8 CO₂ + 9 H₂O</p>
+<p>1 C braucht 1 O₂ → CO₂. 2 H brauchen 1 O → H₂O. <b>Für 1 Oktan-Molekül werden 12,5 Sauerstoff-Moleküle benötigt.</b></p>
+<div class="merke"><b>Idealbedingungen</b> (sonst unvollständige Verbrennung):<br>1. optimale Durchmischung von Treibstoff und Sauerstoff<br>2. ausreichend Zeit für die Verbrennungsreaktion<br>3. richtige Brennraumtemperatur</div>
+<h3>Explosionsgrenzen <span class="tag m">Test</span></h3>
+<p>Bei zu wenig Luft, aber auch bei zu viel Luft brennt ein Treibstoff nicht → <b>untere (UEG)</b> und <b>obere (OEG)</b> Explosionsgrenze. 0 % Kraftstoff = zu mager, 100 % = zu fett.</p>
+<table><tr><th>Brennstoff</th><th>zu wenig</th><th>zu viel</th></tr><tr><td>Benzin</td><td>unter 0,6 %</td><td>über 8,0 %</td></tr><tr><td>Diesel</td><td>unter 0,6 %</td><td>über 7,5 %</td></tr></table>
+<h3>Schadstoffe</h3>
+<table>
+<tr><th>Stoff</th><th>Was / Warum</th></tr>
+<tr><td><b>CO₂</b></td><td>Kein Schadstoff im eigentlichen Sinne, trägt aber zur Klimaerwärmung bei → vermeiden</td></tr>
+<tr><td><b>CO</b></td><td>Unvollständige Verbrennung von C mit O; <b>toxisch, sehr giftig</b></td></tr>
+<tr><td><b>HC</b></td><td>Unverbrannter Treibstoff (Kohlenwasserstoffe); krebserregend</td></tr>
+<tr><td><b>NOx</b></td><td>Stickoxide; krebserregend; <b>Problem bei Luftüberschuss</b> – Diesel u. Benzin-Direkteinspritzer</td></tr>
+<tr><td><b>PM</b></td><td>Rußpartikel, unverbrannter Treibstoff; krebserregend weil lungengängig; <b>nur bei Luftüberschuss</b> – Diesel u. Benzin-DI</td></tr>
+<tr><td><b>SO₂</b></td><td>Schwefeldioxid; giftig; nur durch Schwefelgehalt im Treibstoff bzw. Öl</td></tr>
+</table>`,
+lambda:`
+<h3>Lambda λ (Luftzahl) <span class="tag m">Test</span></h3>
+<p class="formula">λ = zugeführte Luftmenge ÷ theoretischer Luftbedarf</p>
+<p><b>λ = 1</b> = stöchiometrisches, theoretisch richtiges Gemisch → vollständige Verbrennung. Bei Benzin: <b>14,8 kg Luft für 1 kg Benzin</b> (1 : 14,8).</p>
+<div class="grid2">
+<div class="merke"><b>Fett (λ &lt; 1, Luftmangel)</b><br>– höheres Motordrehmoment<br>– höherer Kraftstoffverbrauch<br>– hoher Schadstoffanteil CO und HC</div>
+<div class="merke"><b>Mager (λ &gt; 1, Luftüberschuss)</b><br>– Motordrehmoment sinkt<br>– geringerer Kraftstoffverbrauch<br>– heiße Verbrennung<br>– NOx steigt</div>
+</div>
+<h3>Das Diagramm <span class="tag m">Test</span></h3>
+<table>
+<tr><th>Verhältnis</th><th>λ</th><th>Bereich</th></tr>
+<tr><td>1 : 23,7</td><td>1,6</td><td>Zündgrenze bei Magermotor</td></tr>
+<tr><td>1 : 19,2</td><td>1,3</td><td>Zündgrenze mager</td></tr>
+<tr><td>1 : 16,3 – 19,2</td><td>1,1 – 1,3</td><td>mageres Gemisch, Teillastbereich</td></tr>
+<tr><td>1 : 14,8</td><td>1,0</td><td>theoretisch richtiges Gemisch</td></tr>
+<tr><td>1 : 13,3</td><td>0,9</td><td><b>Höchstleistung</b></td></tr>
+<tr><td>1 : 10,4 – 11,5</td><td>0,7 – 0,8</td><td>Leerlaufbereich</td></tr>
+<tr><td>1 : 8,9</td><td>0,6</td><td>zu fettes Gemisch</td></tr>
+<tr><td>1 : 7,4</td><td>0,5</td><td>Zündgrenze fett</td></tr>
+</table>
+<p>Drehmoment-Kurve M: Maximum bei λ ≈ 0,9. Verbrauchs-Kurve b<sub>eff</sub>: Minimum bei λ ≈ 1,1 – 1,2.</p>
+<h3>Betriebsbereiche <span class="tag m">Test</span></h3>
+<table>
+<tr><th>Bereich</th><th>Mischungsverhältnis</th><th></th></tr>
+<tr><td>Kaltstart</td><td>1 : 3; Treibstoff kondensiert am Saugrohr und an den Zylinderwänden</td><td><span class="tag f">fett</span></td></tr>
+<tr><td>Leerlauf</td><td>30 … 40 % Luftmangel</td><td><span class="tag f">fett</span></td></tr>
+<tr><td>Teillast</td><td>10 … 30 % Luftüberschuss, höchste Wirtschaftlichkeit</td><td><span class="tag m">mager</span></td></tr>
+<tr><td>Volllast</td><td>5 … 10 % Luftmangel, Anstieg des spez. Kraftstoffverbrauchs</td><td><span class="tag f">fett</span></td></tr>
+</table>`,
+otto:`
+<h3>Otto-Prinzip <span class="tag m">Test</span></h3>
+<ul>
+<li>Benzin-Luft-Gemisch im Verhältnis <b>λ 1</b> wird <b>fremdgezündet</b> mit Zündkerze.</li>
+<li><b>Homogenes Gemisch</b> durch <b>äußere Gemischbildung</b> = vollständige Vermischung von Luft und Benzin (im Saugrohr).</li>
+<li><b>Drosselklappe</b> dosiert die Luftmenge → <b>Füllungsgrad</b> des Brennraums verändert sich.</li>
+<li><b>Quantitätsregelung:</b> Leistung wird über die angesaugte Gemisch<b>menge</b> geregelt.</li>
+<li>Kraftstoff-Luft-Gemisch wird verdichtet → kann zu <b>klopfender Verbrennung</b> führen.</li>
+</ul>
+<p>Leerlauf: Drosselklappe zu, wenig Gemisch (λ 1). Volllast: Drosselklappe offen, viel Gemisch (λ 1).</p>
+<h3>Otto-Direkteinspritzer mit Schichtladung <span class="tag m">Test</span></h3>
+<ul>
+<li>Kraftstoff wird hauptsächlich <b>zu Beginn des Verdichtungstaktes direkt in den Brennraum</b> eingespritzt. Gemisch entsteht im Brennraum = <b>innere Gemischbildung</b>.</li>
+<li>Drosselklappe <b>vollständig geöffnet → Luftüberschuss</b>.</li>
+<li><b>Heterogenes Gemisch:</b> um die Zündkerze ca. λ 1, mit zunehmendem Abstand immer magerer.</li>
+<li><b>Qualitätsregelung:</b> Leistung wird über die eingespritzte Kraftstoffmenge (Gemischqualität) geregelt.</li>
+<li>Durch Einspritzen in den Brennraum wird dieser <b>gekühlt</b>.</li>
+</ul>
+<div class="merke"><b>Merkhilfe:</b> Quantität = Menge (Drosselklappe, Otto) · Qualität = Zusammensetzung (Kraftstoffmenge, Diesel &amp; Otto-DI)</div>`,
+diesel:`
+<h3>Diesel-Prinzip <span class="tag m">Test</span></h3>
+<ul>
+<li><b>Keine Drosselklappe</b>, daher Zylinder immer vollständig mit Luft gefüllt → <b>Luftüberschuss</b>.</li>
+<li>Kraftstoff wird <b>zum Zündzeitpunkt direkt in den Brennraum</b> eingespritzt.</li>
+<li><b>Zündverzug (ca. 1 ms)</b>, weil der Kraftstoff erst verdampfen und sich dann mit der Luft mischen muss.</li>
+<li>Wie beim Otto-Direkteinspritzer: <b>heterogenes Gemisch</b> und Leistungsregelung über eingespritzte Kraftstoffmenge (<b>Qualitätsregelung</b>).</li>
+<li><b>Selbstzünder:</b> Entzündung des Kraftstoffes durch die heiße Luft im Brennraum.</li>
+<li>Reine Luft kann theoretisch beliebig verdichtet werden → daher Einspritzdüse (<b>Injektor</b>). <b>Glühstiftkerze</b> als Kaltstarthilfe.</li>
+</ul>
+<h3>Zuordnung aus dem Unterricht (15.9.)</h3>
+<table>
+<tr><td>Heterogenes Gemisch</td><td>→ Diesel (und Otto-DI)</td></tr>
+<tr><td>Äußere Gemischbildung</td><td>→ Otto</td></tr>
+<tr><td>Kraftstoff direkt in den Brennraum gespritzt</td><td>→ Diesel, Benzin-Direkteinspritzer</td></tr>
+<tr><td>Innere Gemischbildung</td><td>→ Diesel (Direkteinspritzer)</td></tr>
+<tr><td>Unterschiedlicher Füllungsgrad des Brennraums</td><td>→ Otto (Drosselklappe)</td></tr>
+<tr><td>Arbeitet mit Luftüberschuss</td><td>→ Diesel</td></tr>
+</table>`,
+betrieb:`
+<h3>Betriebszustände und Auswirkung auf das Gemisch (Otto) <span class="tag m">Test</span></h3>
+<table>
+<tr><th>Zustand</th><th>Was passiert</th></tr>
+<tr><td><b>Kaltstart</b></td><td>Ein Teil des Kraftstoffs kondensiert an den kalten Zylinderwänden und steht nicht zur Verbrennung zur Verfügung → mehr einspritzen (<b>bis λ = 0,3</b>)</td></tr>
+<tr><td><b>Warmlauf</b></td><td>Vom Kaltstart bis Betriebstemperatur wird die Anfettung <b>stufenweise zurückgenommen</b></td></tr>
+<tr><td><b>Übergang / Beschleunigung</b> (= Teillast)</td><td>Durch Öffnen der Drosselklappe wird das Gemisch kurzzeitig <b>abgemagert</b>. Gegen Leistungseinbruch → <b>mehr Kraftstoff</b> einspritzen</td></tr>
+<tr><td><b>Volllast</b></td><td>Für maximale Leistung wird das Gemisch angereichert (<b>λ = 0,85 – 0,95</b>)</td></tr>
+<tr><td><b>Schubabschaltung</b></td><td>Erhöhte Drehzahl + Drosselklappe geschlossen (z. B. Bergabfahren) → <b>Einspritzung ausgesetzt</b>, Kraftstoff sparen</td></tr>
+</table>
+<div class="merke"><b>Unterrichtsfrage:</b> Betriebszustand mit fettem und magerem Gemisch nennen! → <b>Kaltstart</b> (fett) und <b>Teillast</b> (mager).</div>`,
+motorman:`
+<h3>Ansprüche an das Motormanagement</h3>
+<ul><li>Stabilen und komfortablen Motorlauf gewährleisten</li><li>Treibstoffverbrauch so gering wie möglich halten</li><li>Maximale Motorleistung ermöglichen</li><li>Schädliche Abgase vermeiden</li><li>Sicheren Motorstart gewährleisten</li></ul>
+<p>Durch <b>ständiges Anpassen von Zündzeitpunkt und eingespritzter Treibstoffmenge</b> versucht das Motorsteuergerät diese Ansprüche zu erfüllen. Dazu muss der aktuelle Betriebszustand genau erfasst werden. Dieser wird mit dem im <b>EPROM</b> abgelegten <b>Kennfeld</b> verglichen, und wenn erforderlich werden ZZP, Einspritzmenge und Luftmasse angepasst.</p>
+<p>Steuergerät: <b>Prozessor, Arbeitsspeicher, EPROM</b>. Zündkennfeld: Zündwinkel über Motorlast und Motordrehzahl.</p>
+<h3>Der richtige Zündzeitpunkt (ZZP) <span class="tag m">Test</span></h3>
+<div class="merke">So gewählt, dass der <b>höchste Verbrennungsdruck kurz nach OT</b> auftritt.</div>
+<h3>Größen mit Einfluss auf ZZP und Gemischbildung</h3>
+<div class="grid2"><div class="merke"><b>Hauptgrößen</b><br>– Drehzahl<br>– Last</div><div class="merke"><b>Korrekturgrößen</b><br>– Motortemperatur<br>– Abgasregelung<br>– Klopfregelung<br>– Leerlauf / Volllast</div></div>
+<h3>Sensoren <span class="tag m">Test</span></h3>
+<p>Wandeln physikalische Größen (z. B. Motordrehzahl) in elektrische Signale um, die vom Steuergerät ausgewertet werden. Aufgabe: <b>Betriebszustände erfassen</b> und in elektrische Signalgrößen umwandeln. Sie arbeiten mit <b>5 V DC</b>.</p>
+<div class="merke"><b>Warum 5 V?</b> Abgesicherte Spannung – die 5 V bleiben auch bei Spannungsabfall unter 12 V (z. B. Startvorgang) erhalten.</div>
+<h3>Aktoren <span class="tag m">Test</span></h3>
+<p>Bei Bedarf wird der aktuelle Betriebszustand (<b>Istzustand</b>) über Aktoren an den erforderlichen Betriebszustand (<b>Sollzustand</b>) angepasst. Aktoren sind <b>elektrische Stellglieder</b>, die vom Steuergerät überwiegend mit <b>Bordspannung (ca. 12 V)</b> angetrieben werden (z. B. Einspritzventil).</p>
+<h3>Aus dem Heft (FB 721)</h3>
+<ul><li>Induktiv = <b>Analog</b>-Sensor (Sinus, AC)</li><li>Hallsensor = <b>Binär</b> 1-0-1-0-1 (Rechteck)</li><li>U → Potentialunterschied</li><li>Lenzsche Regel, Lorentz-Kraft → schiebt Elektron zur Seite</li><li>Transistor: B = Basis, C = Kollektor, E = Emitter</li></ul>`,
+drehzahl:`
+<h3>Erfassung der Drehzahl <span class="tag m">Test</span></h3>
+<p>Der Ablauf der Verbrennung (<b>Flammfrontausbreitung</b>) hängt ab vom Mischungsverhältnis (fett = raschere Ausbreitung), der Brennraumtemperatur und der Verwirbelung (Turbulenz). Die Verbrennung braucht eine gewisse Zeit (<b>ca. 1,5 ms</b>) bis zum maximalen Druck.</p>
+<div class="merke">Je nach Drehzahl legt die Kurbelwelle pro Zeit einen bestimmten Winkel zurück:<br><b>600 1/min → 3,6 °KW in 1 ms</b><br><b>6000 1/min → 36 °KW in 1 ms</b><br>→ Mit höherer Drehzahl ein <b>früherer Zündzeitpunkt vor OT</b> (Benzin) bzw. frühere Einspritzung vor OT (Diesel).</div>
+<p>Diese Vorzündung wird in <b>°KW</b> (Grad Kurbelwelle) angegeben. Zur exakten Zuordnung des ZZP muss die Drehzahl mit einem Drehzahlsensor gemessen werden.</p>
+<p>Die Drehzahlerfassung ist so exakt, dass auch die Beschleunigung der Kurbelwelle im Arbeitstakt registriert wird → <b>Zündaussetzer</b> können erkannt werden.</p>
+<h3>Induktivsensor</h3>
+<p>Schaltzeichen: Zahnrad + Spule. Arbeitet nach dem <b>Induktionsprinzip</b>. Induktion = das Beeinflussen von Elektronen mit einem Magnetfeld.</p>
+<div class="merke"><b>Höhe der induzierten Spannung hängt ab von:</b><br>– der Stärke des Magnetfeldes<br>– der Geschwindigkeit, mit der sich das Magnetfeld verändert<br>– der Anzahl der betroffenen Elektronen (Windungszahl der Wicklung)</div>
+<p><b>Aufbau:</b> Dauermagnet und Kupferwicklung mit Weicheisenkern. Der Sensor wird von einem Geberrad mit gleichmäßig verteilten Zähnen (<b>Inkrementenrad</b>) und einer <b>Zahnlücke = OT-Bezugsmarke</b> beeinflusst.</p>
+<p><b>Funktion:</b> Zähne nähern sich → wirken als Eisenkern, verstärken das Magnetfeld → Induktion, Spannung steigt. Zahnlücke = umgekehrte Wirkung. Die Bezugsmarke bewirkt eine <b>besonders hohe Induktion</b> → Steuergerät erkennt eine Motorumdrehung.</p>
+<p>Signal: <b>analoge Wechselspannung (Sinus)</b>.</p>`,
+hall:`
+<h3>Hallsensor <span class="tag m">Test</span></h3>
+<p>Schaltzeichen: Rechteck mit Kreuz. Aufbau: <b>Dauermagnet</b> und <b>Halbleiterplättchen</b>, das von Strom durchflossen wird.</p>
+<p>Wird der Strom im Plättchen vom <b>Magnetfeld geschnitten</b>, weichen die Elektronen aus (Lorentz-Kraft). An den beiden <b>Rändern</b> entsteht unterschiedliche Spannung = <b>Hallspannung</b>. Diese wird verstärkt → <b>binäres Signal 0 / 5 V</b>.</p>
+<p>Beim Drehzahlsensor wird das Magnetfeld durch die Zähne des Inkrementenrades verstärkt → Strom abgelenkt → <b>5-V-Signal bei Zahn, 0 V bei Zahnlücke</b>. Die <b>Bezugsmarke ist eine größere Zahnlücke</b>.</p>
+<p>Der <b>Nockenwellensensor</b> liefert das zweite Signal: Das Steuergerät kann dadurch den <b>Zylinder zuordnen</b>.</p>
+<h3>Vergleich Hall- und Induktivsensor <span class="tag m">Test</span></h3>
+<table>
+<tr><th></th><th>Induktivsensor</th><th>Hallsensor</th></tr>
+<tr><td><b>Vorteile</b></td><td>– keine Spannungsversorgung erforderlich<br>– einfacher Aufbau, günstig, robust</td><td>– immer ein Signal, auch ohne Bewegung<br>– Rechteckspannung kann vom Steuergerät direkt ausgewertet werden</td></tr>
+<tr><td><b>Nachteile</b></td><td>– ohne Bewegung kein Signal<br>– Wechselspannung muss umgeformt werden</td><td>– elektronische Verstärkung erforderlich<br>– aufwändiger<br>– teuer</td></tr>
+<tr><td></td><td>kann auch Rundlauf erkennen</td><td>kann auch als Endlagensensor verwendet werden</td></tr>
+<tr><td><b>Einsatz</b></td><td colspan="2">Motordrehzahlsensor und Nockenwellensensor · Getriebedrehzahlsensor · ABS-Raddrehzahlsensor · Zündimpulsgeber</td></tr>
+</table>`
+};
+
+/* =====================================================================
+   APP
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const KEY = 'kfz-lernquiz-v1';
+const TOPIC = Object.fromEntries(TOPICS.map(t => [t.id, t]));
+const TYPE_LABEL = {mc:'Eine Antwort', multi:'Mehrere Antworten', tf:'Wahr oder falsch?', gap:'Eingabe', num:'Zahl eingeben', match:'Zuordnen'};
+CARDS.forEach((c, i) => c.id = 'c' + i);
+
+/* ---- Speicher ---- */
+let S = load();
+function load(){ try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.q) return s; } catch (e) {} return {q:{}, cards:{}, hist:[], sel:TOPICS.map(t=>t.id), n:20}; }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function stat(id){ return S.q[id] || (S.q[id] = {ok:0, bad:0, streak:0}); }
+function isWeak(id){ const s = S.q[id]; return !!s && s.bad > 0 && s.streak < 2; }
+function isKnown(id){ const s = S.q[id]; return !!s && s.streak >= 1; }
+
+/* ---- Toast ---- */
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
+
+/* ---- Theme ---- */
+(function(){
+  const saved = (() => { try { return localStorage.getItem(KEY + '-theme'); } catch (e) { return null; } })();
+  if (saved) document.documentElement.dataset.theme = saved;
+  else if (matchMedia('(prefers-color-scheme: light)').matches) document.documentElement.dataset.theme = 'light';
+  const apply = () => { $('meta[name=theme-color]').content = document.documentElement.dataset.theme === 'light' ? '#eef2f6' : '#0d1117'; };
+  apply();
+  $('#themeBtn').onclick = () => { const d = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'; document.documentElement.dataset.theme = d; try { localStorage.setItem(KEY + '-theme', d); } catch (e) {} apply(); };
+})();
+
+/* ---- Navigation ---- */
+function show(v){
+  $$('.view').forEach(el => el.classList.toggle('on', el.id === 'v-' + v));
+  $$('nav.bottom button').forEach(b => b.classList.toggle('on', b.dataset.v === v || (v === 'quiz' && b.dataset.v === 'home') || (v === 'result' && b.dataset.v === 'home')));
+  window.scrollTo(0, 0);
+  if (v === 'home') renderHome();
+  if (v === 'stats') renderStats();
+  if (v === 'cards' && !cardState.deck.length) startCards();
+}
+$$('nav.bottom button').forEach(b => b.onclick = () => show(b.dataset.v));
+
+/* ---- Home ---- */
+function topicProgress(tid){
+  const qs = Q.filter(q => q.t === tid);
+  const known = qs.filter(q => isKnown(q.id)).length;
+  const weak = qs.filter(q => isWeak(q.id)).length;
+  return {total: qs.length, known, weak, pct: qs.length ? Math.round(known / qs.length * 100) : 0};
+}
+function renderHome(){
+  $('#stQ').textContent = Q.length;
+  const known = Q.filter(q => isKnown(q.id)).length;
+  $('#stDone').textContent = Math.round(known / Q.length * 100) + ' %';
+  $('#stWeak').textContent = Q.filter(q => isWeak(q.id)).length;
+  $('#topicList').innerHTML = TOPICS.map(t => {
+    const p = topicProgress(t.id);
+    return `<label class="topic"><span class="ic" aria-hidden="true">${t.ic}</span><span class="t"><b>${esc(t.name)}</b><span class="mut small">${p.total} Fragen · ${p.known} gekonnt${p.weak ? ' · ' + p.weak + ' wackelig' : ''}</span><span class="bar"><i class="${p.pct === 100 ? 'ok' : ''}" style="width:${p.pct}%"></i></span></span><input type="checkbox" data-t="${t.id}" ${S.sel.includes(t.id) ? 'checked' : ''}></label>`;
+  }).join('');
+  $$('#topicList input').forEach(i => i.onchange = () => { S.sel = $$('#topicList input:checked').map(x => x.dataset.t); save(); updateHint(); });
+  $$('#countRow .chip').forEach(c => c.classList.toggle('on', +c.dataset.n === S.n));
+  updateHint();
+}
+function pool(){
+  let p = Q.filter(q => S.sel.includes(q.t));
+  if ($('#onlyWeak').checked) p = p.filter(q => isWeak(q.id));
+  return p;
+}
+function updateHint(){
+  const p = pool();
+  const n = S.n && S.n < p.length ? S.n : p.length;
+  $('#startHint').textContent = p.length ? `${n} von ${p.length} verfügbaren Fragen werden gemischt.` : ($('#onlyWeak').checked ? 'Keine Wackelkandidaten in den gewählten Themen – super!' : 'Bitte mindestens ein Thema wählen.');
+  $('#startQuiz').disabled = !p.length;
+}
+$('#selAll').onclick = () => { S.sel = TOPICS.map(t => t.id); save(); renderHome(); };
+$('#selNone').onclick = () => { S.sel = []; save(); renderHome(); };
+$$('#countRow .chip').forEach(c => c.onclick = () => { S.n = +c.dataset.n; save(); renderHome(); });
+$('#onlyWeak').onchange = updateHint;
+$('#startQuiz').onclick = () => { const p = shuffle(pool()); startQuiz(S.n ? p.slice(0, S.n) : p); };
+$('#startCards').onclick = () => { startCards(true); show('cards'); };
+
+/* ---- Quiz ---- */
+const quiz = {list:[], i:0, answers:[], sel:null, answered:false};
+function startQuiz(list){
+  if (!list.length) return;
+  quiz.list = list; quiz.i = 0; quiz.answers = []; show('quiz'); renderQ();
+}
+$('#quitQuiz').onclick = () => { if (confirm('Quiz wirklich abbrechen? Bereits beantwortete Fragen wurden gespeichert.')) show('home'); };
+
+function renderQ(){
+  const q = quiz.list[quiz.i];
+  quiz.sel = q.type === 'multi' ? new Set() : q.type === 'match' ? new Array(q.items.length).fill(-1) : null;
+  quiz.answered = false;
+  $('#qPos').textContent = `Frage ${quiz.i + 1} / ${quiz.list.length}`;
+  $('#qTopic').textContent = TOPIC[q.t].ic + ' ' + TOPIC[q.t].name;
+  $('#qBar').style.width = (quiz.i / quiz.list.length * 100) + '%';
+  $('#qFb').innerHTML = '';
+  let h = `<span class="qtype">${TYPE_LABEL[q.type]}${q.test ? ' · <b>Test</b>' : ''}</span><div class="qtext">${esc(q.q)}</div>`;
+  if (q.type === 'mc' || q.type === 'multi') {
+    quiz.order = shuffle(q.a.map((_, i) => i));
+    h += quiz.order.map((oi, k) => `<button class="opt" data-i="${oi}"><span class="k">${k + 1}</span><span>${esc(q.a[oi])}</span></button>`).join('');
+    if (q.type === 'multi') h += `<p class="hint">Alle zutreffenden Antworten antippen, dann „Prüfen".</p>`;
+  } else if (q.type === 'tf') {
+    h += `<div class="tfrow"><button class="opt" data-i="1"><span class="k">1</span>Wahr</button><button class="opt" data-i="0"><span class="k">2</span>Falsch</button></div>`;
+  } else if (q.type === 'gap') {
+    h += `<input class="gap" id="gapIn" type="text" autocomplete="off" autocapitalize="off" placeholder="Antwort eingeben …">`;
+  } else if (q.type === 'num') {
+    h += `<div class="numrow"><input class="num" id="numIn" type="text" inputmode="decimal" autocomplete="off" placeholder="Zahl …"><span class="unit">${esc(q.unit || '')}</span></div><p class="hint">Komma oder Punkt sind egal.</p>`;
+  } else if (q.type === 'match') {
+    h += q.items.map((it, i) => `<div class="mrow" data-i="${i}"><span class="lbl">${esc(it.t)}</span><span class="cats">${q.cats.map((c, ci) => `<button data-c="${ci}">${esc(c)}</button>`).join('')}</span></div>`).join('');
+  }
+  $('#qBody').innerHTML = h;
+  const needsCheck = q.type === 'multi' || q.type === 'gap' || q.type === 'num' || q.type === 'match';
+  $('#qActs').innerHTML = needsCheck ? `<button class="btn p" id="checkBtn" disabled>Prüfen</button>` : '';
+  if (q.type === 'mc' || q.type === 'tf') $$('#qBody .opt').forEach(b => b.onclick = () => answer(+b.dataset.i));
+  if (q.type === 'multi') $$('#qBody .opt').forEach(b => b.onclick = () => { const i = +b.dataset.i; quiz.sel.has(i) ? quiz.sel.delete(i) : quiz.sel.add(i); b.classList.toggle('sel', quiz.sel.has(i)); $('#checkBtn').disabled = !quiz.sel.size; });
+  if (q.type === 'match') $$('#qBody .mrow').forEach(r => r.querySelectorAll('button').forEach(b => b.onclick = () => { const i = +r.dataset.i; quiz.sel[i] = +b.dataset.c; r.querySelectorAll('button').forEach(x => x.classList.toggle('sel', x === b)); $('#checkBtn').disabled = quiz.sel.includes(-1); }));
+  const inp = $('#gapIn') || $('#numIn');
+  if (inp) { inp.oninput = () => { $('#checkBtn').disabled = !inp.value.trim(); }; inp.onkeydown = e => { if (e.key === 'Enter' && inp.value.trim()) answer(inp.value); }; setTimeout(() => inp.focus(), 50); }
+  const cb = $('#checkBtn'); if (cb) cb.onclick = () => answer(q.type === 'multi' ? quiz.sel : q.type === 'match' ? quiz.sel : (inp && inp.value));
+}
+
+function norm(s){ return String(s).toLowerCase().replace(/[\s\-_.,;:!?()'"„"]/g, '').replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss'); }
+function parseNum(s){ return parseFloat(String(s).replace(',', '.').replace(/[^0-9.\-]/g, '')); }
+
+function answer(val){
+  if (quiz.answered) return;
+  quiz.answered = true;
+  const q = quiz.list[quiz.i];
+  let ok = false, detail = '';
+  if (q.type === 'mc') {
+    ok = val === q.c;
+    $$('#qBody .opt').forEach(b => { const i = +b.dataset.i; b.disabled = true; if (i === q.c) b.classList.add('ok'); else if (i === val) b.classList.add('bad'); });
+  } else if (q.type === 'tf') {
+    ok = (val === 1) === q.c;
+    $$('#qBody .opt').forEach(b => { const v = +b.dataset.i === 1; b.disabled = true; if (v === q.c) b.classList.add('ok'); else if (v === (val === 1)) b.classList.add('bad'); });
+  } else if (q.type === 'multi') {
+    const sel = Array.from(val).sort(), cor = q.c.slice().sort();
+    ok = sel.length === cor.length && sel.every((v, i) => v === cor[i]);
+    $$('#qBody .opt').forEach(b => { const i = +b.dataset.i; b.disabled = true; b.classList.remove('sel'); if (q.c.includes(i)) b.classList.add('ok'); else if (val.has(i)) b.classList.add('bad'); });
+    if (!ok) detail = 'Richtig wären: ' + q.c.map(i => q.a[i]).join(' · ');
+  } else if (q.type === 'gap') {
+    const n = norm(val); ok = q.c.some(c => norm(c) === n); $('#gapIn').disabled = true;
+    detail = 'Richtige Antwort: ' + q.c[0];
+  } else if (q.type === 'num') {
+    const n = parseNum(val); ok = !isNaN(n) && Math.abs(n - q.c) <= (q.tol || 0); $('#numIn').disabled = true;
+    detail = 'Richtige Antwort: ' + String(q.c).replace('.', ',') + (q.unit ? ' ' + q.unit : '');
+  } else if (q.type === 'match') {
+    ok = true;
+    $$('#qBody .mrow').forEach(r => { const i = +r.dataset.i; const cor = q.items[i].c; const chosen = val[i];
+      r.querySelectorAll('button').forEach(b => { const c = +b.dataset.c; b.disabled = true; b.classList.remove('sel'); if (c === cor) b.classList.add('ok'); else if (c === chosen) b.classList.add('bad'); });
+      if (chosen !== cor) { ok = false; }
+    });
+  }
+  const st = stat(q.id);
+  if (ok) { st.ok++; st.streak++; } else { st.bad++; st.streak = 0; }
+  st.last = Date.now(); save();
+  quiz.answers.push({id:q.id, ok});
+  if ($('#instant').checked || !ok) {
+    $('#qFb').innerHTML = `<div class="fb ${ok ? 'ok' : 'bad'}" role="alert"><div class="hd">${ok ? '✅ Richtig!' : '❌ Leider falsch.'}</div>${detail && !ok ? `<div><b>${esc(detail)}</b></div>` : ''}<div>${esc(q.e)}</div><div class="src">Quelle: ${esc(q.src)}</div></div>`;
+  } else {
+    $('#qFb').innerHTML = `<div class="fb ok" role="alert"><div class="hd">✅ Richtig!</div></div>`;
+  }
+  const last = quiz.i === quiz.list.length - 1;
+  $('#qActs').innerHTML = `<button class="btn p" id="nextBtn">${last ? '🏁 Auswertung' : 'Weiter ▶'}</button>`;
+  $('#nextBtn').onclick = next;
+  $('#nextBtn').focus();
+}
+function next(){
+  quiz.i++;
+  if (quiz.i >= quiz.list.length) return showResult();
+  renderQ();
+}
+
+/* ---- Auswertung ---- */
+function showResult(){
+  const total = quiz.answers.length, ok = quiz.answers.filter(a => a.ok).length;
+  const pct = Math.round(ok / total * 100);
+  S.hist.unshift({d:Date.now(), n:total, ok, t:[...new Set(quiz.list.map(q => q.t))]}); S.hist = S.hist.slice(0, 20); save();
+  $('#rPct').textContent = pct + ' %';
+  $('#rGrade').textContent = pct === 100 ? '🏆 Perfekt!' : pct >= 90 ? '🌟 Sehr gut!' : pct >= 75 ? '👍 Gut – fast geschafft.' : pct >= 50 ? '📚 Geht so – nochmal die Merkzettel lesen.' : '💪 Dranbleiben – Merkzettel lesen und wiederholen.';
+  $('#rSub').textContent = `${ok} von ${total} Fragen richtig`;
+  const byT = {};
+  quiz.answers.forEach((a, i) => { const t = quiz.list[i].t; byT[t] = byT[t] || {ok:0, n:0}; byT[t].n++; if (a.ok) byT[t].ok++; });
+  $('#rTopics').innerHTML = Object.keys(byT).map(t => { const p = Math.round(byT[t].ok / byT[t].n * 100); return `<div class="tstat"><span>${TOPIC[t].ic}</span><span class="n">${esc(TOPIC[t].name)}<br><span class="mut small">${byT[t].ok}/${byT[t].n}</span></span><span class="bar"><i class="${p === 100 ? 'ok' : ''}" style="width:${p}%"></i></span></div>`; }).join('');
+  const wrong = quiz.list.filter((q, i) => !quiz.answers[i].ok);
+  $('#rWrongCard').style.display = wrong.length ? '' : 'none';
+  $('#rWrong').innerHTML = wrong.map(q => `<div class="wrongq"><b>${esc(q.q)}</b><span class="small">${esc(correctText(q))}</span><br><span class="mut small">${esc(q.e)}</span></div>`).join('');
+  $('#rAgain').style.display = wrong.length ? '' : 'none';
+  $('#rAgain').onclick = () => startQuiz(shuffle(wrong));
+  show('result');
+}
+function correctText(q){
+  if (q.type === 'mc') return '→ ' + q.a[q.c];
+  if (q.type === 'multi') return '→ ' + q.c.map(i => q.a[i]).join(' · ');
+  if (q.type === 'tf') return '→ ' + (q.c ? 'Wahr' : 'Falsch');
+  if (q.type === 'gap') return '→ ' + q.c[0];
+  if (q.type === 'num') return '→ ' + String(q.c).replace('.', ',') + ' ' + (q.unit || '');
+  if (q.type === 'match') return '→ ' + q.items.map(it => it.t + ' = ' + q.cats[it.c]).join(' · ');
+  return '';
+}
+$('#rHome').onclick = () => show('home');
+
+/* ---- Karteikarten (Leitner) ---- */
+const cardState = {deck:[], i:0};
+function cardBox(id){ return (S.cards[id] && S.cards[id].box) || 0; }
+function startCards(fromHome){
+  const sel = fromHome && S.sel.length ? S.sel : TOPICS.map(t => t.id);
+  let cards = CARDS.filter(c => sel.includes(c.t));
+  if (!cards.length) cards = CARDS.slice();
+  // Gewichtung: Box 0 ×4, Box 1 ×3, Box 2 ×2, Box 3 ×1, Box 4 nur selten
+  const w = c => [4, 3, 2, 1, 0.4][cardBox(c.id)];
+  cards = shuffle(cards).sort((a, b) => (w(b) * Math.random()) - (w(a) * Math.random()));
+  cardState.deck = cards; cardState.i = 0; renderCard();
+}
+function renderCard(){
+  const c = cardState.deck[cardState.i];
+  const fc = $('#fc'); fc.classList.remove('flip'); $('#cRate').hidden = true;
+  $('#cPos').textContent = `Karte ${cardState.i + 1} / ${cardState.deck.length}`;
+  $('#cTopic').textContent = TOPIC[c.t].ic + ' ' + TOPIC[c.t].name;
+  $('#cFront').textContent = c.f; $('#cBack').textContent = c.b;
+  const counts = [0, 0, 0, 0, 0]; CARDS.forEach(x => counts[cardBox(x.id)]++);
+  $('#cBoxes').innerHTML = counts.map((n, i) => `<span title="Box ${i + 1}"><b>${n}</b>Box ${i + 1}</span>`).join('');
+  $('#cHint').textContent = cardBox(c.id) === 0 ? 'Neu oder zuletzt nicht gewusst. Erst überlegen, dann umdrehen.' : `In Box ${cardBox(c.id) + 1}. Erst überlegen, dann umdrehen.`;
+}
+function flipCard(){ const fc = $('#fc'); fc.classList.toggle('flip'); $('#cRate').hidden = !fc.classList.contains('flip'); }
+$('#fc').onclick = flipCard;
+$('#fc').onkeydown = e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); } };
+$$('#cRate button').forEach(b => b.onclick = () => {
+  const c = cardState.deck[cardState.i]; const r = +b.dataset.r;
+  const s = S.cards[c.id] || (S.cards[c.id] = {box:0});
+  s.box = r === 0 ? 0 : r === 1 ? Math.max(0, s.box) : Math.min(4, s.box + 1);
+  s.last = Date.now(); save();
+  cardState.i++;
+  if (cardState.i >= cardState.deck.length) { toast('Stapel durch! Neu gemischt.'); startCards(); }
+  else renderCard();
+});
+$('#cShuffle').onclick = () => { startCards(); toast('Neu gemischt.'); };
+$('#cHome').onclick = () => show('home');
+
+/* ---- Merkzettel ---- */
+$('#notes').innerHTML = TOPICS.map(t => `<details class="note" id="note-${t.id}"><summary><span>${t.ic}</span><span>${esc(t.name)}</span></summary><div class="bd">${NOTES[t.id]}<p class="mut small">Quelle: ${esc(t.src)}</p><button class="btn w" data-quiz="${t.id}" style="margin-top:8px">▶ Quiz nur zu diesem Thema</button></div></details>`).join('');
+$$('#notes [data-quiz]').forEach(b => b.onclick = () => startQuiz(shuffle(Q.filter(q => q.t === b.dataset.quiz))));
+
+/* ---- Statistik ---- */
+function renderStats(){
+  $('#sTopics').innerHTML = TOPICS.map(t => { const p = topicProgress(t.id); return `<div class="tstat"><span>${t.ic}</span><span class="n">${esc(t.name)}<br><span class="mut small">${p.known}/${p.total} gekonnt${p.weak ? ' · ' + p.weak + ' wackelig' : ''}</span></span><span class="bar"><i class="${p.pct === 100 ? 'ok' : ''}" style="width:${p.pct}%"></i></span></div>`; }).join('');
+  $('#sHist').innerHTML = S.hist.length ? S.hist.map(h => { const d = new Date(h.d); return `<div class="tstat"><span class="n">${d.toLocaleDateString('de-AT')} ${d.toLocaleTimeString('de-AT', {hour:'2-digit', minute:'2-digit'})}<br><span class="mut">${h.t.map(x => TOPIC[x] ? TOPIC[x].ic : '').join(' ')}</span></span><b>${Math.round(h.ok / h.n * 100)} %</b><span class="mut">(${h.ok}/${h.n})</span></div>`; }).join('') : '<p class="mut">Noch kein Quiz gemacht.</p>';
+  $('#ver').textContent = APP_VERSION;
+}
+$('#resetStats').onclick = () => { if (confirm('Gesamten Lernstand löschen?')) { S = {q:{}, cards:{}, hist:[], sel:TOPICS.map(t => t.id), n:20}; save(); renderStats(); toast('Lernstand gelöscht.'); } };
+
+/* ---- Tastatur ---- */
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input,textarea')) return;
+  if ($('#v-quiz').classList.contains('on')) {
+    if (/^[1-6]$/.test(e.key)) { const b = $$('#qBody .opt')[+e.key - 1]; if (b && !b.disabled) b.click(); }
+    if (e.key === 'Enter') { const n = $('#nextBtn') || $('#checkBtn'); if (n && !n.disabled) n.click(); }
+  }
+});
+
+/* ---- PWA: Install ---- */
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; $('#installBtn').hidden = false; });
+$('#installBtn').onclick = async () => { if (!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; $('#installBtn').hidden = true; };
+window.addEventListener('appinstalled', () => { $('#installBtn').hidden = true; toast('App installiert.'); });
+(function(){
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  let dismissed = false; try { dismissed = localStorage.getItem(KEY + '-ios') === '1'; } catch (e) {}
+  if (isIOS && !standalone && !dismissed) $('#iosBanner').classList.add('on');
+  $('#iosClose').onclick = () => { $('#iosBanner').classList.remove('on'); try { localStorage.setItem(KEY + '-ios', '1'); } catch (e) {} };
+})();
+
+/* ---- PWA: Service Worker + Update ---- */
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  let refreshing = false, waitingWorker = null;
+  const showUpdate = w => { waitingWorker = w; $('#updateBanner').classList.add('on'); };
+  $('#ubBtn').onclick = () => { if (waitingWorker) { $('#ubBtn').textContent = 'Lädt …'; waitingWorker.postMessage({type:'SKIP_WAITING'}); } };
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (refreshing) return; refreshing = true; location.reload(); });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      $('#swState').textContent = 'Offline einsatzbereit';
+      if (reg.waiting && navigator.serviceWorker.controller) showUpdate(reg.waiting);
+      reg.addEventListener('updatefound', () => { const nw = reg.installing; if (!nw) return; nw.addEventListener('statechange', () => { if (nw.state === 'installed' && navigator.serviceWorker.controller) showUpdate(nw); }); });
+    }).catch(() => { $('#swState').textContent = 'Service Worker nicht aktiv'; });
+    setInterval(() => navigator.serviceWorker.getRegistration().then(r => r && r.update()).catch(() => {}), 60 * 60 * 1000);
+  });
+} else {
+  $('#swState').textContent = location.protocol === 'file:' ? 'Lokale Datei (kein Offline-Cache nötig)' : 'Kein Service Worker';
+}
+
+/* ---- Selbsttest der Daten (Konsole) ---- */
+(function validate(){
+  const ids = new Set(); const errs = [];
+  Q.forEach(q => {
+    if (ids.has(q.id)) errs.push('Doppelte ID ' + q.id); ids.add(q.id);
+    if (!TOPIC[q.t]) errs.push(q.id + ': unbekanntes Thema ' + q.t);
+    if (!q.e || !q.src) errs.push(q.id + ': Erklärung/Quelle fehlt');
+    if ((q.type === 'mc') && (typeof q.c !== 'number' || !q.a[q.c])) errs.push(q.id + ': mc-Antwort ungültig');
+    if (q.type === 'multi' && (!Array.isArray(q.c) || !q.c.length || q.c.some(i => !q.a[i]))) errs.push(q.id + ': multi-Antwort ungültig');
+    if (q.type === 'tf' && typeof q.c !== 'boolean') errs.push(q.id + ': tf-Antwort ungültig');
+    if (q.type === 'gap' && (!Array.isArray(q.c) || !q.c.length)) errs.push(q.id + ': gap-Antwort ungültig');
+    if (q.type === 'num' && typeof q.c !== 'number') errs.push(q.id + ': num-Antwort ungültig');
+    if (q.type === 'match' && (!q.cats || !q.items || q.items.some(it => !q.cats[it.c]))) errs.push(q.id + ': match ungültig');
+    if ((q.type === 'mc' || q.type === 'multi') && q.a.length > 6) errs.push(q.id + ': mehr als 6 Optionen');
+  });
+  CARDS.forEach(c => { if (!TOPIC[c.t]) errs.push('Karte ' + c.f + ': unbekanntes Thema'); });
+  TOPICS.forEach(t => { if (!NOTES[t.id]) errs.push('Merkzettel fehlt: ' + t.id); });
+  if (errs.length) console.error('Datenfehler:', errs); else console.log('Lernquiz-Daten OK:', Q.length, 'Fragen,', CARDS.length, 'Karten');
+  window.__lq = {Q, CARDS, TOPICS, errs};
+})();
+
+renderHome();
+</script>
+</body>
+</html>

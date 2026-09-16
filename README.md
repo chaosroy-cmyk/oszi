@@ -19,6 +19,7 @@ Für Smartphone optimiert, ohne externe Abhängigkeiten.
 | `tools/validate.js` | Datenvalidierung (headless, für CI) |
 | `DEPLOY.md` | Deployment über Cloudflare Pages |
 | `multimeter/` | Zweite, eigenständige PWA „KFZ Multimeter Profi" (s. u.) |
+| `lernquiz/` | Dritte, eigenständige PWA „KFZ Lernquiz" – Selbstüberprüfung zum Schulstoff (s. u.) |
 
 ## Zweite App: KFZ Multimeter Profi (`multimeter/`)
 
@@ -31,6 +32,21 @@ Prüfbericht und Änderungshistorie: `multimeter/REVIEW.md`.
 
 Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
 `CACHE_NAME` in `multimeter/sw.js` gemeinsam erhöhen.
+
+## Dritte App: KFZ Lernquiz (`lernquiz/`)
+
+Eigenständige Lern-PWA zur Selbstüberprüfung des Berufsschulstoffs
+„Gemischbildung" und „Sensoren und Aktoren" (vollständige Verbrennung,
+Lambda, Otto-/Diesel-Prinzip, Betriebszustände, Motormanagement,
+Induktiv-/Hallsensor). Enthält 105 Quizfragen in sechs Fragetypen
+(Einfach-/Mehrfachauswahl, Wahr/Falsch, Eingabe, Zahl, Zuordnung) mit
+Erklärung und Quellenangabe, 57 Karteikarten mit Leitner-Boxen, Merkzettel
+je Thema sowie eine lokal gespeicherte Lernstatistik („Wackelkandidaten"
+wiederholen). Eigenes Manifest, eigener Service Worker, Scope `/lernquiz/`.
+
+Nach Änderungen dort `APP_VERSION` in `lernquiz/index.html` **und**
+`CACHE_NAME` in `lernquiz/sw.js` gemeinsam erhöhen. Die Daten prüfen sich
+beim Laden selbst (Konsole: „Lernquiz-Daten OK").
 
 ## Nutzung
 

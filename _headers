@@ -29,3 +29,16 @@
   Cache-Control: public, max-age=3600
 /multimeter/icon*
   Cache-Control: public, max-age=604800
+
+# ---- Lernquiz-App (lernquiz/) ----
+/lernquiz/sw.js
+  Cache-Control: no-cache
+/lernquiz/index.html
+  Cache-Control: no-cache
+/lernquiz/
+  Cache-Control: no-cache
+/lernquiz/manifest.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: public, max-age=3600
+/lernquiz/icon*
+  Cache-Control: public, max-age=604800
