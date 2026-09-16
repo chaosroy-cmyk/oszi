@@ -42,7 +42,9 @@ Induktiv-/Hallsensor). Enthält 105 Quizfragen in sechs Fragetypen
 (Einfach-/Mehrfachauswahl, Wahr/Falsch, Eingabe, Zahl, Zuordnung) mit
 Erklärung und Quellenangabe, 57 Karteikarten mit Leitner-Boxen, Merkzettel
 je Thema sowie eine lokal gespeicherte Lernstatistik („Wackelkandidaten"
-wiederholen). Eigenes Manifest, eigener Service Worker, Scope `/lernquiz/`.
+wiederholen). Eigenes Manifest, eigener Service Worker, eigene `_headers`/`_redirects`, daher
+auch als eigenes Cloudflare-Pages-Projekt deploybar (Output-Verzeichnis
+`lernquiz` oder Direkt-Upload) – Anleitung in `lernquiz/DEPLOY.md`.
 
 Nach Änderungen dort `APP_VERSION` in `lernquiz/index.html` **und**
 `CACHE_NAME` in `lernquiz/sw.js` gemeinsam erhöhen. Die Daten prüfen sich

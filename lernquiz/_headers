@@ -1,0 +1,15 @@
+# Cloudflare Pages – HTTP-Header für die Lernquiz-PWA
+# (gilt, wenn dieser Ordner als eigenes Pages-Projekt bzw. Build-Output-Verzeichnis deployt wird)
+
+/sw.js
+  Cache-Control: no-cache
+  Service-Worker-Allowed: /
+/index.html
+  Cache-Control: no-cache
+/
+  Cache-Control: no-cache
+/manifest.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: public, max-age=3600
+/icon*
+  Cache-Control: public, max-age=604800

@@ -307,6 +307,12 @@ th{background:var(--panel2)}
       <div id="sHist" class="small"></div>
     </div>
     <div class="card">
+      <h2>PWA-Status</h2>
+      <p class="mut small">Alle Punkte müssen grün sein, damit die App installierbar ist und offline läuft.</p>
+      <div id="pwaCheck" class="small"></div>
+      <div class="acts"><button class="btn" id="pwaRecheck">🔄 Neu prüfen</button></div>
+    </div>
+    <div class="card">
       <h2>Daten</h2>
       <p class="small mut">Alles wird lokal im Browser gespeichert. Zurücksetzen löscht deinen Lernstand.</p>
       <div class="acts"><button class="btn" id="resetStats">🗑 Lernstand löschen</button></div>
@@ -325,7 +331,7 @@ th{background:var(--panel2)}
 
 <script>
 'use strict';
-const APP_VERSION = '1.0';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '1.1';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 
 /* =====================================================================
    DATEN – Themen
@@ -1133,7 +1139,38 @@ function renderStats(){
   $('#sTopics').innerHTML = TOPICS.map(t => { const p = topicProgress(t.id); return `<div class="tstat"><span>${t.ic}</span><span class="n">${esc(t.name)}<br><span class="mut small">${p.known}/${p.total} gekonnt${p.weak ? ' · ' + p.weak + ' wackelig' : ''}</span></span><span class="bar"><i class="${p.pct === 100 ? 'ok' : ''}" style="width:${p.pct}%"></i></span></div>`; }).join('');
   $('#sHist').innerHTML = S.hist.length ? S.hist.map(h => { const d = new Date(h.d); return `<div class="tstat"><span class="n">${d.toLocaleDateString('de-AT')} ${d.toLocaleTimeString('de-AT', {hour:'2-digit', minute:'2-digit'})}<br><span class="mut">${h.t.map(x => TOPIC[x] ? TOPIC[x].ic : '').join(' ')}</span></span><b>${Math.round(h.ok / h.n * 100)} %</b><span class="mut">(${h.ok}/${h.n})</span></div>`; }).join('') : '<p class="mut">Noch kein Quiz gemacht.</p>';
   $('#ver').textContent = APP_VERSION;
+  pwaCheck();
 }
+async function pwaCheck(){
+  const el = $('#pwaCheck'); if (!el) return;
+  const rows = [];
+  const add = (ok, name, info) => rows.push({ok, name, info});
+  const https = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  add(https, 'HTTPS', https ? location.origin : (location.protocol === 'file:' ? 'Lokale Datei – PWA nur über https möglich' : 'Kein https – Installation nicht möglich'));
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  add(true, 'Anzeige', standalone ? 'Installiert (Standalone)' : 'Im Browser geöffnet');
+  const mf = $('link[rel=manifest]');
+  try {
+    const r = await fetch(mf.href, {cache:'no-store'}); const ct = r.headers.get('content-type') || '';
+    const j = r.ok ? await r.json() : null;
+    add(!!j && !!j.icons, 'Manifest', r.ok ? `${j.name} · ${ct.split(';')[0] || 'Typ unbekannt'}` : 'HTTP ' + r.status + ' – manifest.webmanifest fehlt');
+    if (j && j.icons) {
+      const res = await Promise.all(j.icons.map(i => fetch(new URL(i.src, mf.href), {method:'HEAD', cache:'no-store'}).then(x => x.ok).catch(() => false)));
+      add(res.every(Boolean), 'Icons', res.every(Boolean) ? res.length + ' Icons erreichbar' : 'Fehlende Icons: ' + j.icons.filter((_, k) => !res[k]).map(i => i.src).join(', '));
+    }
+  } catch (e) { add(false, 'Manifest', 'Nicht ladbar: ' + e.message); }
+  if ('serviceWorker' in navigator) {
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      const sw = reg && (reg.active || reg.waiting || reg.installing);
+      add(!!(reg && reg.active), 'Service Worker', reg ? (sw ? sw.state + ' · Scope ' + reg.scope : 'registriert, noch kein Worker') : (https ? 'Nicht registriert (sw.js fehlt oder Fehler)' : 'Nicht registriert (kein https)'));
+    } catch (e) { add(false, 'Service Worker', e.message); }
+    try { const keys = await caches.keys(); add(keys.length > 0, 'Offline-Cache', keys.length ? keys.join(', ') : 'Noch kein Cache angelegt'); } catch (e) { add(false, 'Offline-Cache', 'Nicht verfügbar'); }
+  } else add(false, 'Service Worker', 'Vom Browser nicht unterstützt');
+  add(true, 'Installation', deferredPrompt ? 'Browser bietet Installation an' : (standalone ? 'Bereits installiert' : 'Kein Install-Angebot (iOS: Teilen → Zum Home-Bildschirm; Chrome: Menü → App installieren)'));
+  el.innerHTML = rows.map(r => `<div class="tstat"><span>${r.ok ? '✅' : '❌'}</span><span class="n"><b>${esc(r.name)}</b><br><span class="mut">${esc(r.info)}</span></span></div>`).join('');
+}
+$('#pwaRecheck').onclick = pwaCheck;
 $('#resetStats').onclick = () => { if (confirm('Gesamten Lernstand löschen?')) { S = {q:{}, cards:{}, hist:[], sel:TOPICS.map(t => t.id), n:20}; save(); renderStats(); toast('Lernstand gelöscht.'); } };
 
 /* ---- Tastatur ---- */

@@ -1,7 +1,7 @@
 /* KFZ Lernquiz – Service Worker
    Precache der App-Shell, network-first für Navigationen (frische index.html),
    cache-first für Assets. CACHE_NAME bei jedem Release erhöhen (passend zu APP_VERSION in index.html). */
-const CACHE_NAME = 'kfz-lernquiz-v1-0';
+const CACHE_NAME = 'kfz-lernquiz-v1-1';
 const ASSETS = [
   './',
   './index.html',
