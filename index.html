@@ -328,6 +328,13 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
       <label><input type="checkbox" id="lv-trigdisp" checked> Anzeige-Trigger</label>
       <select id="lv-trigpos"><option value="0.1">Pos 10 %</option><option value="0.2" selected>Pos 20 %</option><option value="0.5">Pos 50 %</option><option value="0.8">Pos 80 %</option></select>
     </div>
+    <div class="lvrow"><b>Ansicht</b>
+      <select id="lv-mode" title="Darstellung"><option value="yt">Y-T (Zeit)</option><option value="fft">FFT (Spektrum)</option><option value="xy">X-Y</option></select>
+      <label>Mathe <select id="lv-math"><option value="off">aus</option><option value="sub">CH1−CH2</option><option value="add">CH1+CH2</option><option value="mul">CH1×CH2</option><option value="div">CH1÷CH2</option></select></label>
+      <label>FFT-Fenster <select id="lv-fftwin"><option value="hann">Hann</option><option value="hamming">Hamming</option><option value="blackman">Blackman</option><option value="rect">Rechteck</option></select></label>
+      <label><input type="checkbox" id="lv-fftdb" checked> dB</label>
+      <label><input type="checkbox" id="lv-measall"> alle Messwerte</label>
+    </div>
     <div class="note" id="lv-setupinfo" style="display:none"></div>
     <div class="lvrow">
       <button class="ibtn" id="lv-run">Run</button>
@@ -4471,6 +4478,7 @@ var LV={
   tolA:15, tolT:10,
   align:{lag:0,score:null,k:1,off:0,valid:false}, lastAlign:0, lastMet:0,
   cursor:{on:false,a:0.3,b:0.7,drag:0},
+  mode:'yt', math:{op:'off'}, fft:{win:'hann', db:true}, measAll:false,
   playback:null
 };
 var MAXS=262144;
@@ -4742,14 +4750,33 @@ function doMetrics(win){
   box.innerHTML=html;
   var mline=$('lv-meas');
   if(mline){
+    var dtm=LV.dt;
+    var pctT=function(v){ return v==null?'–':(v*100).toFixed(0)+' %'; };
     var chTxt=function(idx,arrRaw){
       if(!LV.chOn[idx]||!arrRaw||!arrRaw.length) return '';
       var a=xform(arrRaw,idx), p=OsziLogic.peakToPeak(a), u=chUnit(idx);
-      return 'CH'+(idx+1)+': Vpp '+fmtVal(p.pp,u)+' · Min '+fmtVal(p.min,u)+' · Max '+fmtVal(p.max,u)+
-             ' · Ø '+fmtVal(OsziLogic.mean(a),u)+' · RMS '+fmtVal(OsziLogic.rms(a),u);
+      var base='CH'+(idx+1)+': Vpp '+fmtVal(p.pp,u)+' · Max '+fmtVal(p.max,u)+' · Min '+fmtVal(p.min,u)+
+               ' · Ø '+fmtVal(OsziLogic.mean(a),u)+' · RMS '+fmtVal(OsziLogic.rms(a),u);
+      if(!LV.measAll) return base;
+      var lv=OsziLogic.levels(a), pw=OsziLogic.pulseWidths(a,dtm), ov=OsziLogic.overshoot(a);
+      return base+' · Top '+fmtVal(lv.top,u)+' · Base '+fmtVal(lv.base,u)+' · Vamp '+fmtVal(lv.top-lv.base,u)+
+             ' · f '+fmtF(OsziLogic.measureFreq(a,dtm))+' · T '+fmtT(OsziLogic.measurePeriod(a,dtm))+
+             ' · +Br '+fmtT(pw.wPos)+' · −Br '+fmtT(pw.wNeg)+' · +Duty '+pctT(pw.dutyPos)+
+             ' · tr '+fmtT(OsziLogic.measureRise(a,dtm))+' · tf '+fmtT(OsziLogic.measureFall(a,dtm))+
+             ' · OS '+pctT(ov);
     };
-    var mt=[chTxt(0,win.t1),chTxt(1,win.t2)].filter(Boolean).join('    |    ');
-    mline.textContent=mt;
+    var parts=[chTxt(0,win.t1),chTxt(1,win.t2)].filter(Boolean);
+    var both = LV.chOn[0]&&LV.chOn[1] && win.t1&&win.t1.length && win.t2&&win.t2.length;
+    if(LV.math.op!=='off' && both){
+      var mm=OsziLogic.combine(xform(win.t1,0),xform(win.t2,1),LV.math.op), pm=OsziLogic.peakToPeak(mm);
+      var opl={sub:'CH1−CH2',add:'CH1+CH2',mul:'CH1×CH2',div:'CH1÷CH2'}[LV.math.op]||'Math';
+      parts.push(opl+': Vpp '+fmtVal(pm.pp,chUnit(0))+' · Ø '+fmtVal(OsziLogic.mean(mm),chUnit(0)));
+    }
+    if(both){
+      var ph=OsziLogic.phase(xform(win.t1,0),xform(win.t2,1),dtm);
+      if(ph.deg!=null) parts.push('Δφ(CH1→CH2) '+ph.deg.toFixed(0)+'° ('+fmtT(ph.sec)+')');
+    }
+    mline.textContent=parts.join('    |    ');
   }
 }
 
@@ -4814,6 +4841,10 @@ function draw(){
   if(now-LV.lastAlign>600){ LV.lastAlign=now; doAlign(win); }
   if(now-LV.lastMet>600){ LV.lastMet=now; doMetrics(win); }
 
+  /* Ansichtsmodus: FFT / X-Y verlassen den Y-T-Pfad */
+  if(LV.mode==='fft'){ drawFFT(win); return; }
+  if(LV.mode==='xy'){ drawXY(win); return; }
+
   /* Referenz-Overlay + Toleranzband */
   var ref=LV.overlay?refSampler():null;
   if(ref){
@@ -4844,6 +4875,12 @@ function draw(){
 
   if(d1) drawDec(d1,LV.vdiv[0],LV.pos[0],'#ffd24a',1);
   if(d2) drawDec(d2,LV.vdiv[1],LV.pos[1],'#4fd2ff',1);
+  /* Mathe-Kanal (CH1∘CH2), auf CH1-Skala */
+  if(LV.math.op!=='off' && a1 && a1.length && a2 && a2.length){
+    var mComb=OsziLogic.combine(a1,a2,LV.math.op);
+    var mdec=OsziLogic.minMaxDecimate(mComb,0,mComb.length,cols);
+    drawDec(mdec,LV.vdiv[0],LV.pos[0],'#e0a4ff',0.95);
+  }
 
   /* Triggerpegel-Linie */
   if(LV.trig.disp){
@@ -4867,9 +4904,61 @@ function draw(){
   var st='CH1 '+fmtVal(LV.vdiv[0],chUnit(0))+'/div';
   if(LV.chOn[1]) st+='  ·  CH2 '+fmtVal(LV.vdiv[1],chUnit(1))+'/div';
   st+='  ·  '+fmtT(LV.secdiv)+'/div';
+  if(LV.math.op!=='off') st+='  ·  M:CH1'+({sub:'−',add:'+',mul:'×',div:'÷'}[LV.math.op]||'')+'CH2';
   if(LV.playback) st+='  ·  WIEDERGABE: '+LV.playback;
   else if(!LV.running) st+='  ·  STOP';
   ctx.fillText(st,8*dpr,h-8*dpr);
+}
+/* ---------- FFT-Spektrum-Ansicht ---------- */
+function drawFFT(win){
+  var ctx=CTX, w=CV.width, h=CV.height, dpr=window.devicePixelRatio||1;
+  ctx.font=(11*dpr)+'px ui-monospace,monospace';
+  var ch=(LV.trig.ch===2 && LV.chOn[1]) ? 1 : (LV.chOn[0]?0:(LV.chOn[1]?1:0));
+  var raw=(ch===1)?win.t2:win.t1;
+  if(!LV.chOn[ch] || !raw || raw.length<8){ ctx.fillStyle='#8ca0b6'; ctx.fillText('FFT: kein Signal',8*dpr,18*dpr); return; }
+  var a=xform(raw,ch);
+  var sp=OsziLogic.spectrum(a, LV.dt, {window:LV.fft.win, db:LV.fft.db});
+  var half=sp.mags.length;
+  if(half<2){ ctx.fillStyle='#8ca0b6'; ctx.fillText('FFT: zu wenig Punkte',8*dpr,18*dpr); return; }
+  var fmax=sp.freqs[half-1], ymax, ymin;
+  if(LV.fft.db){ var pk=sp.peak?sp.peak.mag:0; ymax=Math.ceil((pk+6)/10)*10; ymin=ymax-100; }
+  else { var pkl=sp.peak?sp.peak.mag:0; ymax=(pkl>0?pkl*1.15:1); ymin=0; }
+  var span=(ymax-ymin)||1;
+  function X(i){ return (i/(half-1))*w; }
+  function Y(v){ var y=h-((v-ymin)/span)*h; return y<0?0:(y>h?h:y); }
+  ctx.strokeStyle='#ffd24a'; ctx.lineWidth=1.4*dpr; ctx.beginPath();
+  for(var i=0;i<half;i++){ var xx=X(i), yy=Y(sp.mags[i]); if(i===0)ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }
+  ctx.stroke();
+  if(sp.peak && sp.peak.bin>0){
+    var px=X(sp.peak.bin), py=Y(sp.peak.mag);
+    ctx.fillStyle='#e0a4ff'; ctx.beginPath(); ctx.arc(px,py,3*dpr,0,2*Math.PI); ctx.fill();
+    ctx.fillStyle='#cfe3f2';
+    ctx.fillText('Peak '+fmtF(sp.peak.freq)+' · '+(LV.fft.db?sp.peak.mag.toFixed(1)+' dBVrms':fmtVal(sp.peak.mag,'V')+'rms'), 8*dpr, 18*dpr);
+  }
+  ctx.fillStyle='#8ca0b6';
+  ctx.fillText('0', 2*dpr, h-4*dpr);
+  ctx.fillText(fmtF(fmax/2), Math.round(w/2)-16*dpr, h-4*dpr);
+  ctx.fillText(fmtF(fmax), w-58*dpr, h-4*dpr);
+  ctx.fillText('CH'+(ch+1)+' · Fenster '+LV.fft.win+(LV.fft.db?' · dBVrms':' · Vrms'), 8*dpr, h-20*dpr);
+}
+/* ---------- X-Y-Ansicht (CH1 vs CH2) ---------- */
+function drawXY(win){
+  var ctx=CTX, w=CV.width, h=CV.height, dpr=window.devicePixelRatio||1;
+  ctx.font=(11*dpr)+'px ui-monospace,monospace';
+  if(!(LV.chOn[0]&&LV.chOn[1]) || !win.t1||!win.t1.length || !win.t2||!win.t2.length){
+    ctx.fillStyle='#8ca0b6'; ctx.fillText('X-Y: CH1 und CH2 einschalten',8*dpr,18*dpr); return;
+  }
+  var a=xform(win.t1,0), b=xform(win.t2,1), n=Math.min(a.length,b.length);
+  var cx=w/2, cy=h/2, sx=(h/8)/(LV.vdiv[0]||1), sy=(h/8)/(LV.vdiv[1]||1);
+  var step=Math.max(1,Math.floor(n/4000));
+  ctx.strokeStyle='#ffd24a'; ctx.lineWidth=1.2*dpr; ctx.globalAlpha=0.9; ctx.beginPath();
+  for(var i=0;i<n;i+=step){
+    var X=cx+a[i]*sx, Y=cy-b[i]*sy;
+    if(i===0)ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+  }
+  ctx.stroke(); ctx.globalAlpha=1;
+  ctx.fillStyle='#8ca0b6';
+  ctx.fillText('X: CH1 '+fmtVal(LV.vdiv[0],chUnit(0))+'/div  ·  Y: CH2 '+fmtVal(LV.vdiv[1],chUnit(1))+'/div', 8*dpr, h-8*dpr);
 }
 function sampleAt(arr,frac){
   if(!arr||!arr.length) return null;
@@ -5090,6 +5179,11 @@ function initLive(){
   });
   $('lv-trigpos').addEventListener('change',function(){ LV.trigPos=parseFloat(this.value)||0.2; });
   $('lv-persist').addEventListener('change',function(){ LV.persist=parseInt(this.value,10)||0; PHIST.length=0; });
+  $('lv-mode').addEventListener('change',function(){ LV.mode=this.value; });
+  $('lv-math').addEventListener('change',function(){ LV.math.op=this.value; });
+  $('lv-fftwin').addEventListener('change',function(){ LV.fft.win=this.value; });
+  $('lv-fftdb').addEventListener('change',function(){ LV.fft.db=this.checked; });
+  $('lv-measall').addEventListener('change',function(){ LV.measAll=this.checked; });
   $('lv-png').addEventListener('click',exportPNG);
   $('lv-csv').addEventListener('click',exportCSV);
   /* Zeitbasis */
