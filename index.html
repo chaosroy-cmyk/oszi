@@ -4922,29 +4922,50 @@ function metricRow(name, mv, sv, tol, fmt){
   var cls=w===null?'':(w?'m-ok':'m-bad');
   return '<tr><td>'+name+'</td><td class="'+cls+'">'+fmt(mv)+'</td><td>'+fmt(sv)+'</td><td>±'+tol+' %</td></tr>';
 }
-function doMetrics(win){
-  var box=$('lv-metrics'); if(!box) return;
-  var ref=refSampler();
-  if(!ref||!win.t1.length){ box.innerHTML='<tr><td colspan="4">Karte wählen und Signal anlegen.</td></tr>'; return; }
-  var live=xform(win.t1,0), dt=LV.dt;
+function refName(ch){
+  var src=(ch===1)?LV.refSrc2:LV.refSrc, id=(ch===1)?LV.karteId2:LV.karteId;
+  if(src && src.indexOf('lib:')===0){ var r=LIB.cache[src.slice(4)]; return r?('★ '+r.name):'Aufnahme'; }
+  var k=cardById(id); return k?k.name:'—';
+}
+/* Metrik-Zeilen für einen Kanal gegen seine eigene Referenz (Gemessen vs. Soll). */
+function metricRowsFor(ch, arrRaw){
+  var ref=refSampler(ch);
+  if(!ref || !arrRaw || !arrRaw.length) return '';
+  var live=xform(arrRaw,ch), dt=LV.dt, i;
   var pl=OsziLogic.peakToPeak(live);
   if(live.length>8192){
     var st=Math.ceil(live.length/8192), tmp=new Float32Array(Math.floor(live.length/st));
-    for(var i=0;i<tmp.length;i++) tmp[i]=live[i*st];
+    for(i=0;i<tmp.length;i++) tmp[i]=live[i*st];
     live=tmp; dt=dt*st;
   }
-  var NR=1024, rArr=new Float32Array(NR), dtr=ref.T/NR;
-  for(var j=0;j<NR;j++) rArr[j]=ref.at(j*dtr);
-  var html='';
-  html+=metricRow('Frequenz', OsziLogic.measureFreq(live,dt), OsziLogic.measureFreq(rArr,dtr), LV.tolT, fmtF);
-  html+=metricRow('Duty', OsziLogic.measureDuty(live), OsziLogic.measureDuty(rArr), LV.tolT,
+  var NR=1024, rArr=new Float32Array(NR), dtr=ref.T/NR, j;
+  for(j=0;j<NR;j++) rArr[j]=ref.at(j*dtr);
+  var h='';
+  h+=metricRow('Frequenz', OsziLogic.measureFreq(live,dt), OsziLogic.measureFreq(rArr,dtr), LV.tolT, fmtF);
+  h+=metricRow('Duty', OsziLogic.measureDuty(live), OsziLogic.measureDuty(rArr), LV.tolT,
         function(v){return v==null?'–':(v*100).toFixed(0)+' %';});
-  html+=metricRow('Anstieg 10–90 %', OsziLogic.measureRise(live,dt), OsziLogic.measureRise(rArr,dtr), LV.tolT, fmtT);
+  h+=metricRow('Anstieg 10–90 %', OsziLogic.measureRise(live,dt), OsziLogic.measureRise(rArr,dtr), LV.tolT, fmtT);
   var pr=OsziLogic.peakToPeak(rArr);
-  var ppw=(ref.unit==='V'&&!LV.refScale&&LV.clamp[0]===0)?OsziLogic.within(pl.pp,pr.pp,LV.tolA):null;
-  html+='<tr><td>Spitze–Spitze</td><td class="'+(ppw===null?'':(ppw?'m-ok':'m-bad'))+'">'+fmtVal(pl.pp,chUnit(0))+
-        '</td><td>'+pr.pp.toFixed(2)+' '+ref.unit+'</td><td>±'+LV.tolA+' %</td></tr>';
-  box.innerHTML=html;
+  var ppw=(ref.unit==='V'&&!LV.refScale&&LV.clamp[ch]===0)?OsziLogic.within(pl.pp,pr.pp,LV.tolA):null;
+  h+='<tr><td>Spitze–Spitze</td><td class="'+(ppw===null?'':(ppw?'m-ok':'m-bad'))+'">'+fmtVal(pl.pp,chUnit(ch))+
+     '</td><td>'+pr.pp.toFixed(2)+' '+ref.unit+'</td><td>±'+LV.tolA+' %</td></tr>';
+  return h;
+}
+function doMetrics(win){
+  var box=$('lv-metrics');
+  if(box){
+    var rows1=metricRowsFor(0, win.t1);
+    var ch2ref = LV.chOn[1] && LV.karteId2 && win.t2 && win.t2.length;
+    var rows2 = ch2ref ? metricRowsFor(1, win.t2) : '';
+    if(!rows1 && !rows2){
+      box.innerHTML='<tr><td colspan="4">Karte wählen und Signal anlegen.</td></tr>';
+    } else if(rows2){
+      var hd=function(lbl,col,ch){ return '<tr><td colspan="4" style="background:var(--panel2)"><b style="color:'+col+'">'+lbl+'</b> · '+esc(refName(ch))+'</td></tr>'; };
+      box.innerHTML=hd('CH1','var(--acc)',0)+rows1+hd('CH2','var(--acc2)',1)+rows2;
+    } else {
+      box.innerHTML=rows1;
+    }
+  }
   var mline=$('lv-meas');
   if(mline){
     var dtm=LV.dt;
