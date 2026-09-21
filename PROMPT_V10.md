@@ -409,7 +409,14 @@ Zwei Ebenen sauber trennen:
   **FPGA-Firmware-`.bin`-Dateien**. Alles in einen Ordner/ZIP mit `start.cmd`
   (startet Bridge + öffnet Browser auf die Deploy-URL bzw. lokalen Server).
   Ziel: „entpacken, `start.cmd` doppelklicken" — **kein Python-Install nötig**.
-  Build-Rezept + Test auf einem frischen Windows dokumentieren.
+  Build-Rezept + Test auf einem frischen Windows dokumentieren
+  (**konkretes Beispiel-Rezept: Anhang A**).
+  **Empfehlung:** `bridge.py` zusätzlich einen winzigen **statischen Fileserver**
+  auf `http://127.0.0.1:<port>` geben, der die PWA-Dateien mit ausliefert. Dann
+  braucht `start.cmd` nur `bridge.exe` + Browser (kein `python -m http.server`,
+  kein Python) **und** es gibt **kein Mixed-Content-Problem** (Seite via
+  `http://127.0.0.1`, WebSocket via `ws://127.0.0.1:8765` — beide lokal; eine
+  HTTPS-Cloudflare-Seite dürfte `ws://localhost` je nach Browser blocken).
 - **Treiber-Binding (MUSS-Doku, nicht wegzaubern):** die VDS1022 muss auf
   **WinUSB** gebunden sein (Zadig bzw. florentbrs `install-win.cmd`, einmal als
   Admin). Als `treiber-einrichten.cmd` bereitstellen. ⚠️ **Konflikt**, wenn die
@@ -497,3 +504,99 @@ v10-Zeile ergänzen.
 - Fachwerte nie absolut — „typ./~/herstellerabhängig"; Richtungslogiken
   typabhängig kennzeichnen.
 - `node --check` und Datei-Schreiben nie per `&&`/`or` verketten.
+
+---
+
+## Anhang A — Portable-Bundle: Build-Rezept (Beispiel, anzupassen)
+
+Konkreter Startpunkt für das `bridge.exe`-Portable-Bundle (§5.1, Ebene 2).
+**Alles unten sind Beispiele** — der bauende Agent verifiziert Paketlayout und
+Pfade gegen das reale `florentbr/OWON-VDS1022`-Paket und **testet auf einem
+frischen Windows ohne Python**.
+
+### A.1 Ordnerstruktur des ausgelieferten Bundles
+```
+kfz-oszi-live-v10/
+  bridge.exe                 ← PyInstaller-Onefile (Python + vds1022-API + Firmware + libusb)
+  start.cmd                  ← startet Bridge (+ statischen Server) und öffnet Browser
+  treiber-einrichten.cmd     ← einmalig als Admin: VDS1022 → WinUSB (Zadig/florentbr)
+  driver\                    ← florentbr install-win.cmd + libusb-Treiber (für Variante A)
+  web\                       ← index.html, manifest, sw.js, icons/  (nur wenn OFFLINE-Betrieb ohne Deploy-URL)
+  LIESMICH.txt               ← 3 Zeilen: Treiber einrichten → start.cmd → Browser
+```
+> Wird die Deploy-URL genutzt (Ebene 1), entfällt `web\`; `start.cmd` öffnet die
+> URL. Für reinen Offline-Betrieb liefert der in `bridge.py` eingebaute
+> Mini-Fileserver `web\` aus (kein Mixed-Content, siehe §5.1).
+
+### A.2 Build — schneller Weg (One-Liner)
+```bat
+py -m pip install pyinstaller
+py -m PyInstaller --onefile --console ^
+   --collect-all vds1022 ^
+   --hidden-import usb.backend.libusb1 --hidden-import usb.backend.libusb0 ^
+   --add-binary "libusb-1.0.dll;." ^
+   --name bridge bridge.py
+rem  Ergebnis: dist\bridge.exe
+```
+`--collect-all vds1022` zieht Modul **inkl. der FPGA-Firmware `vds1022/fwr/*.bin`**
+und Abhängigkeiten ein. `libusb-1.0.dll` (64-bit, passend zur Python-Arch) muss
+neben der spec liegen bzw. via `--add-binary` gebündelt werden.
+
+### A.3 Build — reproduzierbar (`bridge.spec`)
+```python
+# bridge.spec — PyInstaller Onefile.  Build: py -m PyInstaller bridge.spec
+# -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import collect_all
+vds_datas, vds_binaries, vds_hidden = collect_all('vds1022')  # Firmware fwr/*.bin inklusive
+
+a = Analysis(
+    ['bridge.py'],
+    binaries=vds_binaries + [('libusb-1.0.dll', '.')],   # Pfad zur DLL anpassen
+    datas=vds_datas,
+    hiddenimports=vds_hidden + ['usb.backend.libusb1', 'usb.backend.libusb0'],
+)
+pyz = PYZ(a.pure)
+exe = EXE(pyz, a.scripts, a.binaries, a.datas, [],
+          name='bridge', console=True)   # kein COLLECT ⇒ Onefile
+```
+> **Achtung Windows-USB-Workaround (aus dem Kompendium):** Der Backend-Patch
+> (`is_kernel_driver_active`→False, detach/attach→no-op) muss **im gebündelten
+> `bridge.py` selbst** stehen und vor dem ersten `vds1022`-Zugriff greifen — er
+> darf nicht durch das Einfrieren verloren gehen.
+
+### A.4 `start.cmd` (als **CRLF** speichern)
+```bat
+@echo off
+rem  KFZ-Oszi Live — Bridge + Browser. Kein Python noetig (bridge.exe bundelt alles).
+cd /d "%~dp0"
+start "KFZ-Oszi Bridge" bridge.exe
+timeout /t 2 >nul
+rem  A) Offline/lokal (bridge.exe liefert web\ auf 127.0.0.1 aus):
+start "" http://127.0.0.1:8000/index.html
+rem  B) Online-Variante (auskommentiert): Deploy-URL statt lokal:
+rem  start "" https://DEINE-DEPLOY-URL/
+```
+
+### A.5 `treiber-einrichten.cmd` (einmalig, **als Administrator**, CRLF)
+```bat
+@echo off
+rem  Bindet die VDS1022 an WinUSB. Einmalig noetig. Rechtsklick -> "Als Administrator".
+net session >nul 2>&1 || (echo Bitte ALS ADMINISTRATOR ausfuehren. & pause & exit /b 1)
+cd /d "%~dp0"
+echo Achtung: OWON-Java-App vorher schliessen (USB ist exklusiv).
+rem  Variante A — florentbr-Installer (bindet libusb/WinUSB automatisch):
+if exist "driver\install-win.cmd" ( call "driver\install-win.cmd" ) else (
+  echo Variante B: Zadig starten, Geraet "OWON"/"VDS1022" waehlen,
+  echo Zieltreiber WinUSB -^> "Replace Driver".
+)
+pause
+```
+
+### A.6 Abnahme des Bundles (MUSS)
+- Auf **frischem Windows ohne Python/ohne OWON-Software**: `treiber-einrichten.cmd`
+  (Admin) → `start.cmd` → Live-Modus verbindet sich mit echter VDS1022 und
+  streamt. Danach auch **ohne** Gerät: Mock-Modus läuft.
+- `bridge.exe` startet ohne „missing DLL/ImportError"; Firmware-`.bin` wird
+  geladen (kein `assert`-Fehler); WebSocket auf `:8765` erreichbar.
+- macOS/Linux analog mit `install-mac.sh`/`install-linux.sh` (udev) dokumentiert;
+  PyInstaller-Build je Zielplattform separat.
