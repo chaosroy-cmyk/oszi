@@ -208,6 +208,21 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
 .lv-dlgbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1rem;max-width:420px;width:100%;display:flex;flex-direction:column;gap:.45rem}
 .lv-dlgbox input{width:100%}
 
+/* Signal-Atlas */
+.atlas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem;margin:.5rem 0}
+.atile{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:.7rem;text-align:left;cursor:pointer;min-height:56px;display:flex;flex-direction:column;gap:.35rem;color:inherit;font:inherit}
+.atile:hover,.atile:focus-visible{border-color:var(--acc2);outline:none}
+.atile .an{font-weight:700}
+.atile .asub{font-size:.74rem;color:var(--mut)}
+.atile .athumb{display:block;margin-top:.1rem}
+.atile .athumb svg{width:100%;height:auto;display:block;border-radius:6px}
+.acrumbtn{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:.25rem .7rem;font-size:.82rem;color:var(--mut);cursor:pointer}
+.acrumbtn.on{background:var(--acc2);color:#06222e;border-color:var(--acc2);font-weight:700}
+.atlas-gut{border:1px solid var(--line2);border-radius:12px;padding:.6rem;margin:.4rem 0;background:var(--panel)}
+.atlas-gut svg{width:100%;height:auto;display:block}
+.atlas-figs{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.6rem;margin-top:.3rem}
+.atlas-fig{border:1px solid var(--line);border-radius:10px;padding:.5rem;background:var(--panel)}
+.atlas-fig svg{width:100%;height:auto;display:block;margin-top:.25rem}
 </style>
 
 <meta content="#0a0e13" name="theme-color"/>
@@ -634,6 +649,16 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
 </table></div>
 <div class="rw">Richtwerte können je nach Hersteller, System, Motorsteuergerät und Messgerät abweichen. Herstellerdaten und Stromlaufplan haben Vorrang.</div>
 </section>
+<!-- ================= MESSKARTEN ================= -->
+<!-- ================= SIGNAL-ATLAS ================= -->
+<section class="page" data-nav="Signal-Atlas" id="pg-atlas">
+<h2>Signal-Atlas <span class="badge b-sensor">nach Sensor</span></h2>
+<div class="simp"><b>Einsteiger:</b> Bauteil wählen → sofort das Gut-Signalbild groß und die typischen Fehlerbilder daneben. Zwei Tipps bis zur Kurve; alles offline.</div>
+<div class="lvrow" id="atlas-crumb" style="gap:.4rem;flex-wrap:wrap;margin:.5rem 0"></div>
+<div id="atlas"></div>
+<div class="rw">Signalbilder sind idealisierte Prinzipdarstellungen. Richtwerte können je nach Hersteller, System und Messgerät abweichen. Herstellerdaten und Stromlaufplan haben Vorrang.</div>
+</section>
+
 <!-- ================= MESSKARTEN ================= -->
 <section class="page" data-nav="Messkarten" id="pg-karten">
 <h2>Messkarten</h2>
@@ -3993,8 +4018,9 @@ function applyPage(id,opts){
   if(id==='pg-karten' && !cardsRendered){ renderCards(); cardsRendered=true; }
   if(id==='pg-fdb' && !fdbRendered){ renderFdb(); fdbRendered=true; }
   if(id==='pg-glossar' && !glossRendered){ renderGloss(); glossRendered=true; }
+  if(id==='pg-atlas' && !atlasRendered){ renderAtlas(); }
   if(opts.open){ var d=document.getElementById(opts.open); if(d){ if(d.tagName==='DETAILS') d.open=true; setTimeout(function(){ d.scrollIntoView({behavior:'smooth',block:'start'}); },60); } }
-  else if(opts.card){ openCard(opts.card); }
+  else if(opts.card){ if(id==='pg-atlas') openAtlasSensor(opts.card); else openCard(opts.card); }
   else if(opts.fdb){ openFdb(opts.fdb); }
   else { window.scrollTo({top:0}); }
 }
@@ -4024,7 +4050,7 @@ function buildNav(){
 var IDX=[];
 function buildIndex(){
   IDX=[];
-  KARTEN.forEach(function(c){ IDX.push({t:c.name,k:'Messkarte',page:'pg-karten',card:c.id,q:(c.name+' '+(c.aufgabe||'')+' '+(c.dtc||'')+' '+c.id).toLowerCase()}); });
+  KARTEN.forEach(function(c){ var syslab=(SYSLBL[sysGroup(c)]?SYSLBL[sysGroup(c)][0]:''); IDX.push({t:c.name,k:'Messkarte',page:'pg-karten',card:c.id,q:(c.name+' '+(c.aufgabe||'')+' '+(c.dtc||'')+' '+c.id+' '+syslab).toLowerCase()}); });
   FEHLERDB.forEach(function(f){ IDX.push({t:f.titel,k:'Fehlermuster',page:'pg-fdb',fdb:f.id,q:(f.titel+' '+(f.kennzeichen||'')).toLowerCase()}); });
   GLOSSAR.forEach(function(g){ IDX.push({t:g.term,k:'Glossar',page:'pg-glossar',q:(g.term+' '+g.def).toLowerCase()}); });
   document.querySelectorAll('.page[data-nav]').forEach(function(p){ var n=p.getAttribute('data-nav'); IDX.push({t:n,k:'Kapitel',page:p.id,q:n.toLowerCase()}); });
@@ -4057,12 +4083,171 @@ function cycleMode(){
   var b=document.getElementById('btnModus'); if(b) b.textContent='Modus: '+MODES[mIdx][1];
 }
 
+/* ---- Signal-Atlas (alle Signalbilder nach Sensor) ---- */
+var ATLAS_SYS=[
+ ['drehzahl-position','Drehzahl & Lage','b-sensor'],
+ ['luft-ladung','Luft & Ladedruck','b-sensor'],
+ ['temperatur','Temperatur','b-sensor'],
+ ['druck-fluid','Druck (Fluid/Abgas)','b-sensor'],
+ ['verbrennung','Verbrennung / Klopf','b-sensor'],
+ ['lambda-abgas','Lambda & Gemisch','b-lambda'],
+ ['einspritzung','Einspritzung','b-aktor'],
+ ['zuendung','Zündung','b-aktor'],
+ ['stellglieder','Ventile & Steller','b-aktor'],
+ ['bordnetz-hochstrom','Bordnetz & Hochstrom','b-aktor'],
+ ['bus-daten','Bus & Datenleitungen','b-bus'],
+ ['grundlagen','Grundlagen & Prüfpunkte','b-d1']
+];
+var SYSLBL={}; ATLAS_SYS.forEach(function(g){ SYSLBL[g[0]]=[g[1],g[2]]; });
+var SYSMAP={
+ 'kw-ind':'drehzahl-position','kw-hall':'drehzahl-position','kwnw-sync':'drehzahl-position',
+ 'raddreh-pass':'drehzahl-position','raddreh-akt':'drehzahl-position','pos-sensor':'drehzahl-position','edk':'drehzahl-position',
+ 'lmm-ana':'luft-ladung','lmm-dig':'luft-ladung','map':'luft-ladung',
+ 'ntc':'temperatur','agt':'temperatur',
+ 'oeldruck':'druck-fluid','raildruck':'druck-fluid','dpf':'druck-fluid',
+ 'klopf':'verbrennung',
+ 'lam-sprung':'lambda-abgas','lam-nachkat':'lambda-abgas','lam-lsu':'lambda-abgas','lam-heiz':'lambda-abgas',
+ 'inj-saug':'einspritzung','inj-di':'einspritzung','inj-cr-mag':'einspritzung','inj-piezo':'einspritzung',
+ 'zuend-prim':'zuendung','zuend-sek':'zuendung',
+ 'pwm-ventil':'stellglieder','stellmotor':'stellglieder','luefter-pwm':'stellglieder','relais':'stellglieder',
+ 'kraftstoffpumpe':'bordnetz-hochstrom','gluehkerze':'bordnetz-hochstrom','starter':'bordnetz-hochstrom','generator-ripple':'bordnetz-hochstrom',
+ 'can-hs':'bus-daten','can-fd':'bus-daten','can-ls':'bus-daten','lin':'bus-daten'
+};
+/* sysGroup analog cardGroup, additiv: c.sys -> SYSMAP[id] -> Fallback ueber kat. cardGroup() bleibt unveraendert. */
+function sysGroup(c){
+  if(!c) return 'grundlagen';
+  if(c.sys) return c.sys;
+  if(SYSMAP[c.id]) return SYSMAP[c.id];
+  if(c.kat==='lambda') return 'lambda-abgas';
+  if(c.kat==='bus') return 'bus-daten';
+  if(c.kat==='zuend') return 'zuendung';
+  if(c.kat==='sensor') return 'drehzahl-position';
+  return 'stellglieder';
+}
+/* Freistehende fig()-Signalbilder je System (werden aus dem gerenderten DOM geklont) */
+var FIGSYS=[
+ ['svg-kwnw','drehzahl-position','KW/NW-Synchronisation'],
+ ['svg-5v-gut','bordnetz-hochstrom','5-V-Referenz — gut'],
+ ['svg-5v-einbruch','bordnetz-hochstrom','5-V-Referenz — Einbruch'],
+ ['svg-5v-ripple','bordnetz-hochstrom','5-V-Referenz — Ripple'],
+ ['svg-5v-ks','bordnetz-hochstrom','5-V-Referenz — Kurzschluss'],
+ ['svg-battstart','bordnetz-hochstrom','Batteriespannung Start'],
+ ['svg-relkomp','stellglieder','Relais / Kompressor'],
+ ['svg-can-gut','bus-daten','CAN-HS — gut'],
+ ['svg-can-diff','bus-daten','CAN — Differenzsignal'],
+ ['svg-can-f1','bus-daten','CAN — Fehler 1'],
+ ['svg-can-f2','bus-daten','CAN — Fehler 2'],
+ ['svg-can-f3','bus-daten','CAN — Fehler 3'],
+ ['svg-can-f4','bus-daten','CAN — Fehler 4'],
+ ['svg-canls','bus-daten','CAN Low-Speed'],
+ ['svg-canfd','bus-daten','CAN-FD'],
+ ['svg-lin-gut','bus-daten','LIN — gut'],
+ ['svg-lin-f1','bus-daten','LIN — Fehler 1'],
+ ['svg-lin-f2','bus-daten','LIN — Fehler 2'],
+ ['svg-flexray','bus-daten','FlexRay'],
+ ['svg-sent','bus-daten','SENT'],
+ ['svg-frame','bus-daten','Frame / Timing'],
+ ['svg-masse-gut','grundlagen','Masse — gut'],
+ ['svg-masse-schlecht','grundlagen','Masse — schlecht'],
+ ['svg-acdc','grundlagen','AC/DC-Kopplung'],
+ ['svg-alias','grundlagen','Aliasing'],
+ ['svg-trig','grundlagen','Trigger'],
+ ['svg-versatz','grundlagen','Phasenversatz']
+];
+var atlasRendered=false;
+var A_GUT='background:#123; color:#3ecf8e; border:1px solid #2e6; border-radius:6px; padding:.05rem .4rem; font-size:.72rem; font-weight:700';
+var A_BAD='background:#2a1418; color:#ff8b8b; border:1px solid #a44; border-radius:6px; padding:.05rem .4rem; font-size:.72rem; font-weight:700';
+function figHTML(id){ var el=document.getElementById(id); return el?el.innerHTML:''; }
+function atlasBox(){ return document.getElementById('atlas'); }
+function atlasCrumb(levels){
+  var c=document.getElementById('atlas-crumb'); if(!c) return;
+  atlasCrumb._levels=levels;
+  c.innerHTML=levels.map(function(l,i){
+    return '<button class="acrumbtn'+(i===levels.length-1?' on':'')+'" data-ac="'+i+'">'+esc(l.label)+'</button>';
+  }).join(' <span style="color:var(--mut)">›</span> ');
+}
+function renderAtlas(){ atlasRendered=true; atlasShowGroups(); }
+function atlasShowGroups(){
+  atlasCrumb([{label:'Systeme',action:atlasShowGroups}]);
+  var box=atlasBox(); if(!box) return;
+  var count={}; KARTEN.forEach(function(c){ var s=sysGroup(c); count[s]=(count[s]||0)+1; });
+  FIGSYS.forEach(function(f){ count[f[1]]=(count[f[1]]||0)+1; });
+  box.innerHTML='<div class="atlas-grid">'+ATLAS_SYS.filter(function(g){return count[g[0]];}).map(function(g){
+    return '<button class="atile" data-sys="'+g[0]+'"><span class="badge '+g[2]+'">'+esc(g[1])+'</span>'
+      +'<span class="asub">'+(count[g[0]]||0)+' Signalbilder</span></button>';
+  }).join('')+'</div>';
+}
+function atlasShowGroup(sys){
+  var lab=SYSLBL[sys]?SYSLBL[sys][0]:sys;
+  atlasCrumb([{label:'Systeme',action:atlasShowGroups},{label:lab,action:function(){atlasShowGroup(sys);}}]);
+  var box=atlasBox(); if(!box) return;
+  var cards=KARTEN.filter(function(c){ return sysGroup(c)===sys; });
+  var figs=FIGSYS.filter(function(f){ return f[1]===sys; });
+  var html='<div class="atlas-grid">';
+  html+=cards.map(function(c){
+    var thumb=(c.gut&&c.gut.length)?('<span class="athumb">'+c.gut[0]+'</span>'):'';
+    return '<button class="atile" data-card="'+c.id+'"><span class="an">'+esc(c.name)+'</span>'
+      +'<span class="asub">'+esc(c.signalart||c.sig||'')+'</span>'+thumb+'</button>';
+  }).join('');
+  html+=figs.map(function(f){
+    return '<button class="atile" data-fig="'+f[0]+'"><span class="an">'+esc(f[2])+'</span>'
+      +'<span class="asub">Referenz-/Erklärbild</span><span class="athumb">'+figHTML(f[0])+'</span></button>';
+  }).join('');
+  box.innerHTML=html+'</div>';
+}
+function atlasShowSensor(cardId){
+  var c=cardById(cardId); if(!c){ atlasShowGroups(); return; }
+  var sys=sysGroup(c), lab=SYSLBL[sys]?SYSLBL[sys][0]:sys;
+  atlasCrumb([{label:'Systeme',action:atlasShowGroups},{label:lab,action:function(){atlasShowGroup(sys);}},{label:c.name,action:function(){atlasShowSensor(cardId);}}]);
+  var box=atlasBox(); if(!box) return;
+  var s=c.setup||{};
+  var setupBits=[s.kanal&&('Kanal '+s.kanal),s.kopp,s.tk,s.vdiv,s.tdiv,s.trig&&('Trigger '+s.trig)].filter(Boolean).map(esc).join(' · ');
+  var gut=(c.gut&&c.gut.length)?c.gut.join(''):'<div class="note">Kein Gutbild hinterlegt.</div>';
+  var bad=(c.schlecht&&c.schlecht.length)?c.schlecht.map(function(x){
+    return '<div class="atlas-fig"><span style="'+A_BAD+'">FEHLER</span> '+x+'</div>';
+  }).join(''):'<div class="note">Keine typischen Fehlerbilder hinterlegt.</div>';
+  var html='';
+  html+='<div class="atlas-gut"><div class="kl"><span style="'+A_GUT+'">GUT</span> '+esc(c.name)+'</div>'+gut+'</div>';
+  if(setupBits) html+='<div class="note" style="margin:.3rem 0">Oszi-Setup: '+setupBits+'</div>';
+  html+='<div class="kl" style="margin-top:.5rem">Typische Fehlerbilder</div><div class="atlas-figs">'+bad+'</div>';
+  html+='<div class="lvrow" style="margin-top:.7rem;gap:.5rem;flex-wrap:wrap">'
+      +'<button class="ibtn" data-open-card="'+c.id+'">Vollständige Messkarte</button>'
+      +'<button class="ibtn" data-live-card="'+c.id+'">Live durchsteuern</button></div>';
+  box.innerHTML=html;
+}
+function atlasShowFig(figId){
+  var f=null,i; for(i=0;i<FIGSYS.length;i++){ if(FIGSYS[i][0]===figId){ f=FIGSYS[i]; break; } }
+  var sys=f?f[1]:'grundlagen', title=f?f[2]:figId, lab=SYSLBL[sys]?SYSLBL[sys][0]:sys;
+  atlasCrumb([{label:'Systeme',action:atlasShowGroups},{label:lab,action:function(){atlasShowGroup(sys);}},{label:title,action:function(){atlasShowFig(figId);}}]);
+  var box=atlasBox(); if(!box) return;
+  box.innerHTML='<div class="atlas-gut"><div class="kl">'+esc(title)+'</div>'+figHTML(figId)
+    +'<div class="note" style="margin-top:.3rem">Idealisierte Prinzipdarstellung.</div></div>';
+}
+function openAtlasSensor(id){ if(!atlasRendered){ renderAtlas(); } if(cardById(id)) atlasShowSensor(id); else atlasShowFig(id); }
+function selectLiveCard(id){ var sel=document.getElementById('lv-karte'); if(sel){ sel.value=id; sel.dispatchEvent(new Event('change')); } }
+function wireAtlas(){
+  var box=atlasBox(); if(box){ box.addEventListener('click',function(e){
+    var t=e.target.closest('[data-sys],[data-card],[data-fig],[data-open-card],[data-live-card]'); if(!t) return;
+    if(t.getAttribute('data-sys')!=null && t.hasAttribute('data-sys')) atlasShowGroup(t.getAttribute('data-sys'));
+    else if(t.hasAttribute('data-card')) go('pg-atlas',{card:t.getAttribute('data-card')});
+    else if(t.hasAttribute('data-fig')) atlasShowFig(t.getAttribute('data-fig'));
+    else if(t.hasAttribute('data-open-card')) go('pg-karten',{card:t.getAttribute('data-open-card')});
+    else if(t.hasAttribute('data-live-card')){ selectLiveCard(t.getAttribute('data-live-card')); go('pg-live',{}); }
+  }); }
+  var cr=document.getElementById('atlas-crumb'); if(cr){ cr.addEventListener('click',function(e){
+    var b=e.target.closest('[data-ac]'); if(!b) return;
+    var i=parseInt(b.getAttribute('data-ac'),10);
+    var lv=atlasCrumb._levels&&atlasCrumb._levels[i]; if(lv&&lv.action) lv.action();
+  }); }
+}
+
 /* ---- Init ---- */
 function init(){
   renderStatics();
   buildNav();
   renderGloss(); glossRendered=true;
   buildIndex();
+  wireAtlas();
 
   /* Kategorie-/Signal-/Diff-Filter */
   [['fKat','kat'],['fSig','sig'],['fDiff','diff']].forEach(function(p){
