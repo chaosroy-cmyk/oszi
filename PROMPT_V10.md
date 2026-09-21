@@ -6,8 +6,16 @@
 > (VDS1022-Grenzen, API-Realität) sind eingebettet — nicht neu recherchieren,
 > nur bei strittigen **Fachwerten** (Regel F) belegen.
 >
-> *Rev. 2 — nach adversarialer Prüfung gehärtet (Kartentrenner, PSI5-Sicherheit,
-> Decode-Ehrlichkeit, Atlas-Vollständigkeit, Deploy-Hygiene, Installation).*
+> *Rev. 3 — nach adversarialer Prüfung gehärtet (Kartentrenner, PSI5-Sicherheit,
+> Decode-Ehrlichkeit, Atlas-Vollständigkeit, Deploy-Hygiene, Installation) +
+> Anhang A (Build-Rezept).*
+>
+> **STATUS: Schritt 0 (§0.1) ist ERLEDIGT** — v9-Live-Modus + `bridge.py` +
+> `tests/` sind ins Git-Repo gemergt, Update-Regel auf v9 vereinheitlicht
+> (`service-worker.js`, kein `skipWaiting`), Deploy-Hygiene (`build-dist.sh` →
+> `dist/`-Whitelist) gesetzt, auf **v10** gebumpt; Greps/`node --check`×5/23
+> Tests/`bridge.py` grün. **Offen: Ziel A (Oszi-Steuerung), Ziel B (Signal-Atlas
+> nach Sensor), Ziel C (Rest).**
 
 ---
 

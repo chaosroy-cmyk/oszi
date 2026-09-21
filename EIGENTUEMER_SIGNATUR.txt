@@ -1,0 +1,16 @@
+KFZ-OSZI Kompendium - Eigentümer-Signatur
+
+Eigentümer: Roy Sperlich
+Signatur-ID: KFZ-OSZI-RS-803792F7BB4A6C59
+Erstellt/gesichert: 2026-06-24
+Rechte: Alle Rechte vorbehalten.
+
+Diese Datei enthält sichtbare und unsichtbare Eigentümer-Markierungen in:
+- index.html
+- manifest.webmanifest
+- service-worker.js
+
+Hinweis:
+Eine Web-App/PWA kann technisch nie vollständig gegen Kopieren geschützt werden,
+weil HTML/CSS/JS im Browser ausgeliefert wird. Diese Signatur dient als
+Eigentumsnachweis und Abschreckung gegen unautorisierte Weitergabe.

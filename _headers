@@ -1,7 +1,7 @@
 # Cloudflare Pages – HTTP-Header
 
 # Service Worker und Einstiegsseite immer frisch prüfen (kein Stale-SW)
-/sw.js
+/service-worker.js
   Cache-Control: no-cache
 /index.html
   Cache-Control: no-cache

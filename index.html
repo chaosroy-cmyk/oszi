@@ -26,45 +26,12 @@ Hinweis: Entfernen oder Verändern dieser Signatur ist nicht autorisiert.
 :root{
   --bg:#0a0e13; --panel:#141b25; --panel2:#1a2330; --panel3:#202c3c;
   --line:#27364a; --line2:#1d2939;
-  --tx:#dce6f2; --mut:#8ca0b6; --dim:#7d8da0;
+  --tx:#dce6f2; --mut:#8ca0b6; --dim:#5f7186;
   --acc:#ffd24a; --acc2:#4fd2ff; --ch3:#ff7ad9; --ch4:#7dff9b;
   --gut:#3ecf8e; --bad:#ff6b6b; --warnbg:#3a2620; --warnbd:#b3582f;
-  --accBg:#ffd24a;
   --mono:ui-monospace,'SF Mono',Menlo,Consolas,'Cascadia Mono',monospace;
   --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
-
-/* === Light-Theme (Chrome hell; Scope-Bilder bleiben bewusst dunkel) === */
-:root[data-theme="light"]{
-  --bg:#eaeef3; --panel:#ffffff; --panel2:#f3f6fa; --panel3:#e6ecf3;
-  --line:#cbd6e1; --line2:#d9e1ea;
-  --tx:#14212f; --mut:#41516a; --dim:#586778;
-  --acc:#7a5d05; --accBg:#f2c024;
-  --acc2:#0a6ea0; --ch3:#b23694; --ch4:#1f8a54;
-  --gut:#1c8a5a; --bad:#c5343d;
-  --warnbg:#fff2e2; --warnbd:#c07636;
-}
-:root[data-theme="light"] body{background:var(--bg);color:var(--tx)}
-:root[data-theme="light"] header{background:linear-gradient(#f6f9fc,#eef2f7)}
-:root[data-theme="light"] #installbar{background:linear-gradient(#f6f9fc,#eef2f7)}
-:root[data-theme="light"] .hero{background:linear-gradient(160deg,#ffffff,#eef3f8)}
-:root[data-theme="light"] code,:root[data-theme="light"] .mono{background:#e5ebf2}
-:root[data-theme="light"] .tip{background:#e7f4ec;border-color:#7cc79b}
-:root[data-theme="light"] .simp{background:#e6f0f8;border-color:#8fbcd8}
-:root[data-theme="light"] .prof{background:#f6efda;border-color:#cdb877}
-:root[data-theme="light"] .warn b{color:#a75a24}
-:root[data-theme="light"] .b-sensor{color:#1668a8;border-color:#8fbcd8}
-:root[data-theme="light"] .b-aktor{color:#a85a1f;border-color:#d8ab86}
-:root[data-theme="light"] .b-lambda{color:#2c7a2c;border-color:#9ccf9c}
-:root[data-theme="light"] .b-bus{color:#7a3aa8;border-color:#c3a4e0}
-:root[data-theme="light"] .fchip.on{background:#8fd0ef;border-color:#8fd0ef;color:#06222e}
-:root[data-theme="light"] .gsbtn.gut.on{background:#dff2e8;color:#14663f}
-:root[data-theme="light"] .gsbtn.bad.on{background:#fbe3e3;color:#9e2b2b}
-:root[data-theme="light"] input[type=search],
-:root[data-theme="light"] input[type=text],
-:root[data-theme="light"] #importmodal select,
-:root[data-theme="light"] #importmodal textarea,
-:root[data-theme="light"] .varsel{background:#ffffff;color:var(--tx)}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--tx);font:16px/1.55 var(--sans);padding-bottom:60px}
@@ -85,12 +52,12 @@ header{position:sticky;top:0;z-index:50;background:linear-gradient(#0d131b,#0b10
 .hbtn{margin-left:auto;display:flex;gap:.4rem}
 button{font:inherit;color:inherit;cursor:pointer}
 .ibtn{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:.4rem .65rem;font-size:.85rem;font-family:var(--mono)}
-.ibtn.on{background:var(--accBg);color:#1a1405;border-color:var(--accBg);font-weight:700}
+.ibtn.on{background:var(--acc);color:#1a1405;border-color:var(--acc);font-weight:700}
 /* Kapitel-Chips */
 nav.chips{display:flex;gap:.4rem;overflow-x:auto;padding:.5rem .8rem .6rem;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 nav.chips::-webkit-scrollbar{display:none}
 .chip{flex:0 0 auto;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:.34rem .85rem;font-size:.84rem;color:var(--mut);white-space:nowrap}
-.chip.act{background:var(--accBg);border-color:var(--accBg);color:#1a1405;font-weight:700}
+.chip.act{background:var(--acc);border-color:var(--acc);color:#1a1405;font-weight:700}
 /* ===== Seiten ===== */
 main{max-width:880px;margin:0 auto;padding:1rem .8rem}
 .page{display:none}
@@ -155,8 +122,8 @@ input::placeholder{color:var(--dim)}
 .sigset{display:none}.sigset.on{display:block}
 /* Signalbilder */
 figure.sig{margin:.7rem 0;border-radius:10px;overflow:hidden;border:2px solid var(--line)}
-figure.sig.g{border-color:#1f5c43;border-style:solid}
-figure.sig.b{border-color:#6e2c2c;border-style:dashed}
+figure.sig.g{border-color:#1f5c43}
+figure.sig.b{border-color:#6e2c2c}
 figure.sig svg{display:block;width:100%;height:auto;background:#0c1118}
 figcaption{background:var(--panel2);padding:.5rem .7rem;font-size:.86rem;color:var(--mut)}
 figcaption b{color:var(--tx)}
@@ -218,74 +185,28 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
 .owner-signature .cr{display:block;margin-top:.15rem;color:var(--dim)}
 @media print{.owner-signature{break-inside:avoid;color:#000;border-color:#888}}
 
-/* === Barrierefreiheit: sichtbarer Tastatur-Fokus === */
-:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
-.chip:focus-visible,.fchip:focus-visible,.gsbtn:focus-visible,.khead:focus-visible,.sres:focus-visible,summary:focus-visible,.qbtn:focus-visible,.ibtn:focus-visible{outline:2px solid var(--acc2);outline-offset:2px;border-radius:8px}
-.skip{position:absolute;left:-999px;top:0;z-index:200;background:var(--accBg);color:#1a1405;padding:.5rem .8rem;border-radius:0 0 8px 0;font-weight:700;text-decoration:none}
-.skip:focus{left:0}
-[hidden]{display:none!important}
-
-/* === Install-Leiste (PWA) === */
-#installbar{display:flex;align-items:center;gap:.5rem;padding:.5rem .8rem;background:linear-gradient(#141d2a,#0e1620);border-bottom:1px solid var(--line);font-size:.9rem}
-#installbar .itxt{color:var(--mut);flex:1;min-width:0}
-#installbar .itxt b{color:var(--acc)}
-#installbar #installClose{padding:.3rem .55rem}
-
-/* === Such-Overlay-Panel (vorher ohne CSS) === */
-.spanel{max-width:680px;margin:0 auto}
-.srow{display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem}
-.srow input[type=search]{flex:1}
-.srow .xbtn{position:static;float:none;flex:0 0 auto;margin-left:0}
-
-/* === Ergebniszähler Messkarten === */
-.cardcount{font-family:var(--mono);font-size:.78rem;color:var(--dim);margin:.1rem .2rem .5rem;letter-spacing:.03em}
-figcaption .why{color:var(--dim)}
-
-/* === Fahrzeug-/Quellen-Varianten === */
-.varrow{display:flex;align-items:center;gap:.5rem;margin:.35rem 0 .5rem;flex-wrap:wrap}
-.varlbl{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--acc2)}
-.varsel{flex:1;min-width:180px;background:#0e141d;border:1px solid var(--line);border-radius:8px;color:var(--tx);font:inherit;padding:.45rem .6rem}
-.varquelle{font-size:.78rem;color:var(--dim);margin:.15rem 0 .4rem;font-style:italic}
-.varquelle:empty{display:none}
-.addvar{margin-top:.5rem}
-.linkbtn{background:none;border:1px dashed var(--line);border-radius:8px;padding:.4rem .7rem;color:var(--acc2);font:inherit;font-size:.85rem}
-.linkbtn:active{background:var(--panel2)}
-
-/* === Import-Modal (eigene Messung) === */
-#importmodal{position:fixed;box-sizing:border-box;inset:0;background:rgba(6,9,13,.96);z-index:100;padding:1rem .8rem;overflow:auto}
-#importmodal.on{display:block}
-.imptitle{color:var(--acc);font-size:1rem}
-.impbody{display:flex;flex-direction:column;gap:.55rem}
-.implab{display:flex;flex-direction:column;gap:.25rem;font-size:.8rem;color:var(--mut)}
-.implab>b{color:var(--tx)}
-.improw2{display:flex;gap:.6rem;flex-wrap:wrap}
-.improw2>.implab{flex:1;min-width:150px}
-#importmodal select,#importmodal textarea{width:100%;background:#0e141d;border:1px solid var(--line);border-radius:8px;color:var(--tx);font:inherit;padding:.45rem .6rem}
-#importmodal textarea{font-family:var(--mono);font-size:.85rem;resize:vertical}
-.imphint{font-size:.78rem;color:var(--dim)}
-.imppreview{border:1px solid var(--line2);border-radius:8px;padding:.4rem;background:var(--panel)}
-.impactions{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.3rem}
-.ibtn:disabled{opacity:.45;cursor:not-allowed}
-
-/* === Druckansicht: lesbar unabhängig von der Hintergrundgrafik-Einstellung === */
-@media print{
-  html,body{background:#fff!important;color:#000!important;padding:0}
-  header,nav.chips,.hbtn,#suche,.up,.filterbar,.chip,.skip,.up{display:none!important}
-  .page{display:none!important}
-  .page.act{display:block!important}
-  main{max-width:100%;margin:0;padding:0}
-  /* Alle Inhaltsflächen auf hell + dunklen Text erzwingen */
-  section.blk,details,details details,.karte,.kbody,.khead,.hero,.qbtn,.note,.simp,.prof,.s10,.setuptab,.warn,.tip{
-    background:#fff!important;color:#000!important;border-color:#999!important}
-  th{background:#eee!important;color:#000!important}
-  td,th,li,p,dt,dd,summary,.kname,.kl,.setuptab b,.setuptab span{color:#000!important}
-  h2,h3,h4,.hero h1,.simp b,.prof b,.tip b,.warn b,figcaption b{color:#000!important}
-  a{color:#000!important;text-decoration:underline}
-  code,.mono{color:#000!important;background:#eee!important}
-  section.blk,.karte,figure.sig,details,.twrap,tr{break-inside:avoid;page-break-inside:avoid}
-  /* Signalbilder originalgetreu drucken: dunkler Scope-Hintergrund + helle Kurve (inkl. Bildunterschrift) */
-  figure.sig,figure.sig *{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
-}
+/* ===== Live-Modus ===== */
+.lvrow{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin:.35rem 0}
+#pg-live select,#pg-live input[type=number],#pg-live input[type=text],#pg-live input[type=date]{background:#0e141d;border:1px solid var(--line);border-radius:8px;color:var(--tx);font:inherit;padding:.35rem .5rem}
+#pg-live label{display:inline-flex;align-items:center;gap:.3rem;font-size:.9rem;color:var(--mut)}
+.lv-scope{position:relative}
+#lv-canvas{display:block;width:100%;height:46vh;min-height:230px;background:#0c1118;border:1px solid var(--line);border-radius:8px;touch-action:none}
+.lv-dot{display:inline-block;width:.7rem;height:.7rem;border-radius:50%;background:var(--dim)}
+.lv-dot.ok{background:var(--gut)}
+.lv-dot.warn{background:var(--acc)}
+.lv-dot.bad{background:var(--bad)}
+.lv-badge{font-family:var(--mono);font-weight:700;border-radius:6px;padding:.15rem .55rem;border:1px solid var(--line);color:var(--mut)}
+.lv-badge.ok{color:var(--gut);border-color:var(--gut);background:#12372a}
+.lv-badge.warn{color:var(--acc);border-color:var(--acc);background:#241d10}
+.lv-badge.bad{color:var(--bad);border-color:var(--bad);background:#3a1e1e}
+.m-ok{color:var(--gut);font-weight:700}
+.m-bad{color:var(--bad);font-weight:700}
+.lv-rec{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem;margin:.45rem 0}
+.lv-recname{font-weight:700}
+.lv-recmeta{font-size:.82rem;color:var(--mut);margin:.2rem 0}
+#lv-dlg{position:fixed;inset:0;background:rgba(6,9,13,.94);z-index:120;display:none;align-items:center;justify-content:center;padding:1rem}
+.lv-dlgbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1rem;max-width:420px;width:100%;display:flex;flex-direction:column;gap:.45rem}
+.lv-dlgbox input{width:100%}
 
 </style>
 
@@ -294,44 +215,33 @@ figcaption .why{color:var(--dim)}
 <meta content="yes" name="mobile-web-app-capable"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="KFZ-Oszi" name="apple-mobile-web-app-title"/>
-<!-- Standalone-Version: keine externen Abhängigkeiten -->
+<link href="./manifest.webmanifest" rel="manifest"/>
+<link href="icons/icon-192.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="icons/icon-192.png" rel="apple-touch-icon"/>
 
 <meta name="author" content="Roy Sperlich">
 <meta name="copyright" content="© 2026 Roy Sperlich – Alle Rechte vorbehalten">
 <meta name="rights" content="Alle Rechte vorbehalten">
 
-<meta name="description" content="KFZ-Oszilloskop-Kompendium: Offline-Diagnoseunterlage mit Messkarten, Oszi-Einstellungen, schematischen Gut- und Fehlerbildern, Ursachen und Prüfplänen für die Werkstatt.">
-<meta name="color-scheme" content="dark light">
-<script>/* Theme sofort setzen – verhindert Flackern beim Laden */try{var _t=localStorage.getItem('kfzoszi-theme')||'dark';document.documentElement.setAttribute('data-theme',_t);}catch(e){}</script>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%230a0e13%22/%3E%3Crect x=%223%22 y=%223%22 width=%2226%22 height=%2226%22 rx=%225%22 fill=%22%23070a0e%22 stroke=%22%2327364a%22/%3E%3Cpath d=%22M4 19h6l2-11 3 16 2.5-9 1.5 4H28%22 fill=%22none%22 stroke=%22%23ffd24a%22 stroke-width=%222%22 stroke-linejoin=%22round%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="manifest" href="manifest.webmanifest">
 </head>
 <body>
-<a class="skip" href="#main">Zum Inhalt springen</a>
 <header>
 <div class="hrow">
 <div class="logo">KFZ-OSZI <small>Kompendium</small></div>
 <div class="hbtn">
-<button class="ibtn" id="btnTheme" aria-label="Hellen/dunklen Modus wechseln" title="Hell/Dunkel">☾</button>
-<button class="ibtn" id="btnSuche" aria-label="Suche öffnen" aria-haspopup="dialog">⌕ Suche</button>
+<button class="ibtn" id="btnSuche">⌕ Suche</button>
 <button class="ibtn" id="btnModus">Modus: Alles</button>
 </div>
 </div>
 <nav class="chips" id="navchips"></nav>
 </header>
-<div id="installbar" hidden>
-<span class="itxt"><b>Als App installieren</b> – offline & im Vollbild nutzen</span>
-<button class="ibtn on" id="btnInstall">Installieren</button>
-<button class="ibtn" id="installClose" aria-label="Hinweis schließen">✕</button>
-</div>
-<main id="main" tabindex="-1">
+<main>
 <!-- ================= START ================= -->
 <section class="page act" data-nav="Start" id="pg-start">
 <div class="hero">
 <h1>KFZ-OSZILLOSKOP-KOMPENDIUM</h1>
 <p>Lern- und Diagnoseunterlage für die Werkstatt: Messkarten mit Einstellungen, Gut- und Fehlerbildern, Ursachen und Lösungen. Offline nutzbar, für Smartphone optimiert.</p>
-<div class="legende"><i class="c1">■ CH1</i><i class="c2">■ CH2</i><i class="c3">■ CH3</i><i class="c4">■ CH4</i><i style="color:var(--gut)">✓ Gutbild</i><i style="color:var(--bad)">✕ Fehlerbild</i></div>
+<div class="legende"><i class="c1">■ CH1</i><i class="c2">■ CH2</i><i class="c3">■ CH3</i><i class="c4">■ CH4</i><i style="color:var(--gut)">▣ Gutbild</i><i style="color:var(--bad)">▣ Fehlerbild</i></div>
 </div>
 <section class="blk">
 <h3>Schnelleinstieg nach Symptom</h3>
@@ -342,7 +252,8 @@ figcaption .why{color:var(--dim)}
 <button class="qbtn" data-go="pg-plan" data-open="pl-can"><b>PRÜFPLAN</b>CAN-Bus-Fehler</button>
 <button class="qbtn" data-go="pg-plan" data-open="pl-5v"><b>PRÜFPLAN</b>5-V-Referenz fehlt</button>
 <button class="qbtn" data-go="pg-plan" data-open="pl-lade"><b>PRÜFPLAN</b>Generator lädt nicht</button>
-<button class="qbtn" data-go="pg-karten"><b>NACHSCHLAGEN</b>Alle Messkarten (Bauteile)</button>
+<button class="qbtn" data-go="pg-live"><b>LIVE-MESSUNG</b>Oszi verbinden · Referenz-Overlay</button>
+      <button class="qbtn" data-go="pg-karten"><b>NACHSCHLAGEN</b>Alle Messkarten (Bauteile)</button>
 <button class="qbtn" data-go="pg-setup"><b>TABELLE</b>Oszi-Einstellungen je Messung</button>
 <button class="qbtn" data-go="pg-fdb"><b>GALERIE</b>Fehlerbild-Datenbank</button>
 </div>
@@ -359,6 +270,131 @@ figcaption .why{color:var(--dim)}
 <div class="warn"><b>Sicherheit zuerst:</b> Vor der ersten Messung das Kapitel <b>Sicherheit</b> lesen – insbesondere zu Airbag/PSI5, Hochvolt, Zündanlage und Backprobing.</div>
 </section>
 </section>
+<section class="page" id="pg-live" data-nav="Live">
+  <h2>Live-Messung <span class="badge b-sensor">OWON VDS1022I</span></h2>
+  <div class="simp"><b>Einsteiger:</b> Bridge starten (<code>python bridge.py</code>), hier verbinden – oder ohne Gerät den <b>Demo-Modus</b> nutzen: Er speist den Generator der gewählten Messkarte als Live-Signal ein.</div>
+  <div class="warn"><b>Masse-Hinweis:</b> Beide Kanäle des VDS1022 teilen sich eine Masse. Beide Massekrokos immer auf dasselbe Potenzial – sonst Kurzschluss über das Gerät (VDS1022<b>I</b> = isoliert gegen USB, Kanäle untereinander trotzdem verbunden).</div>
+
+  <section class="blk">
+    <div class="lvrow">
+      <span class="lv-dot" id="lv-dot"></span><span id="lv-stat" class="mono">getrennt</span>
+    </div>
+    <div class="lvrow">
+      <input type="text" id="lv-url" value="ws://localhost:8765" style="flex:1;min-width:180px">
+      <button class="ibtn" id="lv-connect">Verbinden</button>
+      <button class="ibtn" id="lv-disconnect">Trennen</button>
+      <button class="ibtn" id="lv-mock">Demo (Mock)</button>
+    </div>
+  </section>
+
+  <section class="blk">
+    <div class="lv-scope"><canvas id="lv-canvas"></canvas></div>
+    <div class="lvrow" style="justify-content:space-between">
+      <span id="lv-cursorout" class="mono" style="display:none;font-size:.82rem"></span>
+      <span>Übereinstimmung: <span id="lv-badge-wrap"><span class="lv-badge" id="lv-match">–</span></span></span>
+    </div>
+    <div class="mono" id="lv-meas" style="font-size:.78rem;color:var(--mut);margin-top:.25rem"></div>
+  </section>
+
+  <section class="blk">
+    <h3>Bedienung</h3>
+    <div class="lvrow"><b style="color:var(--acc)">CH1</b>
+      <label><input type="checkbox" id="lv-ch1on" checked> an</label>
+      <select id="lv-ch1v"></select>
+      <select id="lv-ch1k"><option>DC</option><option>AC</option></select>
+      <select id="lv-ch1p"><option value="1">1:1</option><option value="10">10:1</option><option value="100">100:1</option></select>
+      Pos <input type="number" id="lv-ch1pos" value="0" step="0.2" min="-4" max="4" style="width:4.2rem"> div
+      <label><input type="checkbox" id="lv-ch1inv"> inv</label>
+      <select id="lv-ch1clamp"><option value="0">Zange aus</option><option value="0.001">1 mV/A</option><option value="0.01">10 mV/A</option><option value="0.1">100 mV/A</option></select>
+    </div>
+    <div class="lvrow"><b style="color:var(--acc2)">CH2</b>
+      <label><input type="checkbox" id="lv-ch2on"> an</label>
+      <select id="lv-ch2v"></select>
+      <select id="lv-ch2k"><option>DC</option><option>AC</option></select>
+      <select id="lv-ch2p"><option value="1">1:1</option><option value="10">10:1</option><option value="100">100:1</option></select>
+      Pos <input type="number" id="lv-ch2pos" value="0" step="0.2" min="-4" max="4" style="width:4.2rem"> div
+      <label><input type="checkbox" id="lv-ch2inv"> inv</label>
+      <select id="lv-ch2clamp"><option value="0">Zange aus</option><option value="0.001">1 mV/A</option><option value="0.01">10 mV/A</option><option value="0.1">100 mV/A</option></select>
+    </div>
+    <div class="lvrow"><b>Zeit</b>
+      <select id="lv-tdiv"></select>
+      <button class="ibtn" id="lv-setup">Karten-Setup übernehmen</button>
+      <label><input type="checkbox" id="lv-autosetup" checked> automatisch bei Kartenwahl</label>
+    </div>
+    <div class="lvrow"><b>Trigger</b>
+      <select id="lv-trigch"><option value="1">CH1</option><option value="2">CH2</option></select>
+      <select id="lv-trigedge"><option value="r">Flanke ↑</option><option value="f">Flanke ↓</option></select>
+      <input type="number" id="lv-triglvl" value="1.0" step="0.1" style="width:5.5rem"> V
+      <label><input type="checkbox" id="lv-trigdisp" checked> Anzeige-Trigger</label>
+      <select id="lv-trigpos"><option value="0.1">Pos 10 %</option><option value="0.2" selected>Pos 20 %</option><option value="0.5">Pos 50 %</option><option value="0.8">Pos 80 %</option></select>
+    </div>
+    <div class="note" id="lv-setupinfo" style="display:none"></div>
+    <div class="lvrow">
+      <button class="ibtn" id="lv-run">Run</button>
+      <button class="ibtn" id="lv-stop">Stop</button>
+      <button class="ibtn" id="lv-single">Single</button>
+      <label><input type="checkbox" id="lv-cursor"> Cursor</label>
+      <select id="lv-persist"><option value="0">Nachleuchten aus</option><option value="8">Nachleuchten kurz</option><option value="32">Nachleuchten lang</option></select>
+      <button class="ibtn" id="lv-png">PNG</button>
+      <button class="ibtn" id="lv-csv">CSV</button>
+    </div>
+    <div class="lvrow" id="lv-playbar" style="display:none;background:#241d10;border:1px solid #6b5523;border-radius:8px;padding:.4rem .6rem">
+      <span>Wiedergabe: <b id="lv-playname"></b></span>
+      <button class="ibtn" id="lv-playback-exit">Zurück zu Live</button>
+    </div>
+  </section>
+
+  <section class="blk">
+    <h3>Referenz-Vergleich</h3>
+    <div class="lvrow">
+      <select id="lv-karte" style="flex:1;min-width:200px"></select>
+    </div>
+    <div class="lvrow">
+      <select id="lv-refsrc"></select>
+      <label><input type="checkbox" id="lv-overlay" checked> Overlay</label>
+      <label><input type="checkbox" id="lv-refscale" checked> auf Messung skalieren</label>
+    </div>
+    <div class="lvrow">
+      <label>Toleranz Amplitude ± <input type="number" id="lv-tola" value="15" min="1" max="50" style="width:4rem"> %</label>
+      <label>Zeit ± <input type="number" id="lv-tolt" value="10" min="1" max="50" style="width:4rem"> %</label>
+    </div>
+    <div class="twrap tsm"><table>
+      <tr><th>Metrik</th><th>Gemessen</th><th>Soll (Referenz)</th><th>Toleranz</th></tr>
+      <tbody id="lv-metrics"><tr><td colspan="4">Karte wählen und Signal anlegen.</td></tr></tbody>
+    </table></div>
+    <p class="note">Soll-Werte werden aus der Referenzkurve der Karte berechnet (der Generator ist die Spezifikation). Zeit-Toleranz färbt Frequenz/Duty/Anstieg, Amplituden-Toleranz das Band und Spitze–Spitze (nur bei ausgeschalteter Skalierung und V-Einheit).</p>
+  </section>
+
+  <section class="blk">
+    <h3>Bibliothek (eigene Referenzen)</h3>
+    <div class="lvrow">
+      <button class="ibtn" id="lv-rec">● Aufnahme speichern</button>
+      <button class="ibtn" id="lv-expall">Alle exportieren</button>
+      <label class="ibtn" style="cursor:pointer">Import<input type="file" id="lv-import" accept="application/json" style="display:none"></label>
+    </div>
+    <div id="lv-liblist"></div>
+  </section>
+
+  <div id="lv-dlg">
+    <div class="lv-dlgbox">
+      <h3>Aufnahme speichern</h3>
+      <input type="text" id="lv-m-fzg" placeholder="Fahrzeug (z. B. Audi A3 8P)">
+      <input type="text" id="lv-m-mot" placeholder="Motor (z. B. 2.0 TDI CBAB)">
+      <input type="text" id="lv-m-sys" placeholder="System (z. B. Einspritzung)">
+      <input type="text" id="lv-m-mp" placeholder="Messpunkt (z. B. Injektor Zyl. 1)">
+      <input type="text" id="lv-m-bed" placeholder="Bedingung (z. B. Leerlauf warm)">
+      <input type="date" id="lv-m-dat">
+      <input type="text" id="lv-m-not" placeholder="Notiz">
+      <div class="lvrow" style="justify-content:flex-end">
+        <button class="ibtn" id="lv-dlg-cancel">Abbrechen</button>
+        <button class="ibtn on" id="lv-dlg-save">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="rw">Live-Werte sind Rohmessungen des angeschlossenen Geräts. Richtwerte können je nach Hersteller, System, Motorsteuergerät und Messgerät abweichen. Herstellerdaten und Stromlaufplan haben Vorrang.</div>
+</section>
+
 <!-- ================= GRUNDLAGEN ================= -->
 <section class="page" data-nav="Grundlagen" id="pg-grund">
 <h2>Grundlagen</h2>
@@ -1262,44 +1298,18 @@ Diese Audit-Seite definiert die korrekten Referenzmerkmale für reale Werkstattm
 Perfekt geometrische Signale sind im Fahrzeug selten realistisch.
 </div>
 </section>
-</section></main>
+</section>
+</main>
 <!-- Such-Overlay -->
-<div hidden="" id="suche" role="dialog" aria-modal="true" aria-label="Suche im Kompendium">
+<div hidden="" id="suche">
 <div class="spanel">
-<div class="srow"><input autocomplete="off" id="sfeld" aria-label="Suchbegriff" placeholder="Suchen… (Bauteil, Fehler, Begriff)" type="search"/><button class="xbtn" id="sclose" aria-label="Suche schließen">✕</button></div>
+<div class="srow"><input autocomplete="off" id="sfeld" placeholder="Suchen… (Bauteil, Fehler, Begriff)" type="search"/><button class="xbtn" id="sclose">✕</button></div>
 <div id="sres"></div>
-</div>
-</div>
-<!-- Import-Overlay: eigene Messung (CSV) -->
-<div hidden="" id="importmodal" role="dialog" aria-modal="true" aria-label="Eigene Messung importieren">
-<div class="spanel">
-<div class="srow"><b class="imptitle" id="impTitle">Eigene Messung hinzufügen</b><button class="xbtn" id="impClose" aria-label="Schließen">✕</button></div>
-<div class="impbody">
-<label class="implab">Fahrzeug / Bezeichnung<input id="impFahrzeug" type="text" placeholder="z. B. VW 1.9 TDI (AXR)"></label>
-<label class="implab">Quelle / Notiz<input id="impQuelle" type="text" placeholder="z. B. eigene Messung 03/2026"></label>
-<div class="improw2">
-<label class="implab">Bewertung<select id="impBewertung"><option value="gut">Gutbild ✓</option><option value="schlecht">Fehlerbild ✕</option></select></label>
-<label class="implab">Bildunterschrift<input id="impCaption" type="text" placeholder="kurze Beschreibung"></label>
-</div>
-<label class="implab">Messdaten – CSV: <b>Zeit,Spannung</b> (ein Wertepaar pro Zeile; Trenner , ; Tab oder Leerzeichen)
-<textarea id="impCsv" rows="5" placeholder="0.000, 0.10&#10;0.001, 0.42&#10;0.002, 1.83&#10;…"></textarea></label>
-<div class="improw2"><button type="button" class="ibtn" id="impFile">CSV-Datei wählen…</button><span class="imphint" id="impStatus"></span></div>
-<input type="file" id="impFileInput" accept=".csv,text/csv,text/plain" hidden>
-<div class="kl">Vorschau</div>
-<div id="impPreview" class="imppreview"><div class="note">Daten eingeben oder Datei laden – die Vorschau erscheint automatisch.</div></div>
-<div class="impactions">
-<button type="button" class="ibtn on" id="impSave" disabled>Speichern</button>
-<button type="button" class="ibtn" id="impExport">Alle exportieren</button>
-<button type="button" class="ibtn" id="impImport">JSON importieren</button>
-<input type="file" id="impJsonInput" accept=".json,application/json" hidden>
-</div>
-<div class="imphint">Gespeichert wird lokal auf diesem Gerät (Browser-Speicher). Export/Import teilt Varianten zwischen Geräten.</div>
-</div>
 </div>
 </div>
 <button class="up" id="upbtn" title="Nach oben">▲</button>
 <footer>
-<p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-Einzeldatei · Alle Signalbilder schematisch.</p>
+<p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-PWA · Stand v10 (referenzgeprüft · Live-Modus · Auto-Setup · Auto-Deploy) · Alle Signalbilder schematisch.</p>
 <p>Richtwerte können je nach Hersteller, System, Motorsteuergerät und Messgerät abweichen. Herstellerdaten und Stromlaufplan haben Vorrang.</p>
 <p>Sicherheit zuerst: keine Messungen an Airbag-/PSI5-Zündkreisen, HV-Systemen nur mit Qualifikation.</p>
 <div class="owner-signature">
@@ -1509,14 +1519,6 @@ var G = {
       if(d<0) return 0.05*Math.sin(t*200);
       return amp*Math.exp(-d*18)*Math.sin(d*420)+0.05*Math.sin(t*200);
     };
-  },
-
-  /* Echte Messpunkte [[t,v],...] (t normiert 0..1) – für importierte Captures.
-     Nutzt dieselbe lineare Interpolation wie 'ana'. */
-  samples: function(o){
-    var p=o.data||o.pts||[];
-    if(!p.length) return function(){ return 0; };
-    return G.ana({pts:p});
   }
 };
 
@@ -1536,8 +1538,6 @@ function W(spec){
   function Y(v){ var f=(v-ymin)/(ymax-ymin); return PX.y1 - f*(PX.y1-PX.y0); }
 
   var s='<svg viewBox="0 0 '+PX.w+' '+PX.h+'" xmlns="http://www.w3.org/2000/svg" role="img">';
-  var titleTxt=((spec.badge?spec.badge+': ':'')+(spec.caption||'Oszilloskop-Signalbild (schematisch)')).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  s+='<title>'+titleTxt+'</title>';
   s+='<rect x="0" y="0" width="'+PX.w+'" height="'+PX.h+'" rx="8" fill="#0b0f14"/>';
   s+='<rect x="'+PX.x0+'" y="'+PX.y0+'" width="'+(PX.x1-PX.x0)+'" height="'+(PX.y1-PX.y0)+'" fill="#070a0e" stroke="#1d2733"/>';
   /* Raster 10x8 */
@@ -1595,10 +1595,8 @@ function W(spec){
   s+='<text x="'+PX.x0+'" y="'+(PX.h-12)+'" font-size="11" font-family="ui-monospace,monospace">'+leg+'</text>';
   s+='<text x="'+(PX.x1)+'" y="'+(PX.h-12)+'" text-anchor="end" fill="#8aa0b8" font-size="11" font-family="ui-monospace,monospace">'+(spec.vdiv||"")+(spec.vdiv&&spec.tdiv?"  ·  ":"")+(spec.tdiv||"")+'</text>';
 
-  /* Stempel: echte Messung vs. schematisch + Badge */
-  var isReal = spec.stamp || (spec.tr||[]).some(function(tr){ return tr.g==='samples'; });
-  var stampTxt = spec.stamp || (isReal ? 'MESSUNG' : 'SCHEMATISCH');
-  s+='<text x="'+(PX.x1-6)+'" y="'+(PX.y0+14)+'" text-anchor="end" fill="#5b6b7d" font-size="10" font-family="ui-monospace,monospace" letter-spacing="2">'+stampTxt+'</text>';
+  /* SCHEMATISCH-Stempel + Badge */
+  s+='<text x="'+(PX.x1-6)+'" y="'+(PX.y0+14)+'" text-anchor="end" fill="#5b6b7d" font-size="10" font-family="ui-monospace,monospace" letter-spacing="2">SCHEMATISCH</text>';
   if(spec.badge){
     var bcol=spec.badge==="GUT"?"#3ecf8e":"#ff6b6b";
     s+='<rect x="'+(PX.x0+4)+'" y="'+(PX.y0+4)+'" width="64" height="20" rx="4" fill="'+bcol+'22" stroke="'+bcol+'"/>';
@@ -1608,16 +1606,13 @@ function W(spec){
 
   var cls = spec.badge==="FEHLER"?"sig b":(spec.badge==="GUT"?"sig g":"sig");
   var cap = spec.caption?('<figcaption><b>'+(spec.badge?spec.badge+": ":"")+'</b>'+spec.caption+(spec.why?('<br><span class="why">Warum: '+spec.why+'</span>'):'')+'</figcaption>'):'';
-  return '<figure class="'+cls+'">'+s+cap+'</figure>';
+  var out=new String('<figure class="'+cls+'">'+s+cap+'</figure>');
+  out.spec=spec; /* fuer Live-Overlay: Generator-Spezifikation mitfuehren */
+  return out;
 }
 
 /* ---------- 2) MESSKARTEN ---------- */
 var RW="Richtwerte können je nach Hersteller, System, Motorsteuergerät und Messgerät abweichen. Herstellerdaten und Stromlaufplan haben Vorrang.";
-
-/* Beispiel für einen echten, ins Gerät importierten Capture (KW induktiv, VW 1.9 TDI, Leerlauf).
-   t normiert 0..1, v in Volt. Zeigt, dass fahrzeugspezifische Realmessungen als reine Daten
-   in derselben Scope-Darstellung gerendert werden (Generator 'samples'). */
-var SAMPLE_KW_VWTDI=[[0,-0.1],[0.0111,1.19],[0.0222,2.37],[0.0333,2.96],[0.0444,3.02],[0.0556,2.7],[0.0667,1.81],[0.0778,0.57],[0.0889,-0.65],[0.1,-1.92],[0.1111,-2.71],[0.1222,-3.04],[0.1333,-3.03],[0.1444,-2.38],[0.1556,-1.35],[0.1667,0.08],[0.1778,1.17],[0.1889,2.4],[0.2,2.91],[0.2111,2.99],[0.2222,2.67],[0.2333,1.91],[0.2444,0.65],[0.2556,-0.63],[0.2667,-1.82],[0.2778,-2.66],[0.2889,-3.04],[0.3,-3.02],[0.3111,-2.34],[0.3222,-1.29],[0.3333,-0.05],[0.3444,1.54],[0.3556,2.94],[0.3667,3.79],[0.3778,3.97],[0.3889,3.41],[0.4,2.36],[0.4111,0.79],[0.4222,-0.92],[0.4333,-2.38],[0.4444,-3.46],[0.4556,-3.98],[0.4667,-3.76],[0.4778,-2.99],[0.4889,-1.57],[0.5,0.16],[0.5111,0],[0.5222,0.07],[0.5333,-0.12],[0.5444,-0.02],[0.5556,-0.01],[0.5667,-0.04],[0.5778,0.13],[0.5889,-0.01],[0.6,0.05],[0.6111,0.15],[0.6222,-0.06],[0.6333,-0.02],[0.6444,-0.14],[0.6556,0],[0.6667,-0.03],[0.6778,1.61],[0.6889,2.86],[0.7,3.68],[0.7111,3.75],[0.7222,3.27],[0.7333,2.22],[0.7444,0.82],[0.7556,-0.77],[0.7667,-2.22],[0.7778,-3.22],[0.7889,-3.75],[0.8,-3.64],[0.8111,-2.78],[0.8222,-1.59],[0.8333,-0.04],[0.8444,1.17],[0.8556,2.21],[0.8667,2.92],[0.8778,3.09],[0.8889,2.78],[0.9,1.81],[0.9111,0.67],[0.9222,-0.67],[0.9333,-1.79],[0.9444,-2.6],[0.9556,-3.09],[0.9667,-2.93],[0.9778,-2.31],[0.9889,-1.35],[1,0.04]];
 
 var KARTEN=[
 
@@ -1677,19 +1672,7 @@ profi:"Differenznahe Messung (Leitung gegen Leitung) killt Gleichtaktstörungen.
 check10:"Wellen gleichmäßig? Lücke da? Amplitude > ~1 V beim Start? → vermutlich gut.",
 wannschlecht:"Aussetzer, fehlende Lücke, Amplitude deutlich unter Nachbarwerten gleicher Drehzahl, Störspitzen.",
 wannok:"Kleine Amplitude bei Anlasserdrehzahl; leicht unsymmetrische Halbwellen; überhöhte Zähne neben der Lücke.",
-next:"Signal gut, startet trotzdem nicht → NW/Sync, Raildruck, Freigaben. Signal schlecht → Luftspalt/Geberrad, dann Leitung.",
-varianten:[
- { fahrzeug:"VW 1.9 TDI (AXR) – Leerlauf", quelle:"Beispiel-Capture (echte Messpunkte, importiert)",
-   gut:[ {yr:[-8,8],yunit:"V",vdiv:"2 V/div",tdiv:"5 ms/div",badge:"GUT",
-     tr:[{ch:1,g:"samples",o:{data:SAMPLE_KW_VWTDI},mp:"KW (Capture)"}],
-     caption:"Echte Aufzeichnung statt Schema: gleichmäßige Zähne, klar erkennbare 58-2-Lücke.",
-     why:"Aus dem Fahrzeug aufgezeichnete Kurve (kein Schema). Amplitude, Rauschen und Lückenform entsprechen dem realen Sensor bei Leerlaufdrehzahl – direkt vergleichbar mit der eigenen Messung."} ],
-   schlecht:[ {yr:[-8,8],yunit:"V",vdiv:"2 V/div",tdiv:"5 ms/div",badge:"FEHLER",
-     tr:[{ch:1,g:"samples",o:{data:SAMPLE_KW_VWTDI},tf:[function(p){return tScale(p,0.34);}],mp:"KW (Capture)"}],
-     marks:[{t:0.2,v:1.0,txt:"Amplitude zu klein"}],
-     caption:"Gleiche Messung, Amplitude auf ~1/3 – zu großer Luftspalt.",
-     why:"Reale Kurve mit stark reduzierter Amplitude: Das STG verliert das Signal zuerst bei niedriger Drehzahl (Start/Heißstart). Lücke bleibt erkennbar, Pegel jedoch grenzwertig."} ] }
-]
+next:"Signal gut, startet trotzdem nicht → NW/Sync, Raildruck, Freigaben. Signal schlecht → Luftspalt/Geberrad, dann Leitung."
 },
 
 {
@@ -1829,6 +1812,61 @@ check10:"LL plausibel? Gasstoß > 4 V? Wiederholbar? Keine Einbrüche? → gut."
 wannschlecht:"Spitzen zu niedrig, Einbrüche, Offset im Ruhewert, träge Flanken.",
 wannok:"Feine LL-Welligkeit; kurzes Überschwingen beim Gasstoß.",
 next:"Signal gut, Gemisch falsch → Falschluft/Kraftstoff. Müde → Soll-Ist-Volllast, dann ersetzen."
+}
+
+,
+{
+id:"lmm-dig", kat:"sensor", sig:"digital", diff:2,
+name:"Luftmassenmesser digital (Frequenzsignal)",
+aufgabe:"Heißfilm-LMM mit Frequenzausgang: die Luftmasse steckt in der FREQUENZ eines Rechtecksignals, nicht in einer Spannung – störfester als analog. Verbreitet u. a. bei GM/Opel (Hitachi, ACDelco), Pierburg. Neueste Generationen senden stattdessen SENT (Bus-Kapitel).",
+signalart:"Rechteck konstanter Amplitude (typ. 0↔5 V), Frequenz luftmassenabhängig. Verbreitete Typen: ~2–3 kHz im Leerlauf, mit Last deutlich steigend (z. B. GM/Hitachi ~2,9 kHz LL → ~5 kHz bei 3500/min). Alte Systeme nur 30–150 Hz; einzelne Typen (Pierburg) mit FALLENDER Frequenz bei mehr Luft – Richtungslogik vorher klären!",
+equip:"Oszi, Backprobe, Stromlaufplan; Tester für Luftmasse-Istwert.",
+anschluss:"Signalpin laut Plan gegen Sensormasse; Versorgung (12 V, teils zusätzlich 5 V) mitprüfen.",
+messpunkte:"CH1: LMM-Frequenzsignal · optional CH2: DK-/Pedalsignal als Lastreferenz.",
+setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"1 V/div",tdiv:"200 µs/div (kHz-Typen) · 5 ms/div (alte Hz-Typen)",trig:"Flanke ↑, 2,5 V",zustand:"LL warm → Gasstöße"},
+vorgang:["Zeitbasis so wählen, dass 5–10 Perioden stehen (bei ~2,5 kHz: 200 µs/div).","Leerlauf warm: Frequenz notieren – das ist die fahrzeugspezifische Referenz.","Pegel prüfen: High stabil ~5 V, Low < 0,5 V, senkrechte Flanken.","Gasstöße: Frequenz muss schnell, deutlich und reproduzierbar reagieren (Richtungslogik beachten).","Rütteltest an Stecker/Leitung unter laufender Aufnahme."],
+gut:[
+ W({yr:[-1,6],yunit:"V",vdiv:"1 V/div",tdiv:"200 µs/div",badge:"GUT",trig:{t:0.1},
+   tr:[{ch:1,g:"sq",o:{cyc:5,duty:0.5,hi:5,lo:0.2},mp:"LMM digital"}],
+   marks:[{t:0.1,v:5,txt:"~2,5 kHz im LL"}],
+   caption:"Leerlauf: sauberes Rechteck 0↔5 V, hier ~2,5 kHz, stabile Frequenz.",
+   why:"Die Sensorelektronik wandelt die Heißfilm-Abkühlung direkt in eine Frequenz – das STG zählt nur noch Flanken. Amplitude und Flankensteilheit sind lastUNabhängig; nur die Frequenz trägt die Information. Ruhige, stehende Perioden = Sensor und Leitung gesund."}),
+ W({yr:[-1,6],yunit:"V",vdiv:"1 V/div",tdiv:"200 µs/div",badge:"GUT",trig:{t:0.05},
+   tr:[{ch:1,g:"sq",o:{cyc:13,duty:0.5,hi:5,lo:0.2},mp:"LMM digital"}],
+   marks:[{t:0.06,v:5,txt:"Gasstoß: f steigt"}],
+   caption:"Gasstoß: Frequenz steigt deutlich (hier ~2,5×), Amplitude bleibt unverändert.",
+   why:"Mehr Luftmasse kühlt den Heißfilm stärker → die Elektronik erhöht die Ausgangsfrequenz. Der Pegel bleibt exakt gleich – ändert sich beim Gasstoß die AMPLITUDE statt der Frequenz, stimmt etwas an Versorgung/Masse nicht."})
+],
+schlecht:[
+ W({yr:[-1,6],yunit:"V",vdiv:"1 V/div",tdiv:"200 µs/div",badge:"FEHLER",
+   tr:[{ch:1,g:"sq",o:{cyc:5,duty:0.5,hi:5,lo:1.6},mp:"LMM digital"}],
+   marks:[{t:0.3,v:1.6,txt:"Low ~1,6 V statt < 0,5 V"}],
+   caption:"Low-Pegel deutlich angehoben – Frequenz stimmt scheinbar noch.",
+   why:"Übergangswiderstand im Massepfad hebt die ganze Signalreferenz an. Der STG-Eingang erkennt Flanken irgendwann unsicher → sporadische Luftmassen-Ausreißer. Ein Multimeter mit Hz-Funktion zeigt hier noch 'Frequenz ok' – den Pegelfehler sieht nur das Oszi."}),
+ W({yr:[-1,6],yunit:"V",vdiv:"1 V/div",tdiv:"200 µs/div",badge:"FEHLER",
+   tr:[{ch:1,g:"flat",o:{v:0.1},mp:"LMM digital"}],
+   caption:"Kein Signal – Leitung dauerhaft auf ~0 V.",
+   why:"Versorgung fehlt, Signalleitung nach Masse oder Sensorelektronik tot → keine Flanken, STG setzt Ersatzwert (P0102, Notlauf). Dauer-High statt Dauer-Low wäre KS nach Plus/offene Leitung mit Pull-up – beides gleiche Diagnosekette: Versorgung, dann Leitung, dann Sensor."}),
+ W({yr:[-1,6],yunit:"V",vdiv:"1 V/div",tdiv:"200 µs/div",badge:"FEHLER",trig:{t:0.05},
+   tr:[{ch:1,g:"sq",o:{cyc:6,duty:0.5,hi:5,lo:0.2},mp:"LMM digital"}],
+   marks:[{t:0.06,v:5,txt:"Gasstoß: f steigt kaum"}],
+   caption:"Gasstoß: Frequenz steigt kaum (hier ~20 % statt Faktor 2+).",
+   why:"Verschmutzter/gedrifteter Heißfilm meldet zu wenig Luftmasse – das digitale Gegenstück zum 'müden' analogen LMM (P0101). Im Standbild unauffällig; erst der Soll-Ist-Vergleich (Tester-Luftmasse bei Nenndrehzahl) oder der dokumentierte LL-Referenzwert entlarvt die Drift."})
+],
+ursachen:["Heißfilm verschmutzt/gedriftet (Ölnebel, offener Sportfilter)","Massefehler → Low-Pegel angehoben","Wackelkontakt Stecker/Versorgung (Frequenz-Aussetzer)","Falschluft nach dem LMM","Nachbau mit falscher Kennlinie/Frequenzbereich"],
+loesungen:["LMM ersetzen (Reinigung selten dauerhaft), Filterqualität klären","Massepfad sanieren","Stecker/Crimps instand setzen","Ansaugstrecke abdrücken/abnebeln","OE-Qualität verbauen"],
+gegen:"Tester: Luftmasse-Istwert LL und Volllast nahe Soll (Diesel LL ~250–400 mg/Hub, siehe analoge Karte). DMM-Hz-Funktion nur als Schnelltest – Pegel und Aussetzer sieht nur das Oszi.",
+plaus:"Frequenzänderung gegen DK-Winkel/MAP; LL-Frequenz gegen den eigenen dokumentierten Referenzwert des Fahrzeugs.",
+dtc:"P0100–P0104 (P0101 = müde/Drift, P0102 = Signal tot), P0171/P0172 als Folge.",
+irrtuemer:["Frequenzwerte zwischen Herstellern/Typen vergleichen – Kennlinien sind NICHT übertragbar, sogar die Richtung unterscheidet sich (Pierburg: f fällt bei mehr Luft).","Multimeter zeigt plausible Hz → 'Sensor gut' – Low-Pegel-Offset und sporadische Aussetzer bleiben unsichtbar.","Gemischfehler reflexhaft dem LMM zuordnen – Falschluft/Tankentlüftung zuerst."],
+tipps:["LL-Frequenz beim ersten (gesunden) Kontakt mit dem Fahrzeug dokumentieren – die beste Referenz für später.","Nachleuchten/lange Aufnahme beim Rütteltest: einzelne fehlende Perioden bleiben sichtbar.","Zeitbasis an den Typ anpassen: kHz-Typ 100–200 µs/div, alte Hz-Typen 2–5 ms/div."],
+warn:"Heißfilm nicht berühren/mechanisch reinigen; Signal nie mit Prüflampe belasten.",
+simpel:"Statt einer Spannung schickt der Sensor ein schnelles Rechteck. Mehr Gas = schnelleres Rechteck (bei den meisten Typen). Die Höhe bleibt immer gleich – ändert sich die Höhe, ist die Elektrik krank, nicht die Luft.",
+profi:"Frequenzausgang eliminiert Spannungsabfall- und Offsetfehler der Übertragungsstrecke – dafür wird die Drift unsichtbar im Bild: ein müder Frequenz-LMM zeigt ein perfektes Rechteck mit falscher Frequenz ('plausibel, aber falsch'). Deshalb zwingend Soll-Ist über Tester bzw. dokumentierte LL-Referenz. Richtungslogik (f steigt vs. fällt) ist typspezifisch wie PTC/NTC beim AGT.",
+check10:"Rechteck 0↔5 V? Low < 0,5 V? Gasstoß ändert die Frequenz deutlich und reproduzierbar? → gut.",
+wannschlecht:"Angehobener Low-Pegel, fehlende Perioden/Aussetzer, kaum Frequenzänderung bei Gasstoß, Dauer-High/-Low.",
+wannok:"Leichtes Frequenz-Zittern im LL (Ansaugpulsation); typabhängig sehr unterschiedliche Absolutfrequenzen.",
+next:"Pegelfehler → Masse/Versorgung. Bild gut, Gemisch/Leistung falsch → Soll-Ist-Luftmasse (Drift), dann Falschluft."
 }
 
 ,
@@ -3811,126 +3849,6 @@ function grpBadge(c){ var g=GRPLBL[cardGroup(c)]; return '<span class="badge '+g
 function diffBadge(d){ var dots=(d>=3?'●●●':d===2?'●●':'●'); return '<span class="badge b-d'+d+'">'+dots+'</span>'; }
 function sigBadge(s){ return '<span class="badge">'+esc(s)+'</span>'; }
 
-/* ---- Fahrzeug-/Quellen-Varianten (eingebaut + nutzerdefiniert) ---- */
-function loadUserVariants(){ try{ return JSON.parse(localStorage.getItem('kfzoszi-uservariants')||'{}')||{}; }catch(e){ return {}; } }
-function saveUserVariants(obj){ try{ localStorage.setItem('kfzoszi-uservariants', JSON.stringify(obj)); return true; }catch(e){ return false; } }
-function userVariantsFor(id){ var all=loadUserVariants(); return all[id]||[]; }
-function specToHtml(s){ try{ return typeof s==='string' ? s : W(s); }catch(e){ return '<div class="note">Bild konnte nicht erzeugt werden.</div>'; } }
-function variantSources(c){
-  var out=[{label:'Neutral (schematisch)', quelle:'', user:false,
-            gut:(c.gut||[]).map(specToHtml).join(''), bad:(c.schlecht||[]).map(specToHtml).join('')}];
-  (c.varianten||[]).forEach(function(v){
-    out.push({label:v.fahrzeug||'Variante', quelle:v.quelle||'', user:false,
-              gut:(v.gut||[]).map(specToHtml).join(''), bad:(v.schlecht||[]).map(specToHtml).join('')});
-  });
-  userVariantsFor(c.id).forEach(function(v,i){
-    out.push({label:(v.fahrzeug||'Eigene Messung')+' ·', quelle:v.quelle||'eigener Import', user:true, uidx:i,
-              gut:(v.gut||[]).map(specToHtml).join(''), bad:(v.schlecht||[]).map(specToHtml).join('')});
-  });
-  return out;
-}
-
-/* ---- CSV-Import eigener Messungen ---- */
-function parseCsv(text){
-  var out=[], lines=String(text).split(/\r?\n/);
-  for(var i=0;i<lines.length;i++){
-    var line=lines[i].trim(); if(!line) continue;
-    var parts, decComma=false;
-    if(/[;\t]/.test(line)){ parts=line.split(/[;\t]+/); decComma=true; }  /* ; oder Tab: Komma = Dezimal */
-    else parts=line.split(/[, ]+/);                                        /* Komma/Leerz. = Trenner */
-    if(parts.length<2) continue;
-    var a=parseFloat(decComma?parts[0].replace(',','.'):parts[0]);
-    var b=parseFloat(decComma?parts[1].replace(',','.'):parts[1]);
-    if(isFinite(a)&&isFinite(b)) out.push([a,b]);
-  }
-  return out;
-}
-function buildSampleSpec(pairs,opts){
-  opts=opts||{};
-  var ts=pairs.map(function(p){return p[0];}), vs=pairs.map(function(p){return p[1];});
-  var tmin=Math.min.apply(null,ts), tmax=Math.max.apply(null,ts), tspan=(tmax-tmin)||1;
-  var data=pairs.map(function(p){ return [ (p[0]-tmin)/tspan, p[1] ]; });
-  var vmin=Math.min.apply(null,vs), vmax=Math.max.apply(null,vs);
-  var pad=((vmax-vmin)*0.12)||0.5, lo=vmin-pad, hi=vmax+pad;
-  if(lo>0) lo=0;                        /* Nulllinie einblenden wenn nah */
-  var perDivV=((hi-lo)/8);
-  var perDivMs=(tspan/10)*1000;         /* Annahme: Zeit in Sekunden */
-  var tdiv = perDivMs>=1000 ? (perDivMs/1000).toFixed(2)+' s/div' : (perDivMs>=1?perDivMs.toFixed(1)+' ms/div':(perDivMs*1000).toFixed(0)+' µs/div');
-  return {
-    yr:[+lo.toFixed(2), +hi.toFixed(2)], yunit:'V',
-    vdiv:perDivV.toFixed(perDivV<1?2:1)+' V/div', tdiv:tdiv,
-    badge:opts.badge||'',
-    tr:[{ch:1, g:'samples', o:{data:data}, mp:opts.mp||'Capture'}],
-    caption:opts.caption||''
-  };
-}
-var _impCid=null, _impReturnFocus=null;
-function currentImportPairs(){ var ta=document.getElementById('impCsv'); return ta?parseCsv(ta.value):[]; }
-function currentImportSpec(){
-  var pairs=currentImportPairs(); if(pairs.length<2) return null;
-  var bew=(document.getElementById('impBewertung')||{}).value||'gut';
-  var cap=(document.getElementById('impCaption')||{}).value||'';
-  var fz=(document.getElementById('impFahrzeug')||{}).value||'';
-  return buildSampleSpec(pairs,{badge:bew==='gut'?'GUT':'FEHLER', caption:cap, mp:(fz?fz:'Capture')});
-}
-function updateImportPreview(){
-  var prev=document.getElementById('impPreview'), st=document.getElementById('impStatus'), save=document.getElementById('impSave');
-  var pairs=currentImportPairs();
-  var fz=(document.getElementById('impFahrzeug')||{}).value.trim();
-  if(st) st.textContent=pairs.length?(pairs.length+' Messpunkte erkannt'):'';
-  if(pairs.length<2){ if(prev) prev.innerHTML='<div class="note">Mindestens zwei gültige Wertepaare eingeben.</div>'; if(save) save.disabled=true; return; }
-  var spec=currentImportSpec();
-  if(prev) prev.innerHTML=W(spec);
-  if(save) save.disabled=!fz;
-}
-function openCsvImport(cid){
-  _impCid=cid; _impReturnFocus=document.activeElement;
-  var card=cardById(cid);
-  var t=document.getElementById('impTitle'); if(t) t.textContent='Eigene Messung – '+(card?card.name:'');
-  ['impFahrzeug','impQuelle','impCaption','impCsv'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
-  var o=document.getElementById('importmodal'); o.hidden=false; o.classList.add('on');
-  updateImportPreview();
-  setTimeout(function(){ var f=document.getElementById('impFahrzeug'); if(f) f.focus(); },30);
-}
-function closeCsvImport(){ var o=document.getElementById('importmodal'); if(o){ o.classList.remove('on'); o.hidden=true; } if(_impReturnFocus&&_impReturnFocus.focus){ try{_impReturnFocus.focus();}catch(e){} } }
-function refreshCard(cid){ var k=document.querySelector('.karte[data-id="'+cid+'"]'); if(!k) return; var body=k.querySelector('.kbody'); if(body){ body.setAttribute('data-filled','0'); fillCard(k); } }
-function saveImport(){
-  var cid=_impCid; if(!cid) return;
-  var fz=(document.getElementById('impFahrzeug')||{}).value.trim(); if(!fz) return;
-  var quelle=(document.getElementById('impQuelle')||{}).value.trim();
-  var bew=(document.getElementById('impBewertung')||{}).value||'gut';
-  var spec=currentImportSpec(); if(!spec) return;
-  var all=loadUserVariants(), arr=all[cid]||[], v=null;
-  for(var i=0;i<arr.length;i++){ if(arr[i].fahrzeug===fz){ v=arr[i]; break; } }
-  if(!v){ v={fahrzeug:fz, quelle:quelle, gut:[], schlecht:[]}; arr.push(v); }
-  else if(quelle){ v.quelle=quelle; }
-  (bew==='gut'?v.gut:v.schlecht).push(spec);
-  all[cid]=arr;
-  if(!saveUserVariants(all)){ alert('Speichern fehlgeschlagen (Browser-Speicher voll oder gesperrt).'); return; }
-  closeCsvImport();
-  refreshCard(cid);
-  /* neu hinzugefügte Variante direkt auswählen */
-  var k=document.querySelector('.karte[data-id="'+cid+'"]');
-  if(k){ var sel=k.querySelector('.varsel'); if(sel){ sel.value=String(sel.options.length-1); sel.dispatchEvent(new Event('change',{bubbles:true})); } }
-}
-function exportVariants(){
-  var data=JSON.stringify(loadUserVariants(),null,2);
-  var blob=new Blob([data],{type:'application/json'});
-  var url=URL.createObjectURL(blob), a=document.createElement('a');
-  a.href=url; a.download='kfzoszi-eigene-messungen.json'; document.body.appendChild(a); a.click();
-  setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); },100);
-}
-function importVariantsJson(text){
-  var obj; try{ obj=JSON.parse(text); }catch(e){ alert('Ungültige JSON-Datei.'); return; }
-  if(!obj||typeof obj!=='object'){ alert('Unerwartetes Format.'); return; }
-  var all=loadUserVariants(), n=0;
-  Object.keys(obj).forEach(function(cid){
-    if(!Array.isArray(obj[cid])) return;
-    all[cid]=(all[cid]||[]).concat(obj[cid]); n+=obj[cid].length;
-  });
-  if(saveUserVariants(all)){ alert(n+' Varianten importiert.'); if(_impCid) refreshCard(_impCid); }
-}
-
 /* ---- Karten-Body (lazy) ---- */
 function kfeld(label,val){ return val?('<div class="kfeld"><div class="kl">'+label+'</div><div>'+esc(val)+'</div></div>'):''; }
 function kfeldList(label,arr){ if(!arr||!arr.length) return ''; return '<div class="kfeld"><div class="kl">'+label+'</div><ul>'+arr.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>'; }
@@ -3957,26 +3875,12 @@ function buildCardBody(c){
   }
   /* Vorgang */
   if(c.vorgang&&c.vorgang.length){ h+='<div class="kfeld"><div class="kl">Mess-Vorgehen</div><ol>'+c.vorgang.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></div>'; }
-  /* Gut/Schlecht-Umschaltung + Fahrzeug-/Quellen-Varianten */
-  var vsrc=variantSources(c);
-  var hasImg=vsrc.some(function(s){ return s.gut||s.bad; });
-  if(hasImg){
-    var cur=vsrc[0];
-    var selHtml='';
-    if(vsrc.length>1){
-      selHtml='<div class="varrow"><label class="varlbl" for="varsel-'+c.id+'">Fahrzeug / Quelle</label>'
-        +'<select class="varsel" id="varsel-'+c.id+'" data-cid="'+c.id+'">'
-        +vsrc.map(function(s,i){ return '<option value="'+i+'">'+esc(s.label)+'</option>'; }).join('')
-        +'</select></div>';
-    }
+  /* Gut/Schlecht-Umschaltung */
+  if((c.gut&&c.gut.length)||(c.schlecht&&c.schlecht.length)){
     h+='<div class="kfeld"><div class="kl">Signalbilder — Gut vs. Fehler</div>'
-      +selHtml
-      +'<div class="gsbar" role="group" aria-label="Signalbild wählen"><button type="button" class="gsbtn gut on" data-gs="gut" aria-pressed="true"><span aria-hidden="true">✓</span> Gutbild</button><button type="button" class="gsbtn bad" data-gs="bad" aria-pressed="false"><span aria-hidden="true">✕</span> Fehlerbild</button></div>'
-      +'<div class="varquelle">'+(cur.quelle?('Quelle: '+esc(cur.quelle)):'')+'</div>'
-      +'<div class="sigset gut on" data-role="gut">'+cur.gut+'</div>'
-      +'<div class="sigset bad" data-role="bad">'+cur.bad+'</div>'
-      +'<div class="addvar"><button type="button" class="linkbtn addvarbtn" data-cid="'+c.id+'">+ Eigene Messung (CSV) hinzufügen</button></div>'
-      +'</div>';
+      +'<div class="gsbar"><button class="gsbtn gut on" data-gs="gut">● Gutbild</button><button class="gsbtn bad" data-gs="bad">● Fehlerbild</button></div>'
+      +'<div class="sigset gut on">'+(c.gut?c.gut.join(''):'')+'</div>'
+      +'<div class="sigset bad">'+(c.schlecht?c.schlecht.join(''):'')+'</div></div>';
   }
   if(c.check10) h+='<div class="s10"><b>10-Sekunden-Check:</b> '+esc(c.check10)+'</div>';
   h+=kfeldList('Häufige Ursachen',c.ursachen);
@@ -4009,12 +3913,9 @@ function cardMatch(c){
 function renderCards(){
   var box=document.getElementById('cardlist'); if(!box) return;
   var list=KARTEN.filter(cardMatch);
-  var total=KARTEN.length;
-  var cnt=list.length===total?(total+' Messkarten'):(list.length+' von '+total+' Messkarten');
-  var count='<div class="cardcount" aria-live="polite">'+cnt+'</div>';
-  if(!list.length){ box.innerHTML='<div class="cardcount" aria-live="polite">0 von '+total+' Messkarten</div><div class="note">Keine Messkarte passt zu den aktuellen Filtern. Setze die Filter oben zurück.</div>'; return; }
-  box.innerHTML=count+list.map(function(c){
-    return '<div class="karte" data-id="'+c.id+'"><div class="khead" role="button" tabindex="0" aria-expanded="false"><div class="kname">'+esc(c.name)+'</div>'
+  if(!list.length){ box.innerHTML='<div class="note">Keine Messkarte passt zu den aktuellen Filtern. Setze die Filter oben zurück.</div>'; return; }
+  box.innerHTML=list.map(function(c){
+    return '<div class="karte" data-id="'+c.id+'"><div class="khead"><div class="kname">'+esc(c.name)+'</div>'
       +'<div>'+grpBadge(c)+diffBadge(c.diff)+sigBadge(c.sig)+'</div></div>'
       +'<div class="kbody" data-filled="0"></div></div>';
   }).join('');
@@ -4030,7 +3931,6 @@ function openCard(id){
   renderCards(); cardsRendered=true;
   var k=document.querySelector('.karte[data-id="'+id+'"]'); if(!k) return;
   fillCard(k); k.classList.add('open');
-  var hd=k.querySelector('.khead'); if(hd) hd.setAttribute('aria-expanded','true');
   setTimeout(function(){ k.scrollIntoView({behavior:'smooth',block:'start'}); },60);
 }
 
@@ -4052,7 +3952,7 @@ function buildFdbBody(f){
 function renderFdb(){
   var box=document.getElementById('fdblist'); if(!box) return;
   box.innerHTML=FEHLERDB.map(function(f){
-    return '<div class="karte" data-fid="'+f.id+'"><div class="khead" role="button" tabindex="0" aria-expanded="false"><div class="kname">'+esc(f.titel)+'</div>'
+    return '<div class="karte" data-fid="'+f.id+'"><div class="khead"><div class="kname">'+esc(f.titel)+'</div>'
       +'<div><span class="badge b-d3">Fehlermuster</span></div></div>'
       +'<div class="kbody" data-filled="0"></div></div>';
   }).join('');
@@ -4065,7 +3965,6 @@ function openFdb(id){
   renderFdb(); fdbRendered=true;
   var k=document.querySelector('.karte[data-fid="'+id+'"]'); if(!k) return;
   fillFdb(k); k.classList.add('open');
-  var hd=k.querySelector('.khead'); if(hd) hd.setAttribute('aria-expanded','true');
   setTimeout(function(){ k.scrollIntoView({behavior:'smooth',block:'start'}); },60);
 }
 
@@ -4124,9 +4023,8 @@ function buildIndex(){
   document.querySelectorAll('.page[data-nav]').forEach(function(p){ var n=p.getAttribute('data-nav'); IDX.push({t:n,k:'Kapitel',page:p.id,q:n.toLowerCase()}); });
   document.querySelectorAll('#pg-plan details').forEach(function(d){ var s=d.querySelector('summary'); if(s&&d.id){ IDX.push({t:s.textContent.trim(),k:'Prüfplan',page:'pg-plan',open:d.id,q:s.textContent.toLowerCase()}); } });
 }
-var _searchReturnFocus=null;
-function openSearch(){ _searchReturnFocus=document.activeElement; var o=document.getElementById('suche'); o.hidden=false; o.classList.add('on'); var f=document.getElementById('sfeld'); f.value=''; runSearch(''); setTimeout(function(){ f.focus(); },30); }
-function closeSearch(){ var o=document.getElementById('suche'); o.classList.remove('on'); o.hidden=true; if(_searchReturnFocus&&_searchReturnFocus.focus){ try{ _searchReturnFocus.focus(); }catch(e){} } }
+function openSearch(){ var o=document.getElementById('suche'); o.classList.add('on'); var f=document.getElementById('sfeld'); f.value=''; runSearch(''); setTimeout(function(){ f.focus(); },30); }
+function closeSearch(){ document.getElementById('suche').classList.remove('on'); }
 function runSearch(query){
   var res=document.getElementById('sres'); if(!res) return;
   var q=(query||'').toLowerCase().trim();
@@ -4135,7 +4033,7 @@ function runSearch(query){
   var hits=IDX.filter(function(it){ return toks.every(function(t){ return it.q.indexOf(t)>=0; }); }).slice(0,50);
   if(!hits.length){ res.innerHTML='<div class="note">Nichts gefunden für „'+esc(query)+'".</div>'; return; }
   res.innerHTML=hits.map(function(it){
-    return '<div class="sres" role="button" tabindex="0" data-page="'+it.page+'"'
+    return '<div class="sres" data-page="'+it.page+'"'
       +(it.card?(' data-card="'+it.card+'"'):'')
       +(it.fdb?(' data-fdb="'+it.fdb+'"'):'')
       +(it.open?(' data-open="'+it.open+'"'):'')
@@ -4143,76 +4041,19 @@ function runSearch(query){
   }).join('');
 }
 
-/* ---- Modus (mit Persistenz) ---- */
+/* ---- Modus ---- */
 var MODES=[['','Alles'],['einsteiger','Einsteiger'],['profi','Profi']]; var mIdx=0;
-function storeGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
-function storeSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
-function applyMode(){
-  document.body.classList.remove('einsteiger','profi');
-  if(MODES[mIdx][0]) document.body.classList.add(MODES[mIdx][0]);
-  var b=document.getElementById('btnModus'); if(b){ b.textContent='Modus: '+MODES[mIdx][1]; b.setAttribute('aria-label','Anzeigemodus '+MODES[mIdx][1]+' – tippen zum Wechseln'); }
-}
 function cycleMode(){
   mIdx=(mIdx+1)%MODES.length;
-  applyMode();
-  storeSet('kfzoszi-mode', String(mIdx));
+  document.body.classList.remove('einsteiger','profi');
+  if(MODES[mIdx][0]) document.body.classList.add(MODES[mIdx][0]);
+  var b=document.getElementById('btnModus'); if(b) b.textContent='Modus: '+MODES[mIdx][1];
 }
-function restoreMode(){
-  var v=storeGet('kfzoszi-mode');
-  if(v!==null){ var i=parseInt(v,10); if(!isNaN(i)&&i>=0&&i<MODES.length){ mIdx=i; } }
-  applyMode();
-}
-
-/* ---- Theme hell/dunkel (mit Persistenz) ---- */
-function applyTheme(t){
-  document.documentElement.setAttribute('data-theme', t);
-  var b=document.getElementById('btnTheme');
-  if(b){ b.textContent=(t==='light'?'☀':'☾'); b.setAttribute('aria-label', t==='light'?'Zu dunklem Modus wechseln':'Zu hellem Modus wechseln'); }
-  var m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute('content', t==='light'?'#eaeef3':'#0a0e13');
-}
-function restoreTheme(){ applyTheme(storeGet('kfzoszi-theme')||'dark'); }
-function toggleTheme(){
-  var next=(document.documentElement.getAttribute('data-theme')==='light')?'dark':'light';
-  applyTheme(next); storeSet('kfzoszi-theme', next);
-}
-
-/* ---- Datenvalidierung (Aufruf: ?validate oder window.validateKompendium()) ---- */
-function validateKompendium(){
-  var errs=[], warns=[];
-  var KAT=['sensor','lambda','aktor','zuend','einspr','elektrik','bus'];
-  var ids={};
-  KARTEN.forEach(function(c){
-    if(!c.id){ errs.push('Karte ohne id: '+(c.name||'?')); return; }
-    if(ids[c.id]) errs.push('Doppelte Karten-id: '+c.id); else ids[c.id]=1;
-    if(!c.name) errs.push(c.id+': kein name');
-    if(!c.kat) warns.push(c.id+': kein kat'); else if(KAT.indexOf(c.kat)<0) warns.push(c.id+': unbekanntes kat "'+c.kat+'"');
-    if(!(c.diff>=1&&c.diff<=3)) warns.push(c.id+': diff ausserhalb 1..3');
-    if(!c.sig) warns.push(c.id+': kein sig');
-    (c.varianten||[]).forEach(function(v,i){
-      if(!v.fahrzeug) warns.push(c.id+': Variante '+i+' ohne fahrzeug');
-      ['gut','schlecht'].forEach(function(side){
-        (v[side]||[]).forEach(function(spec,j){
-          if(typeof spec==='string') return;
-          if(!spec.yr) errs.push(c.id+': Variante '+i+'/'+side+'['+j+'] ohne yr');
-          (spec.tr||[]).forEach(function(tr){ if(!G[tr.g]) errs.push(c.id+': Variante '+i+'/'+side+'['+j+'] unbekannter Generator "'+tr.g+'"'); });
-        });
-      });
-    });
-  });
-  var fids={}; FEHLERDB.forEach(function(f){ if(!f.id){ errs.push('Fehlerbild ohne id'); } else if(fids[f.id]) errs.push('Doppelte Fehlerbild-id: '+f.id); else fids[f.id]=1; if(!f.titel) errs.push((f.id||'?')+': kein titel'); });
-  var terms={}; GLOSSAR.forEach(function(g){ if(!g.term){ errs.push('Glossar ohne term'); } else if(terms[g.term]) warns.push('Doppelter Glossarbegriff: '+g.term); else terms[g.term]=1; if(!g.def) warns.push((g.term||'?')+': keine def'); });
-  document.querySelectorAll('[data-open]').forEach(function(el){ var t=el.getAttribute('data-open'); if(t && t.indexOf("'")<0 && !document.getElementById(t)) errs.push('data-open Ziel fehlt: #'+t); });
-  document.querySelectorAll('[data-go]').forEach(function(el){ var t=el.getAttribute('data-go'); if(t && !document.getElementById(t)) errs.push('data-go Ziel fehlt: #'+t); });
-  return {errors:errs, warnings:warns, cards:KARTEN.length, fdb:FEHLERDB.length, gloss:GLOSSAR.length};
-}
-try{ window.validateKompendium=validateKompendium; }catch(e){}
 
 /* ---- Init ---- */
 function init(){
   renderStatics();
   buildNav();
-  restoreMode();
-  restoreTheme();
   renderGloss(); glossRendered=true;
   buildIndex();
 
@@ -4227,100 +4068,42 @@ function init(){
   if(kf){ kf.addEventListener('input',function(){ state.text=kf.value.toLowerCase().trim(); renderCards(); cardsRendered=true; }); }
 
   /* Karten-Akkordeon + Gut/Schlecht (Delegation) */
-  function setGut(kk,which){
-    kk.querySelectorAll('.gsbtn').forEach(function(b){ var on=b.getAttribute('data-gs')===which; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on?'true':'false'); });
-    kk.querySelectorAll('.sigset').forEach(function(sset){ sset.classList.toggle('on', sset.classList.contains(which)); });
-  }
-  function toggleCard(head){ var k=head.closest('.karte'); fillCard(k); var open=k.classList.toggle('open'); head.setAttribute('aria-expanded', open?'true':'false'); }
-  function applyVariant(karte,cid,idx){
-    var card=cardById(cid); if(!card) return;
-    var srcs=variantSources(card); var s=srcs[idx]||srcs[0];
-    var gEl=karte.querySelector('.sigset[data-role="gut"]'), bEl=karte.querySelector('.sigset[data-role="bad"]');
-    if(gEl) gEl.innerHTML=s.gut; if(bEl) bEl.innerHTML=s.bad;
-    var q=karte.querySelector('.varquelle'); if(q) q.innerHTML=s.quelle?('Quelle: '+esc(s.quelle)):'';
-  }
   var cl=document.getElementById('cardlist');
-  if(cl){
-    cl.addEventListener('click',function(e){
-      var av=e.target.closest('.addvarbtn');
-      if(av){ e.preventDefault(); openCsvImport(av.getAttribute('data-cid')); return; }
-      var gs=e.target.closest('.gsbtn');
-      if(gs){ setGut(gs.closest('.karte'), gs.getAttribute('data-gs')); return; }
-      var head=e.target.closest('.khead');
-      if(head) toggleCard(head);
-    });
-    cl.addEventListener('change',function(e){
-      var sel=e.target.closest('.varsel'); if(!sel) return;
-      applyVariant(sel.closest('.karte'), sel.getAttribute('data-cid'), parseInt(sel.value,10)||0);
-    });
-    cl.addEventListener('keydown',function(e){
-      if(e.key!=='Enter'&&e.key!==' ') return;
-      var head=e.target.closest('.khead'); if(!head) return;
-      e.preventDefault(); toggleCard(head);
-    });
-  }
+  if(cl){ cl.addEventListener('click',function(e){
+    var gs=e.target.closest('.gsbtn');
+    if(gs){ var kk=gs.closest('.karte'); var which=gs.getAttribute('data-gs');
+      kk.querySelectorAll('.gsbtn').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-gs')===which); });
+      kk.querySelectorAll('.sigset').forEach(function(sset){ sset.classList.toggle('on', sset.classList.contains(which)); });
+      return; }
+    var head=e.target.closest('.khead');
+    if(head){ var k=head.closest('.karte'); fillCard(k); k.classList.toggle('open'); }
+  }); }
 
   /* Fehlerbild-Akkordeon (Delegation) */
-  function toggleFdb(head){ var k=head.closest('.karte'); fillFdb(k); var open=k.classList.toggle('open'); head.setAttribute('aria-expanded', open?'true':'false'); }
   var fl=document.getElementById('fdblist');
-  if(fl){
-    fl.addEventListener('click',function(e){ var head=e.target.closest('.khead'); if(head) toggleFdb(head); });
-    fl.addEventListener('keydown',function(e){ if(e.key!=='Enter'&&e.key!==' ')return; var head=e.target.closest('.khead'); if(!head)return; e.preventDefault(); toggleFdb(head); });
-  }
+  if(fl){ fl.addEventListener('click',function(e){ var head=e.target.closest('.khead'); if(head){ var k=head.closest('.karte'); fillFdb(k); k.classList.toggle('open'); } }); }
 
   /* Schnellzugriff-Buttons & alle [data-go] */
   document.addEventListener('click',function(e){ var t=e.target.closest('[data-go]'); if(!t) return; e.preventDefault();
     var id=t.getAttribute('data-go'); var open=t.getAttribute('data-open'); go(id, open?{open:open}:{}); });
 
-  /* Import-Modal (eigene Messung / CSV) */
-  var impC=document.getElementById('impClose'); if(impC) impC.addEventListener('click',closeCsvImport);
-  ['impCsv','impFahrzeug','impCaption','impBewertung'].forEach(function(id){ var el=document.getElementById(id); if(el){ el.addEventListener('input',updateImportPreview); el.addEventListener('change',updateImportPreview); } });
-  var impFile=document.getElementById('impFile'), impFileInput=document.getElementById('impFileInput');
-  if(impFile&&impFileInput){ impFile.addEventListener('click',function(){ impFileInput.click(); });
-    impFileInput.addEventListener('change',function(){ var f=impFileInput.files&&impFileInput.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ var ta=document.getElementById('impCsv'); if(ta){ ta.value=String(r.result); updateImportPreview(); } }; r.readAsText(f); impFileInput.value=''; }); }
-  var impSave=document.getElementById('impSave'); if(impSave) impSave.addEventListener('click',saveImport);
-  var impExp=document.getElementById('impExport'); if(impExp) impExp.addEventListener('click',exportVariants);
-  var impImp=document.getElementById('impImport'), impJson=document.getElementById('impJsonInput');
-  if(impImp&&impJson){ impImp.addEventListener('click',function(){ impJson.click(); });
-    impJson.addEventListener('change',function(){ var f=impJson.files&&impJson.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ importVariantsJson(String(r.result)); }; r.readAsText(f); impJson.value=''; }); }
-
   /* Modus */
   var bm=document.getElementById('btnModus'); if(bm) bm.addEventListener('click',cycleMode);
-
-  /* Theme */
-  var bt=document.getElementById('btnTheme'); if(bt) bt.addEventListener('click',toggleTheme);
 
   /* Suche */
   var bs=document.getElementById('btnSuche'); if(bs) bs.addEventListener('click',openSearch);
   var sc=document.getElementById('sclose'); if(sc) sc.addEventListener('click',closeSearch);
-  var sf=document.getElementById('sfeld');
-  if(sf){
-    sf.addEventListener('input',function(){ runSearch(sf.value); });
-    sf.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); var first=document.querySelector('#sres .sres'); if(first) first.click(); } });
-  }
-  function openRes(r){ var opts={}; if(r.getAttribute('data-card'))opts.card=r.getAttribute('data-card');
+  var sf=document.getElementById('sfeld'); if(sf) sf.addEventListener('input',function(){ runSearch(sf.value); });
+  var sr=document.getElementById('sres');
+  if(sr){ sr.addEventListener('click',function(e){ var r=e.target.closest('.sres'); if(!r) return;
+    var opts={}; if(r.getAttribute('data-card'))opts.card=r.getAttribute('data-card');
     if(r.getAttribute('data-fdb'))opts.fdb=r.getAttribute('data-fdb');
     if(r.getAttribute('data-open'))opts.open=r.getAttribute('data-open');
-    closeSearch(); go(r.getAttribute('data-page'),opts); }
-  var sr=document.getElementById('sres');
-  if(sr){
-    sr.addEventListener('click',function(e){ var r=e.target.closest('.sres'); if(r) openRes(r); });
-    sr.addEventListener('keydown',function(e){ if(e.key!=='Enter'&&e.key!==' ')return; var r=e.target.closest('.sres'); if(!r)return; e.preventDefault(); openRes(r); });
-  }
-  /* Fokus-Falle im Such-Dialog */
-  var sucheEl=document.getElementById('suche');
-  if(sucheEl){ sucheEl.addEventListener('keydown',function(e){
-    if(e.key!=='Tab') return;
-    var f=Array.prototype.filter.call(sucheEl.querySelectorAll('input,button,[tabindex]:not([tabindex="-1"])'),function(el){ return el.offsetParent!==null; });
-    if(!f.length) return;
-    var first=f[0], last=f[f.length-1];
-    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
-    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
-  }); }
+    closeSearch(); go(r.getAttribute('data-page'),opts); }); }
 
   /* Tastatur: / öffnet Suche, Esc schließt */
   document.addEventListener('keydown',function(e){
-    if(e.key==='Escape'){ closeSearch(); closeCsvImport(); return; }
+    if(e.key==='Escape'){ closeSearch(); return; }
     if(e.key==='/' && document.activeElement && ['INPUT','TEXTAREA'].indexOf(document.activeElement.tagName)<0){ e.preventDefault(); openSearch(); }
   });
 
@@ -4333,46 +4116,1053 @@ function init(){
   /* Routing */
   window.addEventListener('popstate',function(){ parseHash(); });
   if(location.hash){ parseHash(); } else { applyPage('pg-start',{}); }
-
-  /* Datenvalidierung auf Wunsch (?validate) */
-  if(location.search.indexOf('validate')>=0){
-    var vr=validateKompendium();
-    console.log('[validate] Karten:'+vr.cards+' Fehlerbilder:'+vr.fdb+' Glossar:'+vr.gloss+' – Fehler:'+vr.errors.length+' Warnungen:'+vr.warnings.length);
-    vr.errors.forEach(function(e){ console.error('  ✗ '+e); });
-    vr.warnings.forEach(function(w){ console.warn('  ! '+w); });
-  }
 }
 
 if(document.readyState!=='loading'){ init(); } else { document.addEventListener('DOMContentLoaded',init); }
 </script>
 
-<!-- ================= PWA: Service Worker + Installation ================= -->
+<script id="oszi-live-logic">
+/* ===== OSZI-LIVE: REINE LOGIK (DOM-frei, unter Node testbar) ===== */
+var OsziLogic = (function(){
+  'use strict';
+
+  /* "2 ms/div" | "10-20 µs (Bits)" | "Roll, 1-5 s" -> Sekunden pro Division (erste Zahl+Einheit) */
+  function parseTdiv(s){
+    if(!s) return null;
+    var m = String(s).replace(/,/g,'.').match(/([\d.]+)(?:\s*[\u2013-]\s*[\d.]+)?\s*(µs|us|ms|s)\b/i);
+    if(!m) return null;
+    var v = parseFloat(m[1]), u = m[2].toLowerCase();
+    if(u==='µs'||u==='us') return v*1e-6;
+    if(u==='ms') return v*1e-3;
+    return v;
+  }
+  /* "0,2 V/div" | "50 V" | "2-5 A" | "100 mV" -> Zahl pro Division (V bzw. A) */
+  function parseVdiv(s){
+    if(!s) return null;
+    var m = String(s).replace(/,/g,'.').match(/([\d.]+)(?:\s*[\u2013-]\s*[\d.]+)?\s*(mV|kV|V|A)\b/i);
+    if(!m) return null;
+    var v = parseFloat(m[1]), u = m[2];
+    if(/^mV$/i.test(u)) return v*1e-3;
+    if(/^kV$/i.test(u)) return v*1e3;
+    return v;
+  }
+
+  /* Min/Max-Dezimierung: samples[i0..i1) auf cols Spalten.
+     Rueckgabe Float32Array(cols*2): [min0,max0,min1,max1,...] */
+  function minMaxDecimate(samples, i0, i1, cols){
+    var out = new Float32Array(cols*2), n = i1 - i0;
+    if(n<=0 || cols<=0){ out.fill(NaN); return out; }
+    for(var c=0;c<cols;c++){
+      var a=i0+Math.floor(c*n/cols), b=i0+Math.floor((c+1)*n/cols);
+      if(b<=a) b=a+1;
+      var mn=Infinity, mx=-Infinity;
+      for(var i=a;i<b && i<i1;i++){ var v=samples[i]; if(v<mn)mn=v; if(v>mx)mx=v; }
+      out[c*2]=mn; out[c*2+1]=mx;
+    }
+    return out;
+  }
+
+  function mean(a){ var s=0; for(var i=0;i<a.length;i++) s+=a[i]; return a.length?s/a.length:0; }
+  function peakToPeak(a){
+    var mn=Infinity, mx=-Infinity;
+    for(var i=0;i<a.length;i++){ if(a[i]<mn)mn=a[i]; if(a[i]>mx)mx=a[i]; }
+    return {min:mn, max:mx, pp:mx-mn};
+  }
+  function rms(a){ var s=0; for(var i=0;i<a.length;i++) s+=a[i]*a[i]; return a.length?Math.sqrt(s/a.length):0; }
+
+  /* Normierte Kreuzkorrelation a gegen b, Lag in [-maxLag,+maxLag].
+     score 0..1 (Pearson am besten passenden Lag). b[i+lag] ~ a[i]. */
+  function normXCorr(a, b, maxLag){
+    var n=Math.min(a.length,b.length);
+    var ma=mean(a), mb=mean(b);
+    var da=new Float64Array(n), db=new Float64Array(n), sa=0, sb=0, i;
+    for(i=0;i<n;i++){ da[i]=a[i]-ma; db[i]=b[i]-mb; sa+=da[i]*da[i]; sb+=db[i]*db[i]; }
+    var denom=Math.sqrt(sa*sb)||1e-12, best=-2, bestLag=0;
+    for(var lag=-maxLag; lag<=maxLag; lag++){
+      var s=0;
+      for(i=0;i<n;i++){
+        var j=i+lag;
+        if(j<0||j>=n) continue;
+        s+=da[i]*db[j];
+      }
+      var r=s/denom;
+      if(r>best){ best=r; bestLag=lag; }
+    }
+    return {lag:bestLag, score:Math.max(0,Math.min(1,best))};
+  }
+
+  /* Frequenz ueber steigende Mittelwert-Durchgaenge (interpoliert); dt in s */
+  function measureFreq(a, dt){
+    var m=mean(a), first=-1, last=-1, count=0, prev=a[0]-m;
+    for(var i=1;i<a.length;i++){
+      var cur=a[i]-m;
+      if(prev<=0 && cur>0){
+        var x=(i-1)+prev/(prev-cur);
+        if(first<0) first=x;
+        last=x; count++;
+      }
+      prev=cur;
+    }
+    if(count<2 || last<=first) return null;
+    var per=(last-first)/(count-1);
+    return 1/(per*dt);
+  }
+
+  function measureDuty(a){
+    var p=peakToPeak(a); if(!(p.pp>0)) return null;
+    var mid=(p.min+p.max)/2, hi=0;
+    for(var i=0;i<a.length;i++) if(a[i]>mid) hi++;
+    return hi/a.length;
+  }
+
+  /* 10-90%-Anstiegszeit der ersten vollstaendigen steigenden Flanke, in s */
+  function measureRise(a, dt){
+    var p=peakToPeak(a); if(!(p.pp>0)) return null;
+    var lo=p.min+0.1*p.pp, hi=p.min+0.9*p.pp;
+    for(var i=1;i<a.length;i++){
+      if(a[i-1]<lo && a[i]>=lo){
+        for(var j=i;j<a.length;j++){
+          if(a[j]>=hi) return (j-(i-1))*dt;
+          if(a[j]<lo) break; /* Flanke abgebrochen -> naechste suchen */
+        }
+      }
+    }
+    return null;
+  }
+
+
+  /* Karten-Setup ("setup"-Objekt einer Messkarte) -> Geraeteeinstellungen.
+     Bereiche: V/div nimmt das OBERE Ende (kein Clipping beim Start),
+     Zeitbasis die ERSTE Angabe. Stromzangen/Abgriffe -> strom:true. */
+  function parseSetup(st){
+    st = st || {};
+    var out = { coupling:null, probe:null, vdiv:null, secdiv:null,
+                trigEdge:null, trigLevel:null, trigMode:null,
+                ch2:false, strom:false };
+    var s, m;
+    s = String(st.kanal||'');
+    out.ch2 = /CH\s*2/i.test(s) || /(?:^|\D)2(?:\D|$)/.test(s);
+    s = String(st.kopp||'');
+    m = s.match(/\b(AC|DC)\b/i);
+    if(m) out.coupling = m[1].toUpperCase();
+    s = String(st.tk||'');
+    if(/zange|shunt|abgriff/i.test(s)) out.strom = true;
+    m = s.match(/(\d+)\s*:\s*1/);
+    if(m) out.probe = parseInt(m[1],10);
+    s = String(st.vdiv||'').replace(/,/g,'.');
+    m = s.match(/([\d.]+)(?:\s*[\u2013-]\s*([\d.]+))?\s*(mV|kV|V|A)\b/i);
+    if(m){
+      var v = parseFloat(m[2]||m[1]);
+      if(/^mV$/i.test(m[3])) v*=1e-3;
+      else if(/^kV$/i.test(m[3])) v*=1e3;
+      if(/^A$/i.test(m[3])) out.strom = true;
+      out.vdiv = v;
+    }
+    out.secdiv = parseTdiv(st.tdiv);
+    s = String(st.trig||'');
+    if(/single/i.test(s)) out.trigMode='single';
+    else if(/auto/i.test(s)) out.trigMode='auto';
+    if(/\u2193|fall/i.test(s)) out.trigEdge='f';
+    else if(/\u2191|steig|rise/i.test(s)) out.trigEdge='r';
+    m = s.replace(/,/g,'.').match(/~?\s*([\d.]+)\s*(mV|V)\b/i);
+    if(m) out.trigLevel = parseFloat(m[1]) * (/mV/i.test(m[2]) ? 1e-3 : 1);
+    return out;
+  }
+
+  /* true/false/null: Messwert innerhalb +/- tolPct % vom Soll? */
+  function within(measured, soll, tolPct){
+    if(measured==null || soll==null || !isFinite(soll) || soll===0) return null;
+    return Math.abs(measured-soll)/Math.abs(soll) <= tolPct/100;
+  }
+
+  return {
+    parseTdiv:parseTdiv, parseVdiv:parseVdiv, parseSetup:parseSetup,
+    minMaxDecimate:minMaxDecimate,
+    mean:mean, peakToPeak:peakToPeak, rms:rms,
+    normXCorr:normXCorr,
+    measureFreq:measureFreq, measureDuty:measureDuty, measureRise:measureRise,
+    within:within
+  };
+})();
+if (typeof module!=='undefined' && module.exports) module.exports = OsziLogic;
+
+</script>
+<script id="oszi-live-app">
+/* ===== OSZI LIVE-MODUS (OWON VDS1022I / Mock) =====
+   Nutzt: G (Generatoren), KARTEN, OsziLogic. Keine Parallelstrukturen. */
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var TD = (typeof TextDecoder!=='undefined') ? new TextDecoder() : null;
+
+/* ---------- Zustand ---------- */
+var LV={
+  ws:null, mock:null, wantConn:false, connected:false, devStatus:'getrennt',
+  running:true, singleArm:false,
+  dt:1e-5, probe:[1,1],
+  chOn:[true,false], vdiv:[2,2], coup:['DC','DC'], probeUi:[1,1],
+  secdiv:1e-3, trig:{ch:1,edge:'r',level:1.0,disp:true}, trigPos:0.2,
+  pos:[0,0], inv:[false,false], clamp:[0,0], persist:0,
+  karteId:'', refSrc:'gen', overlay:true, refScale:true,
+  tolA:15, tolT:10,
+  align:{lag:0,score:null,k:1,off:0,valid:false}, lastAlign:0, lastMet:0,
+  cursor:{on:false,a:0.3,b:0.7,drag:0},
+  playback:null
+};
+var MAXS=262144;
+function Ring(){ this.d=new Float32Array(MAXS); this.n=0; this.w=0; }
+Ring.prototype.push=function(a){
+  for(var i=0;i<a.length;i++){ this.d[this.w]=a[i]; this.w=(this.w+1)%MAXS; }
+  this.n=Math.min(MAXS,this.n+a.length);
+};
+Ring.prototype.tail=function(n){
+  n=Math.min(n,this.n);
+  var o=new Float32Array(n), s=(this.w-n+MAXS)%MAXS;
+  for(var i=0;i<n;i++) o[i]=this.d[(s+i)%MAXS];
+  return o;
+};
+Ring.prototype.clear=function(){ this.n=0; this.w=0; };
+var R1=new Ring(), R2=new Ring();
+
+/* ---------- Format-Helfer ---------- */
+function fmtT(s){
+  if(s==null||!isFinite(s)) return '–';
+  if(Math.abs(s)>=1) return s.toFixed(2)+' s';
+  if(Math.abs(s)>=1e-3) return (s*1e3).toFixed(2)+' ms';
+  return (s*1e6).toFixed(1)+' µs';
+}
+function fmtV(v){
+  if(v==null||!isFinite(v)) return '–';
+  if(Math.abs(v)>=1) return v.toFixed(2)+' V';
+  return (v*1e3).toFixed(0)+' mV';
+}
+function fmtF(f){
+  if(f==null||!isFinite(f)) return '–';
+  if(f>=1000) return (f/1000).toFixed(2)+' kHz';
+  return f.toFixed(1)+' Hz';
+}
+
+/* ---------- Referenz aus Karte / Bibliothek ---------- */
+function findKarte(id){
+  for(var i=0;i<KARTEN.length;i++) if(KARTEN[i].id===id) return KARTEN[i];
+  return null;
+}
+function kartenGen(id){
+  var k=findKarte(id); if(!k) return null;
+  var w=(k.gut&&k.gut[0]&&k.gut[0].spec)?k.gut[0].spec:null;
+  var tr=w&&w.tr&&w.tr[0];
+  if(!tr||!G[tr.g]) return null;
+  var Tdiv=OsziLogic.parseTdiv(w.tdiv)||OsziLogic.parseTdiv(k.setup&&k.setup.tdiv)||1e-3;
+  return {karte:k, f:G[tr.g](tr.o||{}), Tref:Tdiv*10,
+          yr:w.yr, yunit:w.yunit||'V',
+          vdivRef:OsziLogic.parseVdiv(w.vdiv)||((w.yr[1]-w.yr[0])/8)};
+}
+/* liefert {at:function(tSek)->Wert, T:Periode/Aufnahmedauer, unit, gen} oder null */
+function refSampler(){
+  if(LV.refSrc.indexOf('lib:')===0){
+    var rec=LIB.cache[LV.refSrc.slice(4)];
+    if(!rec) return null;
+    var T=rec.len*rec.dt;
+    return {T:T, unit:'V', gen:null,
+      at:function(t){ var x=((t%T)+T)%T; var i=Math.min(rec.len-1,Math.round(x/rec.dt)); return rec.ch1f[i]; }};
+  }
+  var g=kartenGen(LV.karteId); if(!g) return null;
+  return {T:g.Tref, unit:g.yunit, gen:g,
+    at:function(t){ var tn=((t/g.Tref)%1+1)%1; return g.f(tn); }};
+}
+
+/* ---------- Frame-Eingang ---------- */
+function onFrame(h,a1,a2){
+  if(LV.playback) return;
+  if(!LV.running && !LV.singleArm) return;
+  if(h.dt) LV.dt=h.dt;
+  if(h.probe) LV.probe=h.probe;
+  var p1=(LV.probe[0]||1), p2=(LV.probe[1]||1), i;
+  if(a1&&a1.length){ if(p1!==1){ for(i=0;i<a1.length;i++) a1[i]*=p1; } R1.push(a1); }
+  if(a2&&a2.length){ if(p2!==1){ for(i=0;i<a2.length;i++) a2[i]*=p2; } R2.push(a2); }
+  if(LV.singleArm){ LV.singleArm=false; LV.running=false; updRunBtns(); }
+}
+
+/* ---------- WebSocket-Client ---------- */
+var reconnT=null;
+function send(o){
+  if(LV.ws && LV.ws.readyState===1){ try{ LV.ws.send(JSON.stringify(o)); }catch(e){} }
+}
+function sendAll(){
+  send({cmd:'channel',ch:1,on:LV.chOn[0],vdiv:LV.vdiv[0],coupling:LV.coup[0],probe:LV.probeUi[0]});
+  send({cmd:'channel',ch:2,on:LV.chOn[1],vdiv:LV.vdiv[1],coupling:LV.coup[1],probe:LV.probeUi[1]});
+  send({cmd:'timebase',secdiv:LV.secdiv});
+  send({cmd:'trigger',ch:LV.trig.ch,edge:LV.trig.edge==='r'?'rise':'fall',level:LV.trig.level});
+}
+function devTxt(){ return 'Bridge: '+LV.devStatus; }
+function setStat(txt,cls){
+  var el=$('lv-stat'); if(!el) return;
+  el.textContent=txt;
+  var d=$('lv-dot'); if(d) d.className='lv-dot '+(cls||'');
+}
+function parseBin(buf){
+  try{
+    var dv=new DataView(buf);
+    if(buf.byteLength<8 || dv.getUint8(0)!==0x4F || dv.getUint8(1)!==0x53) return;
+    var hl=dv.getUint32(4,true);
+    var htxt = TD ? TD.decode(new Uint8Array(buf,8,hl)) : '';
+    if(!htxt){ var u=new Uint8Array(buf,8,hl),s=''; for(var i=0;i<u.length;i++) s+=String.fromCharCode(u[i]); htxt=s; }
+    var head=JSON.parse(htxt);
+    var off=8+hl;
+    var a1=head.n1?new Float32Array(buf.slice(off,off+head.n1*4)):null; off+=head.n1*4;
+    var a2=head.n2?new Float32Array(buf.slice(off,off+head.n2*4)):null;
+    onFrame(head,a1,a2);
+  }catch(e){}
+}
+function connect(url){
+  LV.wantConn=true;
+  if(LV.mock) LV.mock.stop();
+  if(LV.ws){ try{LV.ws.close();}catch(e){} LV.ws=null; }
+  clearTimeout(reconnT);
+  setStat('verbindet …','warn');
+  var ws;
+  try{ ws=new WebSocket(url); }catch(e){ setStat('URL ungültig','bad'); LV.wantConn=false; return; }
+  ws.binaryType='arraybuffer';
+  ws.onopen=function(){ LV.connected=true; setStat(devTxt(),'ok'); sendAll(); };
+  ws.onclose=function(){
+    LV.connected=false;
+    if(LV.wantConn){ setStat('getrennt – neuer Versuch …','bad');
+      reconnT=setTimeout(function(){ if(LV.wantConn) connect(url); },2000); }
+    else setStat('getrennt','');
+  };
+  ws.onerror=function(){};
+  ws.onmessage=function(ev){
+    if(ev.data instanceof ArrayBuffer){ parseBin(ev.data); return; }
+    var m; try{ m=JSON.parse(ev.data); }catch(e){ return; }
+    if(m.cmd==='frame'){
+      onFrame(m, (m.ch1&&m.ch1.length)?Float32Array.from(m.ch1):null,
+                 (m.ch2&&m.ch2.length)?Float32Array.from(m.ch2):null);
+    }else if(m.cmd==='status'){
+      LV.devStatus=m.device;
+      if(LV.connected) setStat(devTxt(), m.device==='verbunden'?'ok':'warn');
+    }else if(m.cmd==='ping'){ send({cmd:'pong',t:m.t}); }
+  };
+  LV.ws=ws;
+}
+function disconnect(){
+  LV.wantConn=false; clearTimeout(reconnT);
+  if(LV.ws){ try{LV.ws.close();}catch(e){} LV.ws=null; }
+  LV.connected=false; setStat('getrennt','');
+}
+
+/* ---------- Mock: Kartengeneratoren als Live-Signal ---------- */
+function MockSock(){
+  var self=this; this.timer=null; this.phase=0;
+  this.start=function(){
+    disconnect();
+    LV.mock=self;
+    setStat('Demo-Modus (Mock) – Signal aus Kartengenerator','ok');
+    this.timer=setInterval(function(){
+      var g=kartenGen(LV.karteId);
+      var Tref=g?g.Tref:1e-2;
+      var dt=Tref/2000, n=1024, yr=g?g.yr:[-1,1];
+      var amp=(yr[1]-yr[0])||1;
+      var a1=new Float32Array(n), a2=null, i;
+      for(i=0;i<n;i++){
+        var tn=(self.phase+i*dt/Tref)%1;
+        var v=g?g.f(tn):Math.sin(tn*2*Math.PI);
+        var s=Math.sin((i+self.phase*7919)*12.9898)*43758.5453;
+        v += (s-Math.floor(s)-0.5)*0.03*amp;      /* ~1,5 % Rauschen */
+        a1[i]=v;
+      }
+      if(LV.chOn[1]){
+        a2=new Float32Array(n);
+        var sh=Math.round(n*0.12);
+        for(i=0;i<n;i++) a2[i]=a1[(i+sh)%n]*0.85;
+      }
+      self.phase=(self.phase+n*dt/Tref)%1;
+      onFrame({dt:dt,probe:[1,1]},a1,a2);
+    },50);
+  };
+  this.stop=function(){ clearInterval(this.timer); if(LV.mock===self) LV.mock=null; };
+}
+
+/* ---------- Kanal-Transform (Invert, Zangenfaktor) ---------- */
+function chMul(i){ var m=LV.inv[i]?-1:1; if(LV.clamp[i]>0) m/=LV.clamp[i]; return m; }
+function chUnit(i){ return LV.clamp[i]>0?'A':'V'; }
+function xform(arr,i){
+  if(!arr) return arr;
+  var m=chMul(i); if(m===1) return arr;
+  var o=new Float32Array(arr.length);
+  for(var k=0;k<arr.length;k++) o[k]=arr[k]*m;
+  return o;
+}
+function fmtVal(v,u){
+  if(v==null||!isFinite(v)) return '–';
+  if(u==='A'){ return Math.abs(v)>=1 ? v.toFixed(2)+' A' : (v*1e3).toFixed(0)+' mA'; }
+  return fmtV(v);
+}
+
+/* ---------- Fensterauswahl mit Anzeige-Trigger ---------- */
+function windowSlices(){
+  var T=LV.secdiv*10;
+  var nWin=Math.max(16,Math.round(T/LV.dt));
+  var src=(LV.trig.ch===2)?R2:R1;
+  var other=(LV.trig.ch===2)?R1:R2;
+  var need=Math.min(MAXS, nWin*2);
+  var a=src.tail(need);
+  if(a.length<nWin){
+    return {t1:(LV.trig.ch===2)?other.tail(nWin):a, t2:(LV.trig.ch===2)?a:other.tail(nWin), nWin:nWin, T:T};
+  }
+  var start=a.length-nWin;
+  if(LV.trig.disp){
+    var pre=Math.floor(nWin*(LV.trigPos||0.2)), post=nWin-pre, lvl=LV.trig.level, rising=(LV.trig.edge==='r');
+    for(var i=a.length-post-1;i>=pre;i--){
+      var c=rising ? (a[i-1]<lvl&&a[i]>=lvl) : (a[i-1]>lvl&&a[i]<=lvl);
+      if(c){ start=i-pre; break; }
+    }
+  }
+  var s1,s2;
+  var bs=src===R1?start:start;
+  var w1=R1.tail(Math.min(R1.n,a.length)); /* gleiche Zeitachse: beide über need-Fenster */
+  var w2=R2.tail(Math.min(R2.n,a.length));
+  s1=w1.length>=start+nWin ? w1.subarray(start,start+nWin) : w1.subarray(Math.max(0,w1.length-nWin));
+  s2=w2.length>=start+nWin ? w2.subarray(start,start+nWin) : w2.subarray(Math.max(0,w2.length-nWin));
+  return {t1:s1, t2:s2, nWin:nWin, T:T};
+}
+
+/* ---------- Ausrichtung + Metriken (gedrosselt) ---------- */
+function doAlign(win){
+  var ref=refSampler();
+  if(!ref || !win.t1.length){ LV.align.valid=false; LV.align.score=null; return; }
+  var N=512;
+  var a=new Float32Array(N), b=new Float32Array(N), i;
+  var base=xform(win.t1,0);
+  var dec=OsziLogic.minMaxDecimate(base,0,base.length,N);
+  for(i=0;i<N;i++) a[i]=(dec[i*2]+dec[i*2+1])/2;
+  for(i=0;i<N;i++) b[i]=ref.at((i/N)*win.T);
+  var r=OsziLogic.normXCorr(a,b,Math.floor(N/2));
+  var pa=OsziLogic.peakToPeak(a), pb=OsziLogic.peakToPeak(b);
+  var k=(pb.pp>1e-9)?(pa.pp/pb.pp):1;
+  var off=((pa.max+pa.min)/2)-k*((pb.max+pb.min)/2);
+  LV.align={lag:r.lag,score:r.score,k:k,off:off,valid:true,N:N};
+  var m=$('lv-match');
+  if(m){
+    var pct=Math.round(r.score*100);
+    m.textContent=pct+' %';
+    m.className='lv-badge '+(pct>=85?'ok':(pct>=60?'warn':'bad'));
+  }
+}
+function metricRow(name, mv, sv, tol, fmt){
+  var w=OsziLogic.within(mv,sv,tol);
+  var cls=w===null?'':(w?'m-ok':'m-bad');
+  return '<tr><td>'+name+'</td><td class="'+cls+'">'+fmt(mv)+'</td><td>'+fmt(sv)+'</td><td>±'+tol+' %</td></tr>';
+}
+function doMetrics(win){
+  var box=$('lv-metrics'); if(!box) return;
+  var ref=refSampler();
+  if(!ref||!win.t1.length){ box.innerHTML='<tr><td colspan="4">Karte wählen und Signal anlegen.</td></tr>'; return; }
+  var live=xform(win.t1,0), dt=LV.dt;
+  var pl=OsziLogic.peakToPeak(live);
+  if(live.length>8192){
+    var st=Math.ceil(live.length/8192), tmp=new Float32Array(Math.floor(live.length/st));
+    for(var i=0;i<tmp.length;i++) tmp[i]=live[i*st];
+    live=tmp; dt=dt*st;
+  }
+  var NR=1024, rArr=new Float32Array(NR), dtr=ref.T/NR;
+  for(var j=0;j<NR;j++) rArr[j]=ref.at(j*dtr);
+  var html='';
+  html+=metricRow('Frequenz', OsziLogic.measureFreq(live,dt), OsziLogic.measureFreq(rArr,dtr), LV.tolT, fmtF);
+  html+=metricRow('Duty', OsziLogic.measureDuty(live), OsziLogic.measureDuty(rArr), LV.tolT,
+        function(v){return v==null?'–':(v*100).toFixed(0)+' %';});
+  html+=metricRow('Anstieg 10–90 %', OsziLogic.measureRise(live,dt), OsziLogic.measureRise(rArr,dtr), LV.tolT, fmtT);
+  var pr=OsziLogic.peakToPeak(rArr);
+  var ppw=(ref.unit==='V'&&!LV.refScale&&LV.clamp[0]===0)?OsziLogic.within(pl.pp,pr.pp,LV.tolA):null;
+  html+='<tr><td>Spitze–Spitze</td><td class="'+(ppw===null?'':(ppw?'m-ok':'m-bad'))+'">'+fmtVal(pl.pp,chUnit(0))+
+        '</td><td>'+pr.pp.toFixed(2)+' '+ref.unit+'</td><td>±'+LV.tolA+' %</td></tr>';
+  box.innerHTML=html;
+  var mline=$('lv-meas');
+  if(mline){
+    var chTxt=function(idx,arrRaw){
+      if(!LV.chOn[idx]||!arrRaw||!arrRaw.length) return '';
+      var a=xform(arrRaw,idx), p=OsziLogic.peakToPeak(a), u=chUnit(idx);
+      return 'CH'+(idx+1)+': Vpp '+fmtVal(p.pp,u)+' · Min '+fmtVal(p.min,u)+' · Max '+fmtVal(p.max,u)+
+             ' · Ø '+fmtVal(OsziLogic.mean(a),u)+' · RMS '+fmtVal(OsziLogic.rms(a),u);
+    };
+    var mt=[chTxt(0,win.t1),chTxt(1,win.t2)].filter(Boolean).join('    |    ');
+    mline.textContent=mt;
+  }
+}
+
+/* ---------- Canvas-Rendering ---------- */
+var CV=null, CTX=null, PHIST=[];
+function ensureCanvas(){
+  if(!CV){ CV=$('lv-canvas'); if(!CV) return false; CTX=CV.getContext('2d'); }
+  var dpr=window.devicePixelRatio||1;
+  var w=Math.floor(CV.clientWidth*dpr), h=Math.floor(CV.clientHeight*dpr);
+  if(w>0&&h>0&&(CV.width!==w||CV.height!==h)){ CV.width=w; CV.height=h; }
+  return CV.width>0;
+}
+function liveActive(){
+  var s=$('pg-live');
+  return !!s && s.classList.contains('act') && document.visibilityState==='visible';
+}
+function draw(){
+  requestAnimationFrame(draw);
+  if(!liveActive() || !ensureCanvas()) return;
+  var w=CV.width, h=CV.height, dpr=window.devicePixelRatio||1;
+  var ctx=CTX;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#0c1118'; ctx.fillRect(0,0,w,h);
+  /* Raster 10x8 */
+  ctx.strokeStyle='#16202b'; ctx.lineWidth=1; ctx.beginPath();
+  var i;
+  for(i=1;i<10;i++){ var gx=Math.round(i*w/10)+0.5; ctx.moveTo(gx,0); ctx.lineTo(gx,h); }
+  for(i=1;i<8;i++){ var gy=Math.round(i*h/8)+0.5; ctx.moveTo(0,gy); ctx.lineTo(w,gy); }
+  ctx.stroke();
+  ctx.strokeStyle='#1f2c3a'; ctx.beginPath();
+  ctx.moveTo(0,Math.round(h/2)+0.5); ctx.lineTo(w,Math.round(h/2)+0.5);
+  ctx.moveTo(Math.round(w/2)+0.5,0); ctx.lineTo(Math.round(w/2)+0.5,h); ctx.stroke();
+
+  var win=windowSlices();
+  var cols=Math.max(64,Math.floor(w/dpr));
+  function yOf(v,vd,pos){ return h/2 - (pos||0)*(h/8) - (v/vd)*(h/8); }
+  function drawDec(d,vd,pos,col,alpha){
+    ctx.globalAlpha=alpha; ctx.strokeStyle=col; ctx.lineWidth=1.6*dpr; ctx.beginPath();
+    for(var c=0;c<cols;c++){
+      var x=(c+0.5)*w/cols;
+      var y1=yOf(d[c*2],vd,pos), y2=yOf(d[c*2+1],vd,pos);
+      ctx.moveTo(x,y1); ctx.lineTo(x,Math.abs(y2-y1)<1?y1+1:y2);
+    }
+    ctx.stroke(); ctx.globalAlpha=1;
+  }
+  var a1=xform(win.t1,0), a2=xform(win.t2,1);
+  var d1=(LV.chOn[0]&&a1&&a1.length)?OsziLogic.minMaxDecimate(a1,0,a1.length,cols):null;
+  var d2=(LV.chOn[1]&&a2&&a2.length)?OsziLogic.minMaxDecimate(a2,0,a2.length,cols):null;
+  if(LV.persist>0){
+    if(LV.running && !LV.playback && (d1||d2)){
+      PHIST.push({d1:d1?new Float32Array(d1):null,d2:d2?new Float32Array(d2):null,
+                  v1:LV.vdiv[0],v2:LV.vdiv[1],p1:LV.pos[0],p2:LV.pos[1]});
+      while(PHIST.length>LV.persist) PHIST.shift();
+    }
+    for(var hi=0;hi<PHIST.length;hi++){
+      var Hh=PHIST[hi];
+      if(Hh.d1&&Hh.d1.length===cols*2) drawDec(Hh.d1,Hh.v1,Hh.p1,'#ffd24a',0.10);
+      if(Hh.d2&&Hh.d2.length===cols*2) drawDec(Hh.d2,Hh.v2,Hh.p2,'#4fd2ff',0.10);
+    }
+  } else if(PHIST.length) PHIST.length=0;
+  var now=performance.now();
+  if(now-LV.lastAlign>600){ LV.lastAlign=now; doAlign(win); }
+  if(now-LV.lastMet>600){ LV.lastMet=now; doMetrics(win); }
+
+  /* Referenz-Overlay + Toleranzband */
+  var ref=LV.overlay?refSampler():null;
+  if(ref){
+    var lagT=(LV.align.valid?LV.align.lag:0)*(win.T/(LV.align.N||512));
+    var g=ref.gen;
+    var useScale=LV.refScale&&LV.align.valid;
+    function rv(x){
+      var v=ref.at((x/cols)*win.T + lagT);
+      if(useScale) return LV.align.off+LV.align.k*v;
+      if(g) return ((v-(g.yr[0]+g.yr[1])/2)/g.vdivRef)*LV.vdiv[0];
+      return v;
+    }
+    var band=[];
+    var ppB=0;
+    if(useScale){ ppB=LV.align.k; }
+    /* Band: ±tolA % der (skalierten) Referenzamplitude */
+    var refPP=0;
+    (function(){ var mn=Infinity,mx=-Infinity; for(var x=0;x<cols;x++){var v=rv(x); if(v<mn)mn=v; if(v>mx)mx=v; band.push(v);} refPP=mx-mn; })();
+    var half=(LV.tolA/100)*refPP;
+    ctx.globalAlpha=0.13; ctx.fillStyle='#3ecf8e'; ctx.beginPath();
+    for(var x=0;x<cols;x++){ var X=(x+0.5)*w/cols, Y=yOf(band[x]+half,LV.vdiv[0],LV.pos[0]); if(x===0)ctx.moveTo(X,Y); else ctx.lineTo(X,Y); }
+    for(x=cols-1;x>=0;x--){ ctx.lineTo((x+0.5)*w/cols, yOf(band[x]-half,LV.vdiv[0],LV.pos[0])); }
+    ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+    ctx.strokeStyle='rgba(62,207,142,0.9)'; ctx.lineWidth=1.4*dpr; ctx.setLineDash([6*dpr,4*dpr]); ctx.beginPath();
+    for(x=0;x<cols;x++){ var Xx=(x+0.5)*w/cols, Yy=yOf(band[x],LV.vdiv[0],LV.pos[0]); if(x===0)ctx.moveTo(Xx,Yy); else ctx.lineTo(Xx,Yy); }
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+
+  if(d1) drawDec(d1,LV.vdiv[0],LV.pos[0],'#ffd24a',1);
+  if(d2) drawDec(d2,LV.vdiv[1],LV.pos[1],'#4fd2ff',1);
+
+  /* Triggerpegel-Linie */
+  if(LV.trig.disp){
+    ctx.strokeStyle='#9aa7b5'; ctx.setLineDash([3*dpr,4*dpr]); ctx.beginPath();
+    var ti=LV.trig.ch-1;
+    var ty=yOf(LV.trig.level*chMul(ti),LV.vdiv[ti],LV.pos[ti]);
+    ctx.moveTo(0,ty); ctx.lineTo(w,ty); ctx.stroke(); ctx.setLineDash([]);
+  }
+  /* Cursor */
+  if(LV.cursor.on){
+    ctx.strokeStyle='#e0a4ff'; ctx.lineWidth=1*dpr;
+    var xa=LV.cursor.a*w, xb=LV.cursor.b*w;
+    ctx.beginPath(); ctx.moveTo(xa,0); ctx.lineTo(xa,h); ctx.moveTo(xb,0); ctx.lineTo(xb,h); ctx.stroke();
+    var dT=Math.abs(LV.cursor.b-LV.cursor.a)*win.T;
+    var va=sampleAt(win.t1,LV.cursor.a), vb=sampleAt(win.t1,LV.cursor.b);
+    var ro=$('lv-cursorout');
+    if(ro) ro.textContent='Δt='+fmtT(dT)+(dT>0?' ('+fmtF(1/dT)+')':'')+' · Δ(CH1)='+fmtVal(Math.abs(((vb||0)-(va||0))*chMul(0)),chUnit(0));
+  }
+  /* Statuszeile im Bild */
+  ctx.fillStyle='#8ca0b6'; ctx.font=(11*dpr)+'px ui-monospace,monospace';
+  var st='CH1 '+fmtVal(LV.vdiv[0],chUnit(0))+'/div';
+  if(LV.chOn[1]) st+='  ·  CH2 '+fmtVal(LV.vdiv[1],chUnit(1))+'/div';
+  st+='  ·  '+fmtT(LV.secdiv)+'/div';
+  if(LV.playback) st+='  ·  WIEDERGABE: '+LV.playback;
+  else if(!LV.running) st+='  ·  STOP';
+  ctx.fillText(st,8*dpr,h-8*dpr);
+}
+function sampleAt(arr,frac){
+  if(!arr||!arr.length) return null;
+  return arr[Math.min(arr.length-1,Math.max(0,Math.round(frac*(arr.length-1))))];
+}
+
+/* ---------- Exporte ---------- */
+function exportPNG(){
+  if(!CV) return;
+  CV.toBlob(function(b){
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(b); a.download='oszi-'+Date.now()+'.png';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
+  });
+}
+function exportCSV(){
+  var win=windowSlices();
+  var n=Math.max(win.t1?win.t1.length:0, win.t2?win.t2.length:0);
+  if(!n){ alert('Keine Daten im Fenster.'); return; }
+  var st=Math.max(1,Math.ceil(n/20000));
+  var rows=['t_s;ch1_V;ch2_V'];
+  for(var i=0;i<n;i+=st){
+    rows.push((i*LV.dt).toPrecision(7)+';'+
+      (win.t1&&i<win.t1.length?win.t1[i].toPrecision(6):'')+';'+
+      (win.t2&&i<win.t2.length?win.t2[i].toPrecision(6):''));
+  }
+  var b=new Blob([rows.join('\n')],{type:'text/csv'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(b); a.download='oszi-'+Date.now()+'.csv';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
+}
+
+/* ---------- Bibliothek (IndexedDB) ---------- */
+var LIB={
+  db:null, cache:{},
+  open:function(cb){
+    var req=indexedDB.open('oszi-live',1);
+    req.onupgradeneeded=function(e){
+      var db=e.target.result;
+      var st=db.createObjectStore('aufnahmen',{keyPath:'id'});
+      st.createIndex('refFor','refFor',{unique:false});
+    };
+    req.onsuccess=function(e){ LIB.db=e.target.result; LIB.reload(cb); };
+    req.onerror=function(){ console.warn('IndexedDB nicht verfügbar'); if(cb)cb(); };
+  },
+  reload:function(cb){
+    LIB.cache={};
+    if(!LIB.db){ if(cb)cb(); return; }
+    var tx=LIB.db.transaction('aufnahmen','readonly').objectStore('aufnahmen').getAll();
+    tx.onsuccess=function(){
+      (tx.result||[]).forEach(function(r){
+        LIB.cache[r.id]={ id:r.id, name:r.name, karte:r.karte, refFor:r.refFor,
+          meta:r.meta, dt:r.dt, len:r.len1, ch1f:new Float32Array(r.ch1),
+          ch2f:r.ch2?new Float32Array(r.ch2):null, len2:r.len2||0 };
+      });
+      if(cb)cb();
+    };
+  },
+  put:function(rec,cb){
+    if(!LIB.db){ alert('Speicher nicht verfügbar'); return; }
+    var tx=LIB.db.transaction('aufnahmen','readwrite');
+    tx.objectStore('aufnahmen').put(rec);
+    tx.oncomplete=function(){ LIB.reload(cb); };
+  },
+  del:function(id,cb){
+    if(!LIB.db) return;
+    var tx=LIB.db.transaction('aufnahmen','readwrite');
+    tx.objectStore('aufnahmen').delete(id);
+    tx.oncomplete=function(){ LIB.reload(cb); };
+  }
+};
+function abToB64(buf){
+  var u=new Uint8Array(buf), s='';
+  for(var i=0;i<u.length;i+=0x8000) s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));
+  return btoa(s);
+}
+function b64ToAb(b){
+  var s=atob(b), u=new Uint8Array(s.length);
+  for(var i=0;i<s.length;i++) u[i]=s.charCodeAt(i);
+  return u.buffer;
+}
+function recToJson(r){
+  return { id:r.id, name:r.name, karte:r.karte, refFor:r.refFor, meta:r.meta,
+    dt:r.dt, probe:r.probe, len1:r.len1, len2:r.len2,
+    ch1:abToB64(r.ch1), ch2:r.ch2?abToB64(r.ch2):null, created:r.created };
+}
+function jsonToRec(j){
+  return { id:j.id, name:j.name, karte:j.karte, refFor:j.refFor||null, meta:j.meta||{},
+    dt:j.dt, probe:j.probe||[1,1], len1:j.len1, len2:j.len2||0,
+    ch1:b64ToAb(j.ch1), ch2:j.ch2?b64ToAb(j.ch2):null, created:j.created };
+}
+function download(name,text){
+  var b=new Blob([text],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(b); a.download=name;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
+}
+function saveRecording(meta){
+  var n=Math.min(R1.n,200000);
+  if(n<32){ alert('Zu wenig Daten aufgezeichnet.'); return; }
+  var a1=R1.tail(n), a2=(R2.n>=32)?R2.tail(Math.min(R2.n,200000)):null;
+  var k=findKarte(LV.karteId);
+  var rec={ id:'a'+Date.now(), name:(k?k.name:'Messung')+' · '+(meta.datum||new Date().toISOString().slice(0,10)),
+    karte:LV.karteId||null, refFor:null, meta:meta,
+    dt:LV.dt, probe:LV.probe.slice(), len1:a1.length, len2:a2?a2.length:0,
+    ch1:a1.buffer.slice(a1.byteOffset,a1.byteOffset+a1.byteLength),
+    ch2:a2?a2.buffer.slice(a2.byteOffset,a2.byteOffset+a2.byteLength):null,
+    created:Date.now() };
+  LIB.put(rec,function(){ renderLib(); refreshRefSrc(); });
+}
+function loadRecording(id){
+  var r=LIB.cache[id]; if(!r) return;
+  R1.clear(); R2.clear();
+  R1.push(r.ch1f); if(r.ch2f) R2.push(r.ch2f);
+  LV.dt=r.dt; LV.running=false; LV.playback=r.name; updRunBtns();
+  var pb=$('lv-playbar'); if(pb){ pb.style.display='flex'; $('lv-playname').textContent=r.name; }
+}
+function exitPlayback(){
+  LV.playback=null; R1.clear(); R2.clear(); LV.running=true; updRunBtns();
+  var pb=$('lv-playbar'); if(pb) pb.style.display='none';
+}
+function renderLib(){
+  var box=$('lv-liblist'); if(!box) return;
+  var ids=Object.keys(LIB.cache);
+  if(!ids.length){ box.innerHTML='<p class="note">Noch keine Aufnahmen gespeichert.</p>'; return; }
+  var html='';
+  ids.sort().reverse().forEach(function(id){
+    var r=LIB.cache[id], m=r.meta||{};
+    html+='<div class="lv-rec"><div class="lv-recname">'+r.name+
+      (r.refFor?' <span class="badge b-d1">REF: '+r.refFor+'</span>':'')+'</div>'+
+      '<div class="lv-recmeta">'+[m.fahrzeug,m.motor,m.system,m.messpunkt,m.bedingung].filter(Boolean).join(' · ')+
+      (m.notiz?('<br>'+m.notiz):'')+'</div>'+
+      '<div class="lvrow">'+
+      '<button class="ibtn" data-lib="load" data-id="'+id+'">Laden</button>'+
+      '<button class="ibtn" data-lib="ref" data-id="'+id+'">Als Referenz der Karte</button>'+
+      '<button class="ibtn" data-lib="exp" data-id="'+id+'">Export</button>'+
+      '<button class="ibtn" data-lib="del" data-id="'+id+'">Löschen</button>'+
+      '</div></div>';
+  });
+  box.innerHTML=html;
+}
+function refreshRefSrc(){
+  var sel=$('lv-refsrc'); if(!sel) return;
+  var cur=LV.refSrc;
+  var html='<option value="gen">Karten-Generator (Soll)</option>';
+  Object.keys(LIB.cache).forEach(function(id){
+    var r=LIB.cache[id];
+    if(r.refFor && r.refFor===LV.karteId)
+      html+='<option value="lib:'+id+'">★ '+r.name+'</option>';
+  });
+  sel.innerHTML=html;
+  sel.value = (cur.indexOf('lib:')===0 && sel.querySelector('option[value="'+cur+'"]')) ? cur : 'gen';
+  LV.refSrc=sel.value;
+}
+
+/* ---------- Toleranzen pro Karte ---------- */
+function loadTol(){
+  var d={a:15,t:10};
+  try{ var s=localStorage.getItem('lvtol:'+LV.karteId); if(s){ var j=JSON.parse(s); d.a=j.a||d.a; d.t=j.t||d.t; } }catch(e){}
+  LV.tolA=d.a; LV.tolT=d.t;
+  if($('lv-tola')) $('lv-tola').value=d.a;
+  if($('lv-tolt')) $('lv-tolt').value=d.t;
+}
+function saveTol(){
+  try{ localStorage.setItem('lvtol:'+LV.karteId, JSON.stringify({a:LV.tolA,t:LV.tolT})); }catch(e){}
+}
+
+/* ---------- UI ---------- */
+function updRunBtns(){
+  var r=$('lv-run'), s=$('lv-stop');
+  if(r) r.classList.toggle('on',LV.running);
+  if(s) s.classList.toggle('on',!LV.running&&!LV.playback);
+}
+var VDIVS=[0.01,0.02,0.05,0.1,0.2,0.5,1,2,5,10,20,50];
+var TDIVS=[1e-6,2e-6,5e-6,1e-5,2e-5,5e-5,1e-4,2e-4,5e-4,1e-3,2e-3,5e-3,1e-2,2e-2,5e-2,0.1,0.2,0.5,1,2];
+function fillSel(sel,vals,fmt,cur){
+  sel.innerHTML=vals.map(function(v){return '<option value="'+v+'"'+(v===cur?' selected':'')+'>'+fmt(v)+'</option>';}).join('');
+}
+function nearest(vals,x){
+  var b=vals[0];
+  for(var i=1;i<vals.length;i++) if(Math.abs(vals[i]-x)<Math.abs(b-x)) b=vals[i];
+  return b;
+}
+function initLive(){
+  if(!$('pg-live')) return;
+  /* Karten-Auswahl */
+  var ks=$('lv-karte');
+  ks.innerHTML='<option value="">– Karte wählen –</option>'+KARTEN.map(function(k){
+    return '<option value="'+k.id+'">'+k.name+'</option>';
+  }).join('');
+  ks.addEventListener('change',function(){
+    LV.karteId=this.value; loadTol(); refreshRefSrc();
+    LV.align.valid=false; LV.lastAlign=0; LV.lastMet=0;
+    if(this.value && $('lv-autosetup').checked) applyKartenSetup();
+  });
+  /* Kanäle */
+  [1,2].forEach(function(ch){
+    var i=ch-1;
+    $('lv-ch'+ch+'on').addEventListener('change',function(){ LV.chOn[i]=this.checked;
+      send({cmd:'channel',ch:ch,on:this.checked}); });
+    var vs=$('lv-ch'+ch+'v'); fillSel(vs,VDIVS,function(v){return fmtV(v)+'/div';},LV.vdiv[i]);
+    vs.addEventListener('change',function(){ LV.vdiv[i]=parseFloat(this.value);
+      send({cmd:'channel',ch:ch,vdiv:LV.vdiv[i]}); });
+    $('lv-ch'+ch+'k').addEventListener('change',function(){ LV.coup[i]=this.value;
+      send({cmd:'channel',ch:ch,coupling:this.value}); });
+    $('lv-ch'+ch+'p').addEventListener('change',function(){ LV.probeUi[i]=parseInt(this.value,10);
+      send({cmd:'channel',ch:ch,probe:LV.probeUi[i]}); });
+  });
+  $('lv-ch1on').checked=true; $('lv-ch2on').checked=false;
+  [1,2].forEach(function(ch){
+    var i=ch-1;
+    $('lv-ch'+ch+'pos').addEventListener('change',function(){ LV.pos[i]=parseFloat(this.value)||0; });
+    $('lv-ch'+ch+'inv').addEventListener('change',function(){ LV.inv[i]=this.checked; });
+    $('lv-ch'+ch+'clamp').addEventListener('change',function(){ LV.clamp[i]=parseFloat(this.value)||0; });
+  });
+  $('lv-trigpos').addEventListener('change',function(){ LV.trigPos=parseFloat(this.value)||0.2; });
+  $('lv-persist').addEventListener('change',function(){ LV.persist=parseInt(this.value,10)||0; PHIST.length=0; });
+  $('lv-png').addEventListener('click',exportPNG);
+  $('lv-csv').addEventListener('click',exportCSV);
+  /* Zeitbasis */
+  var ts=$('lv-tdiv'); fillSel(ts,TDIVS,function(v){return fmtT(v)+'/div';},LV.secdiv);
+  ts.addEventListener('change',function(){ LV.secdiv=parseFloat(this.value);
+    send({cmd:'timebase',secdiv:LV.secdiv}); });
+  function applyKartenSetup(){
+    var k=findKarte(LV.karteId);
+    if(!k){ alert('Erst Karte wählen.'); return; }
+    var p=OsziLogic.parseSetup(k.setup||{});
+    var info=[];
+    LV.chOn[1]=p.ch2; $('lv-ch2on').checked=p.ch2;
+    if(p.vdiv!=null && !p.strom){
+      var v=nearest(VDIVS,p.vdiv);
+      LV.vdiv[0]=v; $('lv-ch1v').value=String(v);
+      if(p.ch2){ LV.vdiv[1]=v; $('lv-ch2v').value=String(v); }
+      info.push(fmtV(v)+'/div');
+    }
+    if(p.secdiv!=null){
+      LV.secdiv=nearest(TDIVS,p.secdiv); ts.value=String(LV.secdiv);
+      info.push(fmtT(LV.secdiv)+'/div');
+    }
+    if(p.coupling){
+      LV.coup[0]=p.coupling; $('lv-ch1k').value=p.coupling;
+      if(p.ch2){ LV.coup[1]=p.coupling; $('lv-ch2k').value=p.coupling; }
+      info.push(p.coupling);
+    }
+    if(p.probe){
+      LV.probeUi[0]=p.probe; $('lv-ch1p').value=String(p.probe);
+      if(p.ch2){ LV.probeUi[1]=p.probe; $('lv-ch2p').value=String(p.probe); }
+      info.push(p.probe+':1');
+    }
+    if(p.trigEdge){ LV.trig.edge=p.trigEdge; $('lv-trigedge').value=p.trigEdge; }
+    if(p.trigLevel!=null){ LV.trig.level=p.trigLevel; $('lv-triglvl').value=p.trigLevel; }
+    if(p.trigEdge||p.trigLevel!=null)
+      info.push('Trigger '+(LV.trig.edge==='r'?'\u2191':'\u2193')+
+        (p.trigLevel!=null?(' '+fmtV(p.trigLevel)):''));
+    sendAll();
+    var el=$('lv-setupinfo');
+    if(el){
+      var extra='';
+      if(p.strom) extra=' · <b>Stromzange nötig</b> – V/div manuell nach Zangenfaktor (z. B. 100 mV/A) wählen.';
+      if(p.trigMode==='single') extra+=' · Karte empfiehlt <b>Single</b>.';
+      el.style.display='block';
+      el.innerHTML='Setup aus Karte übernommen: '+(info.join(' · ')||'–')+extra;
+    }
+  }
+  $('lv-setup').addEventListener('click',applyKartenSetup);
+  var asChk=$('lv-autosetup');
+  try{ asChk.checked = localStorage.getItem('lv-autosetup')!=='0'; }catch(e){}
+  asChk.addEventListener('change',function(){
+    try{ localStorage.setItem('lv-autosetup',this.checked?'1':'0'); }catch(e){}
+  });
+  /* Trigger */
+  $('lv-trigch').addEventListener('change',function(){ LV.trig.ch=parseInt(this.value,10); sendTrig(); });
+  $('lv-trigedge').addEventListener('change',function(){ LV.trig.edge=this.value; sendTrig(); });
+  $('lv-triglvl').addEventListener('change',function(){ LV.trig.level=parseFloat(this.value)||0; sendTrig(); });
+  $('lv-trigdisp').addEventListener('change',function(){ LV.trig.disp=this.checked; });
+  function sendTrig(){ send({cmd:'trigger',ch:LV.trig.ch,edge:LV.trig.edge==='r'?'rise':'fall',level:LV.trig.level}); }
+  /* Run/Stop/Single */
+  $('lv-run').addEventListener('click',function(){ if(LV.playback)exitPlayback(); LV.running=true; updRunBtns(); send({cmd:'run'}); });
+  $('lv-stop').addEventListener('click',function(){ LV.running=false; updRunBtns(); send({cmd:'stop'}); });
+  $('lv-single').addEventListener('click',function(){ if(LV.playback)exitPlayback(); LV.singleArm=true; LV.running=true; updRunBtns(); send({cmd:'single'}); });
+  updRunBtns();
+  /* Verbindung */
+  $('lv-connect').addEventListener('click',function(){ connect($('lv-url').value.trim()||'ws://localhost:8765'); });
+  $('lv-disconnect').addEventListener('click',function(){ disconnect(); if(LV.mock)LV.mock.stop(); setStat('getrennt',''); });
+  $('lv-mock').addEventListener('click',function(){
+    if(LV.mock){ LV.mock.stop(); setStat('getrennt',''); this.textContent='Demo (Mock)'; }
+    else{ new MockSock().start(); this.textContent='Demo beenden'; }
+  });
+  /* Overlay / Toleranz */
+  $('lv-overlay').addEventListener('change',function(){ LV.overlay=this.checked; });
+  $('lv-refscale').addEventListener('change',function(){ LV.refScale=this.checked; });
+  $('lv-refsrc').addEventListener('change',function(){ LV.refSrc=this.value; LV.align.valid=false; LV.lastAlign=0; });
+  $('lv-tola').addEventListener('change',function(){ LV.tolA=parseFloat(this.value)||15; saveTol(); });
+  $('lv-tolt').addEventListener('change',function(){ LV.tolT=parseFloat(this.value)||10; saveTol(); });
+  /* Cursor */
+  $('lv-cursor').addEventListener('change',function(){ LV.cursor.on=this.checked;
+    $('lv-cursorout').style.display=this.checked?'block':'none'; });
+  var cv=$('lv-canvas');
+  cv.addEventListener('pointerdown',function(e){
+    if(!LV.cursor.on) return;
+    var r=cv.getBoundingClientRect(), fx=(e.clientX-r.left)/r.width;
+    LV.cursor.drag = Math.abs(fx-LV.cursor.a)<Math.abs(fx-LV.cursor.b)?1:2;
+    cv.setPointerCapture(e.pointerId);
+  });
+  cv.addEventListener('pointermove',function(e){
+    if(!LV.cursor.on||!LV.cursor.drag) return;
+    var r=cv.getBoundingClientRect(), fx=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width));
+    if(LV.cursor.drag===1) LV.cursor.a=fx; else LV.cursor.b=fx;
+  });
+  cv.addEventListener('pointerup',function(){ LV.cursor.drag=0; });
+  /* Bibliothek */
+  $('lv-rec').addEventListener('click',function(){ $('lv-dlg').style.display='flex'; });
+  $('lv-dlg-cancel').addEventListener('click',function(){ $('lv-dlg').style.display='none'; });
+  $('lv-dlg-save').addEventListener('click',function(){
+    saveRecording({ fahrzeug:$('lv-m-fzg').value, motor:$('lv-m-mot').value,
+      system:$('lv-m-sys').value, messpunkt:$('lv-m-mp').value,
+      bedingung:$('lv-m-bed').value, datum:$('lv-m-dat').value||new Date().toISOString().slice(0,10),
+      notiz:$('lv-m-not').value });
+    $('lv-dlg').style.display='none';
+  });
+  $('lv-expall').addEventListener('click',function(){
+    var all=Object.keys(LIB.cache).map(function(id){
+      var r=LIB.cache[id];
+      return recToJson({ id:r.id,name:r.name,karte:r.karte,refFor:r.refFor,meta:r.meta,
+        dt:r.dt,probe:[1,1],len1:r.len,len2:r.len2,
+        ch1:r.ch1f.buffer.slice(0), ch2:r.ch2f?r.ch2f.buffer.slice(0):null,created:0 });
+    });
+    download('oszi-bibliothek.json',JSON.stringify({version:1,aufnahmen:all}));
+  });
+  $('lv-import').addEventListener('change',function(){
+    var f=this.files&&this.files[0]; if(!f) return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      try{
+        var j=JSON.parse(rd.result);
+        var list=j.aufnahmen||[j];
+        var left=list.length;
+        list.forEach(function(x){ LIB.put(jsonToRec(x),function(){ if(--left<=0){ renderLib(); refreshRefSrc(); } }); });
+      }catch(e){ alert('Import fehlgeschlagen: '+e.message); }
+    };
+    rd.readAsText(f);
+    this.value='';
+  });
+  $('lv-liblist').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-lib]'); if(!b) return;
+    var id=b.getAttribute('data-id'), act=b.getAttribute('data-lib');
+    if(act==='load') loadRecording(id);
+    else if(act==='del'){ if(confirm('Aufnahme löschen?')) LIB.del(id,function(){ renderLib(); refreshRefSrc(); }); }
+    else if(act==='exp'){ var r=LIB.cache[id];
+      download(r.name.replace(/[^\wäöüß-]+/g,'_')+'.json',
+        JSON.stringify({version:1,aufnahmen:[recToJson({id:r.id,name:r.name,karte:r.karte,refFor:r.refFor,
+          meta:r.meta,dt:r.dt,probe:[1,1],len1:r.len,len2:r.len2,
+          ch1:r.ch1f.buffer.slice(0),ch2:r.ch2f?r.ch2f.buffer.slice(0):null,created:0})]})); }
+    else if(act==='ref'){
+      if(!LV.karteId){ alert('Erst Karte wählen.'); return; }
+      var rec=LIB.cache[id];
+      LIB.put({ id:rec.id,name:rec.name,karte:rec.karte,refFor:LV.karteId,meta:rec.meta,
+        dt:rec.dt,probe:[1,1],len1:rec.len,len2:rec.len2,
+        ch1:rec.ch1f.buffer.slice(0),ch2:rec.ch2f?rec.ch2f.buffer.slice(0):null,created:0 },
+        function(){ renderLib(); refreshRefSrc(); });
+    }
+  });
+  $('lv-playback-exit').addEventListener('click',exitPlayback);
+  /* Start */
+  LIB.open(function(){ renderLib(); refreshRefSrc(); });
+  setStat('getrennt','');
+  requestAnimationFrame(draw);
+}
+if(document.readyState!=='loading') initLive();
+else document.addEventListener('DOMContentLoaded',initLive);
+window.OsziLive={connect:connect,disconnect:disconnect,state:LV};
+})();
+
+</script>
+
 <script>
 (function(){
-  "use strict";
-  /* Service Worker nur über http(s) registrieren – als lokale Einzeldatei (file:) still überspringen */
-  if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
+  if ('serviceWorker' in navigator) {
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('sw.js').catch(function(){ /* offline/kein SW – App läuft trotzdem */ });
+      navigator.serviceWorker.register('./service-worker.js', { scope: './' }).then(function(reg){
+
+        /* Update-Banner: erscheint, sobald eine neue Version installiert ist und wartet */
+        function zeigeUpdateBanner(worker){
+          if (document.getElementById('updBanner')) return;
+          var b = document.createElement('div');
+          b.id = 'updBanner';
+          b.style.cssText = 'position:fixed;left:.8rem;right:.8rem;bottom:.8rem;z-index:200;'+
+            'background:#12372a;color:#3ecf8e;border:1px solid #3ecf8e;border-radius:10px;'+
+            'padding:.7rem .9rem;font:14px/1.4 system-ui;display:flex;align-items:center;'+
+            'gap:.6rem;box-shadow:0 4px 14px rgba(0,0,0,.55)';
+          var txt = document.createElement('span');
+          txt.style.flex = '1';
+          txt.textContent = 'Neue Version des Kompendiums verfügbar.';
+          var btn = document.createElement('button');
+          btn.textContent = 'Aktualisieren';
+          btn.style.cssText = 'background:#3ecf8e;color:#06221a;border:0;border-radius:8px;'+
+            'padding:.45rem .85rem;font-weight:700;font:inherit;cursor:pointer';
+          btn.addEventListener('click', function(){
+            btn.disabled = true;
+            btn.textContent = 'Lädt …';
+            worker.postMessage({ type: 'SKIP_WAITING' });
+          });
+          b.appendChild(txt); b.appendChild(btn);
+          document.body.appendChild(b);
+        }
+
+        /* Fall 1: Update wartet bereits (App wurde neu geöffnet) */
+        if (reg.waiting && navigator.serviceWorker.controller) zeigeUpdateBanner(reg.waiting);
+
+        /* Fall 2: Update wird gerade gefunden/installiert */
+        reg.addEventListener('updatefound', function(){
+          var nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', function(){
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) zeigeUpdateBanner(nw);
+          });
+        });
+
+        /* Aktiv nach Updates suchen: sofort und bei jeder Rückkehr in die App */
+        reg.update();
+        document.addEventListener('visibilitychange', function(){
+          if (document.visibilityState === 'visible') reg.update();
+        });
+      }).catch(function(err){
+        console.warn('Service Worker Registrierung fehlgeschlagen:', err);
+      });
+
+      /* Neuer SW hat übernommen -> genau einmal sauber neu laden */
+      var neuGeladen = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function(){
+        if (neuGeladen) return;
+        neuGeladen = true;
+        location.reload();
+      });
     });
   }
-  /* Installations-Angebot (Android/Desktop). iOS bietet kein beforeinstallprompt. */
-  var deferred=null;
-  function store(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
-  function read(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
-  function showBar(){ if(read('kfzoszi-install-dismiss')==='1') return; var b=document.getElementById('installbar'); if(b) b.hidden=false; }
-  function hideBar(){ var b=document.getElementById('installbar'); if(b) b.hidden=true; }
-  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferred=e; showBar(); });
-  window.addEventListener('appinstalled', function(){ hideBar(); deferred=null; store('kfzoszi-install-dismiss','1'); });
-  document.addEventListener('DOMContentLoaded', function(){
-    var bi=document.getElementById('btnInstall');
-    if(bi) bi.addEventListener('click', function(){
-      if(!deferred) return;
-      deferred.prompt();
-      deferred.userChoice.then(function(){ deferred=null; hideBar(); });
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferredPrompt = e;
+    const btn = document.createElement('button');
+    btn.textContent = '⬇ App installieren';
+    btn.className = 'ibtn';
+    btn.style.position = 'fixed';
+    btn.style.left = '.8rem';
+    btn.style.bottom = '.8rem';
+    btn.style.zIndex = '45';
+    btn.addEventListener('click', async function(){
+      btn.remove();
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
     });
-    var ic=document.getElementById('installClose');
-    if(ic) ic.addEventListener('click', function(){ hideBar(); store('kfzoszi-install-dismiss','1'); });
+    document.body.appendChild(btn);
   });
 })();
 </script>

@@ -13,10 +13,14 @@ Für Smartphone optimiert, ohne externe Abhängigkeiten.
 |---|---|
 | `index.html` | Die komplette App (HTML, CSS, JS, Signal-Engine, Daten) |
 | `manifest.webmanifest` | PWA-Manifest (Name, Icons, Standalone-Anzeige) |
-| `sw.js` | Service Worker – App-Shell-Cache, Offline-Betrieb |
+| `service-worker.js` | Service Worker – App-Shell-Cache, Offline-Betrieb (Update-Banner, **kein** `skipWaiting` im install) |
 | `_headers` | Cloudflare-Pages-HTTP-Header (Cache/MIME) |
 | `icons/` | App-Icons (192/512 + maskable) |
 | `tools/validate.js` | Datenvalidierung (headless, für CI) |
+| `bridge.py` | Live-Modus: WebSocket-Bridge zum OWON VDS1022I (lokal, **nicht** deployt) |
+| `tests/live-logic.test.js` | Node-Tests der Live-Logik (`OsziLogic`, 23 Tests) |
+| `start-live.cmd` / `stop-live.cmd` | Windows-Starter für Bridge + lokalen Server |
+| `build-dist.sh` | Baut das öffentliche `dist/` (Deploy-Whitelist, ohne Backend/Doku) |
 | `DEPLOY.md` | Deployment über Cloudflare Pages |
 | `multimeter/` | Zweite, eigenständige PWA „KFZ Multimeter Profi" (s. u.) |
 
@@ -63,5 +67,10 @@ node tools/validate.js
 
 Im Browser: `index.html?validate` öffnen und die Konsole prüfen.
 
-Nach Änderungen an gecachten Dateien die Cache-Version in `sw.js`
-(Konstante `CACHE`) erhöhen.
+Nach Änderungen an gecachten Dateien die Cache-Version in `service-worker.js`
+(Konstante `CACHE_NAME`, Schema `kfz-oszi-pwa-signed-…-vN`, aktuell **…-v10**)
+erhöhen **und** den Footer „Stand vN" in `index.html` anpassen — sonst
+erscheint bei installierten Clients kein „Update verfügbar"-Banner.
+
+Live-Modus (OWON VDS1022I) lokal testen: `bridge.py` starten (bzw.
+`start-live.cmd`), Logik-Tests via `node tests/live-logic.test.js`.
