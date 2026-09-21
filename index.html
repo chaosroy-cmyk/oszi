@@ -368,11 +368,15 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
 
   <section class="blk">
     <h3>Referenz-Vergleich</h3>
-    <div class="lvrow">
-      <select id="lv-karte" style="flex:1;min-width:200px"></select>
+    <div class="lvrow"><b style="color:var(--acc)">CH1-Referenz</b>
+      <select id="lv-karte" style="flex:1;min-width:170px"></select>
+      <select id="lv-refsrc"></select>
+    </div>
+    <div class="lvrow"><b style="color:var(--acc2)">CH2-Referenz</b>
+      <select id="lv-karte2" style="flex:1;min-width:170px"></select>
+      <select id="lv-refsrc2"></select>
     </div>
     <div class="lvrow">
-      <select id="lv-refsrc"></select>
       <label><input type="checkbox" id="lv-overlay" checked> Overlay</label>
       <label><input type="checkbox" id="lv-refscale" checked> auf Messung skalieren</label>
     </div>
@@ -4659,9 +4663,9 @@ var LV={
   chOn:[true,false], vdiv:[2,2], coup:['DC','DC'], probeUi:[1,1],
   secdiv:1e-3, trig:{ch:1,edge:'r',level:1.0,disp:true}, trigPos:0.2,
   pos:[0,0], inv:[false,false], clamp:[0,0], persist:0,
-  karteId:'', refSrc:'gen', overlay:true, refScale:true,
+  karteId:'', refSrc:'gen', karteId2:'', refSrc2:'gen', overlay:true, refScale:true,
   tolA:15, tolT:10,
-  align:{lag:0,score:null,k:1,off:0,valid:false}, lastAlign:0, lastMet:0,
+  align:{lag:0,score:null,k:1,off:0,valid:false}, align2:{lag:0,score:null,k:1,off:0,valid:false}, lastAlign:0, lastMet:0,
   cursor:{on:false,a:0.3,b:0.7,drag:0},
   mode:'yt', math:{op:'off'}, fft:{win:'hann', db:true}, measAll:false,
   playback:null
@@ -4715,15 +4719,16 @@ function kartenGen(id){
           vdivRef:OsziLogic.parseVdiv(w.vdiv)||((w.yr[1]-w.yr[0])/8)};
 }
 /* liefert {at:function(tSek)->Wert, T:Periode/Aufnahmedauer, unit, gen} oder null */
-function refSampler(){
-  if(LV.refSrc.indexOf('lib:')===0){
-    var rec=LIB.cache[LV.refSrc.slice(4)];
+function refSampler(ch){
+  var src=(ch===1)?LV.refSrc2:LV.refSrc, id=(ch===1)?LV.karteId2:LV.karteId;
+  if(src && src.indexOf('lib:')===0){
+    var rec=LIB.cache[src.slice(4)];
     if(!rec) return null;
     var T=rec.len*rec.dt;
     return {T:T, unit:'V', gen:null,
       at:function(t){ var x=((t%T)+T)%T; var i=Math.min(rec.len-1,Math.round(x/rec.dt)); return rec.ch1f[i]; }};
   }
-  var g=kartenGen(LV.karteId); if(!g) return null;
+  var g=kartenGen(id); if(!g) return null;
   return {T:g.Tref, unit:g.yunit, gen:g,
     at:function(t){ var tn=((t/g.Tref)%1+1)%1; return g.f(tn); }};
 }
@@ -4884,26 +4889,33 @@ function windowSlices(){
 }
 
 /* ---------- Ausrichtung + Metriken (gedrosselt) ---------- */
-function doAlign(win){
-  var ref=refSampler();
-  if(!ref || !win.t1.length){ LV.align.valid=false; LV.align.score=null; return; }
-  var N=512;
-  var a=new Float32Array(N), b=new Float32Array(N), i;
-  var base=xform(win.t1,0);
+function alignOne(ch, arrRaw, winT){
+  var ref=refSampler(ch);
+  var blank={lag:0,score:null,k:1,off:0,valid:false,N:512};
+  if(!ref || !arrRaw || !arrRaw.length){ if(ch===1) LV.align2=blank; else LV.align=blank; return null; }
+  var N=512, a=new Float32Array(N), b=new Float32Array(N), i;
+  var base=xform(arrRaw,ch);
   var dec=OsziLogic.minMaxDecimate(base,0,base.length,N);
   for(i=0;i<N;i++) a[i]=(dec[i*2]+dec[i*2+1])/2;
-  for(i=0;i<N;i++) b[i]=ref.at((i/N)*win.T);
+  for(i=0;i<N;i++) b[i]=ref.at((i/N)*winT);
   var r=OsziLogic.normXCorr(a,b,Math.floor(N/2));
   var pa=OsziLogic.peakToPeak(a), pb=OsziLogic.peakToPeak(b);
   var k=(pb.pp>1e-9)?(pa.pp/pb.pp):1;
   var off=((pa.max+pa.min)/2)-k*((pb.max+pb.min)/2);
-  LV.align={lag:r.lag,score:r.score,k:k,off:off,valid:true,N:N};
-  var m=$('lv-match');
-  if(m){
-    var pct=Math.round(r.score*100);
-    m.textContent=pct+' %';
-    m.className='lv-badge '+(pct>=85?'ok':(pct>=60?'warn':'bad'));
-  }
+  var A={lag:r.lag,score:r.score,k:k,off:off,valid:true,N:N};
+  if(ch===1) LV.align2=A; else LV.align=A;
+  return r.score;
+}
+function doAlign(win){
+  var s1=alignOne(0, win.t1, win.T);
+  var s2=(LV.chOn[1] && LV.karteId2) ? alignOne(1, win.t2, win.T) : null;
+  var wrap=$('lv-badge-wrap'); if(!wrap) return;
+  function badge(prefix,s,first){ var p=Math.round(s*100); var c=p>=85?'ok':(p>=60?'warn':'bad');
+    return '<span class="lv-badge '+c+'"'+(first?' id="lv-match"':'')+'>'+prefix+p+' %</span>'; }
+  var html='';
+  if(s1!=null){ html+=badge(s2!=null?'CH1 ':'', s1, true); }
+  if(s2!=null){ html+=(html?' ':'')+badge('CH2 ', s2, s1==null); }
+  wrap.innerHTML = html || '<span class="lv-badge" id="lv-match">–</span>';
 }
 function metricRow(name, mv, sv, tol, fmt){
   var w=OsziLogic.within(mv,sv,tol);
@@ -5030,32 +5042,32 @@ function draw(){
   if(LV.mode==='fft'){ drawFFT(win); return; }
   if(LV.mode==='xy'){ drawXY(win); return; }
 
-  /* Referenz-Overlay + Toleranzband */
-  var ref=LV.overlay?refSampler():null;
-  if(ref){
-    var lagT=(LV.align.valid?LV.align.lag:0)*(win.T/(LV.align.N||512));
-    var g=ref.gen;
-    var useScale=LV.refScale&&LV.align.valid;
+  /* Referenz-Overlay + Toleranzband — pro Kanal (CH1 grün, CH2 teal) */
+  function drawRef(ch, fill, line){
+    var ref=refSampler(ch); if(!ref) return;
+    var A=(ch===1)?LV.align2:LV.align, vdiv=LV.vdiv[ch], pos=LV.pos[ch];
+    var lagT=(A&&A.valid?A.lag:0)*(win.T/((A&&A.N)||512));
+    var g=ref.gen, useScale=LV.refScale&&A&&A.valid, x;
     function rv(x){
       var v=ref.at((x/cols)*win.T + lagT);
-      if(useScale) return LV.align.off+LV.align.k*v;
-      if(g) return ((v-(g.yr[0]+g.yr[1])/2)/g.vdivRef)*LV.vdiv[0];
+      if(useScale) return A.off+A.k*v;
+      if(g) return ((v-(g.yr[0]+g.yr[1])/2)/g.vdivRef)*vdiv;
       return v;
     }
-    var band=[];
-    var ppB=0;
-    if(useScale){ ppB=LV.align.k; }
-    /* Band: ±tolA % der (skalierten) Referenzamplitude */
-    var refPP=0;
-    (function(){ var mn=Infinity,mx=-Infinity; for(var x=0;x<cols;x++){var v=rv(x); if(v<mn)mn=v; if(v>mx)mx=v; band.push(v);} refPP=mx-mn; })();
-    var half=(LV.tolA/100)*refPP;
-    ctx.globalAlpha=0.13; ctx.fillStyle='#3ecf8e'; ctx.beginPath();
-    for(var x=0;x<cols;x++){ var X=(x+0.5)*w/cols, Y=yOf(band[x]+half,LV.vdiv[0],LV.pos[0]); if(x===0)ctx.moveTo(X,Y); else ctx.lineTo(X,Y); }
-    for(x=cols-1;x>=0;x--){ ctx.lineTo((x+0.5)*w/cols, yOf(band[x]-half,LV.vdiv[0],LV.pos[0])); }
+    var band=[], mn=Infinity, mx=-Infinity;
+    for(x=0;x<cols;x++){ var v=rv(x); if(v<mn)mn=v; if(v>mx)mx=v; band.push(v); }
+    var half=(LV.tolA/100)*(mx-mn);
+    ctx.globalAlpha=0.12; ctx.fillStyle=fill; ctx.beginPath();
+    for(x=0;x<cols;x++){ var X=(x+0.5)*w/cols, Y=yOf(band[x]+half,vdiv,pos); if(x===0)ctx.moveTo(X,Y); else ctx.lineTo(X,Y); }
+    for(x=cols-1;x>=0;x--){ ctx.lineTo((x+0.5)*w/cols, yOf(band[x]-half,vdiv,pos)); }
     ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
-    ctx.strokeStyle='rgba(62,207,142,0.9)'; ctx.lineWidth=1.4*dpr; ctx.setLineDash([6*dpr,4*dpr]); ctx.beginPath();
-    for(x=0;x<cols;x++){ var Xx=(x+0.5)*w/cols, Yy=yOf(band[x],LV.vdiv[0],LV.pos[0]); if(x===0)ctx.moveTo(Xx,Yy); else ctx.lineTo(Xx,Yy); }
+    ctx.strokeStyle=line; ctx.lineWidth=1.4*dpr; ctx.setLineDash([6*dpr,4*dpr]); ctx.beginPath();
+    for(x=0;x<cols;x++){ var Xx=(x+0.5)*w/cols, Yy=yOf(band[x],vdiv,pos); if(x===0)ctx.moveTo(Xx,Yy); else ctx.lineTo(Xx,Yy); }
     ctx.stroke(); ctx.setLineDash([]);
+  }
+  if(LV.overlay){
+    drawRef(0, '#3ecf8e', 'rgba(62,207,142,0.9)');
+    if(LV.chOn[1] && LV.karteId2) drawRef(1, '#7fe0c8', 'rgba(127,224,200,0.95)');
   }
 
   if(d1) drawDec(d1,LV.vdiv[0],LV.pos[0],'#ffd24a',1);
@@ -5300,6 +5312,20 @@ function refreshRefSrc(){
   sel.innerHTML=html;
   sel.value = (cur.indexOf('lib:')===0 && sel.querySelector('option[value="'+cur+'"]')) ? cur : 'gen';
   LV.refSrc=sel.value;
+  refreshRefSrc2();
+}
+function refreshRefSrc2(){
+  var sel=$('lv-refsrc2'); if(!sel) return;
+  var cur=LV.refSrc2;
+  var html='<option value="gen">Karten-Generator (Soll)</option>';
+  Object.keys(LIB.cache).forEach(function(id){
+    var r=LIB.cache[id];
+    if(r.refFor && r.refFor===LV.karteId2)
+      html+='<option value="lib:'+id+'">★ '+r.name+'</option>';
+  });
+  sel.innerHTML=html;
+  sel.value = (cur.indexOf('lib:')===0 && sel.querySelector('option[value="'+cur+'"]')) ? cur : 'gen';
+  LV.refSrc2=sel.value;
 }
 
 /* ---------- Toleranzen pro Karte ---------- */
@@ -5342,6 +5368,20 @@ function initLive(){
     LV.align.valid=false; LV.lastAlign=0; LV.lastMet=0;
     if(this.value && $('lv-autosetup').checked) applyKartenSetup();
   });
+  /* CH2-Referenz (eigene Karte je Kanal) */
+  var ks2=$('lv-karte2');
+  if(ks2){
+    ks2.innerHTML='<option value="">– CH2-Referenz –</option>'+KARTEN.map(function(k){
+      return '<option value="'+k.id+'">'+k.name+'</option>';
+    }).join('');
+    ks2.addEventListener('change',function(){
+      LV.karteId2=this.value; refreshRefSrc2();
+      LV.align2.valid=false; LV.lastAlign=0;
+    });
+  }
+  var rs2=$('lv-refsrc2');
+  if(rs2){ rs2.addEventListener('change',function(){ LV.refSrc2=this.value; LV.align2.valid=false; LV.lastAlign=0; }); }
+  refreshRefSrc2();
   /* Kanäle */
   [1,2].forEach(function(ch){
     var i=ch-1;
