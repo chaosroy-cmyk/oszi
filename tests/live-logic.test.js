@@ -141,4 +141,83 @@ t('rms Sinus ~ A/sqrt(2)', () => {
   assert(Math.abs(r-2/Math.SQRT2)/(2/Math.SQRT2)<0.01,'rms='+r);
 });
 
+/* ===== v10: erweiterte Messungen, FFT, Mathe ===== */
+
+t('measurePeriod 50 Hz -> 20 ms', () => {
+  const dt=1e-4, N=2000, a=new Float32Array(N);
+  for(let i=0;i<N;i++) a[i]=Math.sin(2*Math.PI*50*i*dt);
+  const p=L.measurePeriod(a,dt);
+  assert(Math.abs(p-0.02)/0.02<0.02, 'period='+p);
+});
+
+t('levels Rechteck 0/5 -> base~0, top~5, amp~5', () => {
+  const N=1000, a=new Float32Array(N);
+  for(let i=0;i<N;i++) a[i]=((i%100)<50)?5:0;
+  const lv=L.levels(a);
+  assert(lv.base<0.2, 'base='+lv.base);
+  assert(Math.abs(lv.top-5)<0.2, 'top='+lv.top);
+  assert(Math.abs(L.amplitude(a)-5)<0.3, 'amp='+L.amplitude(a));
+});
+
+t('overshoot: Spitze ueber Top wird erkannt', () => {
+  const N=1000, a=new Float32Array(N);
+  for(let i=0;i<N;i++) a[i]=((i%100)<50)?5:0;
+  a[25]=6; /* Ueberschwinger */
+  const o=L.overshoot(a);
+  assert(o>0.1 && o<0.4, 'overshoot='+o);
+});
+
+t('measureFall Rampe 90–10 % = 80 Samples', () => {
+  const dt=1e-6, a=new Float32Array(300);
+  for(let i=0;i<300;i++) a[i]= i<50?1 : (i<150 ? 1-(i-50)/100 : 0);
+  const f=L.measureFall(a,dt);
+  assert(Math.abs(f-80e-6)<=3e-6, 'fall='+f);
+});
+
+t('pulseWidths 30 %-Rechteck -> dutyPos~0.3, dutyNeg~0.7', () => {
+  const dt=1e-4, N=1000, a=new Float32Array(N);
+  for(let i=0;i<N;i++) a[i]=((i%100)<30)?5:0;
+  const pw=L.pulseWidths(a,dt);
+  assert(Math.abs(pw.dutyPos-0.30)<0.03, 'dutyPos='+pw.dutyPos);
+  assert(Math.abs(pw.dutyNeg-0.70)<0.03, 'dutyNeg='+pw.dutyNeg);
+  assert(Math.abs(pw.wPos-3e-3)<3e-4, 'wPos='+pw.wPos);
+});
+
+t('phase: 90°-verschobene Sinus -> ~90°', () => {
+  const dt=1e-5, f=100, N=2000, a=new Float32Array(N), b=new Float32Array(N);
+  for(let i=0;i<N;i++){ const tt=i*dt; a[i]=Math.sin(2*Math.PI*f*tt); b[i]=Math.sin(2*Math.PI*f*tt - Math.PI/2); }
+  const ph=L.phase(a,b,dt);
+  assert(Math.abs(ph.deg-90)<10, 'deg='+ph.deg);
+});
+
+t('spectrum: Ton bei exaktem Bin -> Peak-Frequenz & Vrms', () => {
+  const n=1024, dt=1/1024, A=2, f=64, a=new Float32Array(n);
+  for(let i=0;i<n;i++) a[i]=A*Math.sin(2*Math.PI*f*i*dt);
+  const sp=L.spectrum(a,dt,{window:'rect'});
+  assert(Math.abs(sp.peak.freq-64)<1.5, 'peakFreq='+sp.peak.freq);
+  assert(Math.abs(sp.peak.mag-A/Math.SQRT2)/(A/Math.SQRT2)<0.03, 'vrms='+sp.peak.mag);
+});
+
+t('spectrum dB-Modus liefert dBVrms', () => {
+  const n=1024, dt=1/1024, A=2, f=64, a=new Float32Array(n);
+  for(let i=0;i<n;i++) a[i]=A*Math.sin(2*Math.PI*f*i*dt);
+  const sp=L.spectrum(a,dt,{window:'rect',db:true});
+  const expect=20*Math.log10(A/Math.SQRT2);
+  assert(Math.abs(sp.peak.mag-expect)<0.5, 'dB='+sp.peak.mag+' exp='+expect);
+});
+
+t('combine CH1-CH2 (sub) elementweise', () => {
+  const a=new Float32Array([3,3,4]), b=new Float32Array([1,2,4]);
+  const o=L.combine(a,b,'sub');
+  assert.deepStrictEqual(Array.from(o),[2,1,0]);
+  const s=L.combine(a,b,'add');
+  assert.deepStrictEqual(Array.from(s),[4,5,8]);
+});
+
+t('windowFn Hann: Enden 0, Mitte ~1', () => {
+  const w=L.windowFn('hann',101);
+  assert(Math.abs(w[0])<1e-9 && Math.abs(w[100])<1e-9, 'Enden');
+  assert(Math.abs(w[50]-1)<1e-6, 'Mitte='+w[50]);
+});
+
 console.log('\nAlle '+n+' Tests bestanden.');
