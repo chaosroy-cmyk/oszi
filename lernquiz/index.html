@@ -168,6 +168,16 @@ th{background:var(--panel2)}
 .ptag.p2{background:#5b2a86;color:#fff}
 :root[data-theme="light"] .ptag.p2{background:#7b3fb0}
 .topic.p2{border-left:5px solid #9b59d6}
+.ptag.p3{background:#0f6e5f;color:#fff}
+.topic.p3,details.note.p3{border-left:5px solid #1fb89c}
+.symbox{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;justify-content:center;margin:-4px 0 14px}
+.sym{width:200px;height:133px;color:var(--tx);display:block}
+.opt .symopt .sym{width:120px;height:80px}
+.opt.ok .sym,.opt.bad .sym,.opt.sel .sym{color:var(--tx)}
+.symgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:.6rem 0}
+.symcell{overflow-wrap:anywhere;hyphens:auto;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:4px;font-size:.88rem}
+.symcell .sym{width:100%;height:auto;aspect-ratio:3/2}
+.fc .face .symbox{margin:0}
 details.note.p2{border-left:5px solid #9b59d6}
 .parthead{display:flex;align-items:center;gap:8px;margin:14px 0 8px;font-weight:800}
 .parthead:first-child{margin-top:0}
@@ -205,7 +215,7 @@ details.note.p2{border-left:5px solid #9b59d6}
   <section class="view on" id="v-home">
     <div class="card">
       <h2>Selbstüberprüfung</h2>
-      <p class="mut small">Kraftfahrzeugtechnik · <b>Teil 1</b>: Gemischbildung, Motormanagement, Drehzahlerfassung · <span class="ptag p2">Teil 2</span> Lasterfassung, Abgas-Sensoren, Aktoren (Landesberufsschule, Sept. 2026). Deine Fortschritte werden nur auf diesem Gerät gespeichert.</p>
+      <p class="mut small">Kraftfahrzeugtechnik · <b>Teil 1</b>: Gemischbildung, Motormanagement, Drehzahlerfassung · <span class="ptag p2">Teil 2</span> Lasterfassung, Abgas-Sensoren, Aktoren · <span class="ptag p3">Schaltzeichen</span> (Landesberufsschule, Sept. 2026). Deine Fortschritte werden nur auf diesem Gerät gespeichert.</p>
       <div class="stk">
         <div class="card"><b id="stQ">0</b><span>Fragen gesamt</span></div>
         <div class="card"><b id="stDone">0 %</b><span>schon richtig</span></div>
@@ -219,6 +229,7 @@ details.note.p2{border-left:5px solid #9b59d6}
         <button class="chip" id="selAll">Alle</button>
         <button class="chip" id="selP1">Nur Teil 1</button>
         <button class="chip" id="selP2"><span class="ptag p2">Teil 2</span> nur neu</button>
+        <button class="chip" id="selP3"><span class="ptag p3">Schaltzeichen</span></button>
         <button class="chip" id="selNone">Keine</button>
       </div>
     </div>
@@ -342,7 +353,7 @@ details.note.p2{border-left:5px solid #9b59d6}
 
 <script>
 'use strict';
-const APP_VERSION = '2.0';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '2.1';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 
 /* =====================================================================
    DATEN – Themen
@@ -1270,9 +1281,90 @@ aktor2:`
 <div class="merke">Merke: <b>NTC misst</b> (Heißleiter, Sensor) – <b>PTC heizt</b> (Kaltleiter, Aktor).</div>`
 });
 
+/* =====================================================================
+   SCHALTZEICHEN (eigener Bereich, Teil 1 + 2)
+   ===================================================================== */
+const SYM = {
+  hall:{n:'Hallsensor',info:'Rechteck mit Kreuz (Hall-Element).',src:'S. 7',svg:'<path d="M5 40H24M96 40H115"/><rect x="24" y="16" width="72" height="48"/><path d="M24 16L96 64M96 16L24 64"/>'},
+  induktiv:{n:'Induktivsensor',info:'Zahnrad (Geberrad) neben einer Spule.',src:'S. 6',svg:'<circle cx="42" cy="40" r="20"/><path d="M62.0 40.0L69.0 40.0M59.3 50.0L65.4 53.5M52.0 57.3L55.5 63.4M42.0 60.0L42.0 67.0M32.0 57.3L28.5 63.4M24.7 50.0L18.6 53.5M22.0 40.0L15.0 40.0M24.7 30.0L18.6 26.5M32.0 22.7L28.5 16.6M42.0 20.0L42.0 13.0M52.0 22.7L55.5 16.6M59.3 30.0L65.4 26.5"/><path d="M80 12a7 7 0 0 1 0 14a7 7 0 0 1 0 14a7 7 0 0 1 0 14a7 7 0 0 1 0 14M75 10V70M80 12H100M80 68H100"/>'},
+  schliesser:{n:'Endschalter als Schließer',info:'Schaltarm offen, kein Kontakt – schließt beim Betätigen.',src:'S. 9',svg:'<path d="M5 52H36M36 52L80 28M84 52H115"/><circle cx="36" cy="52" r="2.5"/>'},
+  oeffner:{n:'Endschalter als Öffner',info:'Schaltarm liegt am Haken an (geschlossen) – öffnet beim Betätigen.',src:'S. 9',svg:'<path d="M5 52H36M36 52L88 40M76 52H115M76 52V36"/><circle cx="36" cy="52" r="2.5"/>'},
+  poti:{n:'Potentiometer',info:'Widerstand mit Schleifer-Pfeil (3 Anschlüsse E, A, S).',src:'S. 9',svg:'<path d="M5 40H32M88 40H115"/><rect x="32" y="28" width="56" height="24"/><path d="M60 4V26M54 18L60 26L66 18"/>'},
+  ntc:{n:'NTC-Temperatursensor (Heißleiter)',info:'Widerstand mit geknickter Schräge, Pfeile ↑↓ (gegenläufig) und T im Kreis.',src:'S. 11',svg:'<path d="M5 40H32M88 40H115"/><rect x="32" y="28" width="56" height="24"/><path d="M18 64H26L94 16"/><path d="M100 24V8M96 12L100 8L104 12"/><path d="M110 8V24M106 20L110 24L114 20"/><circle cx="106" cy="64" r="9"/><text x="106" y="69" font-size="13" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" fill="currentColor" stroke="none">T</text>'},
+  ptcs:{n:'PTC-Sensor (Kaltleiter)',info:'Widerstand mit geknickter Schräge, Pfeile ↑↑ (gleichläufig) und T im Kreis.',src:'S. 17',svg:'<path d="M5 40H32M88 40H115"/><rect x="32" y="28" width="56" height="24"/><path d="M18 64H26L94 16"/><path d="M100 24V8M96 12L100 8L104 12"/><path d="M110 24V8M106 12L110 8L114 12"/><circle cx="106" cy="64" r="9"/><text x="106" y="69" font-size="13" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" fill="currentColor" stroke="none">T</text>'},
+  druck:{n:'Piezo-Drucksensor',info:'Widerstand mit geknickter Schräge und „p" (Druck).',src:'S. 11',svg:'<path d="M5 40H32M88 40H115"/><rect x="32" y="28" width="56" height="24"/><path d="M18 64H26L94 16"/><text x="8" y="24" font-size="20" font-family="system-ui,sans-serif" font-weight="700" fill="currentColor" stroke="none">p</text>'},
+  hfm:{n:'Heißfilm-Luftmassenmesser (HFM)',info:'Widerstand mit geknickter Schräge, „ṁ" (Massenstrom) und T im Kreis.',src:'S. 12',svg:'<path d="M5 40H32M88 40H115"/><rect x="32" y="28" width="56" height="24"/><path d="M18 64H26L94 16"/><text x="6" y="24" font-size="20" font-family="system-ui,sans-serif" font-weight="700" fill="currentColor" stroke="none">ṁ</text><circle cx="106" cy="64" r="9"/><text x="106" y="69" font-size="13" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" fill="currentColor" stroke="none">T</text>'},
+  piezo:{n:'Beschleunigungssensor / Klopfsensor (Piezo)',info:'Piezokristall: Rechteck zwischen zwei Platten.',src:'S. 11',svg:'<path d="M60 4V22M60 58V76M34 22H86M34 58H86"/><rect x="44" y="30" width="32" height="20"/>'},
+  lambda:{n:'Lambdasonde (mit Heizung)',info:'Kasten mit λ und Schräge, daneben der Heizwiderstand.',src:'S. 13–14',svg:'<rect x="10" y="8" width="64" height="64"/><path d="M18 64L66 16M46 52H64M46 58H64"/><text x="18" y="36" font-size="24" font-family="system-ui,sans-serif" font-weight="700" fill="currentColor" stroke="none">λ</text><rect x="88" y="24" width="14" height="32"/><path d="M95 8V24M95 56V72M88 34H102M88 40H102M88 46H102"/>'},
+  mventil:{n:'Magnetventil',info:'Spule (Rechteck mit Schräge) betätigt ein Ventil (Doppeldreieck).',src:'S. 15',svg:'<rect x="40" y="6" width="40" height="22"/><path d="M40 28L80 6M22 17H40M80 17H98M60 28V52"/><path d="M30 40V64L90 40V64Z"/>'},
+  piezoinj:{n:'Piezoinjektor',info:'Piezokristall betätigt ein Ventil (Doppeldreieck).',src:'S. 15',svg:'<path d="M60 2V8M44 8H76M44 30H76M60 30V56M28 19H44M76 19H92"/><rect x="50" y="12" width="20" height="14"/><path d="M30 44V68L90 44V68Z"/>'},
+  emotor:{n:'E-Motor (Gleichstrommotor)',info:'Kreis mit M und Gleichstromzeichen darunter.',src:'S. 16',svg:'<circle cx="60" cy="40" r="30"/><text x="60" y="47" font-size="26" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" fill="currentColor" stroke="none">M</text><path d="M48 56H72"/><path d="M48 62H72" stroke-dasharray="5 3"/><path d="M5 40H30M90 40H115"/>'},
+  schritt:{n:'Schrittmotor',info:'Kreis mit M und Stufen-Zeichen darunter.',src:'S. 16',svg:'<circle cx="60" cy="40" r="30"/><text x="60" y="45" font-size="26" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" fill="currentColor" stroke="none">M</text><path d="M44 60H52V53H68V60H76"/><path d="M5 40H30M90 40H115"/>'},
+  zuend:{n:'Zündspule',info:'Zwei Wicklungen (Primär/Sekundär) mit Eisenkern dazwischen – Trafo.',src:'S. 17',svg:'<rect x="18" y="8" width="84" height="64"/><path d="M58 14V66M62 14V66"/><path d="M50 16a6 6 0 0 0 0 12a6 6 0 0 0 0 12a6 6 0 0 0 0 12a6 6 0 0 0 0 12"/><path d="M70 16a6 6 0 0 1 0 12a6 6 0 0 1 0 12a6 6 0 0 1 0 12a6 6 0 0 1 0 12"/>'},
+  ptch:{n:'PTC-Heizelement (Heizwiderstand)',info:'Widerstand mit Querstrichen (Heizung) – z. B. Glühkerze, Lambdaheizung.',src:'S. 17',svg:'<path d="M5 40H32M88 40H115"/><rect x="32" y="28" width="56" height="24"/><path d="M46 28V52M60 28V52M74 28V52"/>'},
+  ic:{n:'Sensor mit integrierter Schaltung (IC)',info:'Kasten mit Transistor-Symbol.',src:'S. 10',svg:'<rect x="20" y="8" width="80" height="64"/><path d="M36 40H54M54 24V56M54 34L76 20M54 46L76 60M66.3 58.6L76 60L70.6 51.8"/>'},
+  transistor:{n:'Transistor',info:'Basis (B), Kollektor (C), Emitter (E) mit Pfeil.',src:'FB 721',svg:'<path d="M10 40H44M44 18V62M44 30L80 10M44 50L80 70M68.9 69.5L80 70L73.7 60.7"/><text x="8" y="32" font-size="14" font-family="system-ui,sans-serif" font-weight="700" fill="currentColor" stroke="none">B</text><text x="86" y="16" font-size="14" font-family="system-ui,sans-serif" font-weight="700" fill="currentColor" stroke="none">C</text><text x="86" y="76" font-size="14" font-family="system-ui,sans-serif" font-weight="700" fill="currentColor" stroke="none">E</text>'},
+};
+function sym(k){ return `<svg class="sym" viewBox="0 0 120 80" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Schaltzeichen">${SYM[k].svg}</svg>`; }
+
+TOPICS.push({id:'schalt', part:3, ic:'🔣', name:'Schaltzeichen erkennen', src:'Sensoren & Aktoren S. 6–17 + FB 721'});
+
+/* Bild → Name */
+[
+ ['hall',      ['Hallsensor','Induktivsensor','Endschalter','Zündspule']],
+ ['induktiv',  ['Induktivsensor','Hallsensor','Zündspule','E-Motor'], true],
+ ['schliesser',['Endschalter als Schließer','Endschalter als Öffner','Potentiometer','Transistor']],
+ ['oeffner',   ['Endschalter als Öffner','Endschalter als Schließer','Potentiometer','Transistor']],
+ ['poti',      ['Potentiometer','NTC-Temperatursensor','Piezo-Drucksensor','PTC-Heizelement']],
+ ['ntc',       ['NTC-Temperatursensor (Heißleiter)','PTC-Sensor (Kaltleiter)','Piezo-Drucksensor','Heißfilm-Luftmassenmesser']],
+ ['ptcs',      ['PTC-Sensor (Kaltleiter)','NTC-Temperatursensor (Heißleiter)','Piezo-Drucksensor','Heißfilm-Luftmassenmesser']],
+ ['druck',     ['Piezo-Drucksensor','NTC-Temperatursensor','Heißfilm-Luftmassenmesser','Potentiometer']],
+ ['hfm',       ['Heißfilm-Luftmassenmesser (HFM)','NTC-Temperatursensor','Piezo-Drucksensor','Lambdasonde']],
+ ['piezo',     ['Beschleunigungssensor / Klopfsensor (Piezo)','Magnetventil','Hallsensor','Lambdasonde']],
+ ['lambda',    ['Lambdasonde (mit Heizung)','Hallsensor','Zündspule','Heißfilm-Luftmassenmesser']],
+ ['mventil',   ['Magnetventil','Piezoinjektor','Zündspule','Schrittmotor']],
+ ['piezoinj',  ['Piezoinjektor','Magnetventil','Beschleunigungssensor','Piezo-Drucksensor']],
+ ['emotor',    ['E-Motor (Gleichstrommotor)','Schrittmotor','Zündspule','Induktivsensor']],
+ ['schritt',   ['Schrittmotor','E-Motor (Gleichstrommotor)','Zündspule','Magnetventil']],
+ ['zuend',     ['Zündspule','E-Motor','Induktivsensor','Magnetventil']],
+ ['ptch',      ['PTC-Heizelement (Heizwiderstand)','Potentiometer','NTC-Temperatursensor','Hallsensor']],
+ ['ic',        ['Sensor mit integrierter Schaltung (IC)','Transistor','Hallsensor','Endschalter']],
+ ['transistor',['Transistor','Sensor mit integrierter Schaltung (IC)','Endschalter als Schließer','Potentiometer']],
+].forEach(([k, a, test], i) => Q.push({id:'sz' + String(i + 1).padStart(2, '0'), t:'schalt', type:'mc', img:k,
+  q:'Welches Bauteil hat dieses Schaltzeichen?', a, c:0, e:SYM[k].n + ': ' + SYM[k].info, src:SYM[k].src, test:!!test}));
+
+/* Name → Bild (Antworten sind Schaltzeichen) */
+[
+ ['Welches Schaltzeichen gehört zum Hallsensor?',          ['hall','induktiv','zuend','piezo']],
+ ['Welches Schaltzeichen gehört zum Induktivsensor?',      ['induktiv','hall','zuend','schritt'], true],
+ ['Welches Schaltzeichen gehört zum NTC-Temperatursensor?',['ntc','ptcs','druck','hfm']],
+ ['Welches Schaltzeichen zeigt einen Öffner?',             ['oeffner','schliesser','poti','transistor']],
+ ['Welches Schaltzeichen gehört zum Potentiometer?',       ['poti','ptch','ntc','hall']],
+ ['Welches Schaltzeichen gehört zum Luftmassenmesser (HFM)?',['hfm','druck','ntc','lambda']],
+ ['Welches Schaltzeichen gehört zum Piezoinjektor?',       ['piezoinj','mventil','piezo','zuend']],
+ ['Welches Schaltzeichen gehört zum Schrittmotor?',        ['schritt','emotor','zuend','induktiv']],
+ ['Welches Schaltzeichen gehört zur Zündspule?',           ['zuend','induktiv','mventil','emotor']],
+ ['Welches Schaltzeichen gehört zum Klopfsensor?',         ['piezo','druck','hall','ptch']],
+].forEach(([q, a, test], i) => Q.push({id:'sb' + String(i + 1).padStart(2, '0'), t:'schalt', type:'mc', opt:'svg',
+  q, a, c:0, e:SYM[a[0]].n + ': ' + SYM[a[0]].info, src:SYM[a[0]].src, test:!!test}));
+
+Q.push({id:'sz90',t:'schalt',type:'mc',q:'Woran unterscheidest du die Schaltzeichen von NTC und PTC?',
+ a:['NTC: Pfeile gegenläufig (↑↓) – PTC: Pfeile gleichläufig (↑↑)','NTC hat ein Kreuz, PTC nicht','NTC hat ein p, PTC ein ṁ','Es gibt keinen Unterschied'],c:0,
+ e:'Temperatur steigt ↑ → Widerstand sinkt ↓ (NTC) bzw. steigt ↑ (PTC). Beide mit geknickter Schräge und T im Kreis.',src:'S. 11 + 17'});
+Q.push({id:'sz91',t:'schalt',type:'mc',q:'Woran unterscheidest du Magnetventil und Piezoinjektor im Schaltzeichen?',
+ a:['Magnetventil: Spule (Rechteck mit Schräge) – Piezoinjektor: Piezokristall (Rechteck zwischen zwei Platten); beide mit Ventil-Doppeldreieck','Das Magnetventil hat kein Ventilsymbol','Der Piezoinjektor hat ein M im Kreis','Es gibt keinen Unterschied'],c:0,
+ e:'Das Doppeldreieck ist das Ventil. Oben sitzt der Antrieb: Spule oder Piezo.',src:'S. 15'});
+
+Object.keys(SYM).forEach(k => CARDS.push({t:'schalt', sym:k, f:'Welches Bauteil ist das?', b:SYM[k].n + ' – ' + SYM[k].info + ' (' + SYM[k].src + ')'}));
+
+const _e = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+NOTES.schalt = `<p>Alle Schaltzeichen aus Teil 1 und Teil 2. Tipp: Name abdecken und raten, dann im Quiz prüfen.</p>
+<div class="symgrid">${Object.keys(SYM).map(k => `<div class="symcell">${sym(k)}<b>${_e(SYM[k].n)}</b><span class="mut small">${_e(SYM[k].info)} · ${_e(SYM[k].src)}</span></div>`).join('')}</div>
+<div class="merke"><b>Merkhilfen:</b><br>Schräge durch Widerstand = Wert veränderlich (Sensor) · ↑↓ = NTC, ↑↑ = PTC · p = Druck, ṁ = Luftmasse, T = Temperatur · Doppeldreieck = Ventil · M im Kreis = Motor, Stufe = Schrittmotor</div>`;
+
 /* Teil-Zuordnung: alles ohne Angabe gehört zu Teil 1 */
 TOPICS.forEach(t => { t.part = t.part || 1; });
-const PARTS = {1:{name:'Teil 1', sub:'Gemischbildung, Motormanagement, Drehzahlerfassung', pages:'S. 1–7'}, 2:{name:'Teil 2', sub:'Lasterfassung, Abgas-Sensoren, Aktoren', pages:'S. 8–17'}};
+const PARTS = {1:{name:'Teil 1', sub:'Gemischbildung, Motormanagement, Drehzahlerfassung', pages:'S. 1–7'}, 2:{name:'Teil 2', sub:'Lasterfassung, Abgas-Sensoren, Aktoren', pages:'S. 8–17'}, 3:{name:'Schaltzeichen', sub:'Symbole aus Teil 1 + 2', pages:'S. 6–17'}};
 
 /* =====================================================================
    APP
@@ -1288,6 +1380,7 @@ CARDS.forEach((c, i) => c.id = 'c' + i);
 
 /* ---- Speicher ---- */
 let S = load();
+if (!S.p3) { if (!S.sel.includes('schalt')) S.sel.push('schalt'); S.p3 = true; save(); }
 if (!S.p2) { S.sel = Array.from(new Set(S.sel.concat(TOPICS.filter(t => t.part === 2).map(t => t.id)))); S.p2 = true; save(); }
 function load(){ try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.q) return s; } catch (e) {} return {q:{}, cards:{}, hist:[], sel:TOPICS.map(t=>t.id), n:20}; }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
@@ -1322,8 +1415,8 @@ $$('nav.bottom button').forEach(b => b.onclick = () => show(b.dataset.v));
 
 /* ---- Home ---- */
 function partHead(n){ const P = PARTS[n]; return `<div class="parthead"><span class="ptag p${n}">${P.name}</span><span>${esc(P.sub)}</span><span class="mut">${P.pages}</span></div>`; }
-function byPart(render){ return [1, 2].map(n => partHead(n) + TOPICS.filter(t => t.part === n).map(render).join('')).join(''); }
-function topicLabel(t){ return (t.part === 2 ? '<span class="ptag p2">Teil 2</span> ' : '') + t.ic + ' ' + esc(t.name); }
+function byPart(render){ return [1, 2, 3].map(n => partHead(n) + TOPICS.filter(t => t.part === n).map(render).join('')).join(''); }
+function topicLabel(t){ return (t.part > 1 ? `<span class="ptag p${t.part}">${PARTS[t.part].name}</span> ` : '') + t.ic + ' ' + esc(t.name); }
 function topicProgress(tid){
   const qs = Q.filter(q => q.t === tid);
   const known = qs.filter(q => isKnown(q.id)).length;
@@ -1357,6 +1450,7 @@ function updateHint(){
 $('#selAll').onclick = () => { S.sel = TOPICS.map(t => t.id); save(); renderHome(); };
 $('#selNone').onclick = () => { S.sel = []; save(); renderHome(); };
 $('#selP1').onclick = () => { S.sel = TOPICS.filter(t => t.part === 1).map(t => t.id); save(); renderHome(); };
+$('#selP3').onclick = () => { S.sel = ['schalt']; save(); renderHome(); };
 $('#selP2').onclick = () => { S.sel = TOPICS.filter(t => t.part === 2).map(t => t.id); save(); renderHome(); };
 $$('#countRow .chip').forEach(c => c.onclick = () => { S.n = +c.dataset.n; save(); renderHome(); });
 $('#onlyWeak').onchange = updateHint;
@@ -1379,10 +1473,10 @@ function renderQ(){
   $('#qTopic').innerHTML = topicLabel(TOPIC[q.t]);
   $('#qBar').style.width = (quiz.i / quiz.list.length * 100) + '%';
   $('#qFb').innerHTML = '';
-  let h = `<span class="qtype">${TYPE_LABEL[q.type]}${q.test ? ' · <b>Test</b>' : ''}</span>${TOPIC[q.t].part === 2 ? ' <span class="ptag p2">Teil 2</span>' : ''}<div class="qtext">${esc(q.q)}</div>`;
+  let h = (q.img ? `<div class="symbox">${sym(q.img)}</div>` : '') + `<span class="qtype">${TYPE_LABEL[q.type]}${q.test ? ' · <b>Test</b>' : ''}</span>${TOPIC[q.t].part > 1 ? ` <span class="ptag p${TOPIC[q.t].part}">${PARTS[TOPIC[q.t].part].name}</span>` : ''}<div class="qtext">${esc(q.q)}</div>`;
   if (q.type === 'mc' || q.type === 'multi') {
     quiz.order = shuffle(q.a.map((_, i) => i));
-    h += quiz.order.map((oi, k) => `<button class="opt" data-i="${oi}"><span class="k">${k + 1}</span><span>${esc(q.a[oi])}</span></button>`).join('');
+    h += quiz.order.map((oi, k) => `<button class="opt" data-i="${oi}"><span class="k">${k + 1}</span><span${q.opt === 'svg' ? ' class="symopt"' : ''}>${q.opt === 'svg' ? sym(q.a[oi]) : esc(q.a[oi])}</span></button>`).join('');
     if (q.type === 'multi') h += `<p class="hint">Alle zutreffenden Antworten antippen, dann „Prüfen".</p>`;
   } else if (q.type === 'tf') {
     h += `<div class="tfrow"><button class="opt" data-i="1"><span class="k">1</span>Wahr</button><button class="opt" data-i="0"><span class="k">2</span>Falsch</button></div>`;
@@ -1467,7 +1561,7 @@ function showResult(){
   $('#rSub').textContent = `${ok} von ${total} Fragen richtig`;
   const byT = {};
   quiz.answers.forEach((a, i) => { const t = quiz.list[i].t; byT[t] = byT[t] || {ok:0, n:0}; byT[t].n++; if (a.ok) byT[t].ok++; });
-  $('#rTopics').innerHTML = Object.keys(byT).map(t => { const p = Math.round(byT[t].ok / byT[t].n * 100); return `<div class="tstat"><span>${TOPIC[t].ic}</span><span class="n">${TOPIC[t].part === 2 ? '<span class="ptag p2">Teil 2</span> ' : ''}${esc(TOPIC[t].name)}<br><span class="mut small">${byT[t].ok}/${byT[t].n}</span></span><span class="bar"><i class="${p === 100 ? 'ok' : ''}" style="width:${p}%"></i></span></div>`; }).join('');
+  $('#rTopics').innerHTML = Object.keys(byT).map(t => { const p = Math.round(byT[t].ok / byT[t].n * 100); return `<div class="tstat"><span>${TOPIC[t].ic}</span><span class="n">${TOPIC[t].part > 1 ? `<span class="ptag p${TOPIC[t].part}">${PARTS[TOPIC[t].part].name}</span> ` : ''}${esc(TOPIC[t].name)}<br><span class="mut small">${byT[t].ok}/${byT[t].n}</span></span><span class="bar"><i class="${p === 100 ? 'ok' : ''}" style="width:${p}%"></i></span></div>`; }).join('');
   const wrong = quiz.list.filter((q, i) => !quiz.answers[i].ok);
   $('#rWrongCard').style.display = wrong.length ? '' : 'none';
   $('#rWrong').innerHTML = wrong.map(q => `<div class="wrongq"><b>${esc(q.q)}</b><span class="small">${esc(correctText(q))}</span><br><span class="mut small">${esc(q.e)}</span></div>`).join('');
@@ -1476,7 +1570,7 @@ function showResult(){
   show('result');
 }
 function correctText(q){
-  if (q.type === 'mc') return '→ ' + q.a[q.c];
+  if (q.type === 'mc') return '→ ' + (q.opt === 'svg' ? SYM[q.a[q.c]].n : q.a[q.c]);
   if (q.type === 'multi') return '→ ' + q.c.map(i => q.a[i]).join(' · ');
   if (q.type === 'tf') return '→ ' + (q.c ? 'Wahr' : 'Falsch');
   if (q.type === 'gap') return '→ ' + q.c[0];
@@ -1503,7 +1597,7 @@ function renderCard(){
   const fc = $('#fc'); fc.classList.remove('flip'); $('#cRate').hidden = true;
   $('#cPos').textContent = `Karte ${cardState.i + 1} / ${cardState.deck.length}`;
   $('#cTopic').innerHTML = topicLabel(TOPIC[c.t]);
-  $('#cFront').textContent = c.f; $('#cBack').textContent = c.b;
+  if (c.sym) $('#cFront').innerHTML = `<div class="symbox">${sym(c.sym)}</div>${esc(c.f)}`; else $('#cFront').textContent = c.f; $('#cBack').textContent = c.b;
   const counts = [0, 0, 0, 0, 0]; CARDS.forEach(x => counts[cardBox(x.id)]++);
   $('#cBoxes').innerHTML = counts.map((n, i) => `<span title="Box ${i + 1}"><b>${n}</b>Box ${i + 1}</span>`).join('');
   $('#cHint').textContent = cardBox(c.id) === 0 ? 'Neu oder zuletzt nicht gewusst. Erst überlegen, dann umdrehen.' : `In Box ${cardBox(c.id) + 1}. Erst überlegen, dann umdrehen.`;
@@ -1620,6 +1714,8 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     if (q.type === 'gap' && (!Array.isArray(q.c) || !q.c.length)) errs.push(q.id + ': gap-Antwort ungültig');
     if (q.type === 'num' && typeof q.c !== 'number') errs.push(q.id + ': num-Antwort ungültig');
     if (q.type === 'match' && (!q.cats || !q.items || q.items.some(it => !q.cats[it.c]))) errs.push(q.id + ': match ungültig');
+    if (q.img && !SYM[q.img]) errs.push(q.id + ': Schaltzeichen fehlt ' + q.img);
+    if (q.opt === 'svg' && q.a.some(k => !SYM[k])) errs.push(q.id + ': Schaltzeichen-Option fehlt');
     if ((q.type === 'mc' || q.type === 'multi') && q.a.length > 6) errs.push(q.id + ': mehr als 6 Optionen');
   });
   CARDS.forEach(c => { if (!TOPIC[c.t]) errs.push('Karte ' + c.f + ': unbekanntes Thema'); });

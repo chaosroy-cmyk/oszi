@@ -41,9 +41,11 @@ Lambda, Otto-/Diesel-Prinzip, Betriebszustände, Motormanagement,
 Induktiv-/Hallsensor) sowie als gekennzeichneten **Teil 2** Lasterfassung,
 Weg-/Temperatur-/Druck-/Luftmassen-Sensoren, Lambdasonden und Aktoren
 (Magnetventil, Piezoinjektor, E-/Schrittmotor, Zündspule, PTC).
-Enthält 179 Quizfragen (Teil 2: 74) in sechs Fragetypen
+Dazu ein eigener Bereich **Schaltzeichen** mit gezeichneten Symbolen
+(Bild → Name und Name → Bild). Enthält 210 Quizfragen (Teil 2: 74,
+Schaltzeichen: 31) in sechs Fragetypen
 (Einfach-/Mehrfachauswahl, Wahr/Falsch, Eingabe, Zahl, Zuordnung) mit
-Erklärung und Quellenangabe, 88 Karteikarten mit Leitner-Boxen, Merkzettel
+Erklärung und Quellenangabe, 107 Karteikarten mit Leitner-Boxen, Merkzettel
 je Thema sowie eine lokal gespeicherte Lernstatistik („Wackelkandidaten"
 wiederholen). Eigenes Manifest, eigener Service Worker, eigene `_headers`/`_redirects`, daher
 auch als eigenes Cloudflare-Pages-Projekt deploybar (Output-Verzeichnis
