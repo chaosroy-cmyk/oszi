@@ -38,9 +38,12 @@ Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
 Eigenständige Lern-PWA zur Selbstüberprüfung des Berufsschulstoffs
 „Gemischbildung" und „Sensoren und Aktoren" (vollständige Verbrennung,
 Lambda, Otto-/Diesel-Prinzip, Betriebszustände, Motormanagement,
-Induktiv-/Hallsensor). Enthält 105 Quizfragen in sechs Fragetypen
+Induktiv-/Hallsensor) sowie als gekennzeichneten **Teil 2** Lasterfassung,
+Weg-/Temperatur-/Druck-/Luftmassen-Sensoren, Lambdasonden und Aktoren
+(Magnetventil, Piezoinjektor, E-/Schrittmotor, Zündspule, PTC).
+Enthält 179 Quizfragen (Teil 2: 74) in sechs Fragetypen
 (Einfach-/Mehrfachauswahl, Wahr/Falsch, Eingabe, Zahl, Zuordnung) mit
-Erklärung und Quellenangabe, 57 Karteikarten mit Leitner-Boxen, Merkzettel
+Erklärung und Quellenangabe, 88 Karteikarten mit Leitner-Boxen, Merkzettel
 je Thema sowie eine lokal gespeicherte Lernstatistik („Wackelkandidaten"
 wiederholen). Eigenes Manifest, eigener Service Worker, eigene `_headers`/`_redirects`, daher
 auch als eigenes Cloudflare-Pages-Projekt deploybar (Output-Verzeichnis

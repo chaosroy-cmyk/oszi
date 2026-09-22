@@ -163,6 +163,15 @@ th{background:var(--panel2)}
 .tag.f{background:var(--badbg);color:var(--bad)}
 .tag.m{background:#1f3a5a;color:var(--acc)}
 :root[data-theme="light"] .tag.m{background:#d6e8f7}
+.ptag{display:inline-block;white-space:nowrap;padding:1px 8px;border-radius:6px;font-size:.72rem;font-weight:800;letter-spacing:.03em;vertical-align:middle}
+.ptag.p1{background:var(--panel2);color:var(--mut);border:1px solid var(--line)}
+.ptag.p2{background:#5b2a86;color:#fff}
+:root[data-theme="light"] .ptag.p2{background:#7b3fb0}
+.topic.p2{border-left:5px solid #9b59d6}
+details.note.p2{border-left:5px solid #9b59d6}
+.parthead{display:flex;align-items:center;gap:8px;margin:14px 0 8px;font-weight:800}
+.parthead:first-child{margin-top:0}
+.parthead .mut{font-weight:400;font-size:.82rem;white-space:nowrap;margin-left:auto}
 .merke{border-left:4px solid var(--acc2);padding:8px 12px;background:var(--panel2);border-radius:0 10px 10px 0;margin:.6rem 0}
 .formula{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--panel2);padding:6px 10px;border-radius:8px;display:inline-block;margin:.2rem 0}
 /* Banners */
@@ -196,7 +205,7 @@ th{background:var(--panel2)}
   <section class="view on" id="v-home">
     <div class="card">
       <h2>Selbstüberprüfung</h2>
-      <p class="mut small">Kraftfahrzeugtechnik · Gemischbildung, Motormanagement, Sensoren &amp; Aktoren (Landesberufsschule, Sept. 2026). Deine Fortschritte werden nur auf diesem Gerät gespeichert.</p>
+      <p class="mut small">Kraftfahrzeugtechnik · <b>Teil 1</b>: Gemischbildung, Motormanagement, Drehzahlerfassung · <span class="ptag p2">Teil 2</span> Lasterfassung, Abgas-Sensoren, Aktoren (Landesberufsschule, Sept. 2026). Deine Fortschritte werden nur auf diesem Gerät gespeichert.</p>
       <div class="stk">
         <div class="card"><b id="stQ">0</b><span>Fragen gesamt</span></div>
         <div class="card"><b id="stDone">0 %</b><span>schon richtig</span></div>
@@ -208,6 +217,8 @@ th{background:var(--panel2)}
       <div id="topicList"></div>
       <div class="row" style="margin-top:8px">
         <button class="chip" id="selAll">Alle</button>
+        <button class="chip" id="selP1">Nur Teil 1</button>
+        <button class="chip" id="selP2"><span class="ptag p2">Teil 2</span> nur neu</button>
         <button class="chip" id="selNone">Keine</button>
       </div>
     </div>
@@ -331,7 +342,7 @@ th{background:var(--panel2)}
 
 <script>
 'use strict';
-const APP_VERSION = '1.2';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '2.0';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 
 /* =====================================================================
    DATEN – Themen
@@ -889,6 +900,381 @@ hall:`
 };
 
 /* =====================================================================
+   TEIL 2 – Sensoren zur Lasterfassung, Abgasreinigung, Aktoren (S. 8–17)
+   ===================================================================== */
+TOPICS.push(
+  {id:'last',    part:2, ic:'⛰️', name:'Lasterfassung & Einfluss auf den ZZP',          src:'Sensoren & Aktoren S. 8'},
+  {id:'weg',     part:2, ic:'🎚️', name:'Wegmessung: Endschalter & Potentiometer',       src:'Sensoren & Aktoren S. 9'},
+  {id:'beruehr', part:2, ic:'🧲', name:'Berührungslose Wegmessung',                      src:'Sensoren & Aktoren S. 10'},
+  {id:'temp',    part:2, ic:'🌡️', name:'NTC, Piezo-Drucksensor & Klopfsensor',           src:'Sensoren & Aktoren S. 11'},
+  {id:'hfm',     part:2, ic:'💨', name:'Luftmassenmesser (HFM & Hitzdraht)',              src:'Sensoren & Aktoren S. 12'},
+  {id:'sonde',   part:2, ic:'🧪', name:'Lambdasonden: Sprung- & Breitbandsonde',          src:'Sensoren & Aktoren S. 13–14'},
+  {id:'aktor1',  part:2, ic:'⚙️', name:'Aktoren: Magnetventil, Piezo, E-Motor, Schrittmotor', src:'Sensoren & Aktoren S. 15–16'},
+  {id:'aktor2',  part:2, ic:'⚡', name:'Aktoren: Zündspule & PTC-Heizelement',            src:'Sensoren & Aktoren S. 17'}
+);
+
+Q.push(
+/* ---------- Lasterfassung & ZZP ---------- */
+{id:'ls01',t:'last',type:'mc',q:'Wodurch wird die Last bei homogener Gemischbildung bestimmt?',
+ a:['Durch die angesaugte Luftmenge (Drosselklappe weiter offen → höherer Füllungsgrad)','Durch die Fahrpedalstellung allein','Durch die eingespritzte Kraftstoffmenge','Durch die Abgastemperatur'],c:0,
+ e:'Homogen: Fahrpedal → Drosselklappe weiter geöffnet → mehr Gemisch angesaugt → Füllungsgrad steigt. Die Last wird durch die angesaugte Luftmenge bestimmt.',src:'S. 8',test:true},
+{id:'ls02',t:'last',type:'mc',q:'Wodurch wird die Last bei heterogener Gemischbildung (und beim Diesel) bestimmt?',
+ a:['Von der Fahrpedalstellung – es wird mehr Kraftstoff eingespritzt; zusätzlich ist die Luftmasse (Turbolader) bestimmend','Nur von der Drosselklappenstellung','Von der Kühlmitteltemperatur','Von der Zündspannung'],c:0,
+ e:'Heterogen: mehr Kraftstoff eingespritzt → Last von der Fahrpedalstellung bestimmt. Abgasdruck steigt, Turbolader erhöht den Ansaugdruck → zusätzlich die Luftmasse bestimmend.',src:'S. 8',test:true},
+{id:'ls03',t:'last',type:'mc',q:'Wie kann die Luftmasse ermittelt werden?',
+ a:['Direkt mit einem Luftmassenmesser oder errechnet über Luftmenge bzw. Ansaugluftdruck und Ansauglufttemperatur','Nur über die Drehzahl','Über die Lambdasonde','Über den Klopfsensor'],c:0,
+ e:'Zwei Wege: messen (Luftmassenmesser) oder rechnen (Luftmenge bzw. Ansaugluftdruck + Ansauglufttemperatur).',src:'S. 8',test:true},
+{id:'ls04',t:'last',type:'mc',q:'Homogene Gemischbildung: Wie ändert sich der Zündzeitpunkt bei höherer Last?',
+ a:['Der ZZP kann später gewählt werden – bei größerem Füllungsgrad und fetterem Gemisch breitet sich die Flammfront schneller aus','Der ZZP muss früher gewählt werden','Der ZZP bleibt gleich','Der ZZP wird auf UT gelegt'],c:0,
+ e:'Homogen (λ 1): hohe Last = großer Füllungsgrad = Verbrennung rascher = ZZP später. Geringe Last = kleiner Füllungsgrad = Verbrennung langsam = ZZP früher.',src:'S. 8',test:true},
+{id:'ls05',t:'last',type:'mc',q:'Heterogene Gemischbildung (Luftüberschuss): Wie ändert sich der Zündzeitpunkt bei höherer Last?',
+ a:['Der ZZP muss früher gewählt werden – eine größere Treibstoffmenge braucht mehr Zeit zum vollständigen Verbrennen','Der ZZP kann später gewählt werden','Der ZZP bleibt gleich','Es gibt keinen ZZP'],c:0,
+ e:'Heterogen: Laständerung durch Treibstoffmenge. Mehr Kraftstoff = längere Brenndauer = ZZP früher. Weniger Kraftstoff = kürzere Brenndauer = ZZP später.',src:'S. 8',test:true},
+{id:'ls06',t:'last',type:'match',q:'Ordne zu: homogene oder heterogene Gemischbildung?',
+ cats:['homogen (λ 1)','heterogen (Luftüberschuss)'],
+ items:[{t:'Laständerung durch Änderung der Zylinderfüllung',c:0},{t:'Laständerung durch Änderung der Treibstoffmenge',c:1},{t:'Hohe Last → ZZP später',c:0},{t:'Hohe Last → ZZP früher',c:1},{t:'Brennraum immer mit Luft gefüllt',c:1}],
+ e:'Homogen: Füllung ändert sich, fetter/mehr Gemisch brennt schneller → später zünden. Heterogen: mehr Kraftstoff brennt länger → früher zünden.',src:'S. 8',test:true},
+{id:'ls07',t:'last',type:'tf',q:'Bei homogener Gemischbildung ist die Verbrennung bei geringer Last langsamer, deshalb wird der ZZP früher gelegt.',c:true,
+ e:'Richtig. Geringe Last = kleiner Füllungsgrad = magerer = langsame Verbrennung = ZZP früher.',src:'S. 8'},
+{id:'ls08',t:'last',type:'mc',q:'Warum ist beim Diesel/Direkteinspritzer zusätzlich die Luftmasse lastbestimmend?',
+ a:['Weil mit mehr Kraftstoff der Abgasdruck steigt und der Turbolader den Druck im Ansaugrohr erhöht','Weil die Drosselklappe die Luft dosiert','Weil die Lambdasonde die Luftmasse regelt','Weil Diesel bei λ = 1 läuft'],c:0,
+ e:'Mehr Kraftstoff → mehr Abgas → Turbolader lädt mehr Luft → Luftmasse steigt mit.',src:'S. 8'},
+
+/* ---------- Wegmessung ---------- */
+{id:'wg01',t:'weg',type:'mc',q:'Welches Signal liefert ein Endschalter?',
+ a:['Ausschließlich ein binäres Ein-Aus-Signal','Eine Sinusspannung','Eine zur Stellung proportionale Spannung','Ein frequenzmoduliertes Signal'],c:0,
+ e:'Endschalter erfassen End- oder Maximalpositionen. Sie arbeiten ausschließlich binär (Ein/Aus), als Öffner oder Schließer.',src:'S. 9',test:true},
+{id:'wg02',t:'weg',type:'multi',q:'Wo werden Endschalter eingesetzt? (mehrere richtig)',
+ a:['Drosselklappenschalter (Leerlauf- und Volllastschalter) bei mechanisch betätigter Drosselklappe','Brems- und Kupplungspedalschalter','Sensor für Getriebe-Neutralstellung','Kraftstoffdruckmessung','Lambdaregelung'],c:[0,1,2],
+ e:'Anwendungen: Drosselklappenschalter, Pedalstellung (Brems-/Kupplungspedal), Getriebe-Neutralstellung (auch berührungslos als Hallgeber möglich).',src:'S. 9'},
+{id:'wg03',t:'weg',type:'mc',q:'Wie ist ein Potentiometer aufgebaut?',
+ a:['Veränderbarer Widerstand mit 3 Anschlüssen (E, A, S): Auf einer Widerstandsbahn gleitet ein Schleifkontakt, der mit dem Signalanschluss verbunden ist','Zwei Spulen auf einem Eisenkern','Ein Halbleiterplättchen mit Dauermagnet','Ein Piezoelement auf einer Membran'],c:0,
+ e:'E = Eingang (+5 V), A = Ausgang (Masse), S = Signal (Schleifer). Die Spannung Vs zwischen A und S zeigt die Stellung.',src:'S. 9',test:true},
+{id:'wg04',t:'weg',type:'gap',q:'Wie heißen die drei Anschlüsse eines Potentiometers? (Buchstaben, z. B. „XYZ")',c:['EAS','E A S','E, A, S','EAS.','E,A,S'],
+ e:'E (Eingang), A (Ausgang), S (Signal/Schleifer).',src:'S. 9'},
+{id:'wg05',t:'weg',type:'mc',q:'Zwischen welchen Anschlüssen wird die Signalspannung Vs gemessen?',
+ a:['Zwischen Ausgang (A) und Signalanschluss (S)','Zwischen Eingang und Ausgang','Zwischen Eingang und Masse des Fahrzeugs','Zwischen zwei Schleifkontakten'],c:0,
+ e:'Vs = Spannung zwischen Ausgang und Signal. Vs min = 0 V, Vs max = 5 V (Versorgung E–A = 5 V).',src:'S. 9'},
+{id:'wg06',t:'weg',type:'match',q:'Poti für lineare Bewegung oder für Drehbewegung?',
+ cats:['lineare Bewegung','Drehbewegung'],
+ items:[{t:'Drosselklappenpotentiometer',c:1},{t:'Abgasrückführungs-Ventilsensor',c:0},{t:'Fahrpedalstellungsgeber',c:1},{t:'Sensor für Turbolader-Leitschaufelverstellung',c:0},{t:'Saugrohrklappenstellungsgeber',c:1}],
+ e:'Linear: AGR-Ventil, Turbolader-Leitschaufeln. Dreh: Drosselklappe, Fahrpedal, Saugrohrklappe.',src:'S. 9',test:true},
+{id:'wg07',t:'weg',type:'mc',q:'Warum hat ein Fahrpedalsensor zwei Potentiometer?',
+ a:['Aus Sicherheitsgründen (Redundanz) – fällt ein Poti aus, geht das Steuergerät ins Notprogramm','Weil ein Poti nur 2,5 V liefern kann','Für Vorwärts- und Rückwärtsfahrt','Für Benzin- und Dieselmotoren'],c:0,
+ e:'Zwei Potis = Redundanz. Im Gutbild laufen beide Signale parallel, eines mit halber Spannung. Fällt eines aus → Notprogramm.',src:'S. 9',test:true},
+{id:'wg08',t:'weg',type:'mc',q:'Wie erkennt man am Oszilloskop einen defekten Gaspedalsensor?',
+ a:['Das Signal zeigt Einbrüche/„Rauschen" – die Widerstandsbahn ist teilweise unterbrochen (Rausch-Prüfung)','Das Signal ist eine perfekte Gerade','Das Signal ist ein Rechteck','Das Signal fehlt bei Leerlauf'],c:0,
+ e:'Rausch-Prüfung: Pedal langsam durchtreten, Signal beobachten. Spitzen/Einbrüche = unterbrochene Widerstandsbahn.',src:'S. 9'},
+{id:'wg09',t:'weg',type:'tf',q:'Der Volllastschalter liefert bei Volllast 0 V und sonst 5 V.',c:true,
+ e:'Richtig. Im Diagramm: Volllastschalter fällt nur bei VL auf 0 V. Leerlaufschalter: 0 V bei LL, sonst 5 V.',src:'S. 9'},
+
+/* ---------- Berührungslose Wegmessung ---------- */
+{id:'br01',t:'beruehr',type:'mc',q:'Welcher Nachteil entsteht bei Wegmessung mit Schalter oder Poti?',
+ a:['Mechanischer Kontakt → Verschleiß; beim Trennen entstehen Funken, die den Kontakt verschmoren → Messfehler','Sie brauchen 12 V','Sie sind zu teuer','Sie liefern kein Signal ohne Bewegung'],c:0,
+ e:'Mechanischer Kontakt nutzt sich ab, Funken verschmoren die Kontakte → Messfehler. Berührungslose Sensoren haben das nicht.',src:'S. 10',test:true},
+{id:'br02',t:'beruehr',type:'multi',q:'Was gilt für berührungslose Sensoren? (mehrere richtig)',
+ a:['Die Kraftwirkung eines Magnetfeldes wird genutzt, kein Verschleiß','Aufwändige integrierte Schaltungen (IC) nötig','Durch Überspannung oder falsche Polung zerstörbar','Temperaturempfindlich','Brauchen keine Elektronik'],c:[0,1,2,3],
+ e:'Vorteil: kein Verschleiß. Nachteile: IC nötig, empfindlich gegen Überspannung, Verpolung und Temperatur.',src:'S. 10',test:true},
+{id:'br03',t:'beruehr',type:'mc',q:'Wie funktioniert der induktive Drehbewegungssensor?',
+ a:['Senderspule erzeugt mit hochfrequentem Wechselstrom ein rasch wechselndes Magnetfeld → induziert im Rotor einen Wechselstrom → dessen Magnetfeld wird von der Empfängerspule erfasst → Rotorposition','Ein Dauermagnet dreht sich über einem Hallelement','Ein Schleifkontakt gleitet über eine Widerstandsbahn','Ein Piezoelement wird gebogen'],c:0,
+ e:'Erregerspule → Rotor (Kurzschlussring) → Empfängerspule. Anwendung: Drosselklappen- und Fahrpedalstellung.',src:'S. 10',test:true},
+{id:'br04',t:'beruehr',type:'mc',q:'Wodurch wird bei magnetostatischen Sensoren das Magnetfeld erzeugt?',
+ a:['Durch Dauermagneten, die auf Hallelemente oder magnetoresistive Elemente wirken','Durch hochfrequenten Wechselstrom in einer Senderspule','Durch den Rotorstrom','Durch die Bordspannung'],c:0,
+ e:'Magnetostatisch = Dauermagnet. Magnetisch induktiv = Wechselstrom/Spulen.',src:'S. 10',test:true},
+{id:'br05',t:'beruehr',type:'mc',q:'Wovon hängt der Widerstand R eines magnetoresistiven Elements ab?',
+ a:['Von der Richtung der Magnetfeldlinien – Verdrehen des Magneten ändert den Strom über den Widerstand','Von der Stärke des Stroms','Von der Drehzahl','Von der Luftmasse'],c:0,
+ e:'Richtung des Feldes (Winkel α) → Widerstand → Strom. Einsatz: Drosselklappenstellung, Motorlagesensor.',src:'S. 10'},
+{id:'br06',t:'beruehr',type:'match',q:'Magnetisch induktiv oder magnetostatisch?',
+ cats:['magnetisch induktiv','magnetostatisch'],
+ items:[{t:'Hochfrequenter Wechselstrom in der Erregerspule',c:0},{t:'Dauermagnet',c:1},{t:'Kurzschlussring / Rotor mit induziertem Strom',c:0},{t:'Hallelement oder magnetoresistives Element',c:1},{t:'Empfängerspule erfasst die Position',c:0}],
+ e:'Induktiv: Spulen + Wechselstrom + Rotor. Statisch: Dauermagnet + Hall/magnetoresistiv.',src:'S. 10',test:true},
+{id:'br07',t:'beruehr',type:'mc',q:'Was bedeutet das Schaltzeichen mit dem Buchstaben-K-ähnlichen Symbol im Kasten?',
+ a:['Sensor mit integrierter Schaltung (IC)','Potentiometer','Endschalter','Zündspule'],c:0,
+ e:'Kasten mit IC-Symbol = Sensor mit integrierter Schaltung (Signalaufbereitung/Verstärkung eingebaut).',src:'S. 10'},
+
+/* ---------- Temperatur, Druck, Klopfen ---------- */
+{id:'tp01',t:'temp',type:'mc',q:'Was ist ein NTC-Widerstand?',
+ a:['Halbleiter mit negativem Temperaturkoeffizient – bei höherer Temperatur geringerer Widerstand = Heißleiter','Halbleiter mit positivem Temperaturkoeffizient = Kaltleiter','Ein Widerstand, der sich nicht mit der Temperatur ändert','Ein Piezoelement'],c:0,
+ e:'NTC = Heißleiter: Widerstand nimmt mit steigender Temperatur ab. Signal: kalt (−30 °C) ca. 4 V, warm (+120 °C) ca. 0 V.',src:'S. 11',test:true},
+{id:'tp02',t:'temp',type:'multi',q:'Wo werden NTC-Temperatursensoren eingesetzt? (mehrere richtig)',
+ a:['Motortemperatur (Kühlmittel)','Öltemperatur','Ansauglufttemperatur','Kraftstofftemperatur','Reifendruck'],c:[0,1,2,3],
+ e:'Motor-, Öl-, Luft- und Kraftstofftemperaturmessung.',src:'S. 11'},
+{id:'tp03',t:'temp',type:'mc',q:'Wie verhält sich die Signalspannung eines NTC-Sensors beim Warmlauf?',
+ a:['Sie sinkt von ca. 4 V (kalt, −30 °C) auf nahe 0 V (warm, +120 °C)','Sie steigt von 0 V auf 5 V','Sie bleibt konstant bei 2,5 V','Sie springt zwischen 0 und 5 V'],c:0,
+ e:'Widerstand sinkt mit der Temperatur → Spannungsteiler → Signalspannung sinkt.',src:'S. 11'},
+{id:'tp04',t:'temp',type:'mc',q:'Wie funktioniert ein Piezo-Drucksensor?',
+ a:['Auf einer Membran sitzt eine Widerstandsschaltung mit Piezo-Element; Durchbiegen belastet/entlastet es → Potentialunterschied → verstärkt auf 0 – 5 V','Ein Schleifer gleitet über eine Widerstandsbahn','Ein Magnetfeld lenkt Elektronen ab','Ein Heizdraht wird abgekühlt'],c:0,
+ e:'Piezo mechanisch beeinflussen → gibt Spannung ab. Membran biegt sich mit dem Druck → Spannung 0–5 V.',src:'S. 11',test:true},
+{id:'tp05',t:'temp',type:'mc',q:'Was passiert, wenn man ein Piezoelement mit Spannung beaufschlagt?',
+ a:['Es wird größer (dehnt sich aus) – das nutzt der Piezoinjektor','Es wird kalt','Es leitet Sauerstoffionen','Es erzeugt ein Magnetfeld'],c:0,
+ e:'Piezo umgekehrt: Spannung anlegen → Ausdehnung. Mechanisch belasten → Spannung abgeben (Sensor).',src:'S. 11 + 15',test:true},
+{id:'tp06',t:'temp',type:'multi',q:'Wo werden Piezo-Drucksensoren eingesetzt? (mehrere richtig)',
+ a:['Saugrohrdrucksensor (Ladedruck)','Kraftstoffdrucksensor','Drosselklappenpotentiometer','Lambdasonde'],c:[0,1],
+ e:'Saugrohrdruck/Ladedruck und Kraftstoffdruck. Signal: Umgebungsdruck ≈ Mittelwert, Überdruck darüber, Unterdruck darunter.',src:'S. 11'},
+{id:'tp07',t:'temp',type:'mc',q:'Wie ist ein Beschleunigungssensor (z. B. Klopfsensor) aufgebaut?',
+ a:['Piezoelement kombiniert mit einer Masse, die bei Schwingungen Druck auf das Element ausübt','NTC-Widerstand mit Gehäuse','Spule mit Dauermagnet','Hallelement mit Geberrad'],c:0,
+ e:'Piezo-Beschleunigungssensor: Masse drückt bei Schwingung auf das Piezoelement → Spannung. Klopfen liefert eine Korrekturgröße für den ZZP.',src:'S. 11',test:true},
+{id:'tp08',t:'temp',type:'multi',q:'Anwendungen des Piezo-Beschleunigungssensors? (mehrere richtig)',
+ a:['Klopfsensor','Crashsensor (Airbag)','Öldrucksensor','Kühlmitteltemperatursensor'],c:[0,1],
+ e:'Klopfsensor und Crashsensor. Das Klopfsignal schwingt um ca. 3 V.',src:'S. 11'},
+{id:'tp09',t:'temp',type:'match',q:'Welcher Sensor gehört zu welchem Prinzip?',
+ cats:['NTC (Heißleiter)','Piezo-Drucksensor','Piezo-Beschleunigungssensor'],
+ items:[{t:'Kühlmitteltemperatur',c:0},{t:'Ladedruck',c:1},{t:'Klopfsensor',c:2},{t:'Kraftstoffdruck',c:1},{t:'Crashsensor',c:2},{t:'Ansauglufttemperatur',c:0}],
+ e:'Temperatur → NTC. Druck → Piezo auf Membran. Schwingung → Piezo mit Masse.',src:'S. 11',test:true},
+
+/* ---------- Luftmassenmesser ---------- */
+{id:'hf01',t:'hfm',type:'mc',q:'Woraus besteht der Heißfilm-Luftmassenmesser (HFM)?',
+ a:['Messrohr und Sensorelektronik mit Sensorelement; auf dem Sensorelement ein Heizelement und zwei temperaturabhängige Widerstände','Zwei Spulen und ein Eisenkern','Membran mit Piezoelement','Zirkondioxid mit Platinschicht'],c:0,
+ e:'HFM = Messrohr + Sensorelektronik + Sensorelement (Heizelement + 2 Temperaturwiderstände). Sensorprinzip: NTC-PTC-Kombination.',src:'S. 12',test:true},
+{id:'hf02',t:'hfm',type:'num',q:'Auf wie viel °C über Ansauglufttemperatur wird das Heizelement des HFM aufgeheizt?',c:120,tol:0.5,unit:'°C',
+ e:'HFM: 120 °C über Ansauglufttemperatur. Hitzdraht-LMM: 100 °C über Ansauglufttemperatur.',src:'S. 12',test:true},
+{id:'hf03',t:'hfm',type:'mc',q:'Wie ermittelt der HFM die Luftmasse?',
+ a:['Je mehr Luftmoleküle das Heizelement abkühlen, desto höher der Heizstrom (frequenzmodulierte Spannung: höhere Schaltfrequenz = mehr Strom)','Über den Druckabfall im Messrohr','Über die Drehzahl eines Flügelrads','Über den Sauerstoffgehalt der Luft'],c:0,
+ e:'1. Sensor misst Ansauglufttemperatur, Heizelement 120 °C darüber, 2. Sensor misst das. Mehr Luftmasse → mehr Abkühlung → mehr Heizstrom → höhere Frequenz.',src:'S. 12',test:true},
+{id:'hf04',t:'hfm',type:'mc',q:'Wofür wird der Luftmassenmesser beim Otto- bzw. Dieselmotor verwendet?',
+ a:['Otto: Ermittlung der Motorlast – Diesel: Ermittlung der Abgasrückführungsrate','Otto: Zündzeitpunkt – Diesel: Glühzeit','Beide: Lambdaregelung','Beide: Klopfregelung'],c:0,
+ e:'Otto → Motorlast (angesaugte Luft = Last). Diesel → AGR-Rate.',src:'S. 12',test:true},
+{id:'hf05',t:'hfm',type:'multi',q:'Nachteile des älteren Hitzdraht-Luftmassenmessers? (mehrere richtig)',
+ a:['Kein schützendes Gehäuse','Der Hitzdraht verschmutzt','Misst auch Rückströmung','Braucht 12 V Heizspannung'],c:[0,1,2],
+ e:'Hitzdraht: konstant 100 °C über Ansaugluft, gleiches Prinzip, aber ungeschützt, verschmutzt, misst Rückströmung mit.',src:'S. 12'},
+{id:'hf06',t:'hfm',type:'tf',q:'Beim HFM gilt: je höher die Schaltfrequenz der Spannung, desto mehr Strom fließt und desto größer ist die Luftmasse.',c:true,
+ e:'Richtig. Frequenzmoduliertes Signal: Frequenz ↑ = Heizstrom ↑ = Luftmasse ↑.',src:'S. 12'},
+{id:'hf07',t:'hfm',type:'mc',q:'Welche Bauteile sitzen im Messrohr des HFM vor dem Sensorelement?',
+ a:['Ein Abweisgitter; nur ein Teil-Luftstrom geht über das Sensorelement','Eine Drosselklappe','Ein Kraftstofffilter','Eine Lambdasonde'],c:0,
+ e:'Abweisgitter schützt vor Schmutz, gemessen wird ein Teil-Luftstrom.',src:'S. 12'},
+
+/* ---------- Lambdasonden ---------- */
+{id:'so01',t:'sonde',type:'mc',q:'Nach welchem Prinzip arbeitet die Lambdasonde?',
+ a:['Galvanisches Element','Induktion','Hall-Effekt','Piezo-Effekt'],c:0,
+ e:'Beide Sondenarten (Sprung- und Breitbandsonde) sind galvanische Elemente mit Zirkondioxid-Keramik.',src:'S. 13–14',test:true},
+{id:'so02',t:'sonde',type:'mc',q:'Wie ist die Spannungssprungsonde aufgebaut?',
+ a:['Keramikkörper aus Zirkondioxid, beidseitig mikroporöse Platinschicht; eine Seite Abgas, andere Seite Außenluft','Heizdraht im Messrohr','Zwei Spulen um einen Eisenkern','Membran mit Piezoelement'],c:0,
+ e:'ZrO₂-Keramik + Platinelektroden. Abgas innen/außen vs. Außenluft (Referenz).',src:'S. 13',test:true},
+{id:'so03',t:'sonde',type:'num',q:'Ab welcher Temperatur (ca.) wird die Zirkonschicht für Sauerstoffionen leitend?',c:300,tol:1,unit:'°C',
+ e:'Ca. 300 °C. Damit die Sonde das schnell erreicht, hat sie eine Lambdaheizung (PTC).',src:'S. 13',test:true},
+{id:'so04',t:'sonde',type:'mc',q:'Wie entsteht die Sondenspannung?',
+ a:['Sauerstoffionen wandern durch die Zirkonschicht, die Elektronen wandern über die Platinelektroden und werden als Spannung erfasst','Ein Magnetfeld lenkt Elektronen ab','Ein Heizdraht wird abgekühlt','Eine Membran wird gebogen'],c:0,
+ e:'Unterschiedlicher Sauerstoffgehalt beidseitig → Ionenwanderung → Spannung zwischen den Platinelektroden.',src:'S. 13'},
+{id:'so05',t:'sonde',type:'mc',q:'Wie groß ist der Spannungssprung beim Wechsel von fett auf mager?',
+ a:['Ca. 0,8 V (fett ≈ 0,9 V, mager ≈ 0,1 V, Sprung bei λ = 1)','Ca. 5 V','Ca. 12 V','Ca. 0,05 V'],c:0,
+ e:'Fett ≈ 0,8–0,9 V, mager ≈ 0,1 V. Der Sprung liegt bei λ = 1 (ca. 0,45 V).',src:'S. 13',test:true},
+{id:'so06',t:'sonde',type:'mc',q:'Warum wird die Spannungssprungsonde nur bei homogener Gemischbildung verwendet?',
+ a:['Weil sie nur „fett" oder „mager" anzeigen kann, nicht den genauen Lambdawert','Weil sie keine Heizung hat','Weil sie nur bei Diesel funktioniert','Weil sie 12 V braucht'],c:0,
+ e:'Sprungsonde = Ja/Nein-Sensor um λ 1. Für Luftüberschuss (heterogen) braucht man die Breitbandsonde.',src:'S. 13',test:true},
+{id:'so07',t:'sonde',type:'mc',q:'Woraus besteht die Breitbandlambdasonde?',
+ a:['Zwei Zellen – Messzelle und Pumpzelle – mit Messspalt dazwischen, der über einen Diffusionskanal mit dem Abgas verbunden ist','Einer Zelle mit Platinschicht','Einem NTC und einem PTC','Einem Hallelement'],c:0,
+ e:'Messzelle misst den Sauerstoff im Messspalt und vergleicht mit dem Sollwert 0,45 V. Die Pumpzelle regelt nach.',src:'S. 14',test:true},
+{id:'so08',t:'sonde',type:'mc',q:'Was macht die Pumpzelle bei fettem Gemisch?',
+ a:['Wenig Restsauerstoff → sie pumpt Sauerstoff aus dem Abgasstrom in den Messspalt hinein','Sie pumpt Sauerstoff aus dem Messspalt heraus','Sie heizt die Sonde','Sie schaltet ab'],c:0,
+ e:'Fett = wenig O₂ → hineinpumpen. Mager = viel O₂ → herauspumpen. Der Pumpstrom ändert Polarität und Größe.',src:'S. 14',test:true},
+{id:'so09',t:'sonde',type:'mc',q:'Was macht die Pumpzelle bei magerem Gemisch?',
+ a:['Hoher Restsauerstoffgehalt → sie pumpt Sauerstoff aus dem Messspalt heraus','Sie pumpt Sauerstoff hinein','Der Pumpstrom wird null','Sie kühlt die Sonde'],c:0,
+ e:'Mager → herauspumpen. Im Diagramm: Pumpstrom positiv bei λ > 1, negativ bei λ < 1.',src:'S. 14'},
+{id:'so10',t:'sonde',type:'num',q:'Mit welchem Sollwert (in Volt) vergleicht die Messzelle der Breitbandsonde?',c:0.45,tol:0.005,unit:'V',
+ e:'Sollwert 0,45 V = λ 1 im Messspalt. Die Pumpzelle hält diesen Wert, der Pumpstrom ist das Maß für λ.',src:'S. 14',test:true},
+{id:'so11',t:'sonde',type:'mc',q:'Bei welcher Gemischbildung kann nur die Breitbandsonde verwendet werden?',
+ a:['Bei heterogenem Gemisch (Luftüberschuss) – Diesel und Otto-Direkteinspritzer','Bei homogenem Gemisch λ 1','Bei Zweitaktmotoren','Bei Motoren ohne Katalysator'],c:0,
+ e:'Nur die Breitbandsonde misst den Lambdawert genau, auch weit über λ 1.',src:'S. 14',test:true},
+{id:'so12',t:'sonde',type:'match',q:'Sprungsonde oder Breitbandsonde?',
+ cats:['Spannungssprungsonde','Breitbandsonde'],
+ items:[{t:'Zeigt nur fett oder mager',c:0},{t:'Pumpzelle und Messzelle',c:1},{t:'Homogene Gemischbildung',c:0},{t:'Heterogene Gemischbildung (Luftüberschuss)',c:1},{t:'Spannungssprung ca. 0,8 V bei λ 1',c:0},{t:'Pumpstrom ändert Polarität und Größe',c:1}],
+ e:'Sprung: Ja/Nein um λ 1. Breitband: genauer λ-Wert über den Pumpstrom.',src:'S. 13–14',test:true},
+
+/* ---------- Aktoren 1 ---------- */
+{id:'ak01',t:'aktor1',type:'mc',q:'Wie funktioniert ein Magnetventil?',
+ a:['Wie ein Relais: Die Magnetwicklung wird bestromt und zieht statt eines Schalters eine Ventilnadel (Magnetanker) entgegen der Federkraft an; ohne Strom schließt die Feder das Ventil','Ein Piezostack dehnt sich aus','Ein E-Motor dreht die Nadel','Ein PTC erwärmt die Nadel'],c:0,
+ e:'Magnetventil = Relais mit Ventilnadel. Strom an → Anker angezogen → Ventil offen. Strom aus → Rückstellfeder schließt.',src:'S. 15',test:true},
+{id:'ak02',t:'aktor1',type:'multi',q:'Anwendungen des Magnetventils? (mehrere richtig)',
+ a:['Einspritzventil','Magnetventilinjektor','Ventil für Abgasrückführung','Lambdaheizung','Kraftstoffförderpumpe'],c:[0,1,2],
+ e:'Einspritzventil, Magnetventilinjektor, AGR-Ventil.',src:'S. 15'},
+{id:'ak03',t:'aktor1',type:'match',q:'Ordne die Teile des Magnetventils zu.',
+ cats:['Wicklung','Ventilanker','Rückstellfeder'],
+ items:[{t:'Wird bestromt und wirkt als Elektromagnet',c:0},{t:'Wird vom Magnetfeld angezogen und öffnet das Ventil',c:1},{t:'Schließt das Ventil, wenn der Strom abgeschaltet wird',c:2}],
+ e:'Wicklung (Ansteuerung + / Masse −), Ventilanker (Magnetanker), Rückstellfeder.',src:'S. 15'},
+{id:'ak04',t:'aktor1',type:'mc',q:'Wie funktioniert ein Piezoinjektor?',
+ a:['Das Piezoprinzip der Drucksensoren wird umgekehrt: Wird das Piezoelement bestromt, dehnt es sich aus','Ein Elektromagnet zieht die Nadel','Ein Schrittmotor öffnet die Düse','Druckluft öffnet das Ventil'],c:0,
+ e:'Sensor: Druck → Spannung. Aktor: Spannung → Ausdehnung.',src:'S. 15',test:true},
+{id:'ak05',t:'aktor1',type:'mc',q:'Warum werden im Piezoinjektor die Elemente zu einem Piezostack gestapelt?',
+ a:['Weil die Ausdehnung eines Elements sehr gering ist – hunderte Schichten mit 100 – 180 V ergeben genug Hub zur Ventilöffnung','Weil sie sonst überhitzen','Um den Strom zu begrenzen','Damit sie sich gegenseitig kühlen'],c:0,
+ e:'Piezostack: hunderte Schichten, Eingangsspannung 100–180 V → ausreichende Hubbewegung.',src:'S. 15',test:true},
+{id:'ak06',t:'aktor1',type:'num',q:'Mit welcher Eingangsspannung (unterer Wert in V) wird der Piezostack mindestens beaufschlagt?',c:100,tol:0.5,unit:'V (bis 180 V)',
+ e:'100 – 180 V.',src:'S. 15'},
+{id:'ak07',t:'aktor1',type:'mc',q:'Wie funktioniert ein E-Motor (Gleichstrommotor)?',
+ a:['Zwei Magnetfelder (Permanent- und Elektromagnet) ziehen sich an bzw. stoßen sich ab; der Stromwender (Kommutator) kehrt die Stromrichtung im Anker um → Magnetfeld kehrt um → Motor dreht','Ein Piezostack dreht den Rotor','Der Rotor wird Schritt für Schritt angezogen und hält die Position','Ein Magnetventil öffnet und schließt'],c:0,
+ e:'Gleiche Pole stoßen ab, ungleiche ziehen an. Kommutator = Stromwender kehrt den Ankerstrom um. Stator = Dauermagnet, Rotor = Elektromagnet.',src:'S. 16',test:true},
+{id:'ak08',t:'aktor1',type:'gap',q:'Wie heißt der Stromwender im E-Motor?',c:['Kommutator','Komutator','Kollektor'],
+ e:'Stromwender = Kommutator.',src:'S. 16',test:true},
+{id:'ak09',t:'aktor1',type:'multi',q:'Anwendungen des E-Motors? (mehrere richtig)',
+ a:['Kraftstoffförderpumpe','Lüftermotor','Drosselklappenstellmotor mit exakter Position','Zündspule'],c:[0,1],
+ e:'E-Motor: Kraftstoffförderpumpe, Lüftermotor. Exakte Positionen → Schrittmotor.',src:'S. 16'},
+{id:'ak10',t:'aktor1',type:'mc',q:'Wie ist ein Schrittmotor aufgebaut?',
+ a:['Rotor abwechselnd mit Nord- und Südpol bestückt (je mehr Pole, desto kleiner die Schritte); Stator aus mehreren Wicklungen','Rotor mit Kommutator, Stator mit Dauermagnet','Ein Piezostack im Gehäuse','Eine Wicklung mit Ventilanker'],c:0,
+ e:'Statorwicklungen werden so bestromt, dass die Magnetpole nacheinander wechseln → Rotor wird Schritt für Schritt angezogen, hält seine Position.',src:'S. 16',test:true},
+{id:'ak11',t:'aktor1',type:'multi',q:'Anwendungen des Schrittmotors? (mehrere richtig)',
+ a:['Drosselklappenstellmotor','AGR-Ventil-Stellmotor','Allgemein Stellmotoren, die eine exakte Position erfordern','Kraftstoffförderpumpe'],c:[0,1,2],
+ e:'Überall, wo eine exakte Position gehalten werden muss.',src:'S. 16'},
+{id:'ak12',t:'aktor1',type:'match',q:'Welcher Aktor passt?',
+ cats:['Magnetventil','Piezoinjektor','E-Motor','Schrittmotor'],
+ items:[{t:'Kraftstoffförderpumpe',c:2},{t:'Drosselklappenstellmotor',c:3},{t:'Piezostack mit 100–180 V',c:1},{t:'Ventilnadel entgegen Federkraft angezogen',c:0},{t:'Kommutator kehrt Stromrichtung um',c:2},{t:'Rotor hält exakt seine Position',c:3}],
+ e:'Magnetventil = Relais-Prinzip. Piezo = Ausdehnung. E-Motor = Drehung mit Kommutator. Schrittmotor = Position.',src:'S. 15–16',test:true},
+
+/* ---------- Aktoren 2 ---------- */
+{id:'zs01',t:'aktor2',type:'mc',q:'Nach welchem Prinzip arbeitet die Zündspule?',
+ a:['Trafoprinzip: zwei Wicklungen übereinander auf einem Eisenkern','Piezoprinzip','Relaisprinzip','Induktion durch Geberrad'],c:0,
+ e:'Zündspule = Transformator. Außen Primärwicklung (dick), innen Sekundärwicklung (dünn, 100× mehr Windungen).',src:'S. 17',test:true},
+{id:'zs02',t:'aktor2',type:'mc',q:'Wie ist die Primärwicklung angeschlossen?',
+ a:['Dicker Draht, an Klemme 15 und über Klemme 1 mit dem Steuergerät auf Masse','Dünner Draht, an Klemme 4','An Klemme 30 und 31','Direkt an die Zündkerze'],c:0,
+ e:'Primär: Kl. 15 (Zündungsplus) – Wicklung – Kl. 1 – Steuergerät schaltet auf Masse.',src:'S. 17',test:true},
+{id:'zs03',t:'aktor2',type:'mc',q:'Was gilt für die Sekundärwicklung?',
+ a:['100-mal mehr Windungen, dünner Draht, Hochspannungsausgang Klemme 4, über die Zündkerzen mit Masse verbunden','Weniger Windungen, dicker Draht, Klemme 15','Gleich viele Windungen wie primär','Sie ist mit Klemme 1 verbunden'],c:0,
+ e:'Sekundär: innen, 100× Windungen, dünn, Kl. 4 → Zündkerzen → Masse.',src:'S. 17',test:true},
+{id:'zs04',t:'aktor2',type:'mc',q:'Wie entsteht die Zündspannung?',
+ a:['Steuergerät schaltet auf Masse → großer Primärstrom → starkes Magnetfeld; zum ZZP schaltet es den Primärstrom ab → Magnetfeld bricht schlagartig zusammen → induziert in der Sekundärwicklung die hohe Zündspannung','Der Primärstrom wird direkt auf 30 kV transformiert','Die Zündkerze erzeugt die Spannung selbst','Ein Kondensator wird auf 12 V geladen'],c:0,
+ e:'Primärstrom ein = „aufladen". Primärstrom aus = Feld bricht zusammen = „entladen" über Sekundärspule und Zündkerzen.',src:'S. 17',test:true},
+{id:'zs05',t:'aktor2',type:'match',q:'Ordne die Klemmen zu.',
+ cats:['Kl. 15','Kl. 1','Kl. 4'],
+ items:[{t:'Zündungsplus zur Primärwicklung',c:0},{t:'Primärwicklung → Steuergerät (Masse geschaltet)',c:1},{t:'Hochspannungsausgang zur Zündkerze',c:2}],
+ e:'15 = Plus, 1 = Masse-Schaltung durch Steuergerät, 4 = Hochspannung.',src:'S. 17',test:true},
+{id:'zs06',t:'aktor2',type:'tf',q:'Die Zündspannung entsteht in dem Moment, in dem der Primärstrom eingeschaltet wird.',c:false,
+ e:'Falsch. Sie entsteht beim Abschalten des Primärstroms, wenn das Magnetfeld schlagartig zusammenbricht.',src:'S. 17'},
+{id:'zs07',t:'aktor2',type:'mc',q:'Was ist ein PTC-Widerstand?',
+ a:['Halbleiter mit positivem Temperaturkoeffizient – bei niedriger Temperatur geringer Widerstand = Kaltleiter','Heißleiter – Widerstand sinkt mit der Temperatur','Ein Piezoelement','Ein Potentiometer'],c:0,
+ e:'PTC = Kaltleiter. Kalt: viel Strom → rasche Erwärmung → Widerstand steigt → Strom wird begrenzt (selbstregelnd).',src:'S. 17',test:true},
+{id:'zs08',t:'aktor2',type:'mc',q:'Warum ist ein PTC-Heizelement selbstregelnd?',
+ a:['Kalt fließt viel Strom, es erwärmt sich rasch, dadurch steigt der Widerstand und der Strom wird begrenzt','Weil ein Thermostat eingebaut ist','Weil das Steuergerät den Strom taktet','Weil es nur mit 5 V läuft'],c:0,
+ e:'Widerstand steigt mit der Temperatur → Strom begrenzt sich selbst.',src:'S. 17'},
+{id:'zs09',t:'aktor2',type:'multi',q:'Anwendungen des PTC-Heizelements? (mehrere richtig)',
+ a:['Glühkerzen','Lambdaheizung','Heizung für AdBlue','Kühlmitteltemperatursensor'],c:[0,1,2],
+ e:'Glühkerzen, Lambdaheizung, AdBlue-Heizung. Temperatursensor = NTC.',src:'S. 17'},
+{id:'zs10',t:'aktor2',type:'match',q:'NTC oder PTC?',
+ cats:['NTC (Heißleiter)','PTC (Kaltleiter)'],
+ items:[{t:'Widerstand sinkt bei steigender Temperatur',c:0},{t:'Widerstand steigt bei steigender Temperatur',c:1},{t:'Temperatursensor (Motor, Öl, Luft, Kraftstoff)',c:0},{t:'Heizelement (Glühkerze, Lambdaheizung)',c:1},{t:'Negativer Temperaturkoeffizient',c:0}],
+ e:'NTC misst, PTC heizt. N = negativ = sinkt, P = positiv = steigt.',src:'S. 11 + 17',test:true}
+);
+
+CARDS.push(
+{t:'last',f:'Lastbestimmung homogen vs. heterogen?',b:'Homogen: angesaugte Luftmenge (Drosselklappe → Füllungsgrad). Heterogen/Diesel: Fahrpedalstellung → Kraftstoffmenge, zusätzlich Luftmasse (Turbolader).'},
+{t:'last',f:'Wie kann die Luftmasse bestimmt werden?',b:'Direkt mit Luftmassenmesser oder errechnet über Luftmenge bzw. Ansaugluftdruck und Ansauglufttemperatur.'},
+{t:'last',f:'Homogen: Einfluss der Last auf den ZZP?',b:'Laständerung durch Zylinderfüllung. Mehr Füllung / fetter → Flammfront schneller → ZZP bei hoher Last später. Geringe Last → ZZP früher.'},
+{t:'last',f:'Heterogen: Einfluss der Last auf den ZZP?',b:'Laständerung durch Treibstoffmenge. Mehr Kraftstoff → längere Brenndauer → ZZP bei hoher Last früher. Geringe Last → ZZP später.'},
+{t:'weg',f:'Endschalter – Signal und Anwendung?',b:'Nur binär (Ein/Aus), Öffner oder Schließer. Drosselklappenschalter (LL/VL), Brems-/Kupplungspedalschalter, Getriebe-Neutralstellung.'},
+{t:'weg',f:'Potentiometer – Aufbau?',b:'Veränderbarer Widerstand mit 3 Anschlüssen E, A, S. Schleifkontakt auf Widerstandsbahn, Signalspannung Vs zwischen A und S (0 – 5 V).'},
+{t:'weg',f:'Poti linear / Drehbewegung – Beispiele?',b:'Linear: AGR-Ventilsensor, Turbolader-Leitschaufelverstellung. Dreh: Drosselklappenpoti, Fahrpedalstellungsgeber, Saugrohrklappenstellungsgeber.'},
+{t:'weg',f:'Warum 2 Potis im Fahrpedalsensor?',b:'Redundanz (Sicherheit). Fällt ein Poti aus → Notprogramm. Defekt: Widerstandsbahn unterbrochen → Rausch-Prüfung am Oszilloskop.'},
+{t:'beruehr',f:'Nachteil von Schalter/Poti?',b:'Mechanischer Kontakt → Verschleiß; Funken beim Trennen verschmoren den Kontakt → Messfehler.'},
+{t:'beruehr',f:'Berührungslose Sensoren – Vor-/Nachteile?',b:'+ Kraftwirkung des Magnetfelds, kein Verschleiß. − aufwändige IC nötig, empfindlich gegen Überspannung, Verpolung, Temperatur.'},
+{t:'beruehr',f:'Induktiver Drehbewegungssensor – Funktion?',b:'Senderspule mit hochfrequentem Wechselstrom → wechselndes Magnetfeld → induziert im Rotor Wechselstrom → dessen Feld erfasst die Empfängerspule → Position (Drosselklappe, Fahrpedal).'},
+{t:'beruehr',f:'Magnetostatische Sensoren?',b:'Dauermagnet wirkt auf Hallelement oder magnetoresistives Element. Widerstand R hängt von der Richtung der Feldlinien ab → Verdrehung ändert den Strom. Drosselklappe, Motorlagesensor.'},
+{t:'temp',f:'NTC?',b:'Negativer Temperaturkoeffizient = Heißleiter. Widerstand sinkt mit steigender Temperatur. Motor-, Öl-, Luft-, Kraftstofftemperatur. Kalt ≈ 4 V, warm ≈ 0 V.'},
+{t:'temp',f:'Piezo-Drucksensor – Funktion?',b:'Membran mit Widerstandsschaltung + Piezoelement. Durchbiegen → Potentialunterschied → verstärkt auf 0–5 V. Saugrohr-/Ladedruck, Kraftstoffdruck.'},
+{t:'temp',f:'Piezo: Sensor vs. Aktor?',b:'Mechanisch beeinflussen → gibt Spannung ab (Sensor). Mit Spannung beaufschlagen → wird größer (Aktor, Piezoinjektor).'},
+{t:'temp',f:'Beschleunigungssensor?',b:'Piezoelement + Masse, die bei Schwingung Druck ausübt. Klopfsensor (Korrekturgröße!), Crashsensor.'},
+{t:'hfm',f:'HFM – Aufbau?',b:'Messrohr + Sensorelektronik mit Sensorelement: 1 Heizelement, 2 temperaturabhängige Widerstände. Prinzip: NTC-PTC-Kombination.'},
+{t:'hfm',f:'HFM – Funktion?',b:'1. Sensor misst Ansauglufttemperatur, Heizelement 120 °C darüber, 2. Sensor misst. Mehr Luftmasse kühlt mehr → höherer Heizstrom → höhere Schaltfrequenz.'},
+{t:'hfm',f:'HFM – Einsatz?',b:'Otto: Motorlast. Diesel: Abgasrückführungsrate.'},
+{t:'hfm',f:'Hitzdraht-LMM?',b:'Ältere Ausführung, Draht 100 °C über Ansauglufttemperatur. Nachteile: kein Gehäuse, verschmutzt, misst Rückströmung.'},
+{t:'sonde',f:'Spannungssprungsonde – Aufbau?',b:'Galvanisches Element: Zirkondioxid-Keramik, beidseitig mikroporöse Platinschicht. Eine Seite Abgas, andere Außenluft. Ab ca. 300 °C leitend für O₂-Ionen → Lambdaheizung.'},
+{t:'sonde',f:'Spannungssprung?',b:'Fett → mager: Sprung ca. 0,8 V (fett ≈ 0,9 V, mager ≈ 0,1 V) bei λ 1. Nur fett/mager erkennbar → homogene Gemischbildung.'},
+{t:'sonde',f:'Breitbandsonde – Aufbau?',b:'Messzelle + Pumpzelle, dazwischen Messspalt, über Diffusionskanal mit Abgas verbunden. Messzelle vergleicht mit Sollwert 0,45 V.'},
+{t:'sonde',f:'Breitbandsonde – Pumpzelle?',b:'Fett (wenig O₂): pumpt O₂ in den Messspalt hinein. Mager (viel O₂): pumpt O₂ heraus. Pumpstrom ändert Polarität und Größe → genauer λ-Wert. Nur diese Sonde bei heterogenem Gemisch.'},
+{t:'aktor1',f:'Magnetventil?',b:'Wie Relais: Wicklung bestromt → Magnetanker/Ventilnadel entgegen Federkraft angezogen. Strom aus → Rückstellfeder schließt. Einspritzventil, Magnetventilinjektor, AGR-Ventil.'},
+{t:'aktor1',f:'Piezoinjektor?',b:'Piezoprinzip umgekehrt: bestromt → dehnt sich aus. Ausdehnung gering → Piezostack aus hunderten Schichten, 100–180 V → Hub zur Ventilöffnung.'},
+{t:'aktor1',f:'E-Motor?',b:'Zwei Magnetfelder (Dauermagnet-Stator + Elektromagnet-Rotor) ziehen an / stoßen ab. Kommutator (Stromwender) kehrt Ankerstrom um → Drehung. Kraftstoffförderpumpe, Lüftermotor.'},
+{t:'aktor1',f:'Schrittmotor?',b:'Rotor mit abwechselnd N/S-Polen (mehr Pole = kleinere Schritte), Stator mit mehreren Wicklungen, nacheinander bestromt → Rotor Schritt für Schritt, hält Position. Drosselklappen-, AGR-Stellmotor.'},
+{t:'aktor2',f:'Zündspule – Aufbau?',b:'Trafoprinzip, Eisenkern. Primär außen: dicker Draht, Kl. 15 und über Kl. 1 zum Steuergerät (Masse). Sekundär innen: 100× Windungen, dünner Draht, Kl. 4 → Zündkerzen → Masse.'},
+{t:'aktor2',f:'Zündspule – Funktion?',b:'Steuergerät schaltet Masse → großer Primärstrom → Magnetfeld („aufladen"). Zum ZZP Primärstrom aus → Feld bricht zusammen → Sekundärwicklung induziert Zündspannung („entladen").'},
+{t:'aktor2',f:'PTC-Heizelement?',b:'Positiver Temperaturkoeffizient = Kaltleiter. Kalt: viel Strom → erwärmt sich → Widerstand steigt → Strom begrenzt. Glühkerzen, Lambdaheizung, AdBlue-Heizung.'}
+);
+
+Object.assign(NOTES, {
+last:`
+<h3>Erfassung der Last <span class="tag m">Test</span></h3>
+<p>Die Motorlast ändert sich z. B., wenn man bei gleichbleibender Drehzahl erst eben und dann bergauf fährt.</p>
+<div class="grid2">
+<div class="merke"><b>Homogene Gemischbildung</b><br>Fahrpedal → Drosselklappe weiter geöffnet → mehr Gemisch angesaugt → Füllungsgrad steigt.<br><b>Last = angesaugte Luftmenge.</b></div>
+<div class="merke"><b>Heterogene Gemischbildung (und Diesel)</b><br>Es wird mehr Kraftstoff eingespritzt. <b>Last = Fahrpedalstellung.</b> Abgasdruck steigt, Turbolader erhöht den Ansaugdruck → <b>zusätzlich die Luftmasse</b> bestimmend.</div>
+</div>
+<p>Die Luftmasse kann direkt mit einem <b>Luftmassenmesser gemessen</b> oder über <b>Luftmenge bzw. Ansaugluftdruck und Ansauglufttemperatur errechnet</b> werden.</p>
+<h3>Einfluss der Last auf den Zündzeitpunkt <span class="tag m">Test</span></h3>
+<table>
+<tr><th></th><th>Homogen (λ 1)</th><th>Heterogen (Luftüberschuss)</th></tr>
+<tr><td>Laständerung durch</td><td>Änderung der Zylinderfüllung</td><td>Änderung der Treibstoffmenge (Brennraum voll Luft)</td></tr>
+<tr><td>Geringe Last</td><td>kleiner Füllungsgrad, magerer, Verbrennung langsam → <b>ZZP früher</b></td><td>weniger Kraftstoff, kürzere Brenndauer → <b>ZZP später</b></td></tr>
+<tr><td>Hohe Last</td><td>großer Füllungsgrad, fetter, Flammfront rascher → <b>ZZP später</b></td><td>mehr Kraftstoff, längere Brenndauer → <b>ZZP früher</b></td></tr>
+</table>
+<div class="merke">Homogen: fetter/mehr Gemisch brennt <b>schneller</b> → später zünden. Heterogen: mehr Kraftstoff braucht <b>mehr Zeit</b> → früher zünden.</div>`,
+weg:`
+<h3>Endschalter <span class="tag m">Test</span></h3>
+<p>Sensorprinzip: <b>Schalter</b>. Erfassen End- oder Maximalpositionen, arbeiten <b>ausschließlich binär</b> (Ein-Aus-Signal), als <b>Öffner oder Schließer</b>.</p>
+<ul><li><b>Drosselklappenschalter</b> bei mechanisch betätigter DK: Leerlauf- und Volllastschalter</li><li><b>Pedalstellung:</b> Brems- und Kupplungspedalschalter</li><li>Sensor für <b>Getriebe-Neutralstellung</b> (auch als Hallgeber berührungslos möglich)</li></ul>
+<p>Signal: Leerlaufschalter 0 V bei LL, sonst 5 V. Volllastschalter 0 V bei VL, sonst 5 V.</p>
+<h3>Potentiometer <span class="tag m">Test</span></h3>
+<p>Veränderbarer Widerstand mit <b>3 Anschlüssen (E, A, S)</b>. Auf einer Widerstandsbahn mit Eingangs- und Ausgangsanschluss gleitet ein <b>Schleifkontakt</b>, der mit dem Signalanschluss verbunden ist. Durch Spannungsmessung <b>V<sub>S</sub> zwischen Ausgang und Signal</b> wird die Stellung ermittelt (V<sub>S min</sub> = 0 V, V<sub>S max</sub> = 5 V).</p>
+<table><tr><th>Lineare Bewegung</th><th>Drehbewegung</th></tr><tr><td>Abgasrückführungs-Ventilsensor<br>Sensor für Turbolader-Leitschaufelverstellung</td><td>Drosselklappenpotentiometer<br>Fahrpedalstellungsgeber<br>Saugrohrklappenstellungsgeber</td></tr></table>
+<div class="merke"><b>Oszilloskop:</b> Fahrpedalsensor hat aus Sicherheitsgründen <b>2 Potentiometer (Redundanz)</b>, Signale parallel (z. B. 4 V und 2 V). Fällt ein Poti aus → <b>Notprogramm</b>.<br><b>Defekt:</b> Widerstandsbahn teilweise unterbrochen → Einbrüche im Signal → <b>Rausch-Prüfung</b>.</div>`,
+beruehr:`
+<h3>Berührungslose Wegmessung <span class="tag m">Test</span></h3>
+<p>Bei Schalter oder Poti tritt durch mechanischen Kontakt <b>Verschleiß</b> auf, Funken beim Trennen verschmoren den Kontakt → Messfehler. Bei berührungslosen Sensoren wird die <b>Kraftwirkung eines Magnetfeldes</b> genutzt – <b>kein Verschleiß</b>.</p>
+<p>Nachteile: aufwändige <b>integrierte Schaltungen (IC)</b> nötig, durch <b>Überspannung / falsche Polung zerstörbar</b>, <b>temperaturempfindlich</b>. Schaltzeichen: Kasten mit IC-Symbol.</p>
+<h3>Magnetisch induktive Sensoren</h3>
+<p>Durch hochfrequenten Wechselstrom wird in einem Kurzschlussring ein Strom induziert, der wiederum ein Magnetfeld erzeugt. Richtung und Position dieses Feldes erfasst eine Empfängerspule.</p>
+<div class="merke"><b>Induktiver Drehbewegungssensor:</b><br>1. Senderspule (Erregerspule): hochfrequenter Wechselstrom → rasch wechselndes Magnetfeld<br>2. induziert im Rotor einen Wechselstrom → wechselndes Rotor-Magnetfeld<br>3. Empfängerspule empfängt es → Position des Rotors<br>→ Drosselklappen- oder Fahrpedalstellung</div>
+<h3>Magnetostatische Sensoren</h3>
+<p>Magnetfeld durch <b>Dauermagneten</b>, wirkt auf <b>Hallelemente</b> oder <b>magnetoresistive Elemente</b>. Der Widerstand R des magnetoresistiven Elements hängt von der <b>Richtung der Magnetfeldlinien</b> ab. Verdrehung des Magneten → Strom über den Widerstand ändert sich. Einsatz: Drosselklappenstellung, Motorlagesensor.</p>`,
+temp:`
+<h3>NTC-Temperatursensoren <span class="tag m">Test</span></h3>
+<p>Temperaturabhängige Widerstände mit <b>negativem Temperaturkoeffizient</b>, Halbleiter, bei höherer Temperatur geringerer Widerstand = <b>Heißleiter</b>. Widerstand muss mit steigender Temperatur abnehmen.</p>
+<p>Einsatz: Motor-, Öl-, Luft-, Kraftstofftemperatur. Signal: kalt (−30 °C) ≈ 4 V → warm (+120 °C) ≈ 0 V.</p>
+<h3>Piezoelektrischer Drucksensor <span class="tag m">Test</span></h3>
+<div class="merke"><b>Piezo:</b> mechanisch beeinflussen → gibt Spannung ab. Mit Spannung beaufschlagen → wird größer.</div>
+<p>Auf einer <b>Membran</b> ist eine Widerstandsschaltung mit Piezo-Element aufgebracht. Beim Durchbiegen wird das Element belastet/entlastet → <b>Potentialunterschied</b> → elektronische Verstärkung → <b>0 – 5 V</b>.</p>
+<p>Einsatz: <b>Saugrohrdrucksensor (Ladedruck)</b>, <b>Kraftstoffdrucksensor</b>. Signal: Umgebungsdruck ≈ Mittelwert, Überdruck darüber, Unterdruck darunter.</p>
+<h3>Beschleunigungssensor <span class="tag m">Test</span></h3>
+<p>Piezoelement mit einer <b>Masse</b> kombiniert, die bei Schwingungen Druck auf das Element ausübt. Sensorprinzip: Piezo-Beschleunigungssensor (<b>Korrekturgröße!</b>). Einsatz: <b>Klopfsensor</b> (Klopfschwingung um 3 V), <b>Crashsensor</b>.</p>`,
+hfm:`
+<h3>Heißfilm-Luftmassenmesser HFM <span class="tag m">Test</span></h3>
+<p>Sensorprinzip: <b>NTC-PTC-Kombination</b>. Besteht aus <b>Messrohr</b> und <b>Sensorelektronik mit Sensorelement</b>. Auf dem Sensorelement: <b>ein Heizelement</b> und <b>zwei temperaturabhängige Widerstände</b>. Abweisgitter, Teil-Luftstrom.</p>
+<div class="merke"><b>Funktion:</b> Der 1. Temperatursensor misst die Ansauglufttemperatur. Das Heizelement wird auf <b>120 °C über Ansauglufttemperatur</b> aufgeheizt, gemessen mit dem 2. Temperatursensor. <b>Je mehr Luftmoleküle (Luftmasse) das Heizelement abkühlen, desto höher der Heizstrom.</b> Dieser wird über eine <b>frequenzmodulierte Spannung</b> verändert: je höher die Schaltfrequenz, desto mehr Strom → Luftmasse.</div>
+<p><b>Einsatz:</b> Otto → Ermittlung der <b>Motorlast</b>. Diesel → Ermittlung der <b>Abgasrückführungsrate</b>.</p>
+<h3>Hitzdraht-Luftmassenmesser</h3>
+<p>Ältere Ausführung, gleiches Messprinzip: Hitzdraht konstant <b>100 °C über Ansauglufttemperatur</b>. Nachteile: kein schützendes Gehäuse, Hitzdraht <b>verschmutzt</b>, misst auch <b>Rückströmung</b>.</p>`,
+sonde:`
+<h3>Spannungssprungsonde <span class="tag m">Test</span></h3>
+<p>Sensorprinzip: <b>galvanisches Element</b>. Keramikkörper (<b>Zirkondioxid</b>), beidseitig mikroporöse <b>Platinschicht</b>. Eine Seite Abgas, andere Seite Außenluft.</p>
+<p>Bei ca. <b>300 °C</b> wird die Zirkonschicht für Sauerstoffionen leitend. Ionen wandern durch die Schicht, Elektronen über die Platinelektroden → Spannung. Damit die Temperatur rasch erreicht wird: <b>Lambdaheizung</b>.</p>
+<div class="merke">Beim Wechsel von fettem zu magerem Gemisch entsteht ein Spannungsunterschied von ca. <b>0,8 V = Spannungssprung</b> (fett ≈ 0,9 V, mager ≈ 0,1 V, Sprung bei λ 1 / 0,45 V). Die Sprungsonde wird bei <b>homogener Gemischbildung</b> verwendet, weil sie <b>nur fett oder mager</b> anzeigen kann.</div>
+<h3>Breitbandlambdasonde <span class="tag m">Test</span></h3>
+<p><b>Zwei Zellen</b> – <b>Messzelle</b> und <b>Pumpzelle</b> – dazwischen der <b>Messspalt</b>, über einen <b>Diffusionskanal</b> mit dem Abgas verbunden. Die Messzelle misst den Sauerstoffgehalt im Messspalt und vergleicht mit dem Sollwert <b>0,45 V</b>.</p>
+<table><tr><th>Gemisch</th><th>Restsauerstoff</th><th>Pumpzelle</th></tr><tr><td><b>fett</b></td><td>wenig</td><td>pumpt O₂ aus dem Abgas <b>in den Messspalt hinein</b></td></tr><tr><td><b>mager</b></td><td>viel</td><td>pumpt O₂ <b>aus dem Messspalt heraus</b></td></tr></table>
+<p>Der <b>Pumpstrom ändert Polarität und Größe</b> → der Lambdawert kann genau bestimmt werden. Bei <b>heterogenem Gemisch (Luftüberschuss)</b> kann nur diese Sonde verwendet werden.</p>`,
+aktor1:`
+<h3>Magnetventil <span class="tag m">Test</span></h3>
+<p>Funktioniert wie ein <b>Relais</b>: Magnetwicklung wird bestromt → Elektromagnet. Unterschied: statt eines Schalters wird eine <b>Ventilnadel</b> angezogen. Das Magnetfeld zieht den Magnetanker <b>entgegen der Federkraft</b> an. Wird der Strom abgeschaltet, <b>schließt die Rückstellfeder</b> das Ventil.</p>
+<p>Teile: Wicklung, Ansteuerung (+), Masse (−), Ventilanker, Rückstellfeder. Anwendung: <b>Einspritzventil, Magnetventilinjektor, AGR-Ventil</b>.</p>
+<h3>Piezoinjektor <span class="tag m">Test</span></h3>
+<p>Piezoprinzip der Drucksensoren <b>umgekehrt</b>: Wird ein Piezoelement bestromt, <b>dehnt es sich aus</b>. Ausdehnung sehr gering → Elemente gestapelt = <b>Piezostack</b>. Hunderte Schichten mit <b>100 – 180 V</b> → ausreichende Hubbewegung zur Ventilöffnung.</p>
+<h3>E-Motor <span class="tag m">Test</span></h3>
+<p>Zwei Magnetfelder beeinflussen sich – ziehen an bzw. stoßen ab (Permanentmagnet + Elektromagnet oder zwei Elektromagnete). Strom ein → gleiche Pole stoßen ab, ungleiche ziehen an. Der <b>Stromwender (Kommutator)</b> kehrt die Stromrichtung im Anker um → Magnetfeld kehrt um → Motor dreht sich. Stator = Dauermagnet, Rotor = E-Magnet.</p>
+<p>Anwendung: <b>Kraftstoffförderpumpe, Lüftermotor</b>.</p>
+<h3>Schrittmotor <span class="tag m">Test</span></h3>
+<p>Rotor abwechselnd mit <b>Nord- und Südpol</b> bestückt – je mehr Pole, desto kleiner die Schritte. Stator aus mehreren Wicklungen, die so bestromt werden, dass die Magnetpole nacheinander wechseln. Der Rotor wird <b>Schritt für Schritt</b> angezogen, exakt geführt und <b>hält seine Position</b>.</p>
+<p>Anwendung: <b>Drosselklappenstellmotor, AGR-Ventil-Stellmotor</b>, allgemein Stellmotoren mit exakter Position.</p>`,
+aktor2:`
+<h3>Zündspule <span class="tag m">Test</span></h3>
+<p>Aktor-Prinzip: <b>Transformator</b>. Zwei Wicklungen übereinander auf einem <b>Eisenkern</b>.</p>
+<table><tr><th></th><th>Primärwicklung (außen)</th><th>Sekundärwicklung (innen)</th></tr><tr><td>Draht</td><td>dick</td><td>dünn, <b>100-mal mehr Windungen</b></td></tr><tr><td>Anschluss</td><td><b>Kl. 15</b> und über <b>Kl. 1</b> mit dem Steuergerät auf Masse</td><td>Hochspannungsausgang <b>Kl. 4</b>, über Zündkerzen mit Masse</td></tr></table>
+<div class="merke">Steuergerät schaltet auf Masse durch → großer <b>Primärstrom</b> → starkes Magnetfeld („aufgeladen"). Zum <b>ZZP</b> schaltet das Steuergerät den Primärstrom <b>ab</b> → Magnetfeld bricht <b>schlagartig zusammen</b> → induziert in der Sekundärwicklung die hohe <b>Zündspannung</b> („entladen").</div>
+<h3>PTC-Heizelement <span class="tag m">Test</span></h3>
+<p>Temperaturabhängige Widerstände mit <b>positivem Temperaturkoeffizient</b>, Halbleiter, bei niedriger Temperatur geringer Widerstand = <b>Kaltleiter</b>. Kalt fließt viel Strom, rasche Erwärmung → Widerstand steigt → <b>Strom wird begrenzt</b>.</p>
+<p>Anwendung: <b>Glühkerzen, Lambdaheizung, Heizung für AdBlue</b>. Aktor-Prinzip: PTC-Heizung.</p>
+<div class="merke">Merke: <b>NTC misst</b> (Heißleiter, Sensor) – <b>PTC heizt</b> (Kaltleiter, Aktor).</div>`
+});
+
+/* Teil-Zuordnung: alles ohne Angabe gehört zu Teil 1 */
+TOPICS.forEach(t => { t.part = t.part || 1; });
+const PARTS = {1:{name:'Teil 1', sub:'Gemischbildung, Motormanagement, Drehzahlerfassung', pages:'S. 1–7'}, 2:{name:'Teil 2', sub:'Lasterfassung, Abgas-Sensoren, Aktoren', pages:'S. 8–17'}};
+
+/* =====================================================================
    APP
    ===================================================================== */
 const $ = s => document.querySelector(s);
@@ -902,6 +1288,7 @@ CARDS.forEach((c, i) => c.id = 'c' + i);
 
 /* ---- Speicher ---- */
 let S = load();
+if (!S.p2) { S.sel = Array.from(new Set(S.sel.concat(TOPICS.filter(t => t.part === 2).map(t => t.id)))); S.p2 = true; save(); }
 function load(){ try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.q) return s; } catch (e) {} return {q:{}, cards:{}, hist:[], sel:TOPICS.map(t=>t.id), n:20}; }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 function stat(id){ return S.q[id] || (S.q[id] = {ok:0, bad:0, streak:0}); }
@@ -934,6 +1321,9 @@ function show(v){
 $$('nav.bottom button').forEach(b => b.onclick = () => show(b.dataset.v));
 
 /* ---- Home ---- */
+function partHead(n){ const P = PARTS[n]; return `<div class="parthead"><span class="ptag p${n}">${P.name}</span><span>${esc(P.sub)}</span><span class="mut">${P.pages}</span></div>`; }
+function byPart(render){ return [1, 2].map(n => partHead(n) + TOPICS.filter(t => t.part === n).map(render).join('')).join(''); }
+function topicLabel(t){ return (t.part === 2 ? '<span class="ptag p2">Teil 2</span> ' : '') + t.ic + ' ' + esc(t.name); }
 function topicProgress(tid){
   const qs = Q.filter(q => q.t === tid);
   const known = qs.filter(q => isKnown(q.id)).length;
@@ -945,10 +1335,10 @@ function renderHome(){
   const known = Q.filter(q => isKnown(q.id)).length;
   $('#stDone').textContent = Math.round(known / Q.length * 100) + ' %';
   $('#stWeak').textContent = Q.filter(q => isWeak(q.id)).length;
-  $('#topicList').innerHTML = TOPICS.map(t => {
+  $('#topicList').innerHTML = byPart(t => {
     const p = topicProgress(t.id);
-    return `<label class="topic"><span class="ic" aria-hidden="true">${t.ic}</span><span class="t"><b>${esc(t.name)}</b><span class="mut small">${p.total} Fragen · ${p.known} gekonnt${p.weak ? ' · ' + p.weak + ' wackelig' : ''}</span><span class="bar"><i class="${p.pct === 100 ? 'ok' : ''}" style="width:${p.pct}%"></i></span></span><input type="checkbox" data-t="${t.id}" ${S.sel.includes(t.id) ? 'checked' : ''}></label>`;
-  }).join('');
+    return `<label class="topic p${t.part}"><span class="ic" aria-hidden="true">${t.ic}</span><span class="t"><b>${esc(t.name)}</b><span class="mut small">${p.total} Fragen · ${p.known} gekonnt${p.weak ? ' · ' + p.weak + ' wackelig' : ''}</span><span class="bar"><i class="${p.pct === 100 ? 'ok' : ''}" style="width:${p.pct}%"></i></span></span><input type="checkbox" data-t="${t.id}" ${S.sel.includes(t.id) ? 'checked' : ''}></label>`;
+  });
   $$('#topicList input').forEach(i => i.onchange = () => { S.sel = $$('#topicList input:checked').map(x => x.dataset.t); save(); updateHint(); });
   $$('#countRow .chip').forEach(c => c.classList.toggle('on', +c.dataset.n === S.n));
   updateHint();
@@ -966,6 +1356,8 @@ function updateHint(){
 }
 $('#selAll').onclick = () => { S.sel = TOPICS.map(t => t.id); save(); renderHome(); };
 $('#selNone').onclick = () => { S.sel = []; save(); renderHome(); };
+$('#selP1').onclick = () => { S.sel = TOPICS.filter(t => t.part === 1).map(t => t.id); save(); renderHome(); };
+$('#selP2').onclick = () => { S.sel = TOPICS.filter(t => t.part === 2).map(t => t.id); save(); renderHome(); };
 $$('#countRow .chip').forEach(c => c.onclick = () => { S.n = +c.dataset.n; save(); renderHome(); });
 $('#onlyWeak').onchange = updateHint;
 $('#startQuiz').onclick = () => { const p = shuffle(pool()); startQuiz(S.n ? p.slice(0, S.n) : p); };
@@ -984,10 +1376,10 @@ function renderQ(){
   quiz.sel = q.type === 'multi' ? new Set() : q.type === 'match' ? new Array(q.items.length).fill(-1) : null;
   quiz.answered = false;
   $('#qPos').textContent = `Frage ${quiz.i + 1} / ${quiz.list.length}`;
-  $('#qTopic').textContent = TOPIC[q.t].ic + ' ' + TOPIC[q.t].name;
+  $('#qTopic').innerHTML = topicLabel(TOPIC[q.t]);
   $('#qBar').style.width = (quiz.i / quiz.list.length * 100) + '%';
   $('#qFb').innerHTML = '';
-  let h = `<span class="qtype">${TYPE_LABEL[q.type]}${q.test ? ' · <b>Test</b>' : ''}</span><div class="qtext">${esc(q.q)}</div>`;
+  let h = `<span class="qtype">${TYPE_LABEL[q.type]}${q.test ? ' · <b>Test</b>' : ''}</span>${TOPIC[q.t].part === 2 ? ' <span class="ptag p2">Teil 2</span>' : ''}<div class="qtext">${esc(q.q)}</div>`;
   if (q.type === 'mc' || q.type === 'multi') {
     quiz.order = shuffle(q.a.map((_, i) => i));
     h += quiz.order.map((oi, k) => `<button class="opt" data-i="${oi}"><span class="k">${k + 1}</span><span>${esc(q.a[oi])}</span></button>`).join('');
@@ -1075,7 +1467,7 @@ function showResult(){
   $('#rSub').textContent = `${ok} von ${total} Fragen richtig`;
   const byT = {};
   quiz.answers.forEach((a, i) => { const t = quiz.list[i].t; byT[t] = byT[t] || {ok:0, n:0}; byT[t].n++; if (a.ok) byT[t].ok++; });
-  $('#rTopics').innerHTML = Object.keys(byT).map(t => { const p = Math.round(byT[t].ok / byT[t].n * 100); return `<div class="tstat"><span>${TOPIC[t].ic}</span><span class="n">${esc(TOPIC[t].name)}<br><span class="mut small">${byT[t].ok}/${byT[t].n}</span></span><span class="bar"><i class="${p === 100 ? 'ok' : ''}" style="width:${p}%"></i></span></div>`; }).join('');
+  $('#rTopics').innerHTML = Object.keys(byT).map(t => { const p = Math.round(byT[t].ok / byT[t].n * 100); return `<div class="tstat"><span>${TOPIC[t].ic}</span><span class="n">${TOPIC[t].part === 2 ? '<span class="ptag p2">Teil 2</span> ' : ''}${esc(TOPIC[t].name)}<br><span class="mut small">${byT[t].ok}/${byT[t].n}</span></span><span class="bar"><i class="${p === 100 ? 'ok' : ''}" style="width:${p}%"></i></span></div>`; }).join('');
   const wrong = quiz.list.filter((q, i) => !quiz.answers[i].ok);
   $('#rWrongCard').style.display = wrong.length ? '' : 'none';
   $('#rWrong').innerHTML = wrong.map(q => `<div class="wrongq"><b>${esc(q.q)}</b><span class="small">${esc(correctText(q))}</span><br><span class="mut small">${esc(q.e)}</span></div>`).join('');
@@ -1110,7 +1502,7 @@ function renderCard(){
   const c = cardState.deck[cardState.i];
   const fc = $('#fc'); fc.classList.remove('flip'); $('#cRate').hidden = true;
   $('#cPos').textContent = `Karte ${cardState.i + 1} / ${cardState.deck.length}`;
-  $('#cTopic').textContent = TOPIC[c.t].ic + ' ' + TOPIC[c.t].name;
+  $('#cTopic').innerHTML = topicLabel(TOPIC[c.t]);
   $('#cFront').textContent = c.f; $('#cBack').textContent = c.b;
   const counts = [0, 0, 0, 0, 0]; CARDS.forEach(x => counts[cardBox(x.id)]++);
   $('#cBoxes').innerHTML = counts.map((n, i) => `<span title="Box ${i + 1}"><b>${n}</b>Box ${i + 1}</span>`).join('');
@@ -1132,12 +1524,12 @@ $('#cShuffle').onclick = () => { startCards(); toast('Neu gemischt.'); };
 $('#cHome').onclick = () => show('home');
 
 /* ---- Merkzettel ---- */
-$('#notes').innerHTML = TOPICS.map(t => `<details class="note" id="note-${t.id}"><summary><span>${t.ic}</span><span>${esc(t.name)}</span></summary><div class="bd">${NOTES[t.id]}<p class="mut small">Quelle: ${esc(t.src)}</p><button class="btn w" data-quiz="${t.id}" style="margin-top:8px">▶ Quiz nur zu diesem Thema</button></div></details>`).join('');
+$('#notes').innerHTML = byPart(t => `<details class="note p${t.part}" id="note-${t.id}"><summary><span>${t.ic}</span><span>${esc(t.name)}</span></summary><div class="bd">${NOTES[t.id]}<p class="mut small">Quelle: ${esc(t.src)}</p><button class="btn w" data-quiz="${t.id}" style="margin-top:8px">▶ Quiz nur zu diesem Thema</button></div></details>`);
 $$('#notes [data-quiz]').forEach(b => b.onclick = () => startQuiz(shuffle(Q.filter(q => q.t === b.dataset.quiz))));
 
 /* ---- Statistik ---- */
 function renderStats(){
-  $('#sTopics').innerHTML = TOPICS.map(t => { const p = topicProgress(t.id); return `<div class="tstat"><span>${t.ic}</span><span class="n">${esc(t.name)}<br><span class="mut small">${p.known}/${p.total} gekonnt${p.weak ? ' · ' + p.weak + ' wackelig' : ''}</span></span><span class="bar"><i class="${p.pct === 100 ? 'ok' : ''}" style="width:${p.pct}%"></i></span></div>`; }).join('');
+  $('#sTopics').innerHTML = byPart(t => { const p = topicProgress(t.id); return `<div class="tstat"><span>${t.ic}</span><span class="n">${esc(t.name)}<br><span class="mut small">${p.known}/${p.total} gekonnt${p.weak ? ' · ' + p.weak + ' wackelig' : ''}</span></span><span class="bar"><i class="${p.pct === 100 ? 'ok' : ''}" style="width:${p.pct}%"></i></span></div>`; });
   $('#sHist').innerHTML = S.hist.length ? S.hist.map(h => { const d = new Date(h.d); return `<div class="tstat"><span class="n">${d.toLocaleDateString('de-AT')} ${d.toLocaleTimeString('de-AT', {hour:'2-digit', minute:'2-digit'})}<br><span class="mut">${h.t.map(x => TOPIC[x] ? TOPIC[x].ic : '').join(' ')}</span></span><b>${Math.round(h.ok / h.n * 100)} %</b><span class="mut">(${h.ok}/${h.n})</span></div>`; }).join('') : '<p class="mut">Noch kein Quiz gemacht.</p>';
   $('#ver').textContent = APP_VERSION;
   pwaCheck();
@@ -1151,6 +1543,7 @@ async function pwaCheck(){
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   add(true, 'Anzeige', standalone ? 'Installiert (Standalone)' : 'Im Browser geöffnet');
   const mf = $('link[rel=manifest]');
+  if (location.protocol === 'file:') { add(false, 'Manifest', 'Nur über https prüfbar'); el.innerHTML = rows.map(r => `<div class="tstat"><span>${r.ok ? '✅' : '❌'}</span><span class="n"><b>${esc(r.name)}</b><br><span class="mut">${esc(r.info)}</span></span></div>`).join(''); return; }
   try {
     const r = await fetch(mf.href, {cache:'no-store'}); const ct = r.headers.get('content-type') || '';
     const j = r.ok ? await r.json() : null;
