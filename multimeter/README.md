@@ -31,10 +31,10 @@ Bauteiltausch steht erst nach einer Gegenprobe an. Diese Linie ist in
 
 | | |
 |---|---|
-| App-Version | `8.6-Profi` |
-| Inhaltsstand | 14.09.2026 |
+| App-Version | `8.7-Profi` |
+| Inhaltsstand | 30.09.2026 |
 | Umfang | 77 Prüfkarten, 15 Diagnosebäume, Übersicht „Multimeter oder Oszilloskop?“, Schaltplan-Hilfe mit 9 Kapiteln |
-| Validator | 174 Prüfungen |
+| Validator | 187 Prüfungen |
 | Abhängigkeiten der App | keine |
 
 ## Projektaufbau
@@ -126,10 +126,10 @@ Vier Stellen müssen zusammenpassen; der Validator prüft das:
 
 | Stelle | Beispiel |
 |---|---|
-| `index.html` → `APP_VERSION` | `8.6-Profi` |
-| `index.html` → `APP_CACHE_NAME` | `kfz-multimeter-profi-v8-6` |
-| `sw.js` → `CACHE_NAME` | `kfz-multimeter-profi-v8-6` |
-| `package.json` → `version` | `8.6.0` |
+| `index.html` → `APP_VERSION` | `8.7-Profi` |
+| `index.html` → `APP_CACHE_NAME` | `kfz-multimeter-profi-v8-7` |
+| `sw.js` → `CACHE_NAME` | `kfz-multimeter-profi-v8-7` |
+| `package.json` → `version` | `8.7.0` |
 
 Getrennt davon steht `DATA_STAND` in `index.html` — der **fachliche
 Inhaltsstand**, sichtbar in der Fußzeile und im Nutzungshinweis. Er muss mit der
@@ -156,6 +156,9 @@ deshalb prüft der Validator sie gegen das gerenderte DOM.
   werden von dessen Feldern überschrieben — ohne jede Fehlermeldung.
 - `DEEP.rt` hat Vorrang vor `TESTS.table`. Existieren beide, wird die Kurztabelle
   nie angezeigt.
+- Dreispaltige Tabellen ohne Ampelspalte bekommen automatisch 520 px Mindestbreite
+  und damit Querscrollen. Bei kurzen Zellen ist das falsch – die letzte Spalte steht
+  dann außerhalb des Bildschirms. Solche Tabellen bekommen `narrow:true`.
 - Jede Karte braucht einen Eintrag in der `sourceRefs`-Zuordnung oder erbt den
   OEM-Pflichthinweis. Eine Karte ohne beides gibt es nicht.
 - Querverweise werden als `→ Prüfung: <Kartenname>.` geschrieben und über

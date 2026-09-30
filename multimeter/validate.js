@@ -725,6 +725,61 @@ const w = dom.window, d = w.document;
   ok("Standard ohne gespeicherte Einstellung ist der Einsteiger-Modus (mm_mode leer → beginner)",
      (w.localStorage.removeItem("mm_mode"), w.localStorage.removeItem("mm_beginner"), w.applyBeginner(true), d.body.classList.contains("beginner")));
 
+  section("22 · v8.7: Sicherungsdaten – Farbcode, Nennwerte, Nennstromabfall");
+  const FT = w.eval("FUSE_TYPES");
+  // Datenblattwerte ATOF 287: [Kaltwiderstand mOhm, Abfall bei Nennstrom mV]
+  const fuseSoll = {1:[123.00,176],2:[53.50,141],3:[31.1,137],4:[22.80,136],5:[17.85,128],
+                    7.5:[10.91,116],10:[7.70,109],15:[4.80,102],20:[3.38,98],25:[2.52,92],
+                    30:[1.97,84],35:[1.61,87],40:[1.44,96]};
+  ok("ATOF umfasst alle 13 Nennströme von 1 bis 40 A", FT.atof.items.length === 13 && FT.atof.items[0].a === 1,
+     FT.atof.items.map(x => x.a).join(","));
+  const fuseWrong = FT.atof.items.filter(x => !fuseSoll[x.a] || Math.abs(x.r - fuseSoll[x.a][0]) > 0.005 || x.u !== fuseSoll[x.a][1]).map(x => x.a + " A");
+  ok("ATOF-Kaltwiderstände und Nennstromabfälle stimmen mit dem Datenblatt", fuseWrong.length === 0, fuseWrong.join(", "));
+  const noColor = [...FT.atof.items, ...FT.mini.items].filter(x => !x.f || !x.c).map(x => x.a + " A");
+  ok("jede ATOF- und MINI-Sicherung hat Kennfarbe und Farbfeld", noColor.length === 0, noColor.join(", "));
+  // Der Farbcode hängt am Nennstrom, nicht an der Bauform - sonst führt er in die Irre
+  const seenColor = {}, colorClash = [];
+  Object.values(FT).forEach(t => t.items.forEach(x => {
+    if (!x.f) return;
+    if (seenColor[x.a] && seenColor[x.a] !== x.f) colorClash.push(x.a + " A");
+    seenColor[x.a] = x.f;
+  }));
+  ok("Kennfarbe hängt nur am Nennstrom, nicht an der Bauform", colorClash.length === 0, colorClash.join(", "));
+  ok("unbelegte Kennfarben bleiben leer statt geraten (MAXI 25/35 A)",
+     FT.maxi.items.filter(x => x.a === 25 || x.a === 35).every(x => !x.f));
+  // Der Rechner muss den Kaltwiderstand nehmen, nie den Nennstromabfall
+  w.applyBeginner(true);
+  w.openDetail("ruhestrom-fuse");
+  const f87 = d.getElementById("cFuse"), m87 = d.getElementById("cMv"), o87 = d.getElementById("cOut");
+  d.getElementById("cType").value = "atof"; w.onFuseTypeChange();
+  f87.selectedIndex = [...f87.options].findIndex(o => o.text.startsWith("10 A"));
+  m87.value = "2,4"; w.calcMvDrop();
+  ok("2,4 mV an 10 A ergibt ≈ 312 mA (rechnet mit dem Kaltwert 7,70 mΩ)", /312 mA/.test(o87.textContent), o87.textContent);
+  ok("Auswahlliste nennt die Kennfarbe", [...f87.options].some(o => o.text === "10 A · rot"),
+     [...f87.options].map(o => o.text).join(" | "));
+  const body87 = d.getElementById("ovbody").innerHTML;
+  ok("Sicherungstabelle mit 13 Farbfeldern und 13 Nennstromabfällen gerendert",
+     (body87.match(/fuse-dot/g) || []).length === 13 && (body87.match(/bei Nennstrom \d+/g) || []).length === 13,
+     (body87.match(/fuse-dot/g) || []).length + " Farbfelder");
+  // Ohne narrow:true erzwingt der Renderer 520 px Mindestbreite und die
+  // Widerstandsspalte landet auf dem Telefon außerhalb des Bildschirms.
+  const fuseTbl = [...d.querySelectorAll("#ovbody .tbl-wrap")].find(x => /fuse-dot/.test(x.innerHTML));
+  ok("Sicherungstabelle passt ohne Querscrollen auf ein Telefon (kein wide)",
+     !!fuseTbl && !fuseTbl.classList.contains("wide"));
+  ok("Tabelle sagt ausdrücklich, dass der Nennstromwert nicht zum Rechnen dient",
+     /kein Grenzwert und keine Rechengrundlage/.test(body87));
+  const tri = d.querySelector("#ovbody .tri-box");
+  ok("Formeldreieck im Einsteiger-Modus sichtbar",
+     !!tri && w.getComputedStyle(tri.closest(".beg-explain")).display !== "none");
+  w.applyBeginner(false); w.openDetail("ruhestrom-fuse");
+  const triPro = d.querySelector("#ovbody .tri-box");
+  ok("Formeldreieck im Profi-Modus ausgeblendet",
+     !!triPro && w.getComputedStyle(triPro.closest(".beg-explain")).display === "none");
+  w.applyBeginner(true); w.doCloseOverlays();
+  ok('Suche findet die Werkstattbegriffe "Kriechstrom" und "Spannungsverlustprüfung"',
+     (await doSearch("kriechstrom")) > 0 && (await doSearch("spannungsverlustprüfung")) > 0);
+  await doSearch("");
+
   section("20 · Vollzähligkeit gegen den Vorzustand");
   // Grund für diesen Abschnitt: Beim Zusammenführen sind schon einmal drei Karten
   // ersatzlos entfallen, während alle Tests grün blieben. Eine Prüfsuite, die einen

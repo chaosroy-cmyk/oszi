@@ -1,6 +1,6 @@
 # SOURCES.md — Quellen- und Grenzwertmatrix
 
-Stand: **v8.6-Profi, Inhaltsstand 14.09.2026** (Primärquellen zuletzt geprüft am 09.08.2026).
+Stand: **v8.7-Profi, Inhaltsstand 30.09.2026** (Primärquellen zuletzt geprüft am 09.08.2026; Sicherungsdaten am 30.09.2026 erweitert und nachgeprüft).
 
 **Nachtrag v8.6:** Neu sind die Abschnitte „Warum messe ich das?“ und „Wann
 Oszilloskop?“ auf allen Karten sowie das Kapitel „Schaltpläne verstehen“.
@@ -32,7 +32,9 @@ Ampelfarben in Tabellen zeigen deshalb die **Prüfpriorität**, nicht automatisc
 
 | Thema in der App | Direkte Quelle | Stand/Revision | Verwendung und Grenze |
 |---|---|---|---|
-| Kaltwiderstände ATOF/Standard-Flachsicherungen | [Littelfuse ATOF Series 287 – Datenblatt](https://www.littelfuse.com/assetdocs/littelfuse-datasheet-287-atof?assetguid=43dcdce8-8ca2-426f-8998-7e566f048d40) | Herstellerdatenblatt, Abruf 27.07.2026 | `FUSE_TYPES.atof`; ausschließlich Kaltwerte der gelisteten Bauform/Nennströme |
+| Kaltwiderstände ATOF/Standard-Flachsicherungen | [Littelfuse ATOF Series 287 – Datenblatt](https://www.littelfuse.com/assetdocs/littelfuse-datasheet-287-atof?assetguid=43dcdce8-8ca2-426f-8998-7e566f048d40) | Herstellerdatenblatt, Abruf 27.07.2026; 1/2/4 A am 30.09.2026 über Distributor-Artikeldaten derselben Reihe (0287001/0287002/0287004) nachgeprüft | `FUSE_TYPES.atof`; ausschließlich Kaltwerte der gelisteten Bauform/Nennströme. Seit v8.7 vollständig 1–40 A |
+| Typischer Spannungsabfall bei Nennstrom (Flachsicherungen) | Littelfuse ATOF Series 287, Spalte „typical voltage drop"; deckungsgleich mit der Unterrichtsunterlage „Kriechstrommessung mittels Spannungsverlustprüfung" (Landesberufsschule, Verweis auf doerfler-elektronik.de) | Herstellerangabe, Abruf 30.09.2026 | Feld `u` in `FUSE_TYPES.atof`, Spalte 4 der Sicherungstabelle. Gilt bei **Nennstrom** (Sicherung heiß, Widerstand rund 40–50 % über dem Kaltwert) – reine Größeneinordnung, **kein Grenzwert und keine Rechengrundlage für den Ruhestrom** |
+| Kennfarben der Flachsicherungen | ISO 8820-3 sowie SAE J1284 (Standard/MINI) und SAE J1888 (MAXI), Farbzuordnung über den Nennstrom | Normfarbcode; Zuordnung je Nennstrom, Abruf 30.09.2026 | Feld `f`/`c` in `FUSE_TYPES`. Nur Identifikationshilfe, kein Messwert. Farbtöne schwanken je Hersteller und Bauform – die aufgedruckte Zahl gilt. MAXI 25/35 A stehen nicht im Standard-Farbcode der Reihe und bleiben bewusst ohne Farbe |
 | Kaltwiderstände MINI | [Littelfuse MINI Series 297](https://www.littelfuse.com/ja-jp/products/fuses-overcurrent-protection/fuses/automotive-fuses/blade-fuses-shunt/mini/297) | Herstellerseite/Datenblatt, Abruf 27.07.2026 | `FUSE_TYPES.mini`; Bauform nicht mit ATOF/MAXI vermischen |
 | Kaltwiderstände MAXI | [Littelfuse MAXI Series 299, Beispiel 50 A](https://www.littelfuse.com/de/products/fuses-overcurrent-protection/fuses/automotive-fuses/blade-fuses-shunt/maxi/299/0299050-txn) | Herstellerseite/Datenblatt, Abruf 27.07.2026 | `FUSE_TYPES.maxi`; Tabellenwerte gelten nur für Series 299 |
 | Bauformen und Anforderungen an Kfz-Flachsicherungen | gültig: [ISO 8820-3:2015](https://www.iso.org/standard/58088.html) · in Überarbeitung: [ISO/FDIS 8820-3](https://www.iso.org/standard/85282.html) | ISO 8820-3:2015 (gültige Ausgabe); FDIS im Genehmigungsverfahren, noch nicht veröffentlicht | Normhintergrund; der Rechner ersetzt keine Sicherungsauslegung. Der Entwurf darf nicht als publizierte Norm zitiert werden. |

@@ -520,6 +520,7 @@ body.beginner .beg-banner{display:flex}
   .warn.info{background:#e8f1fd;border-color:#9dbfe7;color:#083d70}
   .install-banner{box-shadow:0 6px 22px rgba(25,35,48,.18)}
   .xref{background:#fff4dc;border-color:#b77a13}
+  .fuse-dot{border-color:rgba(0,0,0,.45)}
 }
 
 /* ---------- v8: Einsteiger-/Profi-Modus ---------- */
@@ -676,6 +677,33 @@ body.pro .botnav button.tog{color:var(--acc)}
 .planhits button b{color:var(--acc)}
 @media(min-width:560px){.symgrid{grid-template-columns:repeat(3,1fr)}.farben{grid-template-columns:repeat(3,1fr)}}
 
+/* ---------- v8.7: Formeldreieck und Sicherungs-Farbfeld ---------- */
+.tri-box{
+  display:flex;gap:14px;align-items:flex-start;background:rgba(163,113,247,.07);
+  border:1.5px solid rgba(163,113,247,.45);border-radius:12px;padding:12px;margin-bottom:12px;
+}
+.tri{width:84px;height:68px;flex:0 0 auto;color:#c8a8ff}
+.tri-tx{font-size:13px;line-height:1.5;color:var(--txt2);display:flex;flex-direction:column;gap:5px}
+.tri-tx b{color:#d9c2ff}
+.tri-tx .tri-f{
+  font-weight:800;color:var(--txt);background:var(--bg);border:1px solid var(--line);
+  border-radius:8px;padding:6px 9px;align-self:flex-start;max-width:100%;
+  /* Flex statt Fließtext: die Formeln brechen nur ZWISCHEN den Gliedern um,
+     nie mitten in "R = U / I", und laufen nicht über den Kasten hinaus. */
+  display:flex;flex-wrap:wrap;align-items:center;row-gap:3px;
+}
+.tri-tx .tri-f>span{white-space:nowrap}
+.sub-val{display:block;font-size:12px;color:var(--txt2);font-weight:600;margin-top:2px}
+.tri-sep{color:var(--txt2);font-weight:400;padding:0 9px}
+.fuse-dot{
+  display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:7px;
+  /* Rahmen, damit auch Weiß/Natur und Schwarz auf dem Untergrund erkennbar bleiben.
+     Die Hellmodus-Variante steht im einen Hellmodus-Block weiter unten. */
+  border:1px solid rgba(255,255,255,.45);vertical-align:-1px;
+}
+@media (max-width:360px){
+  .tri-box{flex-direction:column;align-items:stretch}
+}
 </style>
 </head>
 <body>
@@ -793,12 +821,12 @@ body.pro .botnav button.tog{color:var(--acc)}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '8.6-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
-const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-6';
+const APP_VERSION = '8.7-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_CACHE_NAME = 'kfz-multimeter-profi-v8-7';
 /* Stand der fachlichen Inhalte. Bewusst getrennt von der Versionsnummer:
    Sollwerte veralten unabhängig davon, ob am Code etwas geändert wurde.
    Muss mit der Datierung in SOURCES.md übereinstimmen (prüft der Validator). */
-const DATA_STAND = '14.09.2026';
+const DATA_STAND = '30.09.2026';
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -1657,6 +1685,7 @@ const TESTS = [
  next:"Auffälligen Kreis identifizieren (Belegungsplan), dann Verbraucher dieses Kreises einzeln prüfen. Vorteil: Einschlafzustand bleibt erhalten. Eigenverbrauch des Batteriesensors in die Gesamtbewertung einbeziehen: → Prüfung: Batteriesensor (IBS).",
  beg:"Statt die Sicherung zu ziehen, misst du die winzige Spannung ÜBER der Sicherung (sie bleibt stecken). Je mehr Strom fließt, desto größer der mV-Wert. Der Rechner unten macht daraus Milliampere.",
  calc:"mvdrop",
+ syn:"Kriechstrom Kriechstrommessung Spannungsverlustprüfung Spannungsverlust Spannungsabfall Sicherung Sicherungskasten Farbcode Kennfarbe Flachsicherung ATO ATOF MINI MAXI mV Drop Ruhestrom Batterie leer",
  warn:[["info","Vorteil gegenüber Sicherung ziehen: der Stromkreis wird nicht unterbrochen – das Fahrzeug bleibt im Schlafzustand und Steuergeräte werden nicht geweckt. Werte sind sehr klein (meist nur wenige mV, oft darunter) – MM mit 0,1-mV-Auflösung nötig, besser 0,01 mV."],
        ["caution","Methode taugt zum Eingrenzen, nicht für absolute Präzision. Der Innenwiderstand der Sicherung schwankt mit Typ, Temperatur und Toleranz. Im Zweifel zusätzlich klassisch in Reihe oder mit Stromzange gegenmessen."]]
 },
@@ -2879,6 +2908,21 @@ const DEEP = {
    ["Standard 25–30 A","~ 0,2–0,25 mV","w"],
    ["Maxi 40–50 A","~ 0,1–0,15 mV, kaum messbar","b"]],
    note:"Richtwerte direkt aus den Littelfuse-Datenblättern (ATOF 287 / MINI 297 / MAXI 299), z.B. 10 A ≈ 7,7 mΩ, 20 A ≈ 3,4 mΩ; Mini und Standard liegen innerhalb ~5 %. Der Innenwiderstand steigt mit der Temperatur und variiert je Hersteller. Kleine Ruheströme (< 20 mA) erzeugen nur Hundertstel-mV – dafür ist ein MM mit 0,01-mV-Auflösung nötig. Faustregel: je kleiner der Nennwert, desto höher der mV-Wert pro mA und desto besser messbar."},
+ rt2:{title:"Kfz-Sicherungen: Kennfarbe und Widerstand",narrow:true,head:["Nennstrom","Kennfarbe","Widerstand (kalt)"],rows:[
+   ["1,0 A","<span class=\"fuse-dot\" style=\"background:#1f2328\"></span>schwarz","123,00 mΩ<span class=\"sub-val\">bei Nennstrom 176 mV</span>"],
+   ["2,0 A","<span class=\"fuse-dot\" style=\"background:#9aa4b0\"></span>grau","53,50 mΩ<span class=\"sub-val\">bei Nennstrom 141 mV</span>"],
+   ["3,0 A","<span class=\"fuse-dot\" style=\"background:#8257c7\"></span>violett","31,10 mΩ<span class=\"sub-val\">bei Nennstrom 137 mV</span>"],
+   ["4,0 A","<span class=\"fuse-dot\" style=\"background:#ff8fbe\"></span>pink","22,80 mΩ<span class=\"sub-val\">bei Nennstrom 136 mV</span>"],
+   ["5,0 A","<span class=\"fuse-dot\" style=\"background:#c8a06a\"></span>hellbraun","17,85 mΩ<span class=\"sub-val\">bei Nennstrom 128 mV</span>"],
+   ["7,5 A","<span class=\"fuse-dot\" style=\"background:#7a4f2c\"></span>braun","10,91 mΩ<span class=\"sub-val\">bei Nennstrom 116 mV</span>"],
+   ["10 A","<span class=\"fuse-dot\" style=\"background:#e5484d\"></span>rot","7,70 mΩ<span class=\"sub-val\">bei Nennstrom 109 mV</span>"],
+   ["15 A","<span class=\"fuse-dot\" style=\"background:#3b82f6\"></span>blau","4,80 mΩ<span class=\"sub-val\">bei Nennstrom 102 mV</span>"],
+   ["20 A","<span class=\"fuse-dot\" style=\"background:#f5d020\"></span>gelb","3,38 mΩ<span class=\"sub-val\">bei Nennstrom 98 mV</span>"],
+   ["25 A","<span class=\"fuse-dot\" style=\"background:#f0f0ec\"></span>weiß / natur","2,52 mΩ<span class=\"sub-val\">bei Nennstrom 92 mV</span>"],
+   ["30 A","<span class=\"fuse-dot\" style=\"background:#6bd06b\"></span>hellgrün","1,97 mΩ<span class=\"sub-val\">bei Nennstrom 84 mV</span>"],
+   ["35 A","<span class=\"fuse-dot\" style=\"background:#2f9e44\"></span>grün","1,61 mΩ<span class=\"sub-val\">bei Nennstrom 87 mV</span>"],
+   ["40 A","<span class=\"fuse-dot\" style=\"background:#f08c2e\"></span>orange","1,44 mΩ<span class=\"sub-val\">bei Nennstrom 96 mV</span>"]],
+   note:"Werte der Bauform <b>ATOF/Standard (Littelfuse 287)</b>. MINI und MAXI weichen ab – im Rechner oben die Bauform wählen, Werte nicht vermischen. <b>Für die Ruhestromrechnung zählt nur der Kaltwiderstand</b>, weil bei Ruhestrom fast keine Wärme entsteht. Der kleiner gesetzte Wert ist der Abfall bei <b>Nennstrom</b>: dort ist die Sicherung heiß, ihr Widerstand liegt rund 40–50 % über dem Kaltwert (10 A: 109 mV bei 10 A entsprechen ≈ 10,9 mΩ statt 7,70 mΩ). Er zeigt nur diese Größenordnung und ist <b>kein Grenzwert und keine Rechengrundlage für den Ruhestrom</b>. Kennfarben nach dem Farbcode der Flachsicherungen (ISO 8820-3/DIN 72581); Farbtöne schwanken je Hersteller – die aufgedruckte Zahl gilt."},
  urs:[["Ein Kreis mit hohem mV-Wert","Verbraucher in diesem Kreis aktiv","h"],
       ["Nachrüstgerät an abgesichertem Dauerplus","Radio/Verstärker/Tracker","h"],
       ["Steuergerät im Kreis schläft nicht ein","hängender Aufwach-Zustand","m"],
@@ -3372,7 +3416,7 @@ function deepTableHTML(rt){
   // dreispaltige Tabellen ohne Bewertungsspalte (z.B. Vergleiche) brauchen mehr Breite
   const firstLast=rt.rows.length?rt.rows[0][rt.rows[0].length-1]:'';
   const hasRating=firstLast==='g'||firstLast==='w'||firstLast==='b';
-  const wide=(!hasRating&&rt.head.length>=3)?' wide':'';
+  const wide=(!hasRating&&rt.head.length>=3&&!rt.narrow)?' wide':'';
   let h=`<div class="tbl-wrap${wide}"><table><thead><tr>${rt.head.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>`;
   h+=rt.rows.map(r=>{
     const last=r[r.length-1];
@@ -3413,23 +3457,50 @@ function fsHTML(fs){
    Bauform – Nennströme überlappen (z.B. 20–40 A bei ATOF und MAXI), die Werte
    unterscheiden sich aber deutlich. Bauformen NICHT vermischen.
    Quellen: ATOF 287 Rev. 02/2025 · MINI 297 · MAXI 299 Rev. 01/2025.
-   NICHT ohne Datenblattbeleg ändern. Siehe SOURCES.md. */
+   NICHT ohne Datenblattbeleg ändern. Siehe SOURCES.md.
+
+   Felder je Eintrag:
+     a = Nennstrom (A) · r = Kaltwiderstand (mΩ, für die Ruhestromrechnung)
+     u = typischer Spannungsabfall bei NENNSTROM (mV, Datenblattangabe)
+         – nur zur Einordnung. Bei Nennlast ist die Sicherung heiß, ihr
+           Widerstand liegt dann rund 40–50 % über dem Kaltwert. Für die
+           Ruhestromrechnung gilt ausschließlich r.
+     f = Kennfarbe nach dem Farbcode der Flachsicherungen (ISO 8820-3 /
+         DIN 72581, SAE J1284 bzw. J1888 für MAXI). Der Farbton schwankt je
+         Hersteller und Bauform – die aufgedruckte Zahl gilt. Ohne belegte
+         Farbe bleibt das Feld leer (MAXI 25/35 A stehen nicht im
+         Standard-Farbcode der Reihe). c = Anzeigefarbe im Farbfeld. */
 const FUSE_TYPES = {
   atof:{name:"ATOF / Standard (287)", items:[
-    {a:3,r:31.1},{a:5,r:17.85},{a:7.5,r:10.91},{a:10,r:7.70},{a:15,r:4.80},
-    {a:20,r:3.38},{a:25,r:2.52},{a:30,r:1.97},{a:35,r:1.61},{a:40,r:1.44}]},
+    {a:1,r:123.00,u:176,f:"schwarz",c:"#1f2328"},{a:2,r:53.50,u:141,f:"grau",c:"#9aa4b0"},
+    {a:3,r:31.1,u:137,f:"violett",c:"#8257c7"},{a:4,r:22.80,u:136,f:"pink",c:"#ff8fbe"},
+    {a:5,r:17.85,u:128,f:"hellbraun",c:"#c8a06a"},{a:7.5,r:10.91,u:116,f:"braun",c:"#7a4f2c"},
+    {a:10,r:7.70,u:109,f:"rot",c:"#e5484d"},{a:15,r:4.80,u:102,f:"blau",c:"#3b82f6"},
+    {a:20,r:3.38,u:98,f:"gelb",c:"#f5d020"},{a:25,r:2.52,u:92,f:"weiß / natur",c:"#f0f0ec"},
+    {a:30,r:1.97,u:84,f:"hellgrün",c:"#6bd06b"},{a:35,r:1.61,u:87,f:"grün",c:"#2f9e44"},
+    {a:40,r:1.44,u:96,f:"orange",c:"#f08c2e"}]},
   mini:{name:"MINI (297)", items:[
-    {a:2,r:55.60},{a:3,r:33.75},{a:4,r:23.48},{a:5,r:17.75},{a:7.5,r:10.85},
-    {a:10,r:7.42},{a:15,r:4.58},{a:20,r:3.21},{a:25,r:2.36},{a:30,r:1.85}]},
+    {a:2,r:55.60,f:"grau",c:"#9aa4b0"},{a:3,r:33.75,f:"violett",c:"#8257c7"},
+    {a:4,r:23.48,f:"pink",c:"#ff8fbe"},{a:5,r:17.75,f:"hellbraun",c:"#c8a06a"},
+    {a:7.5,r:10.85,f:"braun",c:"#7a4f2c"},{a:10,r:7.42,f:"rot",c:"#e5484d"},
+    {a:15,r:4.58,f:"blau",c:"#3b82f6"},{a:20,r:3.21,f:"gelb",c:"#f5d020"},
+    {a:25,r:2.36,f:"weiß / natur",c:"#f0f0ec"},{a:30,r:1.85,f:"hellgrün",c:"#6bd06b"}]},
   maxi:{name:"MAXI (299)", items:[
-    {a:20,r:3.1},{a:25,r:2.4},{a:30,r:1.9},{a:35,r:1.7},{a:40,r:1.4},
-    {a:50,r:1.1},{a:60,r:0.9},{a:70,r:0.6},{a:80,r:0.5}]}
+    {a:20,r:3.1,f:"gelb",c:"#f5d020"},{a:25,r:2.4},{a:30,r:1.9,f:"hellgrün",c:"#6bd06b"},
+    {a:35,r:1.7},{a:40,r:1.4,f:"orange",c:"#f08c2e"},
+    {a:50,r:1.1,f:"rot",c:"#e5484d"},{a:60,r:0.9,f:"blau",c:"#3b82f6"},
+    {a:70,r:0.6,f:"hellbraun",c:"#c8a06a"},{a:80,r:0.5,f:"natur / klar",c:"#f0f0ec"}]}
 };
 // Flache Sicht für Tests/Abwärtskompatibilität (ATOF als Referenzbauform)
 const FUSE_R = FUSE_TYPES.atof.items.map(x=>({v:(String(x.a).replace('.',',')+" A"),r:x.r}));
 function fuseOptions(typeKey){
   const t=FUSE_TYPES[typeKey]||FUSE_TYPES.atof;
-  return t.items.map(x=>`<option value="${x.r}" data-nom="${x.a}">${String(x.a).replace('.',',')} A</option>`).join('');
+  // Kennfarbe im Text der Option: im Sicherungskasten greift man nach der Farbe,
+  // nicht nach der Zahl. <option> kann kein Farbfeld tragen – deshalb als Wort.
+  // Vorauswahl auf 10 A, wo vorhanden: der häufigste Fall im Sicherungskasten.
+  // Ohne das stünde seit der Ergänzung von 1/2/4 A die 1-A-Sicherung vorne.
+  const def=t.items.some(x=>x.a===10)?10:t.items[0].a;
+  return t.items.map(x=>`<option value="${x.r}" data-nom="${x.a}"${x.a===def?' selected':''}>${String(x.a).replace('.',',')} A${x.f?' · '+x.f:''}</option>`).join('');
 }
 function onFuseTypeChange(){
   const tEl=document.getElementById('cType'),fEl=document.getElementById('cFuse');
@@ -3441,8 +3512,27 @@ window.onFuseTypeChange=onFuseTypeChange;
 function calcHTML(){
   const typeOpts=Object.keys(FUSE_TYPES).map(k=>`<option value="${k}">${FUSE_TYPES[k].name}</option>`).join('');
   const opts=fuseOptions('atof');
+  // Formeldreieck: im Einsteiger-Modus sichtbar. Zeigt, was der Rechner rechnet –
+  // wer die Umstellung einmal gesehen hat, kann auch ohne App rechnen.
+  const tri=`<div class="beg-explain"><div class="tri-box">
+    <svg class="tri" viewBox="0 0 120 96" role="img" aria-label="Formeldreieck: U oben, R mal I unten. Strom I gleich U geteilt durch R.">
+      <path d="M60 6 L112 90 L8 90 Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+      <line x1="26" y1="56" x2="94" y2="56" stroke="currentColor" stroke-width="2.5"/>
+      <line x1="60" y1="56" x2="60" y2="90" stroke="currentColor" stroke-width="2.5"/>
+      <text x="60" y="46" text-anchor="middle" font-size="26" font-weight="800" fill="currentColor">U</text>
+      <text x="43" y="80" text-anchor="middle" font-size="22" font-weight="800" fill="currentColor">R</text>
+      <text x="78" y="80" text-anchor="middle" font-size="22" font-weight="800" fill="currentColor">I</text>
+    </svg>
+    <div class="tri-tx">
+      <b>Stromermittlung</b>
+      <span>Deckst du im Dreieck <b>I</b> ab, bleibt <b>U geteilt durch R</b> stehen:</span>
+      <span class="tri-f"><span>I = U / R</span><span class="tri-sep">|</span><span>U = R · I</span><span class="tri-sep">|</span><span>R = U / I</span></span>
+      <span>Die Sicherung ist der Widerstand. Beispiel: <b>2,4 mV</b> an einer 10-A-Sicherung (<b>7,70 mΩ</b>) → 2,4 / 7,70 = <b>0,31 A = 312 mA</b>. mV geteilt durch mΩ ergibt direkt Ampere, weil sich die Tausendstel kürzen.</span>
+    </div>
+  </div></div>`;
   return `<div class="calc">
     <h4>🔢 mV-Drop Rechner</h4>
+    ${tri}
     <div class="calc-row">
       <label>Bauform (Datenblattreihe)</label>
       <select id="cType" onchange="onFuseTypeChange()">${typeOpts}</select>
