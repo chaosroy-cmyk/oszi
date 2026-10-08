@@ -1647,6 +1647,251 @@ function W(spec){
   return out;
 }
 
+/* ===== SIGNALBILD-ENGINE W2 (V11) — START =====
+   Signalbilder aus Signalmodellen in ECHTER Zeit (Sekunden).
+   - Skala folgt V/div und t/div -> Beschriftung = Zeichnung (keine Abweichung möglich)
+   - Werte an jedem Kästchen, Feinraster wie am Oszi, Messwert-Hinweise aus den Samples
+   - Fehlerbilder mit grauem Sollbild (ghost)
+   - Bilder werden erst beim Anzeigen gerendert (lazy) und dann gecacht
+   - spec bleibt reine Daten (Modellname + Parameter) -> Live-Modus/Prüfung nutzen dasselbe Modell */
+var SIG = (function(){
+  'use strict';
+
+  /* ---- deterministischer Hash und Rauschen (reine Funktionen der Zeit) ---- */
+  function hash(i, seed){
+    var h = Math.imul(i|0, 374761393) ^ Math.imul((seed|0)+1, 668265263);
+    h = Math.imul(h ^ (h>>>13), 1274126177); h ^= h>>>16;
+    return (h>>>0)/4294967296;
+  }
+  /* bandbegrenztes Rauschen: Spitzenwert ~amp, Stützabstand dt (s) */
+  function vnoise(seed, amp, dt){
+    dt = dt || 1e-5;
+    return function(t){
+      var x=t/dt, k=Math.floor(x), f=x-k;
+      var a=hash(k,seed)+hash(k,seed+97)-1, b=hash(k+1,seed)+hash(k+1,seed+97)-1;
+      return amp*(a+(b-a)*f);
+    };
+  }
+  /* Sprungziele mit Verzögerung 1. Ordnung: steps=[[t, Ziel, tau], ...] -> Ereignis-Signal */
+  function lagSeries(steps, T, dt){
+    dt = dt || T/4000;
+    var n=Math.ceil(T/dt)+2, out=new Float64Array(n), y=steps[0][1], k=0, i;
+    for(i=0;i<n;i++){
+      var t=i*dt; while(k+1<steps.length && t>=steps[k+1][0]) k++;
+      var tau=steps[k][2]||0.05; y+=(steps[k][1]-y)*(1-Math.exp(-dt/tau)); out[i]=y;
+    }
+    var f=function(t){ var x=t/dt, j=Math.floor(x); if(j<=0) return out[0]; if(j>=n-1) return out[n-1]; var r=x-j; return out[j]+(out[j+1]-out[j])*r; };
+    f.event=true; return f;
+  }
+  /* Rechteck mit endlicher Flankenzeit (rise in s), Phase ph in Perioden */
+  function sqw(t, freq, duty, hi, lo, rise, ph){
+    var x=((t*freq+(ph||0))%1+1)%1, r=(rise||0)*freq;
+    if(r<=0) return x<duty?hi:lo;
+    if(x<r) return lo+(hi-lo)*(x/r);
+    if(x<duty) return hi;
+    if(x<duty+r) return hi-(hi-lo)*((x-duty)/r);
+    return lo;
+  }
+  /* gedämpfte Schwingung nach einem Ereignis (dts = Zeit seit Ereignis) */
+  function ring(dts, amp, f0, tau){ return dts<0?0:amp*Math.exp(-dts/tau)*Math.cos(2*Math.PI*f0*dts); }
+  function smooth(x){ x=Math.max(0,Math.min(1,x)); return x*x*(3-2*x); }
+
+  /* ---- Modell-Registry: M[name] = function(p){ return function(t){...} } ---- */
+  var M = {};
+  function model(name, p){
+    var mk=M[name]; if(!mk) throw new Error('Signalmodell fehlt: '+name);
+    var f=mk(p||{}); if(typeof f!=='function') throw new Error('Signalmodell liefert keine Funktion: '+name);
+    return f;
+  }
+
+  /* ---- Formatierung (deutsches Dezimalkomma) ---- */
+  function de(x){ return String(x).replace('.', ','); }
+  function num(v){ return Math.abs(v)<1e-15 ? '0' : de(+v.toPrecision(3)); }
+  function fmtV(v,u){ u=u||'V'; var a=Math.abs(v); if(a<1e-12) return '0 '+u; if(a>=1000) return num(v/1000)+' k'+u; if(a>=1) return num(v)+' '+u; if(a>=1e-3) return num(v*1e3)+' m'+u; return num(v*1e6)+' µ'+u; }
+  function fmtT(s){ var a=Math.abs(s); if(a<1e-15) return '0'; if(a>=1) return num(s)+' s'; if(a>=1e-3) return num(s*1e3)+' ms'; if(a>=1e-6) return num(s*1e6)+' µs'; return num(s*1e9)+' ns'; }
+  function fmtF(f){ var a=Math.abs(f); if(a>=1e6) return num(f/1e6)+' MHz'; if(a>=1e3) return num(f/1e3)+' kHz'; return num(f)+' Hz'; }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ---- Geometrie: 10 x 8 Kästchen, 80 px x 42 px ---- */
+  var GEO={w:900, h:430, x0:76, x1:876, y0:32, y1:368};
+  var COL={1:'#ffd24a', 2:'#4fd2ff', ghost:'#8796a6', meas:'#e0a4ff', note:'#ff8b8b'};
+  var uid=0;
+
+  function scaleOf(spec, c){ return { vdiv: c.vdiv||spec.vdiv, off: (c.off!=null?c.off:(spec.off||0)), unit: c.unit||spec.unit||'V' }; }
+  function visRange(sc){ return [(-4-sc.off)*sc.vdiv, (4-sc.off)*sc.vdiv]; }
+  function windowT(spec){ return spec.tdiv*10; }
+
+  /* Abtastung eines Kanals: N Werte bei t=(i+0.5)*T/N */
+  function sampleFn(f, T, N){ var a=new Float64Array(N), i; for(i=0;i<N;i++) a[i]=f((i+0.5)*T/N); return a; }
+  function sample(spec, N){
+    var T=windowT(spec); N=N||((GEO.x1-GEO.x0)*(spec.os||4));
+    var out={T:T, dt:T/N, N:N, ch:[], ghost:[], sc:[]};
+    (spec.ch||[]).forEach(function(c){ out.ch.push(sampleFn(model(c.m,c.p),T,N)); out.sc.push(scaleOf(spec,c)); });
+    (spec.ghost||[]).forEach(function(c){ out.ghost.push(sampleFn(model(c.m,c.p),T,N)); });
+    return out;
+  }
+  function minmax(a, i0, i1){ var mn=Infinity, mx=-Infinity, i; for(i=i0;i<i1;i++){ var v=a[i]; if(v<mn)mn=v; if(v>mx)mx=v; } return [mn,mx]; }
+
+  function render(spec){
+    var g=GEO, gw=g.x1-g.x0, gh=g.y1-g.y0, cols=gw, os=spec.os||4, T=windowT(spec), id='w2m'+(++uid);
+    var smp=sample(spec, cols*os), chs=spec.ch||[], sc0=smp.sc[0]||scaleOf(spec,{});
+    var cy=(g.y0+g.y1)/2;
+    function X(t){ return g.x0+t/T*gw; }
+    function Y(v,sc){ return cy-(v/sc.vdiv+sc.off)*(gh/8); }
+    function clampY(y){ return Math.max(g.y0-1, Math.min(g.y1+1, y)); }
+    function label(x, y, txt, anchor, col){
+      var w=txt.length*7.2+12, a=anchor||'start', bx=a==='end'?x-w+6:(a==='middle'?x-w/2:x-6);
+      bx=Math.max(g.x0+2, Math.min(g.x1-w-2, bx)); y=Math.max(g.y0+16, Math.min(g.y1-6, y));
+      var tx=a==='end'?bx+w-6:(a==='middle'?bx+w/2:bx+6);
+      return '<rect x="'+bx.toFixed(1)+'" y="'+(y-13).toFixed(1)+'" width="'+w.toFixed(1)+'" height="18" rx="4" fill="#06090d" fill-opacity=".88" stroke="#2a3a4e"/>'+
+             '<text x="'+tx.toFixed(1)+'" y="'+y.toFixed(1)+'" text-anchor="'+a+'" fill="'+(col||'#e7c6ff')+'" font-size="12">'+esc(txt)+'</text>';
+    }
+    function path(a, sc){
+      var d='', c, prev=null;
+      for(c=0;c<cols;c++){
+        var mm=minmax(a, c*os, (c+1)*os), x=(g.x0+c+0.5).toFixed(1), ya=clampY(Y(mm[1],sc)), yb=clampY(Y(mm[0],sc));
+        if(Math.abs(yb-ya)<1.6){ var ym=(ya+yb)/2; d+=(c?'L':'M')+x+' '+ym.toFixed(1); prev=ym; }
+        else { var first=(prev===null||Math.abs(prev-ya)<Math.abs(prev-yb))?ya:yb, second=(first===ya)?yb:ya;
+               d+=(c?'L':'M')+x+' '+first.toFixed(1)+'L'+x+' '+second.toFixed(1); prev=second; }
+      }
+      return d;
+    }
+    var s=[], i;
+    s.push('<svg viewBox="0 0 '+g.w+' '+g.h+'" xmlns="http://www.w3.org/2000/svg" role="img" font-family="ui-monospace,monospace">');
+    s.push('<defs><marker id="'+id+'" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse"><path d="M0,1 L7,4 L0,7 z" fill="'+COL.meas+'"/></marker></defs>');
+    s.push('<rect width="'+g.w+'" height="'+g.h+'" rx="10" fill="#0b0f14"/>');
+    s.push('<rect x="'+g.x0+'" y="'+g.y0+'" width="'+gw+'" height="'+gh+'" fill="#05080c" stroke="#223041"/>');
+    for(i=1;i<10;i++){ var gx=g.x0+i*gw/10; s.push('<line x1="'+gx+'" y1="'+g.y0+'" x2="'+gx+'" y2="'+g.y1+'" stroke="#14202e"/>'); }
+    for(i=1;i<8;i++){ var gy=g.y0+i*gh/8; s.push('<line x1="'+g.x0+'" y1="'+gy+'" x2="'+g.x1+'" y2="'+gy+'" stroke="#14202e"/>'); }
+    var cx=(g.x0+g.x1)/2;
+    s.push('<line x1="'+g.x0+'" y1="'+cy+'" x2="'+g.x1+'" y2="'+cy+'" stroke="#22344a"/><line x1="'+cx+'" y1="'+g.y0+'" x2="'+cx+'" y2="'+g.y1+'" stroke="#22344a"/>');
+    for(i=0;i<=50;i++){ var tx=g.x0+i*gw/50; s.push('<line x1="'+tx+'" y1="'+(cy-3)+'" x2="'+tx+'" y2="'+(cy+3)+'" stroke="#2c4058"/>'); }
+    for(i=0;i<=40;i++){ var ty=g.y0+i*gh/40; s.push('<line x1="'+(cx-3)+'" y1="'+ty+'" x2="'+(cx+3)+'" y2="'+ty+'" stroke="#2c4058"/>'); }
+    /* Y-Werte je Kästchen: links CH1-Skala, rechts CH2-Skala falls abweichend */
+    for(i=0;i<=8;i++){ var vy=g.y0+i*gh/8, v1=((4-i)-sc0.off)*sc0.vdiv; s.push('<text x="'+(g.x0-8)+'" y="'+(vy+4)+'" text-anchor="end" fill="'+(chs.length>1?COL[1]:'#7f95ad')+'" fill-opacity="'+(chs.length>1?'.85':'1')+'" font-size="11">'+esc(fmtV(Math.abs(v1)<1e-12?0:v1, sc0.unit))+'</text>'); }
+    var sc1=smp.sc[1];
+    if(sc1 && (sc1.vdiv!==sc0.vdiv || sc1.off!==sc0.off || sc1.unit!==sc0.unit)){
+      for(i=0;i<=8;i++){ var vy2=g.y0+i*gh/8, v2=((4-i)-sc1.off)*sc1.vdiv; s.push('<text x="'+(g.x1+6)+'" y="'+(vy2+4)+'" fill="'+COL[2]+'" fill-opacity=".85" font-size="11">'+esc(fmtV(Math.abs(v2)<1e-12?0:v2, sc1.unit))+'</text>'); }
+    }
+    for(i=0;i<=10;i+=2){ var xx=g.x0+i*gw/10; s.push('<text x="'+xx+'" y="'+(g.y1+17)+'" text-anchor="middle" fill="#7f95ad" font-size="11">'+esc(fmtT(i*spec.tdiv))+'</text>'); }
+    /* Massemarken je Kanal */
+    smp.sc.forEach(function(sc,k){ var y0v=Y(0,sc); if(y0v>=g.y0&&y0v<=g.y1){ var col=chs[k].col||COL[k+1]; s.push('<path d="M'+(g.x0-1)+' '+y0v.toFixed(1)+' l-9 -6 v12 z" fill="'+col+'"/>'); } });
+    /* Sollbild (grau gestrichelt), dann Kanäle */
+    smp.ghost.forEach(function(a,k){ var gc=spec.ghost[k], gs=scaleOf(spec, gc.ch!=null&&chs[gc.ch]?chs[gc.ch]:(chs[0]||{})); s.push('<path d="'+path(a,gs)+'" fill="none" stroke="'+COL.ghost+'" stroke-opacity=".5" stroke-width="1.4" stroke-dasharray="6 4"/>'); });
+    smp.ch.forEach(function(a,k){ s.push('<path d="'+path(a,smp.sc[k])+'" fill="none" stroke="'+(chs[k].col||COL[k+1])+'" stroke-width="1.5" stroke-linejoin="round"/>'); });
+    /* Trigger */
+    if(spec.trig){ var tg=spec.trig, tsc=smp.sc[tg.ch||0]||sc0;
+      if(tg.t!=null) s.push('<path d="M'+X(tg.t).toFixed(1)+' '+(g.y0-1)+' l-6 -10 h12 z" fill="#9aa7b5"/>');
+      if(tg.v!=null){ var yt=Y(tg.v,tsc); if(yt>=g.y0&&yt<=g.y1) s.push('<path d="M'+(g.x1+1)+' '+yt.toFixed(1)+' l9 -6 v12 z" fill="#9aa7b5"/>'); } }
+    /* Messwert-Hinweise */
+    (spec.meas||[]).forEach(function(m){
+      var k=m.ch||0, a=smp.ch[k], sc=smp.sc[k]||sc0, u=sc.unit;
+      if(m.t==='vpp' && a){
+        var mm=minmax(a,0,a.length), xm=g.x0+gw*(m.x!=null?m.x:0.96), ya=Y(mm[1],sc), yb=Y(mm[0],sc);
+        s.push('<line x1="'+xm.toFixed(1)+'" y1="'+clampY(ya).toFixed(1)+'" x2="'+xm.toFixed(1)+'" y2="'+clampY(yb).toFixed(1)+'" stroke="'+COL.meas+'" marker-start="url(#'+id+')" marker-end="url(#'+id+')"/>');
+        s.push(label(xm-8, (clampY(ya)+clampY(yb))/2+4, (m.pre?m.pre+' ':'')+'Vpp ≈ '+fmtV(mm[1]-mm[0],u), 'end'));
+      }
+      if(m.t==='span'){
+        var xa=X(m.t0), xb=X(m.t1), yy=Y(m.v,sc), txt=(m.pre?m.pre+' ':'')+(m.txt!=null?m.txt:fmtT(m.t1-m.t0))+(m.post?' '+m.post:'');
+        s.push('<line x1="'+xa.toFixed(1)+'" y1="'+yy.toFixed(1)+'" x2="'+xb.toFixed(1)+'" y2="'+yy.toFixed(1)+'" stroke="'+COL.meas+'" stroke-width="1.3" marker-start="url(#'+id+')" marker-end="url(#'+id+')"/>');
+        s.push(label((xa+xb)/2, yy-8+(m.dy||0), txt, 'middle'));
+      }
+      if(m.t==='level'){
+        var yl=Y(m.v,sc), lt=(m.pre?m.pre+' ':'')+(m.txt!=null?m.txt:'≈ '+fmtV(m.v,u))+(m.post?' '+m.post:'');
+        s.push('<line x1="'+X(m.t0!=null?m.t0:0).toFixed(1)+'" y1="'+yl.toFixed(1)+'" x2="'+X(m.t1!=null?m.t1:T).toFixed(1)+'" y2="'+yl.toFixed(1)+'" stroke="'+COL.meas+'" stroke-dasharray="3 3"/>');
+        s.push(label(X(m.lx!=null?m.lx:(m.t1!=null?m.t1:T))+6, yl+4+(m.dy||0), lt, m.anchor||'start'));
+      }
+    });
+    (spec.notes||[]).forEach(function(q){
+      var sc=smp.sc[q.ch||0]||sc0, nx=X(q.t), ny=Y(q.v,sc), qdy=(q.dy!=null?q.dy:-12), qdx=(q.dx!=null?q.dx:10);
+      if(Math.abs(qdy)>30) s.push('<line x1="'+nx.toFixed(1)+'" y1="'+(ny+(qdy>0?6:-6)).toFixed(1)+'" x2="'+(nx+qdx).toFixed(1)+'" y2="'+(ny+qdy+(qdy>0?-13:5)).toFixed(1)+'" stroke="'+COL.note+'" stroke-opacity=".75"/>');
+      s.push('<circle cx="'+nx.toFixed(1)+'" cy="'+clampY(ny).toFixed(1)+'" r="6" fill="none" stroke="'+COL.note+'" stroke-width="1.6"/>');
+      s.push(label(nx+qdx, ny+qdy, q.txt, q.anchor||'start', '#ffb8b8'));
+    });
+    /* Statuszeile */
+    var st='';
+    chs.forEach(function(c,k){ var sc=smp.sc[k]; st+=(k?'<tspan fill="#5b6b7d">  ·  </tspan>':'')+'<tspan fill="'+(c.col||COL[k+1])+'">CH'+(k+1)+(c.lbl?' '+esc(c.lbl):'')+' '+esc(fmtV(sc.vdiv,sc.unit))+'/div</tspan>'; });
+    st+='<tspan fill="#5b6b7d">  ·  </tspan><tspan fill="#8aa0b8">'+esc(fmtT(spec.tdiv))+'/div</tspan>';
+    if(spec.cond) st+='<tspan fill="#5b6b7d">  ·  </tspan><tspan fill="#8aa0b8">'+esc(spec.cond)+'</tspan>';
+    s.push('<text x="'+g.x0+'" y="'+(g.h-16)+'" font-size="12">'+st+'</text>');
+    s.push('<text x="'+g.x1+'" y="'+(g.h-16)+'" text-anchor="end" fill="#4f6072" font-size="10" letter-spacing="1.5">TYPISCH · SCHEMATISCH</text>');
+    if(spec.badge){ var bc=spec.badge==='GUT'?'#3ecf8e':'#ff6b6b';
+      s.push('<rect x="'+(g.x0+8)+'" y="'+(g.y0+8)+'" width="74" height="22" rx="5" fill="'+bc+'22" stroke="'+bc+'"/><text x="'+(g.x0+45)+'" y="'+(g.y0+23)+'" text-anchor="middle" fill="'+bc+'" font-size="12" font-weight="700">'+spec.badge+'</text>'); }
+    if(spec.title) s.push(label(g.x0+(spec.badge?92:8), g.y0+24, spec.title, 'start', '#cfe3f2'));
+    s.push('</svg>');
+    var cls=spec.badge==='FEHLER'?'sig b':(spec.badge==='GUT'?'sig g':'sig');
+    var cap=spec.caption?('<figcaption><b>'+(spec.badge?spec.badge+': ':'')+'</b>'+spec.caption+(spec.why?('<br><span class="why">Warum: '+spec.why+'</span>'):'')+'</figcaption>'):'';
+    return '<figure class="'+cls+'">'+s.join('')+cap+'</figure>';
+  }
+
+  /* lazy: rendert erst bei der ersten Umwandlung in Text (join, +) und cacht */
+  function W2(spec){
+    var html=null, o={spec:spec, w2:true};
+    o.toString=function(){ if(html===null) html=render(spec); return html; };
+    o.valueOf=o.toString;
+    return o;
+  }
+
+  /* ---- Prüfung eines Bildes (OL = OsziLogic) ---- */
+  function check(spec, OL){
+    var err=[], warn=[], smp;
+    if(!(spec.tdiv>0)) err.push('tdiv fehlt/ungültig');
+    if(!(spec.ch&&spec.ch.length)) err.push('keine Kanäle');
+    (spec.ch||[]).forEach(function(c,k){ if(!(scaleOf(spec,c).vdiv>0)) err.push('CH'+(k+1)+': vdiv fehlt'); });
+    if(err.length) return {err:err, warn:warn};
+    try{ smp=sample(spec); }catch(e){ return {err:['Modellfehler: '+e.message], warn:warn}; }
+    smp.ch.forEach(function(a,k){
+      var bad=0, out=0, i, r=visRange(smp.sc[k]);
+      for(i=0;i<a.length;i++){ if(!isFinite(a[i])) bad++; else if(a[i]<r[0]||a[i]>r[1]) out++; }
+      if(bad) err.push('CH'+(k+1)+': '+bad+' ungültige Werte (NaN/Inf)');
+      var frac=out/a.length;
+      if(frac>0.02 && !spec.clip) err.push('CH'+(k+1)+': '+(frac*100).toFixed(1)+' % ausserhalb des Bildbereichs (abgeschnitten) – vdiv/off anpassen oder clip:true mit Begründung');
+    });
+    if(spec.badge==='FEHLER' && !(spec.ghost&&spec.ghost.length) && !spec.noGhost) warn.push('Fehlerbild ohne Sollbild (ghost) und ohne noGhost-Begründung');
+    if(!spec.caption) warn.push('caption fehlt');
+    if(!spec.title) warn.push('title fehlt');
+    var T=smp.T;
+    (spec.meas||[]).concat(spec.notes||[]).forEach(function(m){ ['t','t0','t1'].forEach(function(key){ if(m[key]!=null && (m[key]<0||m[key]>T)) warn.push('Markierung ausserhalb des Zeitfensters ('+key+'='+m[key]+' s, Fenster '+T+' s)'); }); });
+    (spec.expect||[]).forEach(function(e){
+      var k=e.ch||0, a=smp.ch[k], dt=smp.dt, val=null, lbl=e.what;
+      if(!a){ err.push('expect: Kanal '+k+' fehlt'); return; }
+      if(e.t0!=null||e.t1!=null){ var i0=Math.max(0,Math.floor((e.t0||0)/dt)), i1=Math.min(a.length,Math.ceil((e.t1!=null?e.t1:T)/dt)); a=a.subarray(i0,i1); }
+      var pp=OL.peakToPeak(a);
+      if(e.what==='freq') val=OL.measureFreq(a,dt);
+      else if(e.what==='period') val=OL.measurePeriod(a,dt);
+      else if(e.what==='mean') val=OL.mean(a);
+      else if(e.what==='rms') val=OL.rms(a);
+      else if(e.what==='max') val=pp.max;
+      else if(e.what==='min') val=pp.min;
+      else if(e.what==='vpp') val=pp.pp;
+      else if(e.what==='duty'){ var pw=OL.pulseWidths(a,dt); val=pw.dutyPos; }
+      else if(e.what==='rise') val=OL.measureRise(a,dt);
+      else if(e.what==='fall') val=OL.measureFall(a,dt);
+      else { err.push('expect: unbekannte Größe '+e.what); return; }
+      if(val==null||!isFinite(val)){ err.push('expect '+lbl+': nicht messbar'); return; }
+      var ok;
+      if(e.min!=null||e.max!=null) ok=(e.min==null||val>=e.min)&&(e.max==null||val<=e.max);
+      else if(e.tolRel!=null) ok=Math.abs(val-e.v)<=Math.abs(e.v)*e.tolRel;
+      else ok=Math.abs(val-e.v)<=(e.tol!=null?e.tol:Math.abs(e.v)*0.05);
+      if(!ok) err.push('expect '+lbl+(e.t0!=null||e.t1!=null?' ['+(e.t0||0)+'–'+(e.t1!=null?e.t1:T)+' s]':'')+': gemessen '+(+val.toPrecision(4))+', erwartet '+(e.min!=null||e.max!=null?('['+e.min+' … '+e.max+']'):(e.v+(e.tolRel!=null?' ±'+(e.tolRel*100)+' %':' ±'+(e.tol!=null?e.tol:'5 %'))))+(e.src?' (Quelle: '+e.src+')':''));
+    });
+    return {err:err, warn:warn};
+  }
+
+  return { M:M, model:model, W2:W2, render:render, sample:sample, check:check, scaleOf:scaleOf, visRange:visRange,
+           lib:{ hash:hash, vnoise:vnoise, lagSeries:lagSeries, sqw:sqw, ring:ring, smooth:smooth },
+           fmt:{ de:de, fmtV:fmtV, fmtT:fmtT, fmtF:fmtF }, GEO:GEO };
+})();
+function W2(spec){ return SIG.W2(spec); }
+/* Quellen je Karte (Signalwerte), angezeigt am Kartenende */
+var QUELLEN = {};
+/* ===== SIGNALBILD-ENGINE W2 — ENDE ===== */
+
+/* ===== SIGNALMODELLE (Karten) — START =====
+   Kartenspezifische Signalmodelle: SIG.M.name = function(p){ return function(t){...} } (t in s).
+   Jede Zahl in den Bildtexten ist belegt (QUELLEN) oder wird per expect nachgemessen. */
+/* ===== SIGNALMODELLE (Karten) — ENDE ===== */
+
 /* ---------- 2) MESSKARTEN ---------- */
 var RW="Richtwerte können je nach Hersteller, System, Motorsteuergerät und Messgerät abweichen. Herstellerdaten und Stromlaufplan haben Vorrang.";
 
@@ -3931,6 +4176,12 @@ function buildCardBody(c){
   if(c.tipps&&c.tipps.length) h+='<div class="tip"><b>Praxistipps:</b><ul>'+c.tipps.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
   if(c.warn) h+='<div class="warn"><b>Sicherheit:</b> '+esc(c.warn)+'</div>';
   if(c.profi) h+='<div class="prof"><b>Profi:</b> '+esc(c.profi)+'</div>';
+  if(typeof QUELLEN!=='undefined' && QUELLEN[c.id] && QUELLEN[c.id].length){
+    h+='<div class="kfeld"><div class="kl">Quellen (Signalwerte)</div><ul class="quellen">'+QUELLEN[c.id].map(function(q){
+      var m=String(q).match(/https?:\/\/\S+/), t=esc(q);
+      if(m){ var u=m[0].replace(/[),.;]+$/,''); t=t.replace(esc(u),'<a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(u)+'</a>'); }
+      return '<li>'+t+'</li>'; }).join('')+'</ul></div>';
+  }
   h+='<div class="rw">'+esc(RW)+'</div>';
   return h;
 }
@@ -4245,6 +4496,38 @@ function wireAtlas(){
   }); }
 }
 
+/* ---- Datenprüfung (headless: node tools/validate.js · im Browser: validateKompendium()) ----
+   W2-Bilder: Modelle rechnen, nichts abgeschnitten, Fehlerbild mit Sollbild, deklarierte Werte (expect)
+   werden NACHGEMESSEN. Alte W()-Bilder: V/div-Beschriftung vs. Zeichnung. */
+window.validateKompendium=function(){
+  var errors=[], warnings=[], nImg=0, nW2=0, nW=0, OL=window.OsziLogic, oldMis={};
+  KARTEN.forEach(function(c){
+    if(!(c.gut&&c.gut.length)) errors.push(c.id+': kein Gutbild');
+    if(!(c.schlecht&&c.schlecht.length)) warnings.push(c.id+': kein Fehlerbild');
+    [['G',c.gut||[]],['F',c.schlecht||[]]].forEach(function(p){
+      p[1].forEach(function(img,i){
+        nImg++; var tag=c.id+' '+p[0]+i;
+        if(img && img.w2){
+          nW2++;
+          var r=SIG.check(img.spec, OL);
+          r.err.forEach(function(e){ errors.push(tag+': '+e); });
+          r.warn.forEach(function(w){ warnings.push(tag+': '+w); });
+          if(p[0]==='G' && i===0 && c.setup && OL.parseSetup){
+            /* gut[0] = Live-Referenz (rechnet in echten Einheiten); Zeitbasis nur grob plausibel zum Setup */
+            var su=OL.parseSetup(c.setup), r10=su.secdiv?img.spec.tdiv/su.secdiv:1;
+            if(r10>10||r10<0.1) warnings.push(tag+': Live-Referenz t/div '+img.spec.tdiv+' s weicht mehr als Faktor 10 vom Karten-Setup ('+su.secdiv+' s) ab');
+          }
+        } else if(img && img.spec){
+          nW++; var s=img.spec, st=OL.parseVdiv(s.vdiv||''), dr=s.yr?(s.yr[1]-s.yr[0])/8:null;
+          if(st&&dr&&(dr/st<0.8||dr/st>1.25)) oldMis[c.id]=(oldMis[c.id]||0)+1;
+        }
+      });
+    });
+  });
+  Object.keys(oldMis).forEach(function(id){ warnings.push(id+': '+oldMis[id]+' alte(s) Bild(er): V/div-Beschriftung passt nicht zur Zeichnung (Umbau auf W2 ausstehend)'); });
+  return {cards:KARTEN.length, fdb:FEHLERDB.length, gloss:GLOSSAR.length, images:nImg, w2:nW2, w:nW, warnings:warnings, errors:errors};
+};
+
 /* ---- Init ---- */
 function init(){
   renderStatics();
@@ -4387,21 +4670,24 @@ var OsziLogic = (function(){
     return {lag:bestLag, score:Math.max(0,Math.min(1,best))};
   }
 
-  /* Frequenz ueber steigende Mittelwert-Durchgaenge (interpoliert); dt in s */
+  /* Frequenz mit Hysterese (Schmitt-Trigger um die Mitte, Band +/-10 % von Vpp) und
+     MEDIAN der Periodendauern -> robust gegen Rauschen, Ausreisser und Zahnluecken (60-2).
+     Ohne Hysterese erzeugt Rauschen in flachen Abschnitten Schein-Durchgaenge. dt in s */
   function measureFreq(a, dt){
-    var m=mean(a), first=-1, last=-1, count=0, prev=a[0]-m;
-    for(var i=1;i<a.length;i++){
-      var cur=a[i]-m;
-      if(prev<=0 && cur>0){
-        var x=(i-1)+prev/(prev-cur);
-        if(first<0) first=x;
-        last=x; count++;
+    var p=peakToPeak(a); if(!(p.pp>0)) return null;
+    var c=(p.min+p.max)/2, h=0.1*p.pp, lo=c-h, hi=c+h, armed=(a[0]<=c), ev=[], i;
+    for(i=1;i<a.length;i++){
+      var v=a[i];
+      if(v<lo) armed=true;
+      else if(armed && v>hi){
+        var pv=a[i-1]; ev.push((i-1)+(hi-pv)/((v-pv)||1e-12)); armed=false;
       }
-      prev=cur;
     }
-    if(count<2 || last<=first) return null;
-    var per=(last-first)/(count-1);
-    return 1/(per*dt);
+    if(ev.length<2) return null;
+    var d=[]; for(i=1;i<ev.length;i++) d.push(ev[i]-ev[i-1]);
+    d.sort(function(x,y){ return x-y; });
+    var med=d.length%2 ? d[(d.length-1)/2] : (d[d.length/2-1]+d[d.length/2])/2;
+    return med>0 ? 1/(med*dt) : null;
   }
 
   function measureDuty(a){
@@ -4411,20 +4697,29 @@ var OsziLogic = (function(){
     return hi/a.length;
   }
 
-  /* 10-90%-Anstiegszeit der ersten vollstaendigen steigenden Flanke, in s */
-  function measureRise(a, dt){
-    var p=peakToPeak(a); if(!(p.pp>0)) return null;
-    var lo=p.min+0.1*p.pp, hi=p.min+0.9*p.pp;
-    for(var i=1;i<a.length;i++){
-      if(a[i-1]<lo && a[i]>=lo){
-        for(var j=i;j<a.length;j++){
-          if(a[j]>=hi) return (j-(i-1))*dt;
-          if(a[j]<lo) break; /* Flanke abgebrochen -> naechste suchen */
+  /* 10-90%-Flankenzeit wie am Oszi: Pegel aus Top/Base (Histogramm, nicht Min/Max),
+     interpolierte Durchgaenge, MEDIAN ueber alle vollstaendigen Flanken -> robust gegen
+     ungleiche Amplituden (z. B. ueberhoehter Zahn an der 60-2-Luecke) und Ausreisser. In s. */
+  function edgeTime(a, dt, rising){
+    var L=levels(a), amp=L.top-L.base; if(!(amp>0)) return null;
+    var lo=L.base+0.1*amp, hi=L.base+0.9*amp, res=[], i, j;
+    for(i=1;i<a.length;i++){
+      var st = rising ? (a[i-1]<lo && a[i]>=lo) : (a[i-1]>hi && a[i]<=hi);
+      if(!st) continue;
+      var x0 = rising ? (i-1)+(lo-a[i-1])/((a[i]-a[i-1])||1e-12) : (i-1)+(a[i-1]-hi)/((a[i-1]-a[i])||1e-12);
+      for(j=i;j<a.length;j++){
+        if(rising ? a[j]>=hi : a[j]<=lo){
+          var x1 = rising ? (j-1)+(hi-a[j-1])/((a[j]-a[j-1])||1e-12) : (j-1)+(a[j-1]-lo)/((a[j-1]-a[j])||1e-12);
+          res.push((x1-x0)*dt); i=j; break;
         }
+        if(rising ? a[j]<lo : a[j]>hi) break; /* Flanke abgebrochen */
       }
     }
-    return null;
+    if(!res.length) return null;
+    res.sort(function(x,y){ return x-y; });
+    return res.length%2 ? res[(res.length-1)/2] : (res[res.length/2-1]+res[res.length/2])/2;
   }
+  function measureRise(a, dt){ return edgeTime(a, dt, true); }
 
 
   /* Karten-Setup ("setup"-Objekt einer Messkarte) -> Geraeteeinstellungen.
@@ -4502,32 +4797,22 @@ var OsziLogic = (function(){
   function overshoot(a){ var L=levels(a), p=peakToPeak(a), amp=L.top-L.base; return amp>1e-12?(p.max-L.top)/amp:null; }
   function preshoot(a){ var L=levels(a), p=peakToPeak(a), amp=L.top-L.base; return amp>1e-12?(L.base-p.min)/amp:null; }
 
-  /* 10-90%-Abfallzeit der ersten vollstaendigen fallenden Flanke, s (Spiegel zu measureRise) */
-  function measureFall(a, dt){
-    var p=peakToPeak(a); if(!(p.pp>0)) return null;
-    var hi=p.min+0.9*p.pp, lo=p.min+0.1*p.pp;
-    for(var i=1;i<a.length;i++){
-      if(a[i-1]>hi && a[i]<=hi){
-        for(var j=i;j<a.length;j++){
-          if(a[j]<=lo) return (j-(i-1))*dt;
-          if(a[j]>hi) break; /* Flanke abgebrochen -> naechste */
-        }
-      }
-    }
-    return null;
-  }
+  /* 90-10%-Abfallzeit (Spiegel zu measureRise) */
+  function measureFall(a, dt){ return edgeTime(a, dt, false); }
 
   /* +Breite/-Breite (s) und +/-Duty am 50%-Pegel (zwischen base/top),
      gemittelt ueber alle vollstaendigen Segmente (interpolierte Kreuzungen). */
   function pulseWidths(a, dt){
-    var L=levels(a), mid=(L.base+L.top)/2;
+    var L=levels(a), mid=(L.base+L.top)/2, h=0.1*(L.top-L.base);
     var none={ wPos:null, wNeg:null, dutyPos:null, dutyNeg:null };
     if(!(L.top>L.base)) return none;
-    var cr=[], i;
-    for(i=1;i<a.length;i++){
-      var p0=a[i-1]-mid, p1=a[i]-mid;
-      if(p0<=0 && p1>0) cr.push({ x:(i-1)+p0/(p0-p1), up:1 });
-      else if(p0>=0 && p1<0) cr.push({ x:(i-1)+p0/(p0-p1), up:0 });
+    /* Flanke erst nach Verlassen des Hysteresebands zaehlen, Zeitpunkt = 50-%-Durchgang davor */
+    function xmid(i, up){ var j=i; while(j>0 && (up ? a[j-1]>mid : a[j-1]<mid)) j--; if(j<=0) return i; var p0=a[j-1]-mid, p1=a[j]-mid; return (j-1)+p0/((p0-p1)||1e-12); }
+    var cr=[], state=0, i;
+    for(i=0;i<a.length;i++){
+      var v=a[i];
+      if(v>mid+h){ if(state===-1) cr.push({ x:xmid(i,true), up:1 }); state=1; }
+      else if(v<mid-h){ if(state===1) cr.push({ x:xmid(i,false), up:0 }); state=-1; }
     }
     if(cr.length<3) return none;
     var sumHi=0,nHi=0,sumLo=0,nLo=0;
@@ -4711,6 +4996,12 @@ function findKarte(id){
 function kartenGen(id){
   var k=findKarte(id); if(!k) return null;
   var w=(k.gut&&k.gut[0]&&k.gut[0].spec)?k.gut[0].spec:null;
+  if(w && w.ch && w.ch[0] && typeof SIG!=='undefined'){
+    /* W2: Signalmodell in ECHTER Zeit (s) -> Demo, Referenz und Overlay frequenzrichtig */
+    var c0=w.ch[0], sc=SIG.scaleOf(w,c0), fa=SIG.model(c0.m,c0.p), Tw=w.tdiv*10;
+    return {karte:k, f:function(tn){ return fa(tn*Tw); }, fAbs:fa, real:true, event:!!fa.event, Tref:Tw,
+            yr:SIG.visRange(sc), yunit:sc.unit, vdivRef:sc.vdiv};
+  }
   var tr=w&&w.tr&&w.tr[0];
   if(!tr||!G[tr.g]) return null;
   var Tdiv=OsziLogic.parseTdiv(w.tdiv)||OsziLogic.parseTdiv(k.setup&&k.setup.tdiv)||1e-3;
@@ -4729,6 +5020,8 @@ function refSampler(ch){
       at:function(t){ var x=((t%T)+T)%T; var i=Math.min(rec.len-1,Math.round(x/rec.dt)); return rec.ch1f[i]; }};
   }
   var g=kartenGen(id); if(!g) return null;
+  if(g.fAbs) return {T:g.Tref, unit:g.yunit, gen:g,
+    at:function(t){ return g.fAbs(g.event?(((t%g.Tref)+g.Tref)%g.Tref):t); }};
   return {T:g.Tref, unit:g.yunit, gen:g,
     at:function(t){ var tn=((t/g.Tref)%1+1)%1; return g.f(tn); }};
 }
@@ -4814,7 +5107,7 @@ function disconnect(){
 
 /* ---------- Mock: Kartengeneratoren als Live-Signal ---------- */
 function MockSock(){
-  var self=this; this.timer=null; this.phase=0;
+  var self=this; this.timer=null; this.phase=0; this.tAbs=0;
   this.start=function(){
     disconnect();
     LV.mock=self;
@@ -4826,10 +5119,13 @@ function MockSock(){
       var amp=(yr[1]-yr[0])||1;
       var a1=new Float32Array(n), a2=null, i;
       for(i=0;i<n;i++){
-        var tn=(self.phase+i*dt/Tref)%1;
-        var v=g?g.f(tn):Math.sin(tn*2*Math.PI);
-        var s=Math.sin((i+self.phase*7919)*12.9898)*43758.5453;
-        v += (s-Math.floor(s)-0.5)*0.03*amp;      /* ~1,5 % Rauschen */
+        var tn=(self.phase+i*dt/Tref)%1, v;
+        if(g && g.fAbs){ var ta=self.tAbs+i*dt; v=g.fAbs(g.event?(ta%Tref):ta); }   /* W2: Modell rauscht selbst */
+        else {
+          v=g?g.f(tn):Math.sin(tn*2*Math.PI);
+          var s=Math.sin((i+self.phase*7919)*12.9898)*43758.5453;
+          v += (s-Math.floor(s)-0.5)*0.03*amp;      /* ~1,5 % Rauschen */
+        }
         a1[i]=v;
       }
       if(LV.chOn[1]){
@@ -4837,7 +5133,7 @@ function MockSock(){
         var sh=Math.round(n*0.12);
         for(i=0;i<n;i++) a2[i]=a1[(i+sh)%n]*0.85;
       }
-      self.phase=(self.phase+n*dt/Tref)%1;
+      self.phase=(self.phase+n*dt/Tref)%1; self.tAbs+=n*dt;
       onFrame({dt:dt,probe:[1,1]},a1,a2);
     },50);
   };
@@ -5072,7 +5368,7 @@ function draw(){
     function rv(x){
       var v=ref.at((x/cols)*win.T + lagT);
       if(useScale) return A.off+A.k*v;
-      if(g) return ((v-(g.yr[0]+g.yr[1])/2)/g.vdivRef)*vdiv;
+      if(g && !g.real) return ((v-(g.yr[0]+g.yr[1])/2)/g.vdivRef)*vdiv;
       return v;
     }
     var band=[], mn=Infinity, mx=-Infinity;

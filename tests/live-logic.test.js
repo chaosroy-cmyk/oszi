@@ -220,4 +220,43 @@ t('windowFn Hann: Enden 0, Mitte ~1', () => {
   assert(Math.abs(w[50]-1)<1e-6, 'Mitte='+w[50]);
 });
 
+/* ===== V11: Frequenzmessung mit Hysterese (Regression 60-2 + Rauschen) ===== */
+function kw602(t, rpm, noiseAmp){
+  const pos=(rpm/60*t)*60, k=((Math.floor(pos)%60)+60)%60, fr=pos-Math.floor(pos);
+  const s=Math.sin(t*1e6*12.9898)*43758.5453, nz=noiseAmp*((s-Math.floor(s))*2-1);
+  if(k===58||k===59) return 0.1*Math.sin(fr*Math.PI)+nz;
+  return 2.4*(k===0?1.35:1)*Math.sin(fr*2*Math.PI)+nz;
+}
+t('measureFreq 60-2 bei 800/min MIT Rauschen und Luecke -> 800 Hz ±1 % (war 860 Hz)', () => {
+  const dt=1e-5, N=15000, a=new Float32Array(N);
+  for(let i=0;i<N;i++) a[i]=kw602(i*dt, 800, 0.08);
+  const f=L.measureFreq(a,dt);
+  assert(Math.abs(f-800)/800<0.01, 'f='+f);
+});
+t('measureFreq PWM 10 % Tastgrad 0/5 V -> 200 Hz', () => {
+  const dt=1e-5, N=5000, a=new Float32Array(N);
+  for(let i=0;i<N;i++) a[i]=((i*dt*200)%1)<0.1?5:0;
+  const f=L.measureFreq(a,dt);
+  assert(Math.abs(f-200)/200<0.01, 'f='+f);
+});
+t('measureFreq Rauschen auf Gleichspannung -> null (kein Schein-Signal)', () => {
+  const dt=1e-5, N=4000, a=new Float32Array(N);
+  for(let i=0;i<N;i++){ const s=Math.sin(i*12.9898)*43758.5453; a[i]=1.25+0.01*((s-Math.floor(s))*2-1); }
+  const f=L.measureFreq(a,dt);
+  assert(f===null || f>20000, 'f='+f);
+});
+t('pulseWidths mit Rauschen auf den Pegeln bleibt stabil', () => {
+  const dt=1e-4, N=2000, a=new Float32Array(N);
+  for(let i=0;i<N;i++){ const s=Math.sin(i*78.233)*43758.5453; a[i]=(((i%100)<30)?5:0)+0.3*((s-Math.floor(s))*2-1); }
+  const pw=L.pulseWidths(a,dt);
+  assert(Math.abs(pw.dutyPos-0.30)<0.03, 'dutyPos='+pw.dutyPos);
+});
+
+t('measureRise am 60-2-Signal: Median je Zahn (~0,3 Periode), nicht 74 ms wie zuvor', () => {
+  const dt=1e-5, N=15000, a=new Float32Array(N);
+  for(let i=0;i<N;i++) a[i]=kw602(i*dt, 800, 0.03);
+  const r=L.measureRise(a,dt);
+  assert(r>0.30e-3 && r<0.45e-3, 'rise='+r);
+});
+
 console.log('\nAlle '+n+' Tests bestanden.');

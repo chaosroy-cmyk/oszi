@@ -53,7 +53,7 @@ catch (e) { console.error("Playwright fehlt – bitte 'npm i -D playwright' ausf
   await browser.close();
 
   if (!r) { console.error("Weder validateKompendium() noch KARTEN verfügbar."); process.exit(2); }
-  console.log(`Karten: ${r.cards} · Fehlerbilder: ${r.fdb} · Glossar: ${r.gloss}` + (r.mode === "smoke" ? " (Smoke-Test)" : ""));
+  console.log(`Karten: ${r.cards} · Fehlerbilder: ${r.fdb} · Glossar: ${r.gloss}` + (r.images != null ? ` · Signalbilder: ${r.images} (W2: ${r.w2}, alt: ${r.w})` : "") + (r.mode === "smoke" ? " (Smoke-Test)" : ""));
   (r.warnings || []).forEach(w => console.warn("  ! " + w));
   (r.errors || []).forEach(e => console.error("  ✗ " + e));
   runtime.forEach(e => console.error("  ✗ " + e));
