@@ -1,0 +1,2025 @@
+[
+ {
+  "bereich": "Sensoren (Motor, Abgas/Lambda/AGN, Getriebe/Antriebsstrang, Fahrwerk/Bremse/ESP/Lenkung, Klima/Komfort/Karosserie/Assistenz, HV-Randbereich). Hinweise: (1) Die Websuche-Kontingente der Sitzung waren am Ende erschöpft. Die letzten Lücken (AQS, Partikelsensor, PSG, AdBlue, Kühlmittelstand, Turbodrehzahl) sind deshalb mit 'nicht quellengeprüft' markiert. (2) In 'quellen' stehen nur Seiten, die tatsächlich geöffnet und gelesen wurden. (3) Die Pico-Guided-Test-Seiten enthalten im Text oft keine Zahlen, weil die Beispielkurven nur als Bild vorliegen. Werte, die nicht aus Quellen stammen, sind als 'Fachwissen, nicht quellengeprüft' gekennzeichnet. (4) Zum VDS1022I gilt allgemein: Die Bandbreite (25 MHz) reicht für alle Sensorsignale, die schnellsten liegen im Bereich 10–150 kHz. Begrenzend sind die gemeinsame Masse beider Kanäle (bei floatenden Signalen beachten) und der Speicher von 5000 Punkten (Zeitfenster und Abtastrate abwägen).",
+  "signale": [
+   {
+    "name": "Kurbelwellensensor induktiv (2-polig, passiv)",
+    "system": "Motor – Drehzahl/Position",
+    "signalart": "induktiv (generatorische Wechselspannung)",
+    "typischeWerte": "Die Wechselspannung ist sinusähnlich. Amplitude und Frequenz steigen mit der Drehzahl. Die Bezugsmarke (Zahnlücke) zeigt sich als Abschnitt mit geringer Spannung, die Zähne beiderseits der Lücke erzeugen größere Ausschläge (Pico AGT-017). Pico nennt keine Spannungswerte. Die Pegel sind hersteller- und drehzahlabhängig; beim Starten liegen sie typ. im niedrigen Voltbereich, bei hoher Drehzahl deutlich höher (Fachwissen, nicht quellengeprüft). Pico unterscheidet zwei Ausführungen: 'floating' (beide Leitungen zum Steuergerät, AGT-428/429) und 'non-floating' (AGT-017/430).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja, mit 10:1-Tastkopf. Achtung bei 'floating'-Ausführung: Beide Kanäle haben eine gemeinsame Masse. Das Massekrokodil darf nur dann an die zweite Sensorleitung, wenn der andere Kanal nicht an Fahrzeugmasse hängt, sonst wird diese Leitung auf Masse gelegt. Alternativ jede Leitung gegen Masse messen (CH1/CH2) und die Differenz bilden (ob die OWON-Software Math A−B bietet: nicht geprüft).",
+    "sicherheit": "Keine elektrische Gefahr. Mechanisch: Abstand zu Riemen und Lüfter halten.",
+    "abgedecktDurch": "kw-ind",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/crankshaft-position/AGT-017-crankshaft-position-non-floating-cranking/",
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors"
+    ]
+   },
+   {
+    "name": "Kurbelwellensensor Hall/MR (aktiv, 3-polig)",
+    "system": "Motor – Drehzahl/Position",
+    "signalart": "digital (Rechteck, Hall/magnetoresistiv)",
+    "typischeWerte": "Das Rechteck schaltet zwischen ca. 0 V und der Versorgungs- bzw. Pull-up-Spannung, typ. 5 V oder 12 V (herstellerabhängig; Pico-Leitfaden zeigt einen 12-V-Sensor, AGT-061 einen 0/5-V-Sensor). Die Frequenz ist proportional zur Drehzahl, die Bezugsmarke erscheint als längere Periode.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (1:1 oder 10:1, DC-Kopplung)",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "kw-hall",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/camshaft-position/AGT-061-camshaft-position-hall-effect/",
+     "https://www.picoauto.com/download/documents/manuals/picoscope-guide-to-oscilloscope-diagnostics.pdf"
+    ]
+   },
+   {
+    "name": "Kurbelwellensensor mit Drehrichtungserkennung (Start-Stopp, pulsbreitencodiert)",
+    "system": "Motor – Drehzahl/Position",
+    "signalart": "digital, pulsbreitencodiert (Open Collector)",
+    "typischeWerte": "Bosch-Datenblatt HA-Di (Motorsport, Prinzip übertragbar, Serienwerte herstellerabhängig): Pulsbreite vorwärts 37–53 µs (typ. 45 µs), rückwärts 75–105 µs (typ. 90 µs). Max. Frequenz ≤ 10 kHz vorwärts und ≤ 6 kHz rückwärts. Versorgung 5–16 V, Ausgang Open Collector für 1 kΩ, Luftspalt 0,4–1,0 mm. Die Drehrichtung erkennt man am Oszi an der Pulsbreite, nicht am Pegel.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja. Für die µs-Pulsbreiten mindestens ~1 MS/s wählen; dann umfasst ein 5000-Punkte-Fenster nur ca. 5 ms. Für Auslaufen/Rückpendeln beim Motorstopp eine längere Zeitbasis mit geringerer Auflösung oder Einzelaufnahme mit Trigger.",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "kw-dir (V12)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.bosch-motorsport.com/media/catalog_content/downloads_catalog/pdf_catalog/data_sheet_69979403_speed_sensor_hall-effect_ha-di.pdf"
+    ]
+   },
+   {
+    "name": "Nockenwellensensor Hall",
+    "system": "Motor – Drehzahl/Position",
+    "signalart": "digital (Rechteck)",
+    "typischeWerte": "Pico AGT-061: digitaler Ausgang, der zwischen 0 V und 5 V schaltet. Es gibt auch 12-V-Varianten (Pico-Leitfaden). Die Frequenz hängt von der Nockenwellendrehzahl ab. Beispiel Phasenerkennung (Pico): Ein 4-Zylinder kann innerhalb von 180° KW (= 90° NW) starten.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "kw-hall",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/camshaft-position/AGT-061-camshaft-position-hall-effect/"
+    ]
+   },
+   {
+    "name": "Nockenwellensensor induktiv",
+    "system": "Motor – Drehzahl/Position",
+    "signalart": "induktiv",
+    "typischeWerte": "Gleiches Prinzip wie der induktive KW-Sensor (Pico AGT-011). Pico nennt im Text keine Zahlenwerte, die Pegel sind herstellerabhängig.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (10:1)",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "kw-ind (Prinzip identisch)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors"
+    ]
+   },
+   {
+    "name": "KW/NW-Synchronisation (Phasenlage, inkl. Nockenwellenverstellung)",
+    "system": "Motor – Drehzahl/Position",
+    "signalart": "2-Kanal-Vergleich digital/induktiv",
+    "typischeWerte": "Die relative Lage von KW- und NW-Bezugsmarke wird in Grad oder Zähnen ausgewertet (Pico AGT-151, Kanal A = KW, Kanal B = NW, Leerlauf). Die Sollwerte sind motorspezifisch.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (2 Kanäle reichen; beide Signale massebezogen). Bei 720° KW im Leerlauf reicht die Auflösung trotz 5000 Punkten (Fachwissen).",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "kwnw-sync",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/system-tests/camshaft-position/crankshaft-position/AGT-151-crankshaft-position-vs-camshaft-position/"
+    ]
+   },
+   {
+    "name": "Zündverteiler-Geber (Hall bzw. induktiv, Altfahrzeuge)",
+    "system": "Motor – Drehzahl/Position",
+    "signalart": "digital (Hall) bzw. induktiv",
+    "typischeWerte": "Pico führt eigene Tests (AGT-020 Hall, AGT-019 induktiv). Die Werte entsprechen den Hall- bzw. Induktivgebern, sind herstellerabhängig und im Pico-Text nicht beziffert.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "Zündanlage in der Nähe: Sekundärspannung nicht berühren.",
+    "abgedecktDurch": "kw-hall / kw-ind (teilweise)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors"
+    ]
+   },
+   {
+    "name": "Turbolader-Drehzahlsensor",
+    "system": "Motor – Luft/Aufladung",
+    "signalart": "unsicher (vermutlich digital/Frequenz)",
+    "typischeWerte": "Nicht quellengeprüft: Bei einigen Motoren verbaut, Signalart und Pegel herstellerabhängig. Wegen des erschöpften Suchkontingents nicht recherchiert.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "vermutlich ja (Frequenzbereich unbekannt, nicht geprüft)",
+    "sicherheit": "heißer Bereich (Turbolader)",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Luftmassenmesser analog (Heißfilm/Hitzdraht)",
+    "system": "Motor – Luft",
+    "signalart": "analog (Spannung)",
+    "typischeWerte": "Die Analogspannung steigt mit der Luftmasse und liegt im 0–5-V-Bereich (Fachwissen, nicht quellengeprüft; Pico AGT-007/009 ohne Zahlen im Text). Pico prüft bei Leerlauf, Vollgas und Schub; typische Fehler sind Unterbrechung, Kurzschluss und Übergangswiderstand.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "lmm-ana",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/air-flow-mass/AGT-007-air-flow-meter-hot-wire-gasoline/"
+    ]
+   },
+   {
+    "name": "Luftmassenmesser digital (Frequenzsignal, z. B. Bosch HFM6)",
+    "system": "Motor – Luft",
+    "signalart": "digital (Frequenz)",
+    "typischeWerte": "Bosch HFM6 bei Zündung an, Motor aus und ruhender Luft: 1,76–1,93 kHz. Liegt der Wert außerhalb, ist der Sensor laut Pico defekt. Die Frequenz steigt mit der Luftmasse.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "lmm-dig",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/air-flow-mass/AGT-095-air-mass-meter-digital/"
+    ]
+   },
+   {
+    "name": "Ansauglufttemperatur als PWM (im digitalen LMM integriert)",
+    "system": "Motor – Luft/Temperatur",
+    "signalart": "PWM",
+    "typischeWerte": "Fester Takt um 20 kHz, das Tastverhältnis codiert die Temperatur. Am festen Takt lässt sich die Leitung vom Luftmassen-Frequenzsignal unterscheiden (Pico AGT-095).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "lmm-dig (teilweise) / ntc",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/air-flow-mass/AGT-095-air-mass-meter-digital/"
+    ]
+   },
+   {
+    "name": "Sensoren mit SENT-Ausgang (LMM, Drossel-/Pedalposition, Druck, Temperatur)",
+    "system": "Motor – Luft/Druck/Position",
+    "signalart": "digital seriell (SENT, SAE J2716, Ein-Draht, Punkt-zu-Punkt)",
+    "typischeWerte": "Pico AGT-403/404: Tick typ. 3 µs, bis 90 µs möglich. Der Kalibrier-/Sync-Puls wird durch 56 geteilt (Beispiel 168 µs/56 = 3 µs). Ein Nibble hat 4 Bit, gemessen zwischen fallenden Flanken; Beispiel 51 µs = 17 Ticks → Wert 5. Ein Paket enthält Status-, bis zu 6 Daten- und ein CRC-Nibble; Sensordaten 12 Bit. Serielle Botschaft: kurz über 16, erweitert über 18 Pakete (CRC 4 bzw. 6 Bit). Pegel nennt Pico nicht. Sensoren mit SENT laut Pico: Luftmasse, Drosselposition, Druck, Temperatur.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (Pegel und Timing). Für den 3-µs-Tick ≥ 1–2 MS/s nötig; ein 5000-Punkte-Fenster deckt dann nur 2,5–5 ms (≈ 1 Paket) ab. Eine SENT-Decodierung in der OWON-Software ist nicht geprüft, also gegebenenfalls Ticks manuell auszählen.",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "sent (V12)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/communication/sent/AGT-403-sent-slow-standard-testing/",
+     "https://www.picoauto.com/library/automotive-guided-tests/communication/sent/AGT-404-sent-fast-extended-testing/"
+    ]
+   },
+   {
+    "name": "Luftmengenmesser Stauklappe (Potentiometer, Altfahrzeuge)",
+    "system": "Motor – Luft",
+    "signalart": "analog (Schleiferpotentiometer)",
+    "typischeWerte": "Die federbelastete Klappe bewegt einen Schleifer über eine Kohlebahn, die Spannung hängt von der Klappenstellung ab. Varianten mit 4, 5 (CO-Poti) und 7 Pins (zusätzlich Pumpenkontakt, schließt nach ca. 5° Klappenweg). Systeme: Bosch L/LE/LE3, Motronic, Ford EEC IV. Spannungswerte nennt Pico nicht.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (gut geeignet, um Aussetzer auf der Kohlebahn zu finden)",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "lmm-klappe (V12)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/air-flow-mass/AGT-008-air-flow-meter-air-vane-gasoline/"
+    ]
+   },
+   {
+    "name": "Saugrohrdrucksensor analog (MAP), auch Ladedrucksensor",
+    "system": "Motor – Luft/Druck",
+    "signalart": "analog (ratiometrisch 5 V)",
+    "typischeWerte": "5-V-Referenz; die Spannung folgt dem Absolutdruck (Fachwissen, nicht quellengeprüft; Pico AGT-024/010 ohne Zahlen im Text). Prüfbedingungen: Leerlauf, Gasstoß und Schub.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "map",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors"
+    ]
+   },
+   {
+    "name": "MAP digital (Frequenzausgang, z. B. Ford)",
+    "system": "Motor – Luft/Druck",
+    "signalart": "digital (Frequenz)",
+    "typischeWerte": "Pico AGT-025 (Saugbenziner): ca. 160 Hz bei Atmosphärendruck (höchster Wert), ca. 80–100 Hz bei starkem Unterdruck (Leerlauf, Schub). Drei Leitungen: Referenz typ. 5 V, Masse, Signal.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "map (teilweise, nur wenn die Karte die Frequenzvariante nennt)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/manifold-air-pressure/AGT-025-manifold-absolute-pressure-digital/"
+    ]
+   },
+   {
+    "name": "T-MAP (Druck + Temperatur kombiniert)",
+    "system": "Motor – Luft",
+    "signalart": "analog (2 Signale)",
+    "typischeWerte": "Pico führt einen eigenen 2-Kanal-Test (AGT-136, Turbodiesel). Druckspur wie MAP, Temperaturspur wie NTC; Werte herstellerabhängig.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (CH1 Druck, CH2 Temperatur)",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "map + ntc",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors"
+    ]
+   },
+   {
+    "name": "Umgebungsdrucksensor (Höhenkorrektur)",
+    "system": "Motor – Luft",
+    "signalart": "analog/digital, meist im Steuergerät",
+    "typischeWerte": "Nicht quellengeprüft: häufig im Motorsteuergerät integriert und dann nicht zugänglich. Separate Ausführungen verhalten sich wie MAP.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein, wenn im Steuergerät integriert; sonst wie MAP",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "map (falls separat)",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Drosselklappenpotentiometer (einfach, ältere Systeme)",
+    "system": "Motor – Luft/Position",
+    "signalart": "analog (Potentiometer)",
+    "typischeWerte": "Pico AGT-029: Die Spannung folgt der Drosselklappenstellung. Für Aussetzer langsam durchfahren; Werte herstellerabhängig.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "dk-alt (V12)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors"
+    ]
+   },
+   {
+    "name": "Drosselklappenschalter (Leerlauf-/Volllastkontakt)",
+    "system": "Motor – Luft/Position",
+    "signalart": "Schaltsignal (2 Kontakte)",
+    "typischeWerte": "Pico AGT-028: meist 3-polig mit 5-V-Versorgung, bei sehr frühen Systemen 12 V. Klappe zu: Leerlaufkontakt geschlossen, Volllast offen. Teillast: beide offen. Vollgas: Leerlauf offen, Volllast geschlossen. Messung mit 2 Kanälen.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (CH1 Leerlauf, CH2 Volllast)",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "dk-alt (V12)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/throttle-position/AGT-028-throttle-position-switch/"
+    ]
+   },
+   {
+    "name": "E-Drosselklappe Positionssensor (Doppelsignal)",
+    "system": "Motor – Luft/Position",
+    "signalart": "analog (2 Spuren) oder digital/SENT",
+    "typischeWerte": "Zwei redundante Spuren, Verlauf herstellerabhängig (gegenläufig oder gleichlaufend). Siehe Karte edk; Werte dort.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (2 Kanäle)",
+    "sicherheit": "Nicht in die Klappe greifen, der Stellmotor kann bei Zündung an verfahren.",
+    "abgedecktDurch": "edk",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors"
+    ]
+   },
+   {
+    "name": "Fahrpedalgeber analog (2 Spuren)",
+    "system": "Motor – Position",
+    "signalart": "analog (2 Spuren)",
+    "typischeWerte": "Pico AGT-063: CH A und CH B je an einer Spur, Zündung an, Pedal betätigen. Pico nennt keine Zahlen. Das Spurverhältnis ist herstellerabhängig, z. B. Spur 2 halb so groß wie Spur 1 oder gegenläufig (Fachwissen, nicht quellengeprüft).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (2 Kanäle)",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "edk",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/accelerator-pedal-position/AGT-063-accelerator-pedal-position-analog/"
+    ]
+   },
+   {
+    "name": "Fahrpedalgeber digital",
+    "system": "Motor – Position",
+    "signalart": "digital (Protokoll herstellerabhängig, z. B. SENT/PWM)",
+    "typischeWerte": "Pico führt einen eigenen Test (AGT-850), nennt aber weder Protokoll noch Pegel. Bei SENT-Ausführung gelten die SENT-Werte (Tick typ. 3 µs).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (Pegel/Timing); Decodierung siehe SENT",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "edk + SENT-Erklärbild (teilweise)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/accelerator-pedal-position/AGT-850-accelerator-pedal-position-digital/"
+    ]
+   },
+   {
+    "name": "Positionssensoren AGR/VTG/Drallklappe/Wastegate",
+    "system": "Motor – Luft/Aufladung",
+    "signalart": "analog / PWM / SENT (herstellerabhängig)",
+    "typischeWerte": "Siehe Karte pos-sensor. Für SENT-Varianten gelten die SENT-Werte (Pico AGT-404).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "heiße Bauteile (Turbo/AGR)",
+    "abgedecktDurch": "pos-sensor",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/communication/sent/AGT-404-sent-fast-extended-testing/"
+    ]
+   },
+   {
+    "name": "Bremskraftverstärker-Unterdrucksensor",
+    "system": "Motor/Bremse – Druck",
+    "signalart": "analog (vermutlich ratiometrisch wie MAP)",
+    "typischeWerte": "Nicht quellengeprüft: Ausführung und Kennlinie herstellerabhängig.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "vermutlich ja (nicht geprüft)",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "map (Prinzip, teilweise)",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Öldrucksensor / Öldruckschalter",
+    "system": "Motor – Druck",
+    "signalart": "Schalter / analog / PWM (herstellerabhängig)",
+    "typischeWerte": "Siehe Karte oeldruck. Es gibt auch kombinierte Druck-/Temperatursensoren mit PWM-Ausgang (Hella; Werte hier nicht recherchiert).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "oeldruck",
+    "prioritaet": "mittel",
+    "quellen": []
+   },
+   {
+    "name": "Raildrucksensor (Common-Rail / Benzin-DI)",
+    "system": "Motor – Kraftstoff/Druck",
+    "signalart": "analog (0,5–4,5 V), teils SENT",
+    "typischeWerte": "Pico AGT-138 (Bosch CRD): Signal 0,5–4,5 V je nach Druck; 0 V oder 5 V gelten als unplausibel. Bei länger anhaltender Volllast über 2,5 V, im Extremfall bis 4,5 V. Fällt die Spannung nach Motorstopp schnell auf 0,5 V, deutet das auf ein Leck im Hochdruck hin. Messbereich 0–1600 bar, systemabhängig höher. Ablauf: 5–10 s Leerlauf, 2–3 s Volllast, 5–10 s zurück in Leerlauf. Drucksensoren gibt es auch mit SENT (Pico AGT-404: Beispiel 12+12-Bit-Drucksensor).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (lange Zeitbasis, Roll-Modus)",
+    "sicherheit": "Hochdruck: nie bei laufendem Motor an Leitungen arbeiten; Kraftstoffstrahl verletzt Haut.",
+    "abgedecktDurch": "raildruck",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/fuel-pressure/AGT-138-crd-bosch-fuel-rail-pressure/",
+     "https://www.picoauto.com/library/automotive-guided-tests/communication/sent/AGT-404-sent-fast-extended-testing/"
+    ]
+   },
+   {
+    "name": "Kraftstoff-Niederdrucksensor (DI-Vordruck / Diesel-Vorförderung)",
+    "system": "Motor – Kraftstoff/Druck",
+    "signalart": "analog (vermutlich ratiometrisch) oder SENT",
+    "typischeWerte": "Nicht quellengeprüft: Prinzip wie Raildrucksensor, Messbereich niedriger, Kennlinie herstellerabhängig.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "Kraftstoff: Brandgefahr, keine Funken",
+    "abgedecktDurch": "raildruck (Prinzip, teilweise)",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Brennraumdruck-Glühkerze (Drucksensor-Glühkerze)",
+    "system": "Motor – Druck (Diesel)",
+    "signalart": "unsicher (vermutlich digital/aufbereitet)",
+    "typischeWerte": "Nicht quellengeprüft (Suchkontingent erschöpft). Nur bei wenigen Diesel-Motoren verbaut.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "unbekannt",
+    "sicherheit": "Glühstromkreis: hohe Ströme",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Abgasdruck-/Abgasgegendrucksensor",
+    "system": "Abgas/AGN – Druck",
+    "signalart": "analog (vermutlich wie Differenzdrucksensor)",
+    "typischeWerte": "Nicht quellengeprüft; Prinzip wie DPF-Differenzdrucksensor (Karte dpf).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "heiße Abgasanlage",
+    "abgedecktDurch": "dpf (Prinzip, teilweise)",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Temperatursensoren NTC (Kühlmittel, Ansaugluft, Öl, Kraftstoff, Getriebeöl, Klima)",
+    "system": "Motor/Getriebe/Klima – Temperatur",
+    "signalart": "analog (Spannungsteiler mit 5-V-Referenz)",
+    "typischeWerte": "Pico AGT-015: 5-V-Referenz, bei abgezogenem Sensor müssen 5 V am Signal anliegen. Bei NTC fallen Widerstand und Spannung mit steigender Temperatur, PTC verhält sich umgekehrt. Der Kreis reagiert empfindlich auf Übergangswiderstände. Pico: Das Scantool kann einen Sensorfehler verdecken, die Kurve bestätigt ihn.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (sehr lange Zeitbasis bzw. Roll-Modus für den Warmlauf)",
+    "sicherheit": "heißes Kühlsystem nicht öffnen",
+    "abgedecktDurch": "ntc",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/coolant-temperature/AGT-015-engine-coolant-temperature-5-v/"
+    ]
+   },
+   {
+    "name": "Abgastemperatursensor",
+    "system": "Abgas/AGN – Temperatur",
+    "signalart": "analog (PTC/Thermoelement-abhängig)",
+    "typischeWerte": "Siehe Karte agt.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "heiße Abgasanlage",
+    "abgedecktDurch": "agt",
+    "prioritaet": "mittel",
+    "quellen": []
+   },
+   {
+    "name": "Ölniveau-/Öltemperatursensor (Ultraschall, PWM-Rahmen, z. B. Hella PULS)",
+    "system": "Motor – Füllstand/Temperatur",
+    "signalart": "PWM (Open Collector, 3 codierte Pulse pro Rahmen)",
+    "typischeWerte": "Hella-Datenblatt: Rahmen alle 1000 ms ±10 % aus drei Pulsen in je 110-ms-Perioden: T1 Temperatur, T2 Füllstand, T3 Diagnose. T1 23 ms = −40 °C bis 87 ms = 160 °C (3,125 K/ms); 22 ms = Temperaturelement kurzgeschlossen, 88 ms = unterbrochen. T2 23 ms = 0 mm, 28,622 ms = 13 mm, 87,86 ms = 150 mm (2,3125 mm/ms); 22 ms = Signal unzuverlässig. T3 22 ms = Status OK; 33/44/55/66 ms = Fehlerklassen (Spannung, Piezo, Temperatur, Füllstand außerhalb des Bereichs). Pull-up 1,6–10 kΩ im Steuergerät, Pull-up-Spannung max. 16 V. Low-Pegel ≤ 0,0375·Vpullup + 1 V. Versorgung 9–16 V. Füllstand wird erst über −10 °C ausgegeben.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja. Zeitbasis so wählen, dass ≥ 1 Rahmen (≥ 1,2 s) erfasst wird; 5000 Punkte reichen für die ms-Pulse.",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "oelniveau (V12)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.hella.com/resources-soe/assets/documents/2106-KI-Oelniveausensoren-FORVIA-HELLA-EN.pdf"
+    ]
+   },
+   {
+    "name": "Klopfsensor (Piezo)",
+    "system": "Motor – Klopfen",
+    "signalart": "Piezo-Wechselspannung (generatorisch)",
+    "typischeWerte": "Pico AGT-021: 10:1-Tastkopf; Klopfen durch leichtes Klopfen mit Metallgegenstand auf den Block simulieren. Zahlenwerte nennt Pico nicht (siehe Karte klopf).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (10:1, AC- oder DC-Kopplung)",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "klopf",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/knock/AGT-021-knock-sensor/"
+    ]
+   },
+   {
+    "name": "Tankgeber / Kraftstoffstandgeber (Hebelgeber mit Potentiometer)",
+    "system": "Motor/Karosserie – Füllstand",
+    "signalart": "analog (Widerstand bzw. Spannungsteiler)",
+    "typischeWerte": "Der Schwimmer am Hebel bewegt einen Schleifer, der Widerstand ändert sich mit dem Füllstand. Das Steuergerät legt eine Referenzspannung an (Spannungsteiler). Typischer Fehler: Verschleiß der Bahn im meistgenutzten Bereich (Reserve bis ¾), außerdem vollgesogener oder klemmender Schwimmer, Stecker- und Masseprobleme. Satteltanks haben oft 2 Geber. Widerstands- und Spannungswerte sind herstellerabhängig, die Quelle nennt keine.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (Oszi zeigt Aussetzer beim Durchfahren der Bahn, z. B. am ausgebauten Geber)",
+    "sicherheit": "Kraftstoffdämpfe: Ex-Gefahr beim Öffnen des Tanks, keine Funken",
+    "abgedecktDurch": "tankgeber (V12)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://kfz-dietrich.com/blog/fehlercode-p0461-tankgeber-werkstatt-diagnose/"
+    ]
+   },
+   {
+    "name": "Ethanol-/Flex-Fuel-Sensor (Kraftstoffzusammensetzung)",
+    "system": "Motor – Kraftstoff",
+    "signalart": "digital (Frequenz = Ethanolanteil, Pulsbreite = Kraftstofftemperatur)",
+    "typischeWerte": "Continental-Sensor laut HP Academy: 50 Hz = E0, 150 Hz = E100; Pulsbreite 1 ms = −40 °C, 5 ms = 125 °C. Versorgung und Pull-up nennt die Quelle nicht. In DE selten verbaut.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "Kraftstoff: Brandgefahr",
+    "abgedecktDurch": "ethanol (V12)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.hpacademy.com/technical-articles/how-to-find-out-what-percentage-of-ethanol-is-in-your-fuel/"
+    ]
+   },
+   {
+    "name": "Wasser-im-Diesel-Sensor (Kraftstofffilter)",
+    "system": "Motor – Kraftstoff",
+    "signalart": "unsicher (Schalt- oder Analogsignal)",
+    "typischeWerte": "Nicht quellengeprüft.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "vermutlich ja (DC-Pegel; Multimeter meist ausreichend)",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Lambdasonde Sprungsonde (Zirkonia) vor Kat",
+    "system": "Abgas – Lambda",
+    "signalart": "analog (generatorisch, 0–1 V)",
+    "typischeWerte": "Pico AGT-022: fett ca. 0,8 V, mager ca. 0,2 V, Regelfrequenz ca. 1 Zyklus/s. Erst ab ca. 300 °C aktiv, nur im geschlossenen Regelkreis (Leerlauf, Teillast). Eine verschmutzte Sonde reagiert langsamer oder schwächer.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "heißes Abgas",
+    "abgedecktDurch": "lam-sprung",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/oxygen/AGT-022-oxygen-zirconia-output/"
+    ]
+   },
+   {
+    "name": "Lambdasonde Titandioxid (Widerstandssonde)",
+    "system": "Abgas – Lambda",
+    "signalart": "analog (Widerstandsänderung an 5-V-Referenz)",
+    "typischeWerte": "Pico AGT-023: Die Sonde erzeugt selbst keine Spannung, das Steuergerät legt 5 V an. Fett ca. 4,5 V, mager ca. 0,2 V, Regelung ca. 1 Hz. Meist 4 Leitungen inkl. Heizung. Dauerhaft hoch heißt dauerhaft fett, dauerhaft niedrig heißt mager.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "heißes Abgas",
+    "abgedecktDurch": "lam-tio2 (V12)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/oxygen/AGT-023-oxygen-titania-output/"
+    ]
+   },
+   {
+    "name": "Nachkatsonde / Kat-Wirkungsprüfung",
+    "system": "Abgas – Lambda",
+    "signalart": "analog (Sprungsonde)",
+    "typischeWerte": "Siehe Karte lam-nachkat. Pico prüft vor und nach Kat zweikanalig (AGT-128) und Nachkatsonde mit Heizung (AGT-937).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (2 Kanäle: vor/nach Kat)",
+    "sicherheit": "heißes Abgas",
+    "abgedecktDurch": "lam-nachkat",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors"
+    ]
+   },
+   {
+    "name": "Breitbandsonde (Bosch LSU 4.2/4.9, Pumpstrom)",
+    "system": "Abgas – Lambda",
+    "signalart": "analog/Strom (Pumpzelle), Nernstzelle geregelt",
+    "typischeWerte": "Pico AGT-870: Kanal A an Klemme 1 (Pumpzellenkreis, typ. rotes Kabel), Masse an Batterie-Minus, Bandbreitenbegrenzung 20 kHz empfohlen. Messbereich ca. 10:1 bis 20:1 AFR, 20:1 = Umgebungsluft. Bezug: Sprungsonde hat ca. 450 mV bei λ = 1. Pumpstromwerte nennt Pico nicht (siehe Karte lam-lsu).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (Spannungen gegen Masse). Der VDS1022I hat keinen 20-kHz-BW-Filter wie Pico, ggf. Mittelwertbildung (nicht geprüft).",
+    "sicherheit": "heißes Abgas",
+    "abgedecktDurch": "lam-lsu",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/oxygen/AGT-870-bosch-lsu-49-oxygen-sensor-switching/"
+    ]
+   },
+   {
+    "name": "Lambdasondenheizung (PWM)",
+    "system": "Abgas – Lambda",
+    "signalart": "PWM (Aktor, Sondenheizung)",
+    "typischeWerte": "Siehe Karte lam-heiz. Pico prüft Ausgang und Heizung zweikanalig (AGT-142/937).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "lam-heiz",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors"
+    ]
+   },
+   {
+    "name": "NOx-Sensor (Smart-Sensor mit eigener Elektronik)",
+    "system": "Abgas/AGN – SCR/NSK",
+    "signalart": "Bus (CAN 2.0 bzw. SAE J1939)",
+    "typischeWerte": "Continental UniNOx: Ausgänge NOx sowie binäre und lineare Lambda bzw. O2-Konzentration; Versorgung 12 V oder 24 V; Abgastemperatur 100–800 °C; ZrO2-Mehrschichtsensor mit Heizung; Datenverbindung CAN 2.0 oder SAE J1939. Der Messwert liegt nur auf dem Bus vor, nicht als Analogspannung.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "nur Bus-Physik (Pegel, Abschluss, Störungen) wie Karte can-hs; Messwert nicht direkt ablesbar, Decodierung mit OWON-Software nicht geprüft",
+    "sicherheit": "heißes Abgas",
+    "abgedecktDurch": "can-hs (nur Bus-Ebene)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.continental-aftermarket.com/media/3749/continental_uninox_salessheet_final.pdf"
+    ]
+   },
+   {
+    "name": "Partikelsensor (PM-Sensor nach DPF)",
+    "system": "Abgas/AGN",
+    "signalart": "unsicher (vermutlich Smart-Sensor mit Busanbindung)",
+    "typischeWerte": "Nicht quellengeprüft (Suchkontingent erschöpft).",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "unbekannt; vermutlich nur Bus-Ebene",
+    "sicherheit": "heißes Abgas",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "DPF-Differenzdrucksensor",
+    "system": "Abgas/AGN – Druck",
+    "signalart": "analog (ratiometrisch) bzw. herstellerabhängig",
+    "typischeWerte": "Siehe Karte dpf.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "heiße Abgasanlage",
+    "abgedecktDurch": "dpf",
+    "prioritaet": "mittel",
+    "quellen": []
+   },
+   {
+    "name": "AdBlue-/Harnstoff-Sensorik (Füllstand, Temperatur, Qualität)",
+    "system": "Abgas/AGN – SCR",
+    "signalart": "unsicher (analog, PWM oder Bus, herstellerabhängig)",
+    "typischeWerte": "Nicht quellengeprüft (Suchkontingent erschöpft).",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "unbekannt",
+    "sicherheit": "Harnstoff ist korrosiv für Kontakte; Heizungen mit hohem Strom",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Getriebedrehzahlsensor aktiv (Hall/MR, Eingang/Ausgang/Zwischenwelle)",
+    "system": "Getriebe/Antriebsstrang",
+    "signalart": "Strom- bzw. Rechtecksignal (2-polig, ähnlich aktivem Raddrehzahlsensor), optional CAN",
+    "typischeWerte": "Hella: Hall- oder magnetoresistiv; 1–3 Sensoren je nach Getriebe, teils in Mechatronik oder Schieberkasten. Betriebsspannung 4,5–24 V (Nenn 12 V), Stromaufnahme 6–10 mA, Ausgang Rechteck/Puls, Schnittstelle PWM oder optional CAN, Frequenz 0–10 kHz je nach Drehzahl, 2- oder 3-polig. Das Diagramm zeigt Strompegel 7 mA / 14 mA. Eingangssensor (Turbinenwelle) und Ausgangssensor liefern unterschiedliche Frequenzbereiche.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja, wenn außen zugänglich. Bei Stromsignal: Spannung an der Sensor-Masse- bzw. Versorgungsleitung gegen Fahrzeugmasse oder Messadapter mit Shunt (z. B. 100 Ω ergibt 0,7/1,4 V bei 7/14 mA; Spannungsverlust beachten). Eine Stromzange müsste mA auflösen. Sensoren in der Mechatronik sind nicht zugänglich.",
+    "sicherheit": "Fahrzeug auf Hebebühne mit drehenden Rädern: zweite Person, Gefahrenbereich sichern",
+    "abgedecktDurch": "getriebe-dz (V12)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.hella.com/resources-soe/assets/documents/260202-Kurz-Info-Gear-Box-Speed-Sensor-EN.pdf"
+    ]
+   },
+   {
+    "name": "Getriebedrehzahlsensor induktiv (ältere Automatikgetriebe)",
+    "system": "Getriebe/Antriebsstrang",
+    "signalart": "induktiv",
+    "typischeWerte": "Nicht quellengeprüft; Prinzip wie induktiver KW- bzw. Raddrehzahlsensor.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (10:1)",
+    "sicherheit": "drehende Teile",
+    "abgedecktDurch": "kw-ind / raddreh-pass (Prinzip, teilweise)",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Fahrgeschwindigkeitssensor / Tachogeber (Hall, Getriebeabtrieb)",
+    "system": "Getriebe/Antriebsstrang",
+    "signalart": "digital (Rechteck)",
+    "typischeWerte": "Pico AGT-026: Bewertung über Spannung und Frequenz bei Fahrbedingungen. Prüfung auf Hebebühne mit freien Rädern, 1. Gang oder Rückwärtsgang, zweite Person am Steuer. Zahlenwerte nennt Pico nicht. Die Frequenz ist proportional zur Geschwindigkeit, die Amplitude bleibt konstant (Hall-Prinzip).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "drehende Räder auf der Hebebühne: Gefahrenbereich freihalten",
+    "abgedecktDurch": "kw-hall (Prinzip, teilweise)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/road-speed/AGT-026-road-speed-hall-effect/"
+    ]
+   },
+   {
+    "name": "Wählhebel-/Getriebepositionssensor (Multifunktionsschalter)",
+    "system": "Getriebe/Antriebsstrang",
+    "signalart": "unsicher (Schaltkontakte, Hall, PWM oder Bus)",
+    "typischeWerte": "Nicht quellengeprüft.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "bei Kontaktausführung ja (DC-Pegel), sonst unbekannt",
+    "sicherheit": "Wählhebel nie bei laufendem Motor ohne Sicherung prüfen",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Druck-/Drehzahl-/Temperatursensoren in der Getriebemechatronik",
+    "system": "Getriebe/Antriebsstrang",
+    "signalart": "intern (im Steuergerät-Verbund)",
+    "typischeWerte": "Hella: Drehzahlsensoren sitzen teils direkt in der Mechatronik. Die Signale sind dann nur über Diagnosetester bzw. Bus verfügbar.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein (nicht zugänglich)",
+    "sicherheit": "—",
+    "abgedecktDurch": "nicht anwendbar",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.hella.com/resources-soe/assets/documents/260202-Kurz-Info-Gear-Box-Speed-Sensor-EN.pdf"
+    ]
+   },
+   {
+    "name": "Kupplungspedal-/Kupplungspositionssensor (Hall)",
+    "system": "Antriebsstrang / Start-Stopp / Tempomat",
+    "signalart": "digital/analog (Hall, herstellerabhängig)",
+    "typischeWerte": "Hella (VW Touran 2003–2006): Hall-Sensor am Kupplungsgeberzylinder. Eindringendes Wasser kann ihn zerstören oder die Sicherung auslösen. Symptom: Bremslicht leuchtet bei Zündung an, ABS/EPC/ESP-Leuchten an, ABS-Fehler 00526 'Signal Bremslichtschalter unplausibel'. Pegel nennt die Quelle nicht.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (Pegelwechsel beim Treten, 2 Kanäle zusammen mit Bremslichtschalter für Plausibilität)",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "kupplung (V12)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.hella.com/techworld/br/bi/pdf/Volkswagen-Touran-Brake-lights-light-up-when-ignition-is-switched-on/Volkswagen-Touran-Brake-lights-light-up-when-ignition-is-switched-on.pdf"
+    ]
+   },
+   {
+    "name": "Raddrehzahlsensor aktiv (Hall/MR, 2-polig, Stromsignal)",
+    "system": "Fahrwerk – ABS/ESP",
+    "signalart": "Strom (Rechteck, PWM-codiert)",
+    "typischeWerte": "Hella: Sensor mit integrierter Elektronik (MR oder Hall) an Multipolring oder Stahlrad mit Magnet. Das Signal wird als PWM-Stromsignal über die Versorgungsleitung übertragen, zweipolig. Erkennung ab 0,1 km/h; Innenwiderstand nicht messbar. Pico AGT-847: Rechteck, Versorgung oft Batteriespannung; keine Widerstandsmessung (Beschädigungsgefahr). Strompegel 7/14 mA (Hella-Diagramm Getriebesensor, gleiches Prinzip).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja: Spannung an der Signalleitung gegen Masse (DC zeigt Versorgungsoffset, AC nur den Wechselanteil) oder Shunt-Adapter. Rad von Hand drehen, Zündung an.",
+    "sicherheit": "Fahrzeug sicher anheben",
+    "abgedecktDurch": "raddreh-akt",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.hella.com/techworld/uk/Technical/Sensors-and-actuators/Check-change-ABS-sensor-4074/",
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/wheel-speed/AGT-847-wheel-speed-sensor-magnetoresistive/"
+    ]
+   },
+   {
+    "name": "Raddrehzahlsensor aktiv Hall (3-polig, Spannungsausgang, ältere)",
+    "system": "Fahrwerk – ABS/ESP",
+    "signalart": "digital (Rechteck)",
+    "typischeWerte": "Pico (ABS-Speed-Sensor digital): Hall-Raddrehzahlsensor mit positiver Versorgung, meist 5 V; Ausgang Rechteck. Weitere Pegel nennt Pico nicht.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "Fahrzeug sicher anheben",
+    "abgedecktDurch": "raddreh-hall3 (V12)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/abs-speed-sensor-digital/"
+    ]
+   },
+   {
+    "name": "Raddrehzahlsensor passiv (induktiv)",
+    "system": "Fahrwerk – ABS/ESP",
+    "signalart": "induktiv (Wechselspannung)",
+    "typischeWerte": "Hella: Dauermagnet mit Polstift und Wicklung über Impulsrad; Frequenz und Amplitude hängen von der Raddrehzahl ab, die Amplitude muss im vom Steuergerät definierten Bereich liegen. Keine Versorgung, Widerstand mit Ohmmeter prüfbar (Sollwert herstellerabhängig). Pico AGT-003: Rad von Hand drehen; Fehler sind Korrosion, Spänebelag, Luftspalt und beschädigte Zähne. Zahlenwerte nennen beide Quellen nicht.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "Fahrzeug sicher anheben",
+    "abgedecktDurch": "raddreh-pass",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.hella.com/techworld/uk/Technical/Sensors-and-actuators/Check-change-ABS-sensor-4074/",
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/wheel-speed/AGT-003-wheel-speed-sensor-inductive/"
+    ]
+   },
+   {
+    "name": "Lenkwinkelsensor",
+    "system": "Fahrwerk – Lenkung/ESP",
+    "signalart": "Bus (CAN)",
+    "typischeWerte": "Bosch LWS (Motorsport-Datenblatt; Serienvarianten herstellerabhängig): GMR-Prinzip mit zwei Messzahnrädern, ±780°, Auflösung 0,1°, Winkelgeschwindigkeit 0–1016 °/s. Ausgabe nur über CAN mit 500 kbit/s und 100 Hz (10 ms), Versorgung 7–16 V. Nach Montage Nullabgleich nötig (Kalibrierstatus-Bit).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "nur Bus-Physik (CAN-Pegel, Botschaftstakt 10 ms); Winkelwert nicht ohne Decoder",
+    "sicherheit": "Lenkrad mit Airbag: Airbagstecker und -leitungen nicht anmessen (Pyrotechnik)",
+    "abgedecktDurch": "can-hs (Bus-Ebene)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.bosch-motorsport.com/content/downloads/raceparts/Resources/pdf/Data Sheet_191153675_Steering_Wheel_Angle_Sensor_LWS.pdf"
+    ]
+   },
+   {
+    "name": "Lenkmomentsensor (elektromechanische Servolenkung)",
+    "system": "Fahrwerk – Lenkung",
+    "signalart": "unsicher (analog, SENT oder intern, herstellerabhängig)",
+    "typischeWerte": "Nicht quellengeprüft; oft im Lenkgetriebe bzw. Servo-Steuergerät integriert.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "unbekannt; meist nicht zugänglich",
+    "sicherheit": "Lenkung: Sicherheitsbauteil, nach Arbeiten Grundeinstellung beachten",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Drehraten-/Quer-/Längsbeschleunigungssensor (ESP-Sensorcluster)",
+    "system": "Fahrwerk – ESP",
+    "signalart": "Bus bzw. im ESP-Steuergerät integriert",
+    "typischeWerte": "Nicht quellengeprüft (Datenblatt-Zugriff fehlgeschlagen); bei aktuellen Fahrzeugen meist im ESP- oder Airbag-Steuergerät integriert oder über CAN/FlexRay angebunden.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein (nur Bus-Ebene)",
+    "sicherheit": "Sitzt dieser Sensor im Airbag-Steuergerät: nicht anmessen",
+    "abgedecktDurch": "can-hs / FlexRay-Erklärbild (nur Bus)",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Bremsdrucksensor (ESP-Hydroaggregat)",
+    "system": "Fahrwerk – Bremse/ESP",
+    "signalart": "intern",
+    "typischeWerte": "Nicht quellengeprüft; in der Regel im Hydroaggregat und Steuergerät integriert.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein (nicht zugänglich)",
+    "sicherheit": "Bremsanlage: Sicherheitsbauteil",
+    "abgedecktDurch": "nicht anwendbar",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Bremslichtschalter / Bremspedalsensor",
+    "system": "Fahrwerk – Bremse (Motor-, ESP-, Start-Stopp-Plausibilität)",
+    "signalart": "Schaltsignale (meist 2 Kontakte) bzw. Hall",
+    "typischeWerte": "Hella (VW Touran): ABS-Fehler 00526 'Signal vom Bremslichtschalter unplausibel'; zuerst Schalter, dann Sicherung prüfen. Fachwissen, nicht quellengeprüft: zwei Kontakte, die sich beim Treten gegensinnig oder zeitversetzt ändern und vom Steuergerät plausibilisiert werden; Pegel herstellerabhängig.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (CH1/CH2 beide Kontakte, zeitliche Reihenfolge beim Treten)",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "bremslicht (V12)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.hella.com/techworld/br/bi/pdf/Volkswagen-Touran-Brake-lights-light-up-when-ignition-is-switched-on/Volkswagen-Touran-Brake-lights-light-up-when-ignition-is-switched-on.pdf"
+    ]
+   },
+   {
+    "name": "Bremsbelagverschleiß-Warnkontakt",
+    "system": "Fahrwerk – Bremse",
+    "signalart": "Schaltsignal (Kontakt/Leiterschleife)",
+    "typischeWerte": "Hella: Warngrenze in der Regel 2 mm Restbelag. In der einfachen Version wird der eingebettete Warnkontakt durchgeschliffen, der Stromkreis schließt sich und die Warnleuchte geht an. Je nach Anlage 2 oder 4 Kontakte; nach Belagwechsel zwingend erneuern. Andere Systeme werten die Unterbrechung der Schleife aus (herstellerabhängig).",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "ja, aber Multimeter genügt (statisches Signal); Oszi allenfalls für Wackelkontakte",
+    "sicherheit": "Fahrzeug sicher anheben",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.hella.com/techworld/de/ti/pdf/bremsverschleissanzeige-erklaert/bremsverschleissanzeige_erklaert.pdf"
+    ]
+   },
+   {
+    "name": "Bremsflüssigkeitsstand-Schalter",
+    "system": "Fahrwerk – Bremse/Füllstand",
+    "signalart": "Schaltsignal (Schwimmer, vermutlich Reedkontakt)",
+    "typischeWerte": "Nicht quellengeprüft.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "ja, Multimeter genügt",
+    "sicherheit": "Bremsflüssigkeit ist ätzend und hygroskopisch",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Niveausensor / Höhenstandsensor (LWR, Luftfederung, Dämpferregelung)",
+    "system": "Fahrwerk – Niveau / Licht",
+    "signalart": "analog / PWM / SENT / PSI5 (versionsabhängig, auch CAN/LIN)",
+    "typischeWerte": "Hella: Hebelarm mit Kugelgelenk am Fahrwerk, Sensorelement Potentiometer, Hall oder induktiv (CIPOS, berührungslos). Ausgang je nach Version analog, PWM, SENT, CAN oder LIN; die gelisteten Typen: analog, PWM, SENT, PSI5. Betriebsspannung 4–11 V, 12 Bit, −40 bis +125 °C. Typische Fehler: fehlende Versorgung oder Leitungsunterbrechung, interner Kurzschluss, mechanische Beschädigung.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja bei analog, PWM und SENT (Hebel langsam bewegen). PSI5-Varianten nur als Stromsignal (Shunt), Decodierung nicht geprüft.",
+    "sicherheit": "Luftfederung: Fahrzeug vor Arbeiten abstützen",
+    "abgedecktDurch": "niveau (V12)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.hella.com/partnerworld/assets/documents/2424-KI-Vehicle-Level-Sensor-HELLA-EN.pdf",
+     "https://www.hella.com/techworld/en/car-parts/auto-electronics/vehicle-level-sensor/"
+    ]
+   },
+   {
+    "name": "Reifendrucksensor (direktes RDKS/TPMS)",
+    "system": "Fahrwerk – Reifen",
+    "signalart": "Funk (UHF, FSK)",
+    "typischeWerte": "Sigidwiki: 434 MHz in Europa, 315 MHz anderswo; FSK, ca. 100 kHz Bandbreite; einzelne Aussendung ca. 7,55 ms; Symbolrate ca. 20 kbit/s (gemessenes Beispiel).",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein (Trägerfrequenz weit über 25 MHz Bandbreite und 100 MS/s); nur mit RDKS-Prüfgerät bzw. Diagnosetester",
+    "sicherheit": "Reifendruck: Ventil- und Sensormontage nach Herstellervorgabe",
+    "abgedecktDurch": "nicht anwendbar",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://sigidwiki.com/wiki/Tire_Pressure_Monitoring_System_(TPMS)"
+    ]
+   },
+   {
+    "name": "Kältemitteldrucksensor Klimaanlage (analog oder PWM)",
+    "system": "Klima",
+    "signalart": "analog (ratiometrisch 5 V) oder PWM (3-polig), teils LIN",
+    "typischeWerte": "Analog, Saab 9-5 (Beispiel): 5-V-Versorgung, Signal 0,25–4,75 V; Klimasteuergerät schaltet Kompressor unter 1,75 bar und über 28 bar ab, Lüfterstufen bei 9 und 18 bar. PWM laut Valeo: drei Leitungen zum Steuergerät; Beispielschwellen für R1234yf/R134a: Kompressorfreigabe über 2 bar, Lüfterstufe 2 über 16 bar (zurück unter 14 bar), Kompressor aus über 27 bar. Frequenz und Tastverhältnis der PWM-Variante: herstellerabhängig, in den Quellen nicht beziffert.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (gleichzeitig Manometer an Hochdruckseite anschließen und vergleichen)",
+    "sicherheit": "Kältemittelkreis unter Druck: nicht öffnen; Kältemittel verursacht Erfrierungen",
+    "abgedecktDurch": "klima-druck (V12)",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://saabwisonline.com/9-5-9600/2004/8-body/heating-and-ventilation-a-c/technical-description/pressure-sensor",
+     "https://thegrouptrainingacademy.com/wp-content/uploads/sites/2/2024/08/June-2021-TSB-VSA-VCC-062021-03-pressure-sensor-Tips-and-Tricks.pdf"
+    ]
+   },
+   {
+    "name": "Klima-Temperaturfühler (Verdampfer, Innenraum, Außentemperatur)",
+    "system": "Klima/Komfort",
+    "signalart": "analog (NTC)",
+    "typischeWerte": "Prinzip wie NTC-Motorsensoren (Pico AGT-015). Werte herstellerabhängig. Pico prüft die Klimaeffizienz über die Temperaturdifferenz Außenluft/Mittendüse (AGT-898).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "ntc",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/system-tests"
+    ]
+   },
+   {
+    "name": "Regen-/Licht-/Solar-/Feuchtesensor (kombiniert)",
+    "system": "Karosserie/Komfort/Klima",
+    "signalart": "Bus (LIN 2.0)",
+    "typischeWerte": "Hella RLS (4. Generation): Regen, Licht, Solar, Feuchte und HUD-Helligkeit in einem Sensor. Schnittstelle LIN 2.0, Betrieb 9–16 V, Stromaufnahme < 50 mA. Das übergeordnete Steuergerät schaltet den Sensor ein und versorgt ihn. Bei Ausfall des Lichtsensors bleibt das Licht sicher an; bei Ausfall des Regensensors übernimmt das Wischermodul die Intervallsteuerung.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (LIN-Bus-Physik wie Karte lin; Messwerte nicht ohne Decoder)",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "lin",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://hella.com/resources-soe/assets/documents/2004_ki_regen-licht_sensor_forvia_hella_en.pdf",
+     "https://www.hella.com/techworld/cz/technical/car-electronics-and-electrics/check-change-rain-sensor/"
+    ]
+   },
+   {
+    "name": "Luftgütesensor (AQS, Umluftautomatik)",
+    "system": "Klima",
+    "signalart": "unsicher (PWM oder LIN, herstellerabhängig)",
+    "typischeWerte": "Nicht quellengeprüft (Suchkontingent erschöpft).",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "unbekannt",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Ultraschall-Parksensor (PDC/Einparkhilfe)",
+    "system": "Assistenz/Karosserie",
+    "signalart": "Ultraschall-Burst (akustisch) + digitale Signalleitung zum PDC-Steuergerät",
+    "typischeWerte": "Pico AGT-814: Piezoelement sendet und empfängt, Ultraschall ca. 40 kHz. Nach dem Senden schwingt das Element aus, das Steuergerät wartet das Ausschwingen ab. Die Entfernung ergibt sich aus der Echo-Laufzeit. Diagnose durch Vergleich der Burst-Amplituden aller Sensoren bei gleichem Detektorabstand (ca. 25 mm). Bosch USS Gen. 6: variable Frequenz 43–60 kHz, Messbereich 15 cm bis 2,5/4,5/5,5 m (6.0/6.1/6.5). Elektrische Pegel der Signalleitung: herstellerabhängig, nicht quellengeprüft.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "Burst nur mit Ultraschall-Empfänger bzw. Detektor (Zubehör, z. B. 40-kHz-Wandler) am Kanal; die Bandbreite reicht. Signalleitung zum Steuergerät: ja (Spannung gegen Masse).",
+    "sicherheit": "Fahrzeug muss teils mit eingelegtem Gang laufen: zweite Person, Fahrer behält Kontrolle (Pico)",
+    "abgedecktDurch": "pdc (V12)",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/parking/AGT-814-parking-sensors/",
+     "https://www.boschaftermarket.com/xrm/media/images/services/news_3/23_1_ultrasonic_sensors_generation_6/factsheet_bosch_uss6_en.pdf"
+    ]
+   },
+   {
+    "name": "Keyless-Entry/-Go LF-Antennen (Fahrzeug → Schlüssel)",
+    "system": "Komfort/Zugang",
+    "signalart": "LF-Funk (magnetisch, ca. 125 kHz), gepulst",
+    "typischeWerte": "Pico AGT-849: periodische LF-Pulse von Antennen am Fahrzeug, ohne erkannten Schlüssel Intervalle von 250–750 ms; Erfassungsbereich ca. 0,7–1,0 m um Türgriff und Heckstoßfänger; nach 14 Tagen Inaktivität kann das System abschalten. NXP: Schlüssel-IC mit 125-kHz-Weckempfänger und UHF-Sender.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja über Aufnehmerspule bzw. Detektor (Pico nutzt einen Carrier-Signal-Detektor, ca. 300 mm vor dem Griff); 125 kHz liegt weit unter der Bandbreite. Direktmessung an der Antennenleitung: Resonanzspannung unbekannt (nicht quellengeprüft), nur mit 10:1 und nach Herstellerdaten.",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "keyless (V12)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/sensors/keyless-entry/AGT-849-keyless-entry/",
+     "https://www.nxp.com/products/security-and-authentication/secure-car-access/passive-keyless-entry-chip:NCF29AG-H"
+    ]
+   },
+   {
+    "name": "Funkschlüssel UHF (Schlüssel → Fahrzeug)",
+    "system": "Komfort/Zugang",
+    "signalart": "Funk UHF",
+    "typischeWerte": "NXP-Schlüssel-IC: UHF-Sender (NCF29A1: 310–447 MHz).",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein (Frequenz weit über Bandbreite)",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "nicht anwendbar",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.nxp.com/products/security-and-authentication/secure-car-access/tiny-single-chip-passive-keyless-entry-go-solution%3ANCF29A1MHN"
+    ]
+   },
+   {
+    "name": "Radarsensor (ACC/Notbremsassistent)",
+    "system": "Assistenz",
+    "signalart": "Radar 76–77 GHz (FMCW); Ausgabe über Bus",
+    "typischeWerte": "Bosch CAS-M light (Motorsport-Radar auf MRR-Basis): FMCW 76,0–77,0 GHz, Reichweite 150 m, CAN 500 kbit/s oder 1 Mbit/s, 50 Hz Update, Versorgung 6,5–18 V. Seriensensoren: Bus herstellerabhängig.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein (Hochfrequenz); allenfalls Versorgung und Bus-Physik",
+    "sicherheit": "Nach Arbeiten im Frontbereich Kalibrierung nach Herstellervorgabe",
+    "abgedecktDurch": "can-hs / can-fd (nur Bus-Ebene)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.bosch-motorsport.com/content/downloads/Raceparts/Resources/pdf/Data Sheet_75138059_Collision_Avoidance_System_CAS-M_light.pdf"
+    ]
+   },
+   {
+    "name": "Kamera (Front-/Rückfahr-/Surround-View)",
+    "system": "Assistenz",
+    "signalart": "unsicher (schnelle Video-Datenverbindung)",
+    "typischeWerte": "Nicht quellengeprüft.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein (Datenrate weit über 25 MHz Bandbreite, nicht geprüft)",
+    "sicherheit": "Kalibrierung nach Scheibentausch",
+    "abgedecktDurch": "nicht anwendbar",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Intelligenter Batteriesensor (IBS)",
+    "system": "Bordnetz/Energiemanagement",
+    "signalart": "Bus (LIN)",
+    "typischeWerte": "Hella: am Minuspol, Strommessung indirekt über Shunt, Messung von Spannung, Strom und Temperatur; errechnet SOC, SOH und SOF; Anbindung über LIN.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (LIN-Bus-Physik wie Karte lin); Messwerte nicht ohne Decoder",
+    "sicherheit": "Batterie: Kurzschluss vermeiden",
+    "abgedecktDurch": "lin (+ generator-ripple)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.techtips.ie/Hella-Ireland/the-intelligent-battery-sensor.pdf"
+    ]
+   },
+   {
+    "name": "Kühlmittelstandsensor",
+    "system": "Motor/Karosserie – Füllstand",
+    "signalart": "Schaltsignal (Schwimmer, vermutlich Reedkontakt)",
+    "typischeWerte": "Nicht quellengeprüft.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "ja, Multimeter genügt",
+    "sicherheit": "Kühlsystem nicht heiß öffnen",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Waschwasserstandsensor",
+    "system": "Karosserie – Füllstand",
+    "signalart": "Schaltsignal",
+    "typischeWerte": "Nicht quellengeprüft.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "ja, Multimeter genügt",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Einfache Schaltkontakte (Tür, Haube, Heckklappe, Handbremse, Rückfahrlicht)",
+    "system": "Karosserie",
+    "signalart": "Schaltsignal gegen Masse oder Plus",
+    "typischeWerte": "Pegel herstellerabhängig (nicht quellengeprüft). Das Oszi hilft vor allem bei Wackelkontakten (Einzelaufnahme mit Trigger beim Bewegen von Kabel oder Stecker).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "keine besondere",
+    "abgedecktDurch": "teilweise: Erklärbild Masse/Spannungsabfall",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Airbag-Crashsensoren / Satelliten (PSI5)",
+    "system": "Passive Sicherheit",
+    "signalart": "Stromschnittstelle PSI5 (Manchester, 125 kbit/s)",
+    "typischeWerte": "psi5.org: ursprünglich für Airbag entwickelt; Daten per Strommodulation auf der Versorgungsleitung, High = zusätzlich 20 mA, Ruhestrom max. ca. 50 mA, 125 kbit/s, Manchester (0 = steigende, 1 = fallende Flanke in der Bitmitte).",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein: niemals messen",
+    "sicherheit": "Airbag/Pyrotechnik: niemals messen oder adaptieren; nur Diagnosetester nach Herstellervorgabe",
+    "abgedecktDurch": "nicht anwendbar",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://psi5.org/overview"
+    ]
+   },
+   {
+    "name": "Gurtschloss-, Sitzbelegungs- und Fußgängerschutzsensoren",
+    "system": "Passive Sicherheit",
+    "signalart": "herstellerabhängig (Teil des Airbagsystems)",
+    "typischeWerte": "Nicht quellengeprüft; Teil des Rückhaltesystems.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein: niemals messen",
+    "sicherheit": "Airbag/Pyrotechnik: niemals messen",
+    "abgedecktDurch": "nicht anwendbar",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Resolver der E-Maschine (Rotorlage)",
+    "system": "HV-Antrieb (EV/Hybrid)",
+    "signalart": "analog (sinusförmige Erregung, Sinus-/Kosinus-Ausgänge amplitudenmoduliert)",
+    "typischeWerte": "Pico AGT-885: Erregerwicklung mit sinusförmigem Wechselstrom, zwei Ausgangswicklungen um 90° versetzt; die Ausgänge schwingen mit der Erregerfrequenz, die Hüllkurve folgt Sinus bzw. Kosinus des Rotorwinkels. Pico misst die Erregung mit 1400-V-Differenztastkopf, die Ausgänge floatend (nur PicoScope 4x25). Frequenz und Amplitude nennt Pico nicht.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "nur eingeschränkt: Die Kanäle haben gemeinsame Masse, floatende Wicklungen erfordern Differenztastköpfe; eine Messung wie bei Pico (3 Kanäle) ist mit 2 Kanälen nicht vollständig möglich",
+    "sicherheit": "Hochvolt: nur mit HV-Qualifikation, Herstellervorgaben und PSA; Gefahr für Träger elektronischer Implantate (Pico)",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles/system-component-tests/AGT-885-motor-resolver/"
+    ]
+   }
+  ]
+ },
+ {
+  "bereich": "Aktoren, Zündung, Versorgung, Bussysteme, Hochvolt | VDS1022I-Rahmen: 1:1 max. 40 Vss, 10:1 max. 400 Vss (Toolboom), 25 MHz, 100 MS/s, 5 k Punkte, Zeitbasis 5 ns–100 s/div, Math A±B/FFT (Elektor). Isolation nur zum USB/PC, Kanalmassen gemeinsam. Keine Protokolldekodierung dokumentiert. Strom nur mit Zange mit Spannungsausgang (BNC). Hinweis: Das Websuche-Kontingent war während der Recherche aufgebraucht. Werte ohne Quelle sind als „nicht quellenverifiziert“ markiert.",
+  "signale": [
+   {
+    "name": "Einspritzventil Saugrohr (MPI) – Spannungsbild",
+    "system": "Einspritzung Otto, Saugrohr",
+    "signalart": "Schaltsignal Low-Side (Masse geschaltet) mit induktiver Abschaltspitze",
+    "typischeWerte": "Aus ≈ Bordnetzspannung, ein ≈ 0 V. Einspritzzeit typ. 4–5 ms im Leerlauf bei sequentieller Einspritzung, ca. 2,5 ms bei simultaner Einspritzung (2× je 720° KW) (Pico). Impulsdauer steigt beim Beschleunigen und fällt bei konstant ca. 3000/min auf etwa Leerlaufwert (Hella). Spulenwiderstand ca. 15 Ω (Audi-Beispiel, Hella). Abschaltspitze ggf. durch Zenerdiode/RC begrenzt (Pico); Höhe herstellerabhängig, typ. einige 10 V (nicht quellenverifiziert). Nadelschließ-Buckel im Abklingen sichtbar.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja – nur mit 10:1-Tastkopf (Spitze überschreitet 40 Vss bei 1:1); 1 Kanal genügt, Kanal 2 frei für Strom oder Zylindervergleich",
+    "sicherheit": "Induktive Spitze: Tastkopf und Zubehör spannungsfest wählen (Pico-Warnhinweis)",
+    "abgedecktDurch": "inj-saug",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators/injector-(gasoline)/AGT-388-mpi-injector-voltage-and-current/",
+     "https://www.hella.com/tibi/ti/de/electronics/ti_d_electronics_einspritzventile1.pdf"
+    ]
+   },
+   {
+    "name": "Einspritzventil Saugrohr (MPI) – Strombild",
+    "system": "Einspritzung Otto, Saugrohr",
+    "signalart": "Strom (Stromzange); induktiver Anstieg mit Knick bei Nadelbewegung",
+    "typischeWerte": "Pico misst im 20-A-Bereich der Niederstromzange (Spitzen also deutlich darunter). Absolutwerte herstellerabhängig, keine Zahlen in den geöffneten Quellen. Pico hat einen eigenen Test dafür (AGT-036).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "nur mit Stromzange (Spannungsausgang, BNC); Kanal 2 parallel für das Spannungsbild",
+    "sicherheit": "wie Spannungsbild (induktive Spitze)",
+    "abgedecktDurch": "fehlt (inj-saug zeigt nur das Spannungsbild)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators",
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators/injector-(gasoline)/AGT-388-mpi-injector-voltage-and-current/"
+    ]
+   },
+   {
+    "name": "Benzin-Direkteinspritzventil (GDI) – Spannung und Strom",
+    "system": "Einspritzung Otto, Direkteinspritzung",
+    "signalart": "Boost-Hochspannung und Peak-&-Hold-Strom; High- und Low-Side geschaltet",
+    "typischeWerte": "Öffnungsphase mit erhöhter Spannung, danach getaktete niedrigere Haltespannung (Pico). Beispiel VW 1.4 TSI (2012): Spitzen ca. 70–80 V, Spitzenstrom 12,5 A (Pico-Forum, Einzelmessung, herstellerabhängig). Systemdruck bis ca. 200 bar. Mehrfacheinspritzung pro Arbeitsspiel möglich.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja mit Einschränkung: beide Ventilanschlüsse mit 10:1 gegen Masse messen, dann Math A−B. Für den Strom wird eine Zange gebraucht, dann ist nur noch 1 Spannungskanal frei.",
+    "sicherheit": "Gefährliche Spannung (Pico). Spannungsfestes Zubehör und Dämpfung nötig.",
+    "abgedecktDurch": "inj-di",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators/injector-gasoline/AGT-869-gdi-injector-voltage-and-current/",
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators/injector-(gasoline)/AGT-868-gdi-injector-current/",
+     "https://www.picoauto.com/support/viewtopic.php?p=31613"
+    ]
+   },
+   {
+    "name": "Common-Rail-Magnetventilinjektor (Bosch/Delphi) – Strombild",
+    "system": "Einspritzung Diesel, Common Rail",
+    "signalart": "Strom (Anzugs- und Haltephase) mit Hochspannungs-Ansteuerung",
+    "typischeWerte": "Spannungen im Ansteuerkreis typ. 50–90 V (Pico). Vor-, Haupt- und Nacheinspritzung sind sichtbar. Pico misst im 20-A-Bereich. Bis zu 8 Einspritzungen pro Arbeitstakt möglich (Wikipedia, Stand 2012). Raildruck bis ca. 3000 bar.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "Strom ja mit Stromzange; Spannung ja mit 10:1 (bis 90 V, unter der Grenze von 400 Vss)",
+    "sicherheit": "Gefährliche Spannung (Pico). Leitungen unter Hochdruck nicht öffnen.",
+    "abgedecktDurch": "inj-cr-mag",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/bosch-current-at-idle",
+     "https://www.picoauto.com/library/automotive-guided-tests/delphi-current/",
+     "https://de.wikipedia.org/wiki/Common-Rail-Einspritzung"
+    ]
+   },
+   {
+    "name": "Piezo-Injektor (Common Rail)",
+    "system": "Einspritzung Diesel, Common Rail",
+    "signalart": "Lade- und Entladestrompulse, hohe Ansteuerspannung",
+    "typischeWerte": "Ansteuerspannung kann über 200 V liegen (Pico-Forum). Die Nadel bewegt sich im µs-Bereich (Pico). Absolutwerte herstellerabhängig.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "Strom ja mit Stromzange (bevorzugt). Spannung nur mit 10:1 und nur, wenn Spitze-Spitze sicher unter 400 V bleibt (grenzwertig); besser ein 100:1-Tastkopf mit ausreichender Spannungsfestigkeit.",
+    "sicherheit": "Piezo-Injektor nie bei laufendem Motor abstecken: Ventil kann offen bleiben, Folge ist Motorschaden (Pico). Gefährliche Spannung.",
+    "abgedecktDurch": "inj-piezo",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators/injector-(diesel)/AGT-098-crd-bosch-piezo-injector/",
+     "https://www.picoauto.com/support/viewtopic.php?t=22336"
+    ]
+   },
+   {
+    "name": "Pumpe-Düse-Einheit (VAG PD) – Magnetventil bzw. Piezo",
+    "system": "Einspritzung Diesel, Pumpe-Düse",
+    "signalart": "Strom, Spannung und Masse des Magnetventils; Piezo-Variante",
+    "typischeWerte": "Pico prüft Strom, Spannung und Masse (AGT-385) sowie eine Piezo-PD-Variante (AGT-146). Zahlenwerte stehen nur in den Bildern und sind herstellerabhängig (nicht quellenverifiziert).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "Magnetventil-Variante: Strom ja mit Zange, Spannung ja mit 10:1. Piezo-Variante wie Piezo-Injektor (grenzwertig).",
+    "sicherheit": "Gefährliche Spannung",
+    "abgedecktDurch": "fehlt (Prinzip teilweise in inj-cr-mag)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/vag-pd-current-voltage-and-earth",
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators"
+    ]
+   },
+   {
+    "name": "CR-Mengensteuerventil / Zumesseinheit (ZME, QCV)",
+    "system": "Einspritzung Diesel, Hochdruckpumpe",
+    "signalart": "PWM, Low-Side, stromgeregelt",
+    "typischeWerte": "Beide Spulenanschlüsse liegen an +UBatt, das Steuergerät schaltet Masse; aktiv = Low. Höherer Tastgrad bedeutet höheren Mittelstrom und größeren Ventilhub. Grundstellung je nach System offen oder geschlossen (Pico). Frequenz und Tastgrade herstellerabhängig (bei Pico nicht genannt).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (10:1 wegen Abschaltspitze empfohlen); Strom mit Zange; Kanal 2 für den Raildrucksensor",
+    "sicherheit": "keine besonderen; Hochdrucksystem nicht öffnen",
+    "abgedecktDurch": "cr-zme (V13)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators/quantity-control-valve/AGT-056-crd-bosch-quantity-control-valve/"
+    ]
+   },
+   {
+    "name": "CR-Druckregelventil (DRV)",
+    "system": "Einspritzung Diesel, Common Rail",
+    "signalart": "PWM, Low-Side, stromgeregelt",
+    "typischeWerte": "Funktion wie ZME (Pico): Tastgrad bestimmt den Mittelstrom. Fehlercodes P0087–P0094. Frequenz und Tastgrad herstellerabhängig.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (10:1 empfohlen); Strom mit Zange",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "cr-drv (V13)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators/pressure-regulator/AGT-055-crd-bosch-pressure-regulating-valve/"
+    ]
+   },
+   {
+    "name": "Benzin-Hochdruckpumpe – Mengensteuerventil",
+    "system": "Einspritzung Otto, Direkteinspritzung",
+    "signalart": "Magnetventil, nockensynchron angesteuert",
+    "typischeWerte": "Keine Quelle mit Messwerten geöffnet; herstellerabhängig (nicht quellenverifiziert)",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "voraussichtlich ja (10:1, Stromzange); nicht verifiziert",
+    "sicherheit": "Hochdruck-Kraftstoffsystem",
+    "abgedecktDurch": "hdp-msv (V13)",
+    "prioritaet": "mittel",
+    "quellen": []
+   },
+   {
+    "name": "Single-Point-/Monopoint-Einspritzventil (Peak & Hold)",
+    "system": "Einspritzung Otto (älter)",
+    "signalart": "Peak-&-Hold-Strom, Low-Side",
+    "typischeWerte": "Nicht quellenverifiziert; herstellerabhängig",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (10:1, Stromzange)",
+    "sicherheit": "induktive Spitze",
+    "abgedecktDurch": "teilweise inj-saug",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Gas-Einblasventile (LPG/CNG)",
+    "system": "Einspritzung Gas (Nachrüst- oder Werksanlage)",
+    "signalart": "Schaltsignal, häufig Peak & Hold",
+    "typischeWerte": "Nicht quellenverifiziert; herstellerabhängig",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (10:1, Stromzange)",
+    "sicherheit": "Gasanlage: Dichtheit und Herstellervorgaben beachten",
+    "abgedecktDurch": "lpg-ventil (V13)",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "AdBlue/SCR-Dosierventil",
+    "system": "Abgasnachbehandlung Diesel",
+    "signalart": "getaktetes Magnetventil",
+    "typischeWerte": "Nicht quellenverifiziert; herstellerabhängig",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "voraussichtlich ja (10:1, Stromzange); nicht verifiziert",
+    "sicherheit": "heiße Abgasanlage",
+    "abgedecktDurch": "adblue (V13)",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Zündspule primär – Spannung (extern geschaltete Endstufe)",
+    "system": "Zündung (Einzelfunken, Doppelfunken, Verteiler)",
+    "signalart": "Schaltsignal Klemme 1 mit induktiver Abschaltspitze",
+    "typischeWerte": "Aus ≈ Batteriespannung, ein ≈ 0 V (ein höherer Wert deutet auf Widerstand im Massekreis). Abschaltspitze (Ping Line) gleichmäßig und nicht unter ca. 250 V. Weniger als 3 Ausschwingungen am Ende der Brennlinie weisen auf einen Isolationsschaden sekundär hin. Schließzeit: Herstellerangabe (Pico).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "grenzwertig: mit 10:1 max. 400 Vss, Primärspitzen können diese Grenze erreichen. Empfohlen: 100:1-Tastkopf oder Teiler (Pico nutzt 10:1 bzw. 20:1).",
+    "sicherheit": "Gefährliche Spannung; Zubehör mit passender Spannungsfestigkeit",
+    "abgedecktDurch": "zuend-prim",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/ignition/coil-on-plug/AGT-044-primary-voltage/"
+    ]
+   },
+   {
+    "name": "Zündspule primär – Strom (Schließstrom, Strombegrenzung)",
+    "system": "Zündung",
+    "signalart": "Strom (Stromzange), Rampe während der Schließzeit",
+    "typischeWerte": "Linearer Anstieg bis zur Strombegrenzung oder zum Abschalten. Absolutwerte herstellerabhängig, typ. einige A (nicht quellenverifiziert). Pico hat Tests für COP, Doppelfunken und Verteiler.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "nur mit Stromzange; Kanal 2 für Trigger oder Primärspannung (mit Teiler)",
+    "sicherheit": "wie Primärspannung",
+    "abgedecktDurch": "zuend-prim (teilweise, falls Strombild enthalten)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/ignition"
+    ]
+   },
+   {
+    "name": "Zündspule mit integrierter Endstufe – Triggersignal (COP 3/4-polig)",
+    "system": "Zündung",
+    "signalart": "Logikpegel-Ansteuerimpuls vom Motorsteuergerät; teils mit Rückmeldesignal",
+    "typischeWerte": "Der Primärkreis wird intern geschaltet (Pico AGT-162); Impulslänge ≈ Schließzeit. Pegel typ. 5 V (nicht quellenverifiziert, herstellerabhängig). Pico hat Varianten für Trigger, Versorgung, Masse, Strom und Rückmeldung.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja, 1:1 möglich; Kanal 2 mit Stromzange auf der Versorgung",
+    "sicherheit": "gering (Niedervolt); Hochspannung an der Kerze nicht berühren",
+    "abgedecktDurch": "zuend-prim (nur falls die Trigger-Variante enthalten ist, sonst fehlt)",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/ignition/coil-on-plug/AGT-162-trigger-vs-primary-current/",
+     "https://www.picoauto.com/library/automotive-guided-tests/ignition/multi-coil-on-plug-unit/AGT-192-trigger-dual-feed-and-current-4-cyl/"
+    ]
+   },
+   {
+    "name": "Zündung sekundär (kapazitiv: COP, Doppelfunken, Verteiler)",
+    "system": "Zündung",
+    "signalart": "Hochspannung, kapazitiv abgegriffen",
+    "typischeWerte": "Zündspannung (Plug kV), Brennspannung (Sparkline kV), Brenndauer und Ausschwingen; Sollwerte laut Hersteller (Pico). Spulen liefern je nach Motor ca. 15–40 kV (Wikipedia). Bei Doppelfunkenspulen gibt es plus- und minusgefeuerte Kerzen (Pico-Tests).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "nur mit kapazitivem Zündabnehmer (Zubehör mit BNC-Ausgang). Skalierung nur relativ oder über den Teilerfaktor des Abnehmers. Nie galvanisch an die Hochspannung.",
+    "sicherheit": "Zündung aus und gegen Wiedereinschalten sichern, bis der Abnehmer montiert ist (Pico). Hochspannung im zweistelligen kV-Bereich.",
+    "abgedecktDurch": "zuend-sek",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/ignition/distributor-/AGT-047-secondary-plug-lead/",
+     "https://en.wikipedia.org/wiki/Ignition_coil"
+    ]
+   },
+   {
+    "name": "Ionenstrommessung (Saab Trionic)",
+    "system": "Zündung/Verbrennungserkennung",
+    "signalart": "Ionenstrom über den Kerzenspalt; Ausgangsimpulse der Kassette zum Steuergerät",
+    "typischeWerte": "Ein Pol der Sekundärwicklung liegt an 80 V statt an Masse. Der Ionenstrom nach der Verbrennung dient der Zylindererkennung sowie der Klopf- und Aussetzererkennung. Die Kassette meldet über Batteriespannungsimpulse an das Steuergerät (Wikipedia Trionic T5.5).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "nur indirekt (Ausgangssignale der Kassette, 12-V-Pegel). Den Ionenstrom selbst nicht abgreifen; Machbarkeit unsicher.",
+    "sicherheit": "Hochspannung an der Kassette",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://en.wikipedia.org/wiki/Trionic_T5.5"
+    ]
+   },
+   {
+    "name": "Zündverstärker- und Zündspulenmasse (Spannungsfall)",
+    "system": "Zündung/Versorgung",
+    "signalart": "DC-Spannungsfall unter Last (mV-Bereich)",
+    "typischeWerte": "Dynamischer Spannungsfall bei Drehzahländerung (Pico AGT-041). Einen Grenzwert nennt die Quelle nicht: Herstellerangabe.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (1:1, DC-Kopplung, kleiner Messbereich)",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "spannungsfall (V13)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/ignition/distributorless-wasted-spark/AGT-041-ignition-amplifier-earth-volt-drop/"
+    ]
+   },
+   {
+    "name": "Kondensatorzündung (CDI)",
+    "system": "Zündung (vor allem Zweirad und Kleinmotoren)",
+    "signalart": "Kondensatorentladung über Zündtransformator",
+    "typischeWerte": "Kondensator ca. 500 V (Wikipedia Zündung)",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "Triggerseite ja. Den Kondensatorkreis nein: er überschreitet 400 Vss mit 10:1, nur mit 100:1-Tastkopf.",
+    "sicherheit": "Hochspannung, gespeicherte Energie",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://de.wikipedia.org/wiki/Zündung_(Verbrennungsmotor)"
+    ]
+   },
+   {
+    "name": "PWM-Magnetventile (Ladedruck N75, AGR, Tankentlüftung)",
+    "system": "Motorsteuerung, Aktoren",
+    "signalart": "PWM, Low-Side mit induktiver Spitze",
+    "typischeWerte": "Das Steuergerät schaltet Masse per PWM; der Tastgrad bestimmt Mittelstrom und Öffnung (Pico, Tankentlüftung). Frequenzen herstellerabhängig.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (10:1 wegen Abschaltspitze)",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "pwm-ventil",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators/carbon-canister-purge-valve/AGT-030-carbon-canister-purge-valve-solenoid/",
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators"
+    ]
+   },
+   {
+    "name": "Nockenwellenverstellung – VVT-Magnetventil (einfach oder doppelt)",
+    "system": "Motorsteuerung, Ventiltrieb",
+    "signalart": "PWM über geschaltete Masse",
+    "typischeWerte": "Der Tastgrad ändert sich mit der Drehzahl (Pico AGT-058). Doppelventil-Variante: AGT-156. Frequenz herstellerabhängig.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja; Kanal 2 auf den NW-Sensor zur Plausibilisierung",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "vvt (V13)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators/variable-valve-timing/AGT-058-vvt-control-solenoid/",
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators"
+    ]
+   },
+   {
+    "name": "DC-Stellmotoren (E-Drosselklappe, AGR, VTG, Drallklappe, Wastegate)",
+    "system": "Motorsteuerung, Aktoren",
+    "signalart": "PWM über H-Brücke (bidirektional)",
+    "typischeWerte": "Pico misst den TPS-Ausgang (Kanal A) gegen den Motorschaltkreis (Kanal B) bei Pedalvariation. PWM-Frequenz und Tastgrad herstellerabhängig.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja. Motorspannung über die H-Brücke: beide Anschlüsse gegen Masse und Math A−B (dann kein Kanal für den TPS frei), alternativ 1 Motoranschluss plus TPS.",
+    "sicherheit": "Klemmgefahr an der Drosselklappe",
+    "abgedecktDurch": "stellmotor (+ edk für den Sensor)",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators/throttle-servomotor/AGT-076-throttle-servomotors/"
+    ]
+   },
+   {
+    "name": "Leerlaufsteller (Drehsteller oder Linearmagnet)",
+    "system": "Motorsteuerung Otto (älter)",
+    "signalart": "PWM über 1–2 geschaltete Massen",
+    "typischeWerte": "Versorgung bei Zündung ein 11–14 V; Spulenwiderstand 9,6 Ω ±15 % (Opel) (Hella). Drehsteller mit 2–3 Anschlüssen: Plus und 1–2 geschaltete Massen; der Tastgrad bestimmt die Öffnung. Kaltstart-Leerlauf ca. 1200/min (Pico).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (2 Kanäle reichen auch für die Doppelwicklung)",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "fehlt (Prinzip wie pwm-ventil)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.hella.com/tibi/ti/de/electronics/ti_d_electronics_leerlaufsteller1.pdf",
+     "https://www.picoauto.com/library/automotive-guided-tests/rotary/"
+    ]
+   },
+   {
+    "name": "Schrittmotor (Leerlauf, Drosselklappenanschlag)",
+    "system": "Motorsteuerung (älter)",
+    "signalart": "Schrittimpulse auf mehreren geschalteten Massen",
+    "typischeWerte": "4-Draht: Pin 3 Stepper-Plus 5 V, Wicklung 4–6 Ω. 5-Draht: 12-V-Versorgung, 4 geschaltete Massen (Pico). Frequenz nicht angegeben.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja, aber nur 2 von 4 Phasen gleichzeitig",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators/idle-speed-control-valve-(iac)/AGT-040-stepper-motor/"
+    ]
+   },
+   {
+    "name": "Kraftstoffpumpe – Strombild (Kommutator)",
+    "system": "Kraftstoffversorgung",
+    "signalart": "Strom mit Kommutatorwelligkeit; teils PWM über ein Pumpensteuergerät",
+    "typischeWerte": "Kommutatorsegmente typ. 6 oder 8; daraus lässt sich die Pumpendrehzahl berechnen. Gleichmäßige Spitzen sind gut, unregelmäßige Einbrüche ein Defekt. Pico nutzt den 20-A-Bereich. Absolutstrom herstellerabhängig.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "nur mit Stromzange (z. B. über Sicherungsadapter); Spannung ja",
+    "sicherheit": "Kraftstoffdämpfe: keine Funkenbildung",
+    "abgedecktDurch": "kraftstoffpumpe",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators/fuel-pump/AGT-032-fuel-pump-motor-brushed/"
+    ]
+   },
+   {
+    "name": "Elektrolüfter, Zusatzwasser- und Ölpumpen (PWM-Ansteuerung, Strom)",
+    "system": "Thermomanagement",
+    "signalart": "PWM-Steuersignal (Low-Side oder Signalleitung zum Modul) und Laststrom",
+    "typischeWerte": "Der Tastgrad steigt mit der Motortemperatur und bei Klimabetrieb (Pico). Frequenz und Logik herstellerabhängig.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "Ansteuerung ja; Strom nur mit Hochstromzange",
+    "sicherheit": "Lüfter kann jederzeit anlaufen: Hände weg",
+    "abgedecktDurch": "luefter-pwm",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators/variable-speed-cooling-fan/AGT-071-variable-speed-cooling-fan/"
+    ]
+   },
+   {
+    "name": "Glühkerzen / Glühzeitsteuergerät",
+    "system": "Startanlage Diesel",
+    "signalart": "PWM-getaktete Versorgung und Strom",
+    "typischeWerte": "Schnellglühsysteme mit Niedervoltkerzen ca. 4–5 V bzw. 7 V, geregelt per PWM der Versorgung. Keramikkerzen 1000–1100 °C. Im Beispielsystem kein Glühen über 9 °C Außentemperatur oder über 2500/min. Pico-Zangenbereich 60 A.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "Spannung ja; Strom nur mit Zange (Bereich ≥ 60 A)",
+    "sicherheit": "Niedervolt-Glühkerzen nie direkt an Batteriespannung prüfen: irreversibler Schaden (Pico)",
+    "abgedecktDurch": "gluehkerze",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/actuators/glow-plugs/AGT-145-glow-plug-voltage-and-current/"
+    ]
+   },
+   {
+    "name": "Relais, Magnetkupplung Klimakompressor, Sekundärluftpumpe (Schaltsignale)",
+    "system": "Aktoren allgemein",
+    "signalart": "Ein/Aus an Bordnetzspannung, induktive Abschaltspitze",
+    "typischeWerte": "Abschaltspitze ggf. durch Freilaufdiode begrenzt; nicht quellenverifiziert",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (10:1 bei ungedämpften Spulen)",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "relais",
+    "prioritaet": "mittel",
+    "quellen": []
+   },
+   {
+    "name": "Klimakompressor-Regelventil (extern geregelter Kompressor)",
+    "system": "Klimaanlage",
+    "signalart": "PWM-Magnetventil",
+    "typischeWerte": "Frequenz und Strom herstellerabhängig; keine Quelle geöffnet",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "voraussichtlich ja (Stromzange für den Regelstrom); nicht verifiziert",
+    "sicherheit": "Kältemittelkreis nicht öffnen",
+    "abgedecktDurch": "klima-ventil (V13)",
+    "prioritaet": "mittel",
+    "quellen": []
+   },
+   {
+    "name": "Automatikgetriebe-Magnetventile (Druckregler, Schaltventile)",
+    "system": "Getriebe",
+    "signalart": "PWM bzw. stromgeregelt",
+    "typischeWerte": "Herstellerabhängig; keine Quelle geöffnet",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja, sofern die Leitungen zugänglich sind (oft in der Mechatronik integriert)",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Lampen-/LED-Ansteuerung (PWM, Kaltlampenprüfimpulse)",
+    "system": "Beleuchtung/Karosserieelektronik",
+    "signalart": "PWM bzw. kurze Prüfimpulse",
+    "typischeWerte": "Herstellerabhängig; nicht quellenverifiziert",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "Xenon-Vorschaltgerät: Hochspannung, nicht messen",
+    "abgedecktDurch": "lampen-pwm (V13)",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Lambdasonden-Heizung",
+    "system": "Abgas/Sensorik",
+    "signalart": "PWM Low-Side",
+    "typischeWerte": "Siehe Karte lam-heiz; hier nicht neu recherchiert",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "lam-heiz",
+    "prioritaet": "mittel",
+    "quellen": []
+   },
+   {
+    "name": "Starterstrom / relative Kompression / Startspannungseinbruch",
+    "system": "Startanlage (auch Hybrid-Verbrenner)",
+    "signalart": "Hochstrom und Batteriespannung beim Startvorgang",
+    "typischeWerte": "Der Starterstrom steigt mit der Zylinderlast; eine wiederkehrend niedrige Spitze zeigt einen Zylinder mit geringer Kompression. Bei deaktivierter Einspritzung ca. 5 s starten. Hochstromzange auf die Batterieleitung, höchster Messbereich (Pico). Absolutwerte herstellerabhängig. Für Hybride gibt es einen eigenen Pico-Test (AGT-930).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "Strom nur mit Hochstromzange (BNC); Batteriespannung parallel auf Kanal 2: ja",
+    "sicherheit": "Einspritzung deaktivieren; drehende Teile",
+    "abgedecktDurch": "starter",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/charging-starting/starting/AGT-004-relative-compression-gasoline/",
+     "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles"
+    ]
+   },
+   {
+    "name": "Generator – Welligkeit (Ripple)",
+    "system": "Ladesystem 12 V/24 V",
+    "signalart": "AC-Anteil auf B+",
+    "typischeWerte": "Über 500 mV Spitze-Spitze kann andere Systeme stören. Scharfe, meist nach unten gerichtete Spitzen zwischen den Pulsen deuten auf eine defekte Diode, periodisch fehlende Pulse auf Wicklung oder Diode (Pico).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (AC-Kopplung, kleiner Messbereich)",
+    "sicherheit": "Riementrieb",
+    "abgedecktDurch": "generator-ripple",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/charging-starting/charging/AGT-846-alternator-ripple-with-ecm-control/"
+    ]
+   },
+   {
+    "name": "Generator – Ansteuerung und Rückmeldung (PWM-Kommando/Feedback, LIN/BSD)",
+    "system": "Ladesystem (Smart Charging)",
+    "signalart": "PWM-Kommando, Rückmeldesignal bzw. serieller Bus",
+    "typischeWerte": "Ford Smart Charge: PWM-Kommando vom Motorsteuergerät, Rückmeldesignal vom Generator. Ausgangsspannung bis 18 V nach Kaltstart, im Fallback 14,75 V (Pico AGT-141). Bei anderen Herstellern LIN bzw. BSD (keine Werte recherchiert).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (Kommando und Feedback auf 2 Kanälen); für den Strom wäre ein 3. Kanal nötig",
+    "sicherheit": "Riementrieb",
+    "abgedecktDurch": "generator-ripple (LIN/BSD); PWM-Variante teilweise",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/charging-starting/charging/AGT-141-ford-smart-alternator/"
+    ]
+   },
+   {
+    "name": "Ruhestrom / parasitäre Batterieentladung",
+    "system": "Bordnetz 12 V",
+    "signalart": "DC-Strom im mA-Bereich mit periodischen Weckspitzen",
+    "typischeWerte": "Im Schlafzustand typ. unter 150 mA (herstellerabhängig). Einschlafzeit 30 min–2 h. Module wecken periodisch auf, auch im Abstand von Stunden. Beispiel: 45 mA an 75 Ah reichen ca. 14 Tage (Pico).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "nur mit Niederstromzange (mA-Auflösung) oder Shunt. Zeitbasis bis 100 s/div, aber nur 5 k Punkte je Erfassung; Langzeitüberwachung eingeschränkt.",
+    "sicherheit": "Überbrückungsleitung nur abgesichert (10 A). Bei dieser Methode nicht starten (Pico).",
+    "abgedecktDurch": "ruhestrom (V13)",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/charging-starting/charging/AGT-783-parasitic-battery-drain-clamp-method/",
+     "https://www.elektormagazine.com/review/precise-robust-and-affordable-the-owon-vds1022i-isolated-25-mhz-usb-oscilloscope-review"
+    ]
+   },
+   {
+    "name": "Spannungsfall Plus- und Masseleitungen (Hauptstrom, Steuergeräte- und Sensormasse)",
+    "system": "Bordnetz/Versorgung",
+    "signalart": "DC-Spannungsfall unter Last",
+    "typischeWerte": "Unter Last und dynamisch messen. Grenzwerte herstellerabhängig; die geöffneten Quellen nennen keine Zahl.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (DC, mV-Bereich). Beachten: Masseklemmen beider Kanäle liegen auf gemeinsamem Potential.",
+    "sicherheit": "Hochstromkreise: keine Kurzschlüsse mit Messleitungen",
+    "abgedecktDurch": "spannungsfall (V13)",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/ignition/distributorless-wasted-spark/AGT-041-ignition-amplifier-earth-volt-drop/"
+    ]
+   },
+   {
+    "name": "5-V-Sensorreferenz und Sensormasse",
+    "system": "Sensorversorgung durch das Steuergerät",
+    "signalart": "DC-Versorgung",
+    "typischeWerte": "5-V-Versorgung (z. B. bei SENT-Sensoren, Wikipedia). Toleranz und Störbilder herstellerabhängig (nicht quellenverifiziert).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (1:1)",
+    "sicherheit": "Referenz nicht kurzschließen: sie versorgt oft mehrere Sensoren",
+    "abgedecktDurch": "sensor-ref (V13)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://en.wikipedia.org/wiki/SENT_(protocol)"
+    ]
+   },
+   {
+    "name": "Bordnetz-Transienten (Load Dump, Schaltspitzen)",
+    "system": "Bordnetz 12 V/24 V",
+    "signalart": "Einzelereignis, Spannungsspitze",
+    "typischeWerte": "Load Dump 12 V: bis ca. 120 V ungeklemmt, typ. auf 40 V begrenzt (24 V: ca. 60 V), Dauer bis 400 ms. Normpulse nach ISO 7637-2 (Wikipedia).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja mit 10:1 (bis 400 Vss), Single-Trigger",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "transienten (V13)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://en.wikipedia.org/wiki/Load_dump"
+    ]
+   },
+   {
+    "name": "48-V-Bordnetz (Mild-Hybrid)",
+    "system": "Bordnetz 48 V",
+    "signalart": "DC-Versorgung, hohe Ströme",
+    "typischeWerte": "Nennspannung 48 V DC, unter der allgemein akzeptierten 50-V-Schwelle. Norm ISO 21780 (Wikipedia). Betriebsgrenzen nicht quellenverifiziert.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "Spannung ja mit 10:1; Strom nur mit Zange",
+    "sicherheit": "Kein HV, aber hohe Ströme und Lichtbogengefahr; Herstellervorgaben beachten",
+    "abgedecktDurch": "bordnetz-48v (V13)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://en.wikipedia.org/wiki/48-volt_electrical_system"
+    ]
+   },
+   {
+    "name": "EV: 12-V-Bordnetz / DC/DC-Wandler (Laden der 12-V-Batterie)",
+    "system": "Hochvolt/E-Antrieb, 12-V-Seite",
+    "signalart": "DC-Spannung und Ladestrom",
+    "typischeWerte": "Ausgangsspannung ca. 14 V. Ladestrom im Beispiel anfangs ca. 74 A, dann fallend. Vor READY über 30 A Bordnetzlast (Pico AGT-916). Restwelligkeit: keine Quelle.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "12-V-Seite: Spannung ja; Strom nur mit Hochstromzange",
+    "sicherheit": "Fahrzeug von der Ladestation trennen, HV-Komponenten nicht öffnen. Pico schreibt HV-Qualifikation vor.",
+    "abgedecktDurch": "dcdc-12v (V13)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles/system-component-tests/AGT-916-auxiliary-battery-charging/"
+    ]
+   },
+   {
+    "name": "CAN High-Speed (ISO 11898-2)",
+    "system": "Bussystem",
+    "signalart": "Differenzieller Bus",
+    "typischeWerte": "Rezessiv: Differenz 0 V (unter 0,5 V gilt als rezessiv). Dominant: CAN-H ≈ 3,5 V, CAN-L ≈ 1,5 V, Differenz ≈ 2 V. Abschluss 2×120 Ω. OBD Pin 6/14, 250 oder 500 kbit/s. Gleichtaktbereich −2 bis 7 V (TI).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja: CAN-H auf K1, CAN-L auf K2 gegen Masse, Math A−B. Bei 100 MS/s nur 50 µs Fenster (5 k Punkte); für einen ganzen Frame die Abtastrate senken. Keine Protokolldekodierung dokumentiert.",
+    "sicherheit": "keine besonderen; Abschlusswiderstand stromlos messen",
+    "abgedecktDurch": "can-hs",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://en.wikipedia.org/wiki/CAN_bus",
+     "https://www.ti.com/lit/an/slla270/slla270.pdf",
+     "https://en.wikipedia.org/wiki/On-board_diagnostics"
+    ]
+   },
+   {
+    "name": "CAN-FD",
+    "system": "Bussystem",
+    "signalart": "Differenzieller Bus mit schnellerer Datenphase",
+    "typischeWerte": "Arbitrierung wie CAN-HS. Datenphase bis 5 Mbit/s (ISO-11898-2-Abschnitt) bzw. bis 8 Mbit/s (Infobox); Wikipedia ist hier widersprüchlich.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "Pegel ja. Bei 5 Mbit/s (200 ns/bit) 20 Abtastwerte/bit, aber nur 50 µs Fenster. Flankenqualität eingeschränkt.",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "can-fd",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://en.wikipedia.org/wiki/CAN_bus"
+    ]
+   },
+   {
+    "name": "CAN Low-Speed, fehlertolerant (ISO 11898-3)",
+    "system": "Bussystem (Komfort, älter)",
+    "signalart": "Differenzieller Bus mit Eindrahtnotlauf",
+    "typischeWerte": "Bis 125 kbit/s. Dominant: CAN-H → 5 V (bzw. 3,3 V), CAN-L → 0 V. Rezessiv: CAN-H ≈ 0 V, CAN-L ≈ 5 V. Die Leitungen tolerieren −27 bis +40 V (Wikipedia).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "can-ls",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://en.wikipedia.org/wiki/CAN_bus"
+    ]
+   },
+   {
+    "name": "Single-Wire-CAN (SAE J2411)",
+    "system": "Bussystem (GM GMLAN; Tesla auf dem CP-Leiter)",
+    "signalart": "Eindraht-CAN",
+    "typischeWerte": "33,3 kbit/s (Dekodierung im Pico-Forum bestätigt, Tesla Model 3 auf dem CP-Leiter). SAE J2411 (Wikipedia GMLAN).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (Eindraht gegen Masse). Am CP-Leiter nur mit Ladeadapter und Qualifikation.",
+    "sicherheit": "Am Ladekabel: netzverbundene Ladeeinrichtung",
+    "abgedecktDurch": "sw-can (V13)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/support/viewtopic.php?t=22544",
+     "https://en.wikipedia.org/wiki/GMLAN"
+    ]
+   },
+   {
+    "name": "CAN XL",
+    "system": "Bussystem (neu)",
+    "signalart": "Differenzieller Bus",
+    "typischeWerte": "Bis 20 Mbit/s; bei Wikipedia als künftige Spezifikation geführt. Verbreitung in Serie nicht verifiziert.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein bzw. stark eingeschränkt (50 ns/bit = 5 Abtastwerte bei 100 MS/s)",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://en.wikipedia.org/wiki/CAN_bus"
+    ]
+   },
+   {
+    "name": "LIN-Bus",
+    "system": "Bussystem (Komfort, Generator, Sensoren)",
+    "signalart": "Eindraht-Bus gegen Masse",
+    "typischeWerte": "12 V/24 V; 1–20 kbit/s, typ. 9,6/10,4/19,2 kbit/s. Rezessiv ≈ UBatt (logisch 1), dominant ≈ Masse. Empfängerschwellen: über 60 % UBatt = 1, unter 40 % = 0. Frame: Break ≥ 13 bit, Sync 0x55, PID, 2/4/8 Datenbytes, Checksumme. 1 Master, bis 15 Slaves, max. 40 m (CSS Electronics).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (1:1 reicht bei 12 V; im 24-V-Netz 10:1)",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "lin",
+    "prioritaet": "hoch",
+    "quellen": [
+     "https://www.csselectronics.com/pages/lin-bus-protocol-intro-basics"
+    ]
+   },
+   {
+    "name": "FlexRay",
+    "system": "Bussystem (Fahrwerk/Antrieb, Premiumfahrzeuge)",
+    "signalart": "Differenzieller Bus BP/BM",
+    "typischeWerte": "10 Mbit/s, 100 ns Bitzeit. Idle: BP = BM ≈ 2,5 V (Differenz 0 V); Idle Low Power ≈ 0 V. Data_1: BP 3,5 V / BM 1,5 V (+2 V). Data_0: BP 1,5 V / BM 3,5 V (−2 V). Abschluss 80–110 Ω je Ende, gemessen ca. 40–55 Ω. Pico empfiehlt mindestens 20 MHz Bandbreite.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "eingeschränkt: Pegel, Idle und Abschluss ja (BP/BM gegen Masse, Math A−B). Nur 10 Abtastwerte/bit bei 100 MS/s und 25 MHz Bandbreite; Flanken verrundet, Reflexionen und Augendiagramm nicht verlässlich.",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "flexray (V13)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/product-news/a-deep-dive-into-flexray-architecture-voltage-levels-and-packet-structure",
+     "https://www.picoauto.com/library/automotive-guided-tests/communication"
+    ]
+   },
+   {
+    "name": "SENT (SAE J2716)",
+    "system": "Sensor-Schnittstelle (Druck, Temperatur, LMM, Drosselklappe)",
+    "signalart": "Digital, Pulsbreite pro Nibble (Single Edge Nibble Transmission)",
+    "typischeWerte": "Tick 3–90 µs, typ. 3 µs. Sync-/Kalibrierpuls 56 Ticks (Beispiel 177 µs / 56 ≈ 3 µs). Nibble 12–27 Ticks (Wert 0–15), Low-Phase ≥ 5 Ticks. Low unter 0,5 V, High über 4,1 V; 3 Leitungen: 5 V, Signal, Masse (Wikipedia, Pico).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (1:1, Zeitauflösung ausreicht). Tick per Cursor aus dem Kalibrierpuls bestimmen. Keine Dekodierung dokumentiert.",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "sent (V12)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://en.wikipedia.org/wiki/SENT_(protocol)",
+     "https://www.picoauto.com/library/automotive-guided-tests/communication/sent/AGT-403-sent-slow-standard-testing/"
+    ]
+   },
+   {
+    "name": "PSI5 (Peripheral Sensor Interface 5)",
+    "system": "Sensor-Schnittstelle (vor allem Airbag-Satelliten)",
+    "signalart": "Strommodulierter Manchester-Code auf der Versorgungsleitung",
+    "typischeWerte": "125 kbit/s (optional 189 kbit/s). Rahmen: 2 Startbits, 10–28 Datenbits, Parität oder 3-bit-CRC. Sync durch kurzes Anheben der Versorgungsspannung. Spannungsschwankungen nur im mV-Bereich (Pico).",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein (praktisch): Strom- bzw. mV-Messung nötig; an Airbag-Kreisen grundsätzlich tabu",
+    "sicherheit": "AIRBAG/PYROTECHNIK: niemals messen oder adaptieren, Auslösegefahr. Nur Diagnosetester.",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picotech.com/library/oscilloscopes/psi5-serial-protocol-decoding"
+    ]
+   },
+   {
+    "name": "Automotive Ethernet 100BASE-T1 / 1000BASE-T1",
+    "system": "Bussystem (Kameras, Fahrerassistenz, Gateway)",
+    "signalart": "PAM3, Vollduplex auf einem verdrillten Paar",
+    "typischeWerte": "100BASE-T1: 100 Mbit/s bei 66,67 MBd (IEEE 802.3bw). 1000BASE-T1: 750 MBd (802.3bp). Das Oszi zeigt die Summe beider Sender; ohne Spezialtechnik nicht trennbar (PEAK).",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein: Symbolrate über Bandbreite und Abtastrate; höchstens grob „Aktivität vorhanden“",
+    "sicherheit": "keine besonderen; Steckverbinder nicht beschädigen (Impedanz)",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.peak-system.com/know-how/blog/100base-t1-and-1000base-t1-what-engineers-need-to-know/"
+    ]
+   },
+   {
+    "name": "Automotive Ethernet 10BASE-T1S",
+    "system": "Bussystem (Multidrop-Ethernet, neu)",
+    "signalart": "Differential-Manchester (DME), differenziell",
+    "typischeWerte": "10 Mbit/s (IEEE 802.3cg). Multidrop ähnlich CAN, Coordinator/Client. Differenzsignal ca. 1 Vss (Pico, Math A−B).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "eingeschränkt: Pegel und Aktivität ja (2 Kanäle gegen Masse, Math A−B). Flanken und Timing bei 25 MHz grenzwertig; Pico nutzt x10-High-Speed-Tastköpfe.",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/communication/10base-t1s/AGT-400-10base-t1s-physical-layer/",
+     "https://www.peak-system.com/know-how/blog/100base-t1-and-1000base-t1-what-engineers-need-to-know/"
+    ]
+   },
+   {
+    "name": "K-Leitung (ISO 9141-2 / ISO 14230 KWP2000)",
+    "system": "Diagnoseschnittstelle (ältere Fahrzeuge)",
+    "signalart": "Eindraht-UART gegen Masse",
+    "typischeWerte": "OBD Pin 7 (L-Leitung Pin 15 optional). 10,4 kbit/s (KWP2000: 1,2–10,4 kBaud). Ruhe high über 510 Ω an UBatt, aktiv low per Open-Collector (Wikipedia). Pico prüft den Datenaustausch Tester–Steuergerät.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja (12-V-Pegel; 1:1 bis 40 Vss möglich, 10:1 empfohlen)",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "k-leitung (V13)",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://en.wikipedia.org/wiki/On-board_diagnostics",
+     "https://www.picoauto.com/library/automotive-guided-tests/communication/k-line-bus/AGT-166-k-line-bus-physical-layer/"
+    ]
+   },
+   {
+    "name": "SAE J1850 PWM/VPW",
+    "system": "Diagnose- und Fahrzeugbus (ältere US-Fahrzeuge)",
+    "signalart": "PWM: differenziell; VPW: Eindraht",
+    "typischeWerte": "PWM (Ford): 41,6 kbit/s, Pins 2/10, High +5 V. VPW (GM): 10,4/41,6 kbit/s, Pin 2, High +7 V, Entscheidungsschwelle 3,5 V (Wikipedia).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja",
+    "sicherheit": "keine besonderen",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://en.wikipedia.org/wiki/On-board_diagnostics"
+    ]
+   },
+   {
+    "name": "MOST-Bus",
+    "system": "Infotainment (älter)",
+    "signalart": "optisch (Kunststofflichtwellenleiter) bzw. elektrisch (MOST50)",
+    "typischeWerte": "MOST25/MOST150 über Kunststofflichtwellenleiter, MOST50 (und MOST150) auch elektrisch. Ring bzw. Daisy-Chain mit bis zu 64 Geräten; MOST25 ca. 23 MBd (Wikipedia).",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein bei optischer Ausführung; elektrische Variante unsicher, nicht empfohlen",
+    "sicherheit": "Lichtwellenleiter nicht knicken; nicht in den Lichtaustritt blicken (nicht quellenverifiziert)",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://en.wikipedia.org/wiki/MOST_Bus"
+    ]
+   },
+   {
+    "name": "Control Pilot (CP) – Ladekommunikation AC (IEC 61851, Typ 2)",
+    "system": "Hochvolt/Laden",
+    "signalart": "PWM ±12 V, 1 kHz, Zustandskodierung über Spannung und Tastgrad",
+    "typischeWerte": "Zustände: A 12 V (ohne Fahrzeug, EVSE-Seite), B 9 V, C 6 V (Laden), D 3 V (Lüftung), E 0 V, F −12 V (Fehler). Der Tastgrad gibt den maximal verfügbaren Ladestrom an: 10 % = 6 A, 50 % = 30 A, 80 % = 48 A, 96 % = 80 A. 3–7 % (typ. 5 %) bedeutet digitale Kommunikation, ggf. mit überlagertem LIN/SWCAN (Pico, e-mobileo).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "technisch ja (±12 V, 1 kHz, 1:1 reicht), aber nur über einen CAT-bewerteten Prüfadapter. Pico nutzt einen aktiven Differenztastkopf 1:20. Gemeinsame Kanalmasse beachten.",
+    "sicherheit": "Die Ladeeinrichtung ist netzverbunden: nur mit HV- bzw. Elektrofachqualifikation und CAT-bewertetem Zubehör (Pico)",
+    "abgedecktDurch": "cp-laden (V13)",
+    "prioritaet": "mittel",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles/charger-vehicle-tests/AGT-896-charger-vehicle-communications-type-2/",
+     "https://www.e-mobileo.de/control-pilot-cp"
+    ]
+   },
+   {
+    "name": "Proximity Pilot (PP) – Kabelkodierung Typ 2",
+    "system": "Hochvolt/Laden",
+    "signalart": "Widerstandskodierung PP–PE",
+    "typischeWerte": "1,5 kΩ = 13 A, 680 Ω = 20 A, 200 Ω = 32 A, 100 Ω = 63 A (dreiphasig) bzw. 70 A (einphasig) (Pico)",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nicht sinnvoll: Widerstandsmessung mit dem Multimeter",
+    "sicherheit": "Nie bei intaktem PP-Kreis messen. Ladekabel von der EVSE trennen; Spannungsfreiheit sicherstellen (Pico).",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles/charger-vehicle-tests/AGT-897-charger-vehicle-proximity-line-type-2/"
+    ]
+   },
+   {
+    "name": "PLC-Kommunikation DC-Laden (ISO 15118 / DIN 70121) auf CP",
+    "system": "Hochvolt/Laden",
+    "signalart": "Hochfrequente Trägersignale auf dem CP-Leiter",
+    "typischeWerte": "5 % CP-Tastgrad zeigt digitale Kommunikation an (Pico). Trägerfrequenzen nicht in geöffneten Quellen, nicht verifiziert.",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein (keine Dekodierung; Frequenzbereich nicht verifiziert)",
+    "sicherheit": "DC-Ladesäule: Hochvolt, nur mit Qualifikation",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles/charger-vehicle-tests/AGT-896-charger-vehicle-communications-type-2/"
+    ]
+   },
+   {
+    "name": "Resolver (Rotorlage E-Maschine)",
+    "system": "Hochvolt/E-Antrieb",
+    "signalart": "Sinus-Erregung und 2 amplitudenmodulierte Ausgänge (sin/cos), potentialfrei",
+    "typischeWerte": "Erregung ca. 10 kHz (Pico), allgemein 10 oder 20 kHz. Erregeramplitude bei HEV/EV ca. 20–30 Vss (Patent US9880027). Die Ausgänge sind 90° versetzt; insgesamt 3 Signale. Fehlerbilder: Kurzschluss, Unterbrechung, Schluss zwischen den Ausgängen, verdrehter Stator (Pico).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "nur sehr eingeschränkt: Pico hält Oszis mit gemeinsamer Kanalmasse für ungeeignet (mehrere Differenzmessungen, Differenztastkopf 1400 V auf der Erregung). Der VDS1022I hat gemeinsame Masse und nur 2 Kanäle; höchstens 2 Signale, jeweils mit Differenztastkopf.",
+    "sicherheit": "HOCHVOLT: nur qualifiziertes, typgeschultes Personal; nicht mit Herzschrittmacher (Pico)",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles/system-component-tests/AGT-885-motor-resolver/",
+     "https://patents.google.com/patent/US9880027"
+    ]
+   },
+   {
+    "name": "Phasenströme E-Maschine (Inverter-Ausgang)",
+    "system": "Hochvolt/E-Antrieb",
+    "signalart": "3-phasiger Wechselstrom (PWM-Inverter, IGBT)",
+    "typischeWerte": "Gleiche Amplitude, typ. 120° versetzt (manche Hybride 60°). 6 IGBTs für 3 Phasen. Messung mit 3 Hochstromzangen (Pico).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "eingeschränkt: max. 2 von 3 Phasen, nur mit HV-tauglicher (CAT-bewerteter) Stromzange mit Spannungsausgang; keine galvanische Verbindung zum HV",
+    "sicherheit": "HOCHVOLT: Phasen nur über freigegebene, geprüfte Break-out-Box, wenn nicht sicher zugänglich. Bei Probefahrt bedient ein Beifahrer das Oszi (Pico).",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles/system-component-tests/AGT-917-motor-winding-current-phasing/",
+     "https://www.picoauto.com/library/company-news/new-motor-winding-current-phasing-guided-test"
+    ]
+   },
+   {
+    "name": "HV-Batterie- und Zwischenkreisstrom (Antrieb/Rekuperation)",
+    "system": "Hochvolt/E-Antrieb",
+    "signalart": "DC-Strom, bidirektional",
+    "typischeWerte": "Stromrichtung beim Beschleunigen und Bremsen entgegengesetzt (Pico AGT-918). Absolutwerte nicht genannt.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "nur mit HV-tauglicher DC-Hochstromzange (BNC-Ausgang)",
+    "sicherheit": "HOCHVOLT: nur bei sicher zugänglicher HV-DC-Leitung, mit Qualifikation",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles/system-component-tests/AGT-918-regeneration-current/"
+    ]
+   },
+   {
+    "name": "HV-Spannung (Batterie/Zwischenkreis) und Spannungsfreiheit",
+    "system": "Hochvolt/E-Antrieb",
+    "signalart": "DC-Hochspannung",
+    "typischeWerte": "Nennspannung herstellerabhängig, häufig mehrere 100 V (nicht quellenverifiziert). Spannungsfreiheit wird mit einem zweipoligen Spannungsprüfer festgestellt (Pico AGT-889).",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein: max. 400 Vss mit 10:1, keine CAT-Einstufung bekannt, gemeinsame Kanalmasse. Nur mit HV-Differenztastkopf passender CAT-Kategorie und Qualifikation.",
+    "sicherheit": "HOCHVOLT: Lebensgefahr; Freischalten nach Herstellervorgabe, Spannungsfreiheit vor jeder Arbeit prüfen (Pico)",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles/safety-tests/AGT-889-0-v-potential/",
+     "https://toolboom.com/en/digital-oscilloscope-owon-vds1022i/"
+    ]
+   },
+   {
+    "name": "HV-Schütze (SMR) – Ansteuerung und Vorladung",
+    "system": "Hochvolt/E-Antrieb",
+    "signalart": "Schaltsignale der Schützspulen (Niedervoltseite)",
+    "typischeWerte": "Zuschaltung: SMRB → SMRP (Vorladung über Widerstand) → SMRG; Abschaltung in umgekehrter Folge. Steuerkreise gegen Fahrzeugmasse gemessen (Pico AGT-884, Toyota Prius III). Keine Zahlenwerte.",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "Steuerkreise ja, 2 von 3 gleichzeitig",
+    "sicherheit": "HOCHVOLT-Umfeld: nur mit Qualifikation",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles/system-component-tests/AGT-884-toyota-prius-iii-system-main-relay/"
+    ]
+   },
+   {
+    "name": "Elektrischer Klimakompressor (HV) – Strom und Drehzahlansteuerung",
+    "system": "Hochvolt/Thermomanagement",
+    "signalart": "HV-Strom und LIN-Ansteuerung",
+    "typischeWerte": "HV-Strom per Hochstromzange. Die Drehzahlanforderung kommt im Beispiel per LIN vom Klimasteuergerät, Rückmeldung auf derselben Leitung (Pico AGT-922).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "LIN-Seite ja; HV-Strom nur mit HV-tauglicher Zange",
+    "sicherheit": "HOCHVOLT. Nur das vorgeschriebene nichtleitende Öl verwenden, sonst Isolationsschaden (Pico).",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles/system-component-tests/AGT-922-hvac-compressor-current-and-speed/"
+    ]
+   },
+   {
+    "name": "Berührungslose Messung an HV-Leitungen (z. B. AC-Ladestrom EVSE → OBC)",
+    "system": "Hochvolt/Laden",
+    "signalart": "Induktiv bzw. kapazitiv aufgenommenes Wechselfeld",
+    "typischeWerte": "Nur Wechsel- und Schaltvorgänge nachweisbar; Gleichgrößen nicht. Ein fehlendes Signal beweist keine Spannungsfreiheit, da Schirmung möglich ist (Pico AGT-929).",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "eingeschränkt, nur qualitativ (mit Signalsonde mit BNC-Ausgang)",
+    "sicherheit": "HOCHVOLT: Sonde fern von blanken HV-Teilen und drehenden Teilen halten (Pico)",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles/system-component-tests/AGT-929-non-intrusive-measurements/"
+    ]
+   },
+   {
+    "name": "HV-Interlock (HVIL)",
+    "system": "Hochvolt/Sicherheitskreis",
+    "signalart": "Niedervolt-Prüfschleife durch die HV-Steckverbinder",
+    "typischeWerte": "Signalform (DC oder getaktet) herstellerabhängig; keine Quelle geöffnet",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "voraussichtlich ja auf der Niedervoltseite; nicht verifiziert",
+    "sicherheit": "HOCHVOLT-Umfeld: nur mit Qualifikation; HV-Stecker nicht unter Spannung trennen",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": []
+   },
+   {
+    "name": "Isolationswiderstand HV",
+    "system": "Hochvolt/Sicherheit",
+    "signalart": "Isolationsmessung (kein Oszi-Signal)",
+    "typischeWerte": "Messung mit Isolationsmessgerät (Pico-Test AGT-888); Grenzwerte herstellerabhängig",
+    "oszirelevant": false,
+    "messbarMitVDS1022": "nein",
+    "sicherheit": "HOCHVOLT: nur mit Qualifikation",
+    "abgedecktDurch": "fehlt",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles"
+    ]
+   }
+  ]
+ }
+]
