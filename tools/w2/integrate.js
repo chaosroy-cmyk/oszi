@@ -89,8 +89,14 @@ for (const f of files) {
       const en = matchBracket(html, st); html = html.slice(0, st) + lit + html.slice(en + 1);
       report.push({ datei: base, karte: id, neu: 'ersetzt' });
     } else {
-      const re = new RegExp('\\nid:"[a-z0-9-]+", kat:"' + kat + '"', 'g'); re.lastIndex = ka; let m, last = -1;
-      while ((m = re.exec(html)) && m.index < kb) last = m.index;
+      /* erste Karte einer neuen kat: hinter die letzte Karte der verwandten kat (Ersatzkette) */
+      const KETTE = { einspr: ['einspr', 'aktor'], elektrik: ['elektrik', 'einspr', 'aktor'] };
+      let last = -1;
+      for (const k of (KETTE[kat] || [kat])) {
+        const re = new RegExp('\\nid:"[a-z0-9-]+", kat:"' + k + '"', 'g'); re.lastIndex = ka; let m;
+        while ((m = re.exec(html)) && m.index < kb) last = m.index;
+        if (last >= 0) break;
+      }
       if (last < 0) throw new Error(id + ': keine Karte mit kat ' + kat + ' als Einfügeort');
       const st = html.lastIndexOf('{', last), en = matchBracket(html, st);
       html = html.slice(0, en + 1) + ',\n\n' + lit + html.slice(en + 1);

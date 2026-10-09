@@ -1,10 +1,10 @@
 # Signal-Katalog: am Fahrzeug messbare Signale
 
-Stand: V12 (Oktober 2026). Planungsgrundlage für die nächsten Messkarten des Kompendiums.
+Stand: V13 (Oktober 2026). Planungsgrundlage für die nächsten Messkarten des Kompendiums.
 
 **So ist der Katalog entstanden:** Zwei Recherche-Agenten haben den Katalog erstellt, getrennt nach Sensoren sowie Aktoren, Zündung, Versorgung, Bussen und Hochvolt. Als Quellen dienten Pico Technology (Guided Tests, Forum), Bosch, Hella, Normen und Herstellerunterlagen. Unter „Quellen“ steht nur, was tatsächlich geöffnet und gelesen wurde. Werte ohne Quelle sind als „nicht quellengeprüft“ bzw. „Fachwissen“ gekennzeichnet. Die Websuche war gegen Ende der Recherche ausgeschöpft, deshalb sind einige Randbereiche dünner belegt.
 
-**Wichtig:** Dieser Katalog ist eine Arbeitsliste, kein geprüfter Kartentext. In die App kommen Werte erst, wenn eine Karte nach dem Verfahren Autor → unabhängige Prüfung → Korrektur gebaut ist. So wurden auch die 20 Sensor- und Lambdakarten in V11 und die 16 neuen Sensorkarten in V12 erstellt.
+**Wichtig:** Dieser Katalog ist eine Arbeitsliste, kein geprüfter Kartentext. In die App kommen Werte erst, wenn eine Karte nach dem Verfahren Autor → unabhängige Prüfung → Korrektur gebaut ist. So wurden auch die 20 Sensor- und Lambdakarten in V11 die 16 neuen Sensorkarten in V12 sowie die 18 Aktor-, Bordnetz- und Buskarten in V13 erstellt.
 
 > **Sicherheit:** Airbag, Gurtstraffer, PSI5 und alle pyrotechnischen Kreise werden **niemals** angemessen, nur mit dem Diagnosetester nach Herstellervorgabe. Hochvolt nur mit HV-Qualifikation, Herstellervorgaben, PSA und CAT-bewertetem Zubehör. Der VDS1022I hat keine bekannte CAT-Einstufung, und seine Kanäle haben eine gemeinsame Masse.
 
@@ -14,8 +14,8 @@ Stand: V12 (Oktober 2026). Planungsgrundlage für die nächsten Messkarten des K
 |---|---|
 | Signale gesamt | 146 |
 | davon mit dem Oszi sinnvoll diagnostizierbar | 117 |
-| durch eine Karte (ganz oder teilweise) abgedeckt | 83 |
-| noch ohne eigene Karte | 56 |
+| durch eine Karte (ganz oder teilweise) abgedeckt | 102 |
+| noch ohne eigene Karte | 37 |
 | nicht anwendbar (kein Oszi-Thema oder Messverbot) | 7 |
 
 ## Fehlende Karten nach Priorität
@@ -24,29 +24,10 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 | Priorität | Signal | System | Messbar mit VDS1022I |
 |---|---|---|---|
-| hoch | Ruhestrom / parasitäre Batterieentladung | Bordnetz 12 V | nur mit Niederstromzange (mA-Auflösung) oder Shunt. Zeitbasis bis 100 s/div, aber nur 5 k Punkte je Erfassung; Langzeitüberwachung eingeschränkt. |
-| hoch | Spannungsfall Plus- und Masseleitungen (Hauptstrom, Steuergeräte- und Sensormasse) | Bordnetz/Versorgung | ja (DC, mV-Bereich). Beachten: Masseklemmen beider Kanäle liegen auf gemeinsamem Potential. |
-| mittel | FlexRay | Bussystem (Fahrwerk/Antrieb, Premiumfahrzeuge) | eingeschränkt: Pegel, Idle und Abschluss ja (BP/BM gegen Masse, Math A−B). Nur 10 Abtastwerte/bit bei 100 MS/s und 25 MHz Bandbreite; Flanken verrundet, Reflexionen und Augendiagramm nicht verlässlich. |
-| mittel | CR-Druckregelventil (DRV) | Einspritzung Diesel, Common Rail | ja (10:1 empfohlen); Strom mit Zange |
-| mittel | CR-Mengensteuerventil / Zumesseinheit (ZME, QCV) | Einspritzung Diesel, Hochdruckpumpe | ja (10:1 wegen Abschaltspitze empfohlen); Strom mit Zange; Kanal 2 für den Raildrucksensor |
-| mittel | Benzin-Hochdruckpumpe – Mengensteuerventil | Einspritzung Otto, Direkteinspritzung | voraussichtlich ja (10:1, Stromzange); nicht verifiziert |
 | mittel | Einspritzventil Saugrohr (MPI) – Strombild | Einspritzung Otto, Saugrohr | nur mit Stromzange (Spannungsausgang, BNC); Kanal 2 parallel für das Spannungsbild |
-| mittel | EV: 12-V-Bordnetz / DC/DC-Wandler (Laden der 12-V-Batterie) | Hochvolt/E-Antrieb, 12-V-Seite | 12-V-Seite: Spannung ja; Strom nur mit Hochstromzange |
-| mittel | Control Pilot (CP) – Ladekommunikation AC (IEC 61851, Typ 2) | Hochvolt/Laden | technisch ja (±12 V, 1 kHz, 1:1 reicht), aber nur über einen CAT-bewerteten Prüfadapter. Pico nutzt einen aktiven Differenztastkopf 1:20. Gemeinsame Kanalmasse beachten. |
-| mittel | Klimakompressor-Regelventil (extern geregelter Kompressor) | Klimaanlage | voraussichtlich ja (Stromzange für den Regelstrom); nicht verifiziert |
-| mittel | Nockenwellenverstellung – VVT-Magnetventil (einfach oder doppelt) | Motorsteuerung, Ventiltrieb | ja; Kanal 2 auf den NW-Sensor zur Plausibilisierung |
-| mittel | 5-V-Sensorreferenz und Sensormasse | Sensorversorgung durch das Steuergerät | ja (1:1) |
-| mittel | Zündverstärker- und Zündspulenmasse (Spannungsfall) | Zündung/Versorgung | ja (1:1, DC-Kopplung, kleiner Messbereich) |
-| niedrig | AdBlue/SCR-Dosierventil | Abgasnachbehandlung Diesel | voraussichtlich ja (10:1, Stromzange); nicht verifiziert |
-| niedrig | Lampen-/LED-Ansteuerung (PWM, Kaltlampenprüfimpulse) | Beleuchtung/Karosserieelektronik | ja |
-| niedrig | Bordnetz-Transienten (Load Dump, Schaltspitzen) | Bordnetz 12 V/24 V | ja mit 10:1 (bis 400 Vss), Single-Trigger |
-| niedrig | 48-V-Bordnetz (Mild-Hybrid) | Bordnetz 48 V | Spannung ja mit 10:1; Strom nur mit Zange |
-| niedrig | Single-Wire-CAN (SAE J2411) | Bussystem (GM GMLAN; Tesla auf dem CP-Leiter) | ja (Eindraht gegen Masse). Am CP-Leiter nur mit Ladeadapter und Qualifikation. |
 | niedrig | Automotive Ethernet 10BASE-T1S | Bussystem (Multidrop-Ethernet, neu) | eingeschränkt: Pegel und Aktivität ja (2 Kanäle gegen Masse, Math A−B). Flanken und Timing bei 25 MHz grenzwertig; Pico nutzt x10-High-Speed-Tastköpfe. |
 | niedrig | SAE J1850 PWM/VPW | Diagnose- und Fahrzeugbus (ältere US-Fahrzeuge) | ja |
-| niedrig | K-Leitung (ISO 9141-2 / ISO 14230 KWP2000) | Diagnoseschnittstelle (ältere Fahrzeuge) | ja (12-V-Pegel; 1:1 bis 40 Vss möglich, 10:1 empfohlen) |
 | niedrig | Pumpe-Düse-Einheit (VAG PD) – Magnetventil bzw. Piezo | Einspritzung Diesel, Pumpe-Düse | Magnetventil-Variante: Strom ja mit Zange, Spannung ja mit 10:1. Piezo-Variante wie Piezo-Injektor (grenzwertig). |
-| niedrig | Gas-Einblasventile (LPG/CNG) | Einspritzung Gas (Nachrüst- oder Werksanlage) | ja (10:1, Stromzange) |
 | niedrig | Automatikgetriebe-Magnetventile (Druckregler, Schaltventile) | Getriebe | ja, sofern die Leitungen zugänglich sind (oft in der Mechatronik integriert) |
 | niedrig | Resolver (Rotorlage E-Maschine) | Hochvolt/E-Antrieb | nur sehr eingeschränkt: Pico hält Oszis mit gemeinsamer Kanalmasse für ungeeignet (mehrere Differenzmessungen, Differenztastkopf 1400 V auf der Erregung). Der VDS1022I hat gemeinsame Masse und nur 2 Kanäle; höchstens 2 Signale, jeweils mit Differenztastkopf. |
 | niedrig | Phasenströme E-Maschine (Inverter-Ausgang) | Hochvolt/E-Antrieb | eingeschränkt: max. 2 von 3 Phasen, nur mit HV-tauglicher (CAT-bewerteter) Stromzange mit Spannungsausgang; keine galvanische Verbindung zum HV |
@@ -716,7 +697,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 - Sicherheit: Gefährliche Spannung (Pico). Spannungsfestes Zubehör und Dämpfung nötig.
 - Quellen: <https://www.picoauto.com/library/automotive-guided-tests/actuators/injector-gasoline/AGT-869-gdi-injector-voltage-and-current/> · <https://www.picoauto.com/library/automotive-guided-tests/actuators/injector-(gasoline)/AGT-868-gdi-injector-current/> · <https://www.picoauto.com/support/viewtopic.php?p=31613>
 
-**Benzin-Hochdruckpumpe – Mengensteuerventil** · Magnetventil, nockensynchron angesteuert · Priorität mittel · Karte: fehlt
+**Benzin-Hochdruckpumpe – Mengensteuerventil** · Magnetventil, nockensynchron angesteuert · Priorität mittel · Karte: hdp-msv (V13)
 
 - Typische Werte: Keine Quelle mit Messwerten geöffnet; herstellerabhängig (nicht quellenverifiziert)
 - VDS1022I: voraussichtlich ja (10:1, Stromzange); nicht verifiziert
@@ -738,7 +719,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 - Sicherheit: Piezo-Injektor nie bei laufendem Motor abstecken: Ventil kann offen bleiben, Folge ist Motorschaden (Pico). Gefährliche Spannung.
 - Quellen: <https://www.picoauto.com/library/automotive-guided-tests/actuators/injector-(diesel)/AGT-098-crd-bosch-piezo-injector/> · <https://www.picoauto.com/support/viewtopic.php?t=22336>
 
-**CR-Druckregelventil (DRV)** · PWM, Low-Side, stromgeregelt · Priorität mittel · Karte: teilweise pwm-ventil; eigene Karte fehlt
+**CR-Druckregelventil (DRV)** · PWM, Low-Side, stromgeregelt · Priorität mittel · Karte: cr-drv (V13)
 
 - Typische Werte: Funktion wie ZME (Pico): Tastgrad bestimmt den Mittelstrom. Fehlercodes P0087–P0094. Frequenz und Tastgrad herstellerabhängig.
 - VDS1022I: ja (10:1 empfohlen); Strom mit Zange
@@ -756,7 +737,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Einspritzung Diesel, Hochdruckpumpe
 
-**CR-Mengensteuerventil / Zumesseinheit (ZME, QCV)** · PWM, Low-Side, stromgeregelt · Priorität mittel · Karte: teilweise pwm-ventil (Prinzip); eigene Karte fehlt
+**CR-Mengensteuerventil / Zumesseinheit (ZME, QCV)** · PWM, Low-Side, stromgeregelt · Priorität mittel · Karte: cr-zme (V13)
 
 - Typische Werte: Beide Spulenanschlüsse liegen an +UBatt, das Steuergerät schaltet Masse; aktiv = Low. Höherer Tastgrad bedeutet höheren Mittelstrom und größeren Ventilhub. Grundstellung je nach System offen oder geschlossen (Pico). Frequenz und Tastgrade herstellerabhängig (bei Pico nicht genannt).
 - VDS1022I: ja (10:1 wegen Abschaltspitze empfohlen); Strom mit Zange; Kanal 2 für den Raildrucksensor
@@ -773,7 +754,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Einspritzung Gas (Nachrüst- oder Werksanlage)
 
-**Gas-Einblasventile (LPG/CNG)** · Schaltsignal, häufig Peak & Hold · Priorität niedrig · Karte: fehlt
+**Gas-Einblasventile (LPG/CNG)** · Schaltsignal, häufig Peak & Hold · Priorität niedrig · Karte: lpg-ventil (V13)
 
 - Typische Werte: Nicht quellenverifiziert; herstellerabhängig
 - VDS1022I: ja (10:1, Stromzange)
@@ -781,7 +762,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Abgasnachbehandlung Diesel
 
-**AdBlue/SCR-Dosierventil** · getaktetes Magnetventil · Priorität niedrig · Karte: fehlt
+**AdBlue/SCR-Dosierventil** · getaktetes Magnetventil · Priorität niedrig · Karte: adblue (V13)
 
 - Typische Werte: Nicht quellenverifiziert; herstellerabhängig
 - VDS1022I: voraussichtlich ja (10:1, Stromzange); nicht verifiziert
@@ -830,7 +811,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Zündung/Versorgung
 
-**Zündverstärker- und Zündspulenmasse (Spannungsfall)** · DC-Spannungsfall unter Last (mV-Bereich) · Priorität mittel · Karte: fehlt (nur Erklärbild Masse/Spannungsabfall)
+**Zündverstärker- und Zündspulenmasse (Spannungsfall)** · DC-Spannungsfall unter Last (mV-Bereich) · Priorität mittel · Karte: spannungsfall (V13)
 
 - Typische Werte: Dynamischer Spannungsfall bei Drehzahländerung (Pico AGT-041). Einen Grenzwert nennt die Quelle nicht: Herstellerangabe.
 - VDS1022I: ja (1:1, DC-Kopplung, kleiner Messbereich)
@@ -864,7 +845,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Motorsteuerung, Ventiltrieb
 
-**Nockenwellenverstellung – VVT-Magnetventil (einfach oder doppelt)** · PWM über geschaltete Masse · Priorität mittel · Karte: teilweise pwm-ventil; eigene Karte fehlt
+**Nockenwellenverstellung – VVT-Magnetventil (einfach oder doppelt)** · PWM über geschaltete Masse · Priorität mittel · Karte: vvt (V13)
 
 - Typische Werte: Der Tastgrad ändert sich mit der Drehzahl (Pico AGT-058). Doppelventil-Variante: AGT-156. Frequenz herstellerabhängig.
 - VDS1022I: ja; Kanal 2 auf den NW-Sensor zur Plausibilisierung
@@ -926,7 +907,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Klimaanlage
 
-**Klimakompressor-Regelventil (extern geregelter Kompressor)** · PWM-Magnetventil · Priorität mittel · Karte: fehlt
+**Klimakompressor-Regelventil (extern geregelter Kompressor)** · PWM-Magnetventil · Priorität mittel · Karte: klima-ventil (V13)
 
 - Typische Werte: Frequenz und Strom herstellerabhängig; keine Quelle geöffnet
 - VDS1022I: voraussichtlich ja (Stromzange für den Regelstrom); nicht verifiziert
@@ -942,7 +923,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Beleuchtung/Karosserieelektronik
 
-**Lampen-/LED-Ansteuerung (PWM, Kaltlampenprüfimpulse)** · PWM bzw. kurze Prüfimpulse · Priorität niedrig · Karte: fehlt
+**Lampen-/LED-Ansteuerung (PWM, Kaltlampenprüfimpulse)** · PWM bzw. kurze Prüfimpulse · Priorität niedrig · Karte: lampen-pwm (V13)
 
 - Typische Werte: Herstellerabhängig; nicht quellenverifiziert
 - VDS1022I: ja
@@ -985,7 +966,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Bordnetz 12 V
 
-**Ruhestrom / parasitäre Batterieentladung** · DC-Strom im mA-Bereich mit periodischen Weckspitzen · Priorität hoch · Karte: fehlt
+**Ruhestrom / parasitäre Batterieentladung** · DC-Strom im mA-Bereich mit periodischen Weckspitzen · Priorität hoch · Karte: ruhestrom (V13)
 
 - Typische Werte: Im Schlafzustand typ. unter 150 mA (herstellerabhängig). Einschlafzeit 30 min–2 h. Module wecken periodisch auf, auch im Abstand von Stunden. Beispiel: 45 mA an 75 Ah reichen ca. 14 Tage (Pico).
 - VDS1022I: nur mit Niederstromzange (mA-Auflösung) oder Shunt. Zeitbasis bis 100 s/div, aber nur 5 k Punkte je Erfassung; Langzeitüberwachung eingeschränkt.
@@ -994,7 +975,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Bordnetz/Versorgung
 
-**Spannungsfall Plus- und Masseleitungen (Hauptstrom, Steuergeräte- und Sensormasse)** · DC-Spannungsfall unter Last · Priorität hoch · Karte: fehlt (nur Erklärbild Masse/Spannungsabfall)
+**Spannungsfall Plus- und Masseleitungen (Hauptstrom, Steuergeräte- und Sensormasse)** · DC-Spannungsfall unter Last · Priorität hoch · Karte: spannungsfall (V13)
 
 - Typische Werte: Unter Last und dynamisch messen. Grenzwerte herstellerabhängig; die geöffneten Quellen nennen keine Zahl.
 - VDS1022I: ja (DC, mV-Bereich). Beachten: Masseklemmen beider Kanäle liegen auf gemeinsamem Potential.
@@ -1003,7 +984,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Sensorversorgung durch das Steuergerät
 
-**5-V-Sensorreferenz und Sensormasse** · DC-Versorgung · Priorität mittel · Karte: fehlt (nur Erklärbild 5-V-Referenz)
+**5-V-Sensorreferenz und Sensormasse** · DC-Versorgung · Priorität mittel · Karte: sensor-ref (V13)
 
 - Typische Werte: 5-V-Versorgung (z. B. bei SENT-Sensoren, Wikipedia). Toleranz und Störbilder herstellerabhängig (nicht quellenverifiziert).
 - VDS1022I: ja (1:1)
@@ -1012,7 +993,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Bordnetz 12 V/24 V
 
-**Bordnetz-Transienten (Load Dump, Schaltspitzen)** · Einzelereignis, Spannungsspitze · Priorität niedrig · Karte: fehlt
+**Bordnetz-Transienten (Load Dump, Schaltspitzen)** · Einzelereignis, Spannungsspitze · Priorität niedrig · Karte: transienten (V13)
 
 - Typische Werte: Load Dump 12 V: bis ca. 120 V ungeklemmt, typ. auf 40 V begrenzt (24 V: ca. 60 V), Dauer bis 400 ms. Normpulse nach ISO 7637-2 (Wikipedia).
 - VDS1022I: ja mit 10:1 (bis 400 Vss), Single-Trigger
@@ -1021,7 +1002,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Bordnetz 48 V
 
-**48-V-Bordnetz (Mild-Hybrid)** · DC-Versorgung, hohe Ströme · Priorität niedrig · Karte: fehlt
+**48-V-Bordnetz (Mild-Hybrid)** · DC-Versorgung, hohe Ströme · Priorität niedrig · Karte: bordnetz-48v (V13)
 
 - Typische Werte: Nennspannung 48 V DC, unter der allgemein akzeptierten 50-V-Schwelle. Norm ISO 21780 (Wikipedia). Betriebsgrenzen nicht quellenverifiziert.
 - VDS1022I: Spannung ja mit 10:1; Strom nur mit Zange
@@ -1030,7 +1011,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Hochvolt/E-Antrieb, 12-V-Seite
 
-**EV: 12-V-Bordnetz / DC/DC-Wandler (Laden der 12-V-Batterie)** · DC-Spannung und Ladestrom · Priorität mittel · Karte: fehlt
+**EV: 12-V-Bordnetz / DC/DC-Wandler (Laden der 12-V-Batterie)** · DC-Spannung und Ladestrom · Priorität mittel · Karte: dcdc-12v (V13)
 
 - Typische Werte: Ausgangsspannung ca. 14 V. Ladestrom im Beispiel anfangs ca. 74 A, dann fallend. Vor READY über 30 A Bordnetzlast (Pico AGT-916). Restwelligkeit: keine Quelle.
 - VDS1022I: 12-V-Seite: Spannung ja; Strom nur mit Hochstromzange
@@ -1064,7 +1045,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Bussystem (GM GMLAN; Tesla auf dem CP-Leiter)
 
-**Single-Wire-CAN (SAE J2411)** · Eindraht-CAN · Priorität niedrig · Karte: fehlt
+**Single-Wire-CAN (SAE J2411)** · Eindraht-CAN · Priorität niedrig · Karte: sw-can (V13)
 
 - Typische Werte: 33,3 kbit/s (Dekodierung im Pico-Forum bestätigt, Tesla Model 3 auf dem CP-Leiter). SAE J2411 (Wikipedia GMLAN).
 - VDS1022I: ja (Eindraht gegen Masse). Am CP-Leiter nur mit Ladeadapter und Qualifikation.
@@ -1091,7 +1072,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Bussystem (Fahrwerk/Antrieb, Premiumfahrzeuge)
 
-**FlexRay** · Differenzieller Bus BP/BM · Priorität mittel · Karte: fehlt (nur Erklärbild FlexRay)
+**FlexRay** · Differenzieller Bus BP/BM · Priorität mittel · Karte: flexray (V13)
 
 - Typische Werte: 10 Mbit/s, 100 ns Bitzeit. Idle: BP = BM ≈ 2,5 V (Differenz 0 V); Idle Low Power ≈ 0 V. Data_1: BP 3,5 V / BM 1,5 V (+2 V). Data_0: BP 1,5 V / BM 3,5 V (−2 V). Abschluss 80–110 Ω je Ende, gemessen ca. 40–55 Ω. Pico empfiehlt mindestens 20 MHz Bandbreite.
 - VDS1022I: eingeschränkt: Pegel, Idle und Abschluss ja (BP/BM gegen Masse, Math A−B). Nur 10 Abtastwerte/bit bei 100 MS/s und 25 MHz Bandbreite; Flanken verrundet, Reflexionen und Augendiagramm nicht verlässlich.
@@ -1136,7 +1117,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Diagnoseschnittstelle (ältere Fahrzeuge)
 
-**K-Leitung (ISO 9141-2 / ISO 14230 KWP2000)** · Eindraht-UART gegen Masse · Priorität niedrig · Karte: fehlt
+**K-Leitung (ISO 9141-2 / ISO 14230 KWP2000)** · Eindraht-UART gegen Masse · Priorität niedrig · Karte: k-leitung (V13)
 
 - Typische Werte: OBD Pin 7 (L-Leitung Pin 15 optional). 10,4 kbit/s (KWP2000: 1,2–10,4 kBaud). Ruhe high über 510 Ω an UBatt, aktiv low per Open-Collector (Wikipedia). Pico prüft den Datenaustausch Tester–Steuergerät.
 - VDS1022I: ja (12-V-Pegel; 1:1 bis 40 Vss möglich, 10:1 empfohlen)
@@ -1163,7 +1144,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Hochvolt/Laden
 
-**Control Pilot (CP) – Ladekommunikation AC (IEC 61851, Typ 2)** · PWM ±12 V, 1 kHz, Zustandskodierung über Spannung und Tastgrad · Priorität mittel · Karte: fehlt
+**Control Pilot (CP) – Ladekommunikation AC (IEC 61851, Typ 2)** · PWM ±12 V, 1 kHz, Zustandskodierung über Spannung und Tastgrad · Priorität mittel · Karte: cp-laden (V13)
 
 - Typische Werte: Zustände: A 12 V (ohne Fahrzeug, EVSE-Seite), B 9 V, C 6 V (Laden), D 3 V (Lüftung), E 0 V, F −12 V (Fehler). Der Tastgrad gibt den maximal verfügbaren Ladestrom an: 10 % = 6 A, 50 % = 30 A, 80 % = 48 A, 96 % = 80 A. 3–7 % (typ. 5 %) bedeutet digitale Kommunikation, ggf. mit überlagertem LIN/SWCAN (Pico, e-mobileo).
 - VDS1022I: technisch ja (±12 V, 1 kHz, 1:1 reicht), aber nur über einen CAT-bewerteten Prüfadapter. Pico nutzt einen aktiven Differenztastkopf 1:20. Gemeinsame Kanalmasse beachten.

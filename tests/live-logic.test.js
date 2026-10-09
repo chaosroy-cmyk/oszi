@@ -111,6 +111,13 @@ t('parseSetup Stromzange -> strom, kein Probe/Vdiv-Zwang', () => {
   assert.strictEqual(p.ch2,false);
   assert.strictEqual(p.trigEdge,'r');
 });
+t('parseSetup Strompegel in A (nur wenn kein V-Pegel)', () => {
+  const p=L.parseSetup({tk:'Stromzange',trig:'Normal, Flanke \u2191 auf CH1 (Strom ~0,3 A)'});
+  assert(Math.abs(p.trigLevelA-0.3)<1e-12,'A='+p.trigLevelA);
+  assert.strictEqual(p.trigLevel,null);
+  assert(Math.abs(L.parseSetup({trig:'Flanke \u2191, 200 mA'}).trigLevelA-0.2)<1e-12);
+  assert.strictEqual(L.parseSetup({trig:'Flanke \u2191, 2 V (Strom 1 A)'}).trigLevelA,undefined);
+});
 t('parseSetup mA/V-Mischangabe nimmt V-Wert', () => {
   const p=L.parseSetup({vdiv:'5–10 mA bzw. 0,5 V'});
   assert(Math.abs(p.vdiv-0.5)<1e-12,'vdiv='+p.vdiv);

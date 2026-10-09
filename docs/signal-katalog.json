@@ -1176,7 +1176,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (10:1 wegen Abschaltspitze empfohlen); Strom mit Zange; Kanal 2 für den Raildrucksensor",
     "sicherheit": "keine besonderen; Hochdrucksystem nicht öffnen",
-    "abgedecktDurch": "teilweise pwm-ventil (Prinzip); eigene Karte fehlt",
+    "abgedecktDurch": "cr-zme (V13)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/actuators/quantity-control-valve/AGT-056-crd-bosch-quantity-control-valve/"
@@ -1190,7 +1190,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (10:1 empfohlen); Strom mit Zange",
     "sicherheit": "keine besonderen",
-    "abgedecktDurch": "teilweise pwm-ventil; eigene Karte fehlt",
+    "abgedecktDurch": "cr-drv (V13)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/actuators/pressure-regulator/AGT-055-crd-bosch-pressure-regulating-valve/"
@@ -1204,7 +1204,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "voraussichtlich ja (10:1, Stromzange); nicht verifiziert",
     "sicherheit": "Hochdruck-Kraftstoffsystem",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "hdp-msv (V13)",
     "prioritaet": "mittel",
     "quellen": []
    },
@@ -1228,7 +1228,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (10:1, Stromzange)",
     "sicherheit": "Gasanlage: Dichtheit und Herstellervorgaben beachten",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "lpg-ventil (V13)",
     "prioritaet": "niedrig",
     "quellen": []
    },
@@ -1240,7 +1240,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "voraussichtlich ja (10:1, Stromzange); nicht verifiziert",
     "sicherheit": "heiße Abgasanlage",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "adblue (V13)",
     "prioritaet": "niedrig",
     "quellen": []
    },
@@ -1324,7 +1324,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (1:1, DC-Kopplung, kleiner Messbereich)",
     "sicherheit": "keine besonderen",
-    "abgedecktDurch": "fehlt (nur Erklärbild Masse/Spannungsabfall)",
+    "abgedecktDurch": "spannungsfall (V13)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/ignition/distributorless-wasted-spark/AGT-041-ignition-amplifier-earth-volt-drop/"
@@ -1367,7 +1367,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja; Kanal 2 auf den NW-Sensor zur Plausibilisierung",
     "sicherheit": "keine besonderen",
-    "abgedecktDurch": "teilweise pwm-ventil; eigene Karte fehlt",
+    "abgedecktDurch": "vvt (V13)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/actuators/variable-valve-timing/AGT-058-vvt-control-solenoid/",
@@ -1479,7 +1479,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "voraussichtlich ja (Stromzange für den Regelstrom); nicht verifiziert",
     "sicherheit": "Kältemittelkreis nicht öffnen",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "klima-ventil (V13)",
     "prioritaet": "mittel",
     "quellen": []
    },
@@ -1503,7 +1503,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja",
     "sicherheit": "Xenon-Vorschaltgerät: Hochspannung, nicht messen",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "lampen-pwm (V13)",
     "prioritaet": "niedrig",
     "quellen": []
    },
@@ -1570,7 +1570,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "nur mit Niederstromzange (mA-Auflösung) oder Shunt. Zeitbasis bis 100 s/div, aber nur 5 k Punkte je Erfassung; Langzeitüberwachung eingeschränkt.",
     "sicherheit": "Überbrückungsleitung nur abgesichert (10 A). Bei dieser Methode nicht starten (Pico).",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "ruhestrom (V13)",
     "prioritaet": "hoch",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/charging-starting/charging/AGT-783-parasitic-battery-drain-clamp-method/",
@@ -1585,7 +1585,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (DC, mV-Bereich). Beachten: Masseklemmen beider Kanäle liegen auf gemeinsamem Potential.",
     "sicherheit": "Hochstromkreise: keine Kurzschlüsse mit Messleitungen",
-    "abgedecktDurch": "fehlt (nur Erklärbild Masse/Spannungsabfall)",
+    "abgedecktDurch": "spannungsfall (V13)",
     "prioritaet": "hoch",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/ignition/distributorless-wasted-spark/AGT-041-ignition-amplifier-earth-volt-drop/"
@@ -1599,7 +1599,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (1:1)",
     "sicherheit": "Referenz nicht kurzschließen: sie versorgt oft mehrere Sensoren",
-    "abgedecktDurch": "fehlt (nur Erklärbild 5-V-Referenz)",
+    "abgedecktDurch": "sensor-ref (V13)",
     "prioritaet": "mittel",
     "quellen": [
      "https://en.wikipedia.org/wiki/SENT_(protocol)"
@@ -1613,7 +1613,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja mit 10:1 (bis 400 Vss), Single-Trigger",
     "sicherheit": "keine besonderen",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "transienten (V13)",
     "prioritaet": "niedrig",
     "quellen": [
      "https://en.wikipedia.org/wiki/Load_dump"
@@ -1627,7 +1627,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "Spannung ja mit 10:1; Strom nur mit Zange",
     "sicherheit": "Kein HV, aber hohe Ströme und Lichtbogengefahr; Herstellervorgaben beachten",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "bordnetz-48v (V13)",
     "prioritaet": "niedrig",
     "quellen": [
      "https://en.wikipedia.org/wiki/48-volt_electrical_system"
@@ -1641,7 +1641,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "12-V-Seite: Spannung ja; Strom nur mit Hochstromzange",
     "sicherheit": "Fahrzeug von der Ladestation trennen, HV-Komponenten nicht öffnen. Pico schreibt HV-Qualifikation vor.",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "dcdc-12v (V13)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles/system-component-tests/AGT-916-auxiliary-battery-charging/"
@@ -1699,7 +1699,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (Eindraht gegen Masse). Am CP-Leiter nur mit Ladeadapter und Qualifikation.",
     "sicherheit": "Am Ladekabel: netzverbundene Ladeeinrichtung",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "sw-can (V13)",
     "prioritaet": "niedrig",
     "quellen": [
      "https://www.picoauto.com/support/viewtopic.php?t=22544",
@@ -1742,7 +1742,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "eingeschränkt: Pegel, Idle und Abschluss ja (BP/BM gegen Masse, Math A−B). Nur 10 Abtastwerte/bit bei 100 MS/s und 25 MHz Bandbreite; Flanken verrundet, Reflexionen und Augendiagramm nicht verlässlich.",
     "sicherheit": "keine besonderen",
-    "abgedecktDurch": "fehlt (nur Erklärbild FlexRay)",
+    "abgedecktDurch": "flexray (V13)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.picoauto.com/library/product-news/a-deep-dive-into-flexray-architecture-voltage-levels-and-packet-structure",
@@ -1815,7 +1815,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (12-V-Pegel; 1:1 bis 40 Vss möglich, 10:1 empfohlen)",
     "sicherheit": "keine besonderen",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "k-leitung (V13)",
     "prioritaet": "niedrig",
     "quellen": [
      "https://en.wikipedia.org/wiki/On-board_diagnostics",
@@ -1858,7 +1858,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "technisch ja (±12 V, 1 kHz, 1:1 reicht), aber nur über einen CAT-bewerteten Prüfadapter. Pico nutzt einen aktiven Differenztastkopf 1:20. Gemeinsame Kanalmasse beachten.",
     "sicherheit": "Die Ladeeinrichtung ist netzverbunden: nur mit HV- bzw. Elektrofachqualifikation und CAT-bewertetem Zubehör (Pico)",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "cp-laden (V13)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles/charger-vehicle-tests/AGT-896-charger-vehicle-communications-type-2/",
