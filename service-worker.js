@@ -15,7 +15,7 @@
 // - Erst wenn der Nutzer "Aktualisieren" tippt, sendet die Seite SKIP_WAITING,
 //   der neue SW übernimmt (clients.claim) und die Seite lädt einmal sauber neu.
 // - Bei jeder neuen Version: NUR die Versionsnummer unten erhöhen (v4 -> v5 ...).
-const CACHE_NAME = 'kfz-oszi-pwa-signed-803792f7bb4a6c59-v10';
+const CACHE_NAME = 'kfz-oszi-pwa-signed-803792f7bb4a6c59-v11';
 const APP_SHELL = [
   './',
   './index.html',

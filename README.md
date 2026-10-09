@@ -18,7 +18,10 @@ Für Smartphone optimiert, ohne externe Abhängigkeiten.
 | `icons/` | App-Icons (192/512 + maskable) |
 | `tools/validate.js` | Datenvalidierung (headless, für CI) |
 | `bridge.py` | Live-Modus: WebSocket-Bridge zum OWON VDS1022I (lokal, **nicht** deployt) |
-| `tests/live-logic.test.js` | Node-Tests der Live-Logik (`OsziLogic`, 23 Tests) |
+| `tests/live-logic.test.js` | Node-Tests der Live-Logik (`OsziLogic`, 38 Tests) |
+| `tests/signal-engine.test.js` | Node-Tests der Signalbild-Engine W2 und aller Kartenmodelle |
+| `tools/w2/` | Kit für neue Signalbilder: Regeln (`API.md`), Prüf-/Render-Werkzeug, Einbau, Textkorrektur |
+| `docs/SIGNAL-KATALOG.md` | Katalog aller am Fahrzeug messbaren Signale (146) mit Abdeckung, Priorität, Quellen; `docs/signal-katalog.json` maschinenlesbar |
 | `start-live.cmd` / `stop-live.cmd` | Windows-Starter für Bridge + lokalen Server |
 | `build-dist.sh` | Baut das öffentliche `dist/` (Deploy-Whitelist, ohne Backend/Doku) |
 | `DEPLOY.md` | Deployment über Cloudflare Pages |
@@ -46,6 +49,10 @@ Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
 ## Funktionen
 
 - **Messkarten** mit Gut-/Fehlerbild-Umschaltung, Einsteiger-/Profi-Modus.
+- **Quellenbelegte Signalbilder (V11, Engine W2):** Die 20 Sensor- und Lambdakarten zeigen je
+  5–7 Zustände und 6–12 Fehlerbilder (293 Bilder), gerechnet aus Signalmodellen in echter Zeit.
+  Achsen in echten Einheiten, Sollbild gestrichelt in jedem Fehlerbild, Quellen je Karte.
+  Jedes Bild ist maschinell nachgemessen (`expect`) und von unabhängigen Prüfern abgenommen.
 - **Fahrzeugspezifische Signalbilder:** je Karte umschaltbare Varianten
   (schematisch neutral + fahrzeugspezifisch).
 - **Eigene Messungen importieren:** Scope-CSV (`Zeit,Spannung`) einlesen,
@@ -68,9 +75,19 @@ node tools/validate.js
 Im Browser: `index.html?validate` öffnen und die Konsole prüfen.
 
 Nach Änderungen an gecachten Dateien die Cache-Version in `service-worker.js`
-(Konstante `CACHE_NAME`, Schema `kfz-oszi-pwa-signed-…-vN`, aktuell **…-v10**)
+(Konstante `CACHE_NAME`, Schema `kfz-oszi-pwa-signed-…-vN`, aktuell **…-v11**)
 erhöhen **und** den Footer „Stand vN" in `index.html` anpassen — sonst
 erscheint bei installierten Clients kein „Update verfügbar"-Banner.
 
 Live-Modus (OWON VDS1022I) lokal testen: `bridge.py` starten (bzw.
 `start-live.cmd`), Logik-Tests via `node tests/live-logic.test.js`.
+
+Tests der Signalbild-Engine: `node tests/signal-engine.test.js`.
+
+### Neue Signalbilder (W2)
+
+Ablauf und Regeln stehen in `tools/w2/README.md` und `tools/w2/API.md`. Kurz: Ein Autor
+recherchiert und belegt die Werte, schreibt eine Kartendatei und prüft sie mit
+`tools/w2/render-card.js`, bis 0 Fehler gemeldet werden. Danach prüft ein unabhängiger Prüfer
+und der Autor korrigiert. Erst dann baut `tools/w2/integrate.js` die Datei in `index.html` ein.
+Welche Karten noch fehlen, steht in `docs/SIGNAL-KATALOG.md`.

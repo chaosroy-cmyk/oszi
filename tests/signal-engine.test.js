@@ -82,6 +82,15 @@ t('Achsenwerte entsprechen V/div und Offset (Beschriftung = Zeichnung)', () => {
   assert(h.indexOf('>100 ms<') > 0, 'Zeitachse endet bei 10 x 10 ms');
 });
 
+t('CH2-Skala rechts passt vollständig ins Bild (Einheit nicht abgeschnitten)', () => {
+  const h = '' + W2({ title: 'T', vdiv: 2, tdiv: 0.01, ch: [{ m: '__test_sine', p: {} }, { m: '__test_sine', p: {}, vdiv: 0.2, off: 1.5 }] });
+  const w = +h.match(/viewBox="0 0 (\d+)/)[1];
+  const right = [...h.matchAll(/<text x="([\d.]+)" y="[\d.]+" fill="#4fd2ff"[^>]*>([^<]+)</g)];
+  assert.strictEqual(right.length, 9, 'neun CH2-Skalenwerte');
+  right.forEach(m => assert(+m[1] + m[2].length * 6.8 <= w, 'abgeschnitten: ' + m[2]));
+  assert(right.some(m => m[2] === '-500 mV'), 'Wert mit Einheit vorhanden');
+});
+
 /* ---- Pruefung ---- */
 t('check: Abschneiden wird als Fehler erkannt', () => {
   const r = SIG.check({ title: 'T', caption: 'c', vdiv: 0.1, tdiv: 0.01, ch: [{ m: '__test_sine', p: { a: 1 } }] }, OL);
