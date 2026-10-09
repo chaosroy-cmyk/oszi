@@ -40,7 +40,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja. Für die µs-Pulsbreiten mindestens ~1 MS/s wählen; dann umfasst ein 5000-Punkte-Fenster nur ca. 5 ms. Für Auslaufen/Rückpendeln beim Motorstopp eine längere Zeitbasis mit geringerer Auflösung oder Einzelaufnahme mit Trigger.",
     "sicherheit": "keine besondere",
-    "abgedecktDurch": "fehlt (Ergänzung zu kw-hall)",
+    "abgedecktDurch": "kw-dir (V12)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.bosch-motorsport.com/media/catalog_content/downloads_catalog/pdf_catalog/data_sheet_69979403_speed_sensor_hall-effect_ha-di.pdf"
@@ -164,7 +164,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (Pegel und Timing). Für den 3-µs-Tick ≥ 1–2 MS/s nötig; ein 5000-Punkte-Fenster deckt dann nur 2,5–5 ms (≈ 1 Paket) ab. Eine SENT-Decodierung in der OWON-Software ist nicht geprüft, also gegebenenfalls Ticks manuell auszählen.",
     "sicherheit": "keine besondere",
-    "abgedecktDurch": "teilweise: SENT-Erklärbild, edk, pos-sensor; eigene Karte fehlt",
+    "abgedecktDurch": "sent (V12)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/communication/sent/AGT-403-sent-slow-standard-testing/",
@@ -179,7 +179,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (gut geeignet, um Aussetzer auf der Kohlebahn zu finden)",
     "sicherheit": "keine besondere",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "lmm-klappe (V12)",
     "prioritaet": "niedrig",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/sensors/air-flow-mass/AGT-008-air-flow-meter-air-vane-gasoline/"
@@ -247,7 +247,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja",
     "sicherheit": "keine besondere",
-    "abgedecktDurch": "edk (teilweise)",
+    "abgedecktDurch": "dk-alt (V12)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/sensors"
@@ -261,7 +261,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (CH1 Leerlauf, CH2 Volllast)",
     "sicherheit": "keine besondere",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "dk-alt (V12)",
     "prioritaet": "niedrig",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/sensors/throttle-position/AGT-028-throttle-position-switch/"
@@ -432,7 +432,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja. Zeitbasis so wählen, dass ≥ 1 Rahmen (≥ 1,2 s) erfasst wird; 5000 Punkte reichen für die ms-Pulse.",
     "sicherheit": "keine besondere",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "oelniveau (V12)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.hella.com/resources-soe/assets/documents/2106-KI-Oelniveausensoren-FORVIA-HELLA-EN.pdf"
@@ -460,7 +460,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (Oszi zeigt Aussetzer beim Durchfahren der Bahn, z. B. am ausgebauten Geber)",
     "sicherheit": "Kraftstoffdämpfe: Ex-Gefahr beim Öffnen des Tanks, keine Funken",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "tankgeber (V12)",
     "prioritaet": "mittel",
     "quellen": [
      "https://kfz-dietrich.com/blog/fehlercode-p0461-tankgeber-werkstatt-diagnose/"
@@ -474,7 +474,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja",
     "sicherheit": "Kraftstoff: Brandgefahr",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "ethanol (V12)",
     "prioritaet": "niedrig",
     "quellen": [
      "https://www.hpacademy.com/technical-articles/how-to-find-out-what-percentage-of-ethanol-is-in-your-fuel/"
@@ -514,7 +514,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja",
     "sicherheit": "heißes Abgas",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "lam-tio2 (V12)",
     "prioritaet": "niedrig",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/sensors/oxygen/AGT-023-oxygen-titania-output/"
@@ -620,7 +620,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja, wenn außen zugänglich. Bei Stromsignal: Spannung an der Sensor-Masse- bzw. Versorgungsleitung gegen Fahrzeugmasse oder Messadapter mit Shunt (z. B. 100 Ω ergibt 0,7/1,4 V bei 7/14 mA; Spannungsverlust beachten). Eine Stromzange müsste mA auflösen. Sensoren in der Mechatronik sind nicht zugänglich.",
     "sicherheit": "Fahrzeug auf Hebebühne mit drehenden Rädern: zweite Person, Gefahrenbereich sichern",
-    "abgedecktDurch": "fehlt (Prinzip wie raddreh-akt)",
+    "abgedecktDurch": "getriebe-dz (V12)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.hella.com/resources-soe/assets/documents/260202-Kurz-Info-Gear-Box-Speed-Sensor-EN.pdf"
@@ -686,7 +686,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (Pegelwechsel beim Treten, 2 Kanäle zusammen mit Bremslichtschalter für Plausibilität)",
     "sicherheit": "keine besondere",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "kupplung (V12)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.hella.com/techworld/br/bi/pdf/Volkswagen-Touran-Brake-lights-light-up-when-ignition-is-switched-on/Volkswagen-Touran-Brake-lights-light-up-when-ignition-is-switched-on.pdf"
@@ -715,7 +715,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja",
     "sicherheit": "Fahrzeug sicher anheben",
-    "abgedecktDurch": "raddreh-akt (teilweise)",
+    "abgedecktDurch": "raddreh-hall3 (V12)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/abs-speed-sensor-digital/"
@@ -794,7 +794,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (CH1/CH2 beide Kontakte, zeitliche Reihenfolge beim Treten)",
     "sicherheit": "keine besondere",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "bremslicht (V12)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.hella.com/techworld/br/bi/pdf/Volkswagen-Touran-Brake-lights-light-up-when-ignition-is-switched-on/Volkswagen-Touran-Brake-lights-light-up-when-ignition-is-switched-on.pdf"
@@ -834,7 +834,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja bei analog, PWM und SENT (Hebel langsam bewegen). PSI5-Varianten nur als Stromsignal (Shunt), Decodierung nicht geprüft.",
     "sicherheit": "Luftfederung: Fahrzeug vor Arbeiten abstützen",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "niveau (V12)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.hella.com/partnerworld/assets/documents/2424-KI-Vehicle-Level-Sensor-HELLA-EN.pdf",
@@ -863,7 +863,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (gleichzeitig Manometer an Hochdruckseite anschließen und vergleichen)",
     "sicherheit": "Kältemittelkreis unter Druck: nicht öffnen; Kältemittel verursacht Erfrierungen",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "klima-druck (V12)",
     "prioritaet": "hoch",
     "quellen": [
      "https://saabwisonline.com/9-5-9600/2004/8-body/heating-and-ventilation-a-c/technical-description/pressure-sensor",
@@ -919,7 +919,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "Burst nur mit Ultraschall-Empfänger bzw. Detektor (Zubehör, z. B. 40-kHz-Wandler) am Kanal; die Bandbreite reicht. Signalleitung zum Steuergerät: ja (Spannung gegen Masse).",
     "sicherheit": "Fahrzeug muss teils mit eingelegtem Gang laufen: zweite Person, Fahrer behält Kontrolle (Pico)",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "pdc (V12)",
     "prioritaet": "hoch",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/sensors/parking/AGT-814-parking-sensors/",
@@ -934,7 +934,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja über Aufnehmerspule bzw. Detektor (Pico nutzt einen Carrier-Signal-Detektor, ca. 300 mm vor dem Griff); 125 kHz liegt weit unter der Bandbreite. Direktmessung an der Antennenleitung: Resonanzspannung unbekannt (nicht quellengeprüft), nur mit 10:1 und nach Herstellerdaten.",
     "sicherheit": "keine besondere",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "keyless (V12)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/sensors/keyless-entry/AGT-849-keyless-entry/",
@@ -1757,7 +1757,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (1:1, Zeitauflösung ausreicht). Tick per Cursor aus dem Kalibrierpuls bestimmen. Keine Dekodierung dokumentiert.",
     "sicherheit": "keine besonderen",
-    "abgedecktDurch": "fehlt (nur Erklärbild SENT)",
+    "abgedecktDurch": "sent (V12)",
     "prioritaet": "mittel",
     "quellen": [
      "https://en.wikipedia.org/wiki/SENT_(protocol)",

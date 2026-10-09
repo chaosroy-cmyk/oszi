@@ -49,8 +49,11 @@ Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
 ## Funktionen
 
 - **Messkarten** mit Gut-/Fehlerbild-Umschaltung, Einsteiger-/Profi-Modus.
-- **Quellenbelegte Signalbilder (V11, Engine W2):** Die 20 Sensor- und Lambdakarten zeigen je
-  5–7 Zustände und 6–12 Fehlerbilder (293 Bilder), gerechnet aus Signalmodellen in echter Zeit.
+- **Quellenbelegte Signalbilder (Engine W2):** 36 Sensor- und Lambdakarten mit 503 Bildern,
+  gerechnet aus Signalmodellen in echter Zeit:
+  - V11: die 20 bestehenden Karten mit je 5–7 Zuständen und 6–12 Fehlerbildern;
+  - V12: 16 neue Sensorkarten, z. B. Kältemitteldruck, Tankgeber, Bremslicht/Kupplung,
+    KW mit Drehrichtung, Getriebedrehzahl, SENT, Ölniveau, PDC, Keyless, Niveau, Ethanol, TiO₂-Sonde.
   Achsen in echten Einheiten, Sollbild gestrichelt in jedem Fehlerbild, Quellen je Karte.
   Jedes Bild ist maschinell nachgemessen (`expect`) und von unabhängigen Prüfern abgenommen.
 - **Fahrzeugspezifische Signalbilder:** je Karte umschaltbare Varianten
@@ -75,7 +78,7 @@ node tools/validate.js
 Im Browser: `index.html?validate` öffnen und die Konsole prüfen.
 
 Nach Änderungen an gecachten Dateien die Cache-Version in `service-worker.js`
-(Konstante `CACHE_NAME`, Schema `kfz-oszi-pwa-signed-…-vN`, aktuell **…-v11**)
+(Konstante `CACHE_NAME`, Schema `kfz-oszi-pwa-signed-…-vN`, aktuell **…-v12**)
 erhöhen **und** den Footer „Stand vN" in `index.html` anpassen — sonst
 erscheint bei installierten Clients kein „Update verfügbar"-Banner.
 

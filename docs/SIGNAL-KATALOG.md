@@ -1,10 +1,10 @@
 # Signal-Katalog: am Fahrzeug messbare Signale
 
-Stand: V11 (Oktober 2026). Planungsgrundlage für die nächsten Messkarten des Kompendiums.
+Stand: V12 (Oktober 2026). Planungsgrundlage für die nächsten Messkarten des Kompendiums.
 
 **So ist der Katalog entstanden:** Zwei Recherche-Agenten haben den Katalog erstellt, getrennt nach Sensoren sowie Aktoren, Zündung, Versorgung, Bussen und Hochvolt. Als Quellen dienten Pico Technology (Guided Tests, Forum), Bosch, Hella, Normen und Herstellerunterlagen. Unter „Quellen“ steht nur, was tatsächlich geöffnet und gelesen wurde. Werte ohne Quelle sind als „nicht quellengeprüft“ bzw. „Fachwissen“ gekennzeichnet. Die Websuche war gegen Ende der Recherche ausgeschöpft, deshalb sind einige Randbereiche dünner belegt.
 
-**Wichtig:** Dieser Katalog ist eine Arbeitsliste, kein geprüfter Kartentext. In die App kommen Werte erst, wenn eine Karte nach dem Verfahren Autor → unabhängige Prüfung → Korrektur gebaut ist. So wurden auch die 20 Sensor- und Lambdakarten in V11 erstellt.
+**Wichtig:** Dieser Katalog ist eine Arbeitsliste, kein geprüfter Kartentext. In die App kommen Werte erst, wenn eine Karte nach dem Verfahren Autor → unabhängige Prüfung → Korrektur gebaut ist. So wurden auch die 20 Sensor- und Lambdakarten in V11 und die 16 neuen Sensorkarten in V12 erstellt.
 
 > **Sicherheit:** Airbag, Gurtstraffer, PSI5 und alle pyrotechnischen Kreise werden **niemals** angemessen, nur mit dem Diagnosetester nach Herstellervorgabe. Hochvolt nur mit HV-Qualifikation, Herstellervorgaben, PSA und CAT-bewertetem Zubehör. Der VDS1022I hat keine bekannte CAT-Einstufung, und seine Kanäle haben eine gemeinsame Masse.
 
@@ -14,8 +14,8 @@ Stand: V11 (Oktober 2026). Planungsgrundlage für die nächsten Messkarten des K
 |---|---|
 | Signale gesamt | 146 |
 | davon mit dem Oszi sinnvoll diagnostizierbar | 117 |
-| durch eine Karte (ganz oder teilweise) abgedeckt | 67 |
-| noch ohne eigene Karte | 72 |
+| durch eine Karte (ganz oder teilweise) abgedeckt | 83 |
+| noch ohne eigene Karte | 56 |
 | nicht anwendbar (kein Oszi-Thema oder Messverbot) | 7 |
 
 ## Fehlende Karten nach Priorität
@@ -24,32 +24,19 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 | Priorität | Signal | System | Messbar mit VDS1022I |
 |---|---|---|---|
-| hoch | Ultraschall-Parksensor (PDC/Einparkhilfe) | Assistenz/Karosserie | Burst nur mit Ultraschall-Empfänger bzw. Detektor (Zubehör, z. B. 40-kHz-Wandler) am Kanal; die Bandbreite reicht. Signalleitung zum Steuergerät: ja (Spannung gegen Masse). |
 | hoch | Ruhestrom / parasitäre Batterieentladung | Bordnetz 12 V | nur mit Niederstromzange (mA-Auflösung) oder Shunt. Zeitbasis bis 100 s/div, aber nur 5 k Punkte je Erfassung; Langzeitüberwachung eingeschränkt. |
 | hoch | Spannungsfall Plus- und Masseleitungen (Hauptstrom, Steuergeräte- und Sensormasse) | Bordnetz/Versorgung | ja (DC, mV-Bereich). Beachten: Masseklemmen beider Kanäle liegen auf gemeinsamem Potential. |
-| hoch | Kältemitteldrucksensor Klimaanlage (analog oder PWM) | Klima | ja (gleichzeitig Manometer an Hochdruckseite anschließen und vergleichen) |
-| mittel | Kupplungspedal-/Kupplungspositionssensor (Hall) | Antriebsstrang / Start-Stopp / Tempomat | ja (Pegelwechsel beim Treten, 2 Kanäle zusammen mit Bremslichtschalter für Plausibilität) |
 | mittel | FlexRay | Bussystem (Fahrwerk/Antrieb, Premiumfahrzeuge) | eingeschränkt: Pegel, Idle und Abschluss ja (BP/BM gegen Masse, Math A−B). Nur 10 Abtastwerte/bit bei 100 MS/s und 25 MHz Bandbreite; Flanken verrundet, Reflexionen und Augendiagramm nicht verlässlich. |
 | mittel | CR-Druckregelventil (DRV) | Einspritzung Diesel, Common Rail | ja (10:1 empfohlen); Strom mit Zange |
 | mittel | CR-Mengensteuerventil / Zumesseinheit (ZME, QCV) | Einspritzung Diesel, Hochdruckpumpe | ja (10:1 wegen Abschaltspitze empfohlen); Strom mit Zange; Kanal 2 für den Raildrucksensor |
 | mittel | Benzin-Hochdruckpumpe – Mengensteuerventil | Einspritzung Otto, Direkteinspritzung | voraussichtlich ja (10:1, Stromzange); nicht verifiziert |
 | mittel | Einspritzventil Saugrohr (MPI) – Strombild | Einspritzung Otto, Saugrohr | nur mit Stromzange (Spannungsausgang, BNC); Kanal 2 parallel für das Spannungsbild |
-| mittel | Bremslichtschalter / Bremspedalsensor | Fahrwerk – Bremse (Motor-, ESP-, Start-Stopp-Plausibilität) | ja (CH1/CH2 beide Kontakte, zeitliche Reihenfolge beim Treten) |
-| mittel | Niveausensor / Höhenstandsensor (LWR, Luftfederung, Dämpferregelung) | Fahrwerk – Niveau / Licht | ja bei analog, PWM und SENT (Hebel langsam bewegen). PSI5-Varianten nur als Stromsignal (Shunt), Decodierung nicht geprüft. |
-| mittel | Getriebedrehzahlsensor aktiv (Hall/MR, Eingang/Ausgang/Zwischenwelle) | Getriebe/Antriebsstrang | ja, wenn außen zugänglich. Bei Stromsignal: Spannung an der Sensor-Masse- bzw. Versorgungsleitung gegen Fahrzeugmasse oder Messadapter mit Shunt (z. B. 100 Ω ergibt 0,7/1,4 V bei 7/14 mA; Spannungsverlust beachten). Eine Stromzange müsste mA auflösen. Sensoren in der Mechatronik sind nicht zugänglich. |
 | mittel | EV: 12-V-Bordnetz / DC/DC-Wandler (Laden der 12-V-Batterie) | Hochvolt/E-Antrieb, 12-V-Seite | 12-V-Seite: Spannung ja; Strom nur mit Hochstromzange |
 | mittel | Control Pilot (CP) – Ladekommunikation AC (IEC 61851, Typ 2) | Hochvolt/Laden | technisch ja (±12 V, 1 kHz, 1:1 reicht), aber nur über einen CAT-bewerteten Prüfadapter. Pico nutzt einen aktiven Differenztastkopf 1:20. Gemeinsame Kanalmasse beachten. |
 | mittel | Klimakompressor-Regelventil (extern geregelter Kompressor) | Klimaanlage | voraussichtlich ja (Stromzange für den Regelstrom); nicht verifiziert |
-| mittel | Keyless-Entry/-Go LF-Antennen (Fahrzeug → Schlüssel) | Komfort/Zugang | ja über Aufnehmerspule bzw. Detektor (Pico nutzt einen Carrier-Signal-Detektor, ca. 300 mm vor dem Griff); 125 kHz liegt weit unter der Bandbreite. Direktmessung an der Antennenleitung: Resonanzspannung unbekannt (nicht quellengeprüft), nur mit 10:1 und nach Herstellerdaten. |
-| mittel | Kurbelwellensensor mit Drehrichtungserkennung (Start-Stopp, pulsbreitencodiert) | Motor – Drehzahl/Position | ja. Für die µs-Pulsbreiten mindestens ~1 MS/s wählen; dann umfasst ein 5000-Punkte-Fenster nur ca. 5 ms. Für Auslaufen/Rückpendeln beim Motorstopp eine längere Zeitbasis mit geringerer Auflösung oder Einzelaufnahme mit Trigger. |
-| mittel | Ölniveau-/Öltemperatursensor (Ultraschall, PWM-Rahmen, z. B. Hella PULS) | Motor – Füllstand/Temperatur | ja. Zeitbasis so wählen, dass ≥ 1 Rahmen (≥ 1,2 s) erfasst wird; 5000 Punkte reichen für die ms-Pulse. |
-| mittel | Sensoren mit SENT-Ausgang (LMM, Drossel-/Pedalposition, Druck, Temperatur) | Motor – Luft/Druck/Position | ja (Pegel und Timing). Für den 3-µs-Tick ≥ 1–2 MS/s nötig; ein 5000-Punkte-Fenster deckt dann nur 2,5–5 ms (≈ 1 Paket) ab. Eine SENT-Decodierung in der OWON-Software ist nicht geprüft, also gegebenenfalls Ticks manuell auszählen. |
-| mittel | Tankgeber / Kraftstoffstandgeber (Hebelgeber mit Potentiometer) | Motor/Karosserie – Füllstand | ja (Oszi zeigt Aussetzer beim Durchfahren der Bahn, z. B. am ausgebauten Geber) |
 | mittel | Nockenwellenverstellung – VVT-Magnetventil (einfach oder doppelt) | Motorsteuerung, Ventiltrieb | ja; Kanal 2 auf den NW-Sensor zur Plausibilisierung |
-| mittel | SENT (SAE J2716) | Sensor-Schnittstelle (Druck, Temperatur, LMM, Drosselklappe) | ja (1:1, Zeitauflösung ausreicht). Tick per Cursor aus dem Kalibrierpuls bestimmen. Keine Dekodierung dokumentiert. |
 | mittel | 5-V-Sensorreferenz und Sensormasse | Sensorversorgung durch das Steuergerät | ja (1:1) |
 | mittel | Zündverstärker- und Zündspulenmasse (Spannungsfall) | Zündung/Versorgung | ja (1:1, DC-Kopplung, kleiner Messbereich) |
-| niedrig | Lambdasonde Titandioxid (Widerstandssonde) | Abgas – Lambda | ja |
 | niedrig | AdBlue/SCR-Dosierventil | Abgasnachbehandlung Diesel | voraussichtlich ja (10:1, Stromzange); nicht verifiziert |
 | niedrig | Lampen-/LED-Ansteuerung (PWM, Kaltlampenprüfimpulse) | Beleuchtung/Karosserieelektronik | ja |
 | niedrig | Bordnetz-Transienten (Load Dump, Schaltspitzen) | Bordnetz 12 V/24 V | ja mit 10:1 (bis 400 Vss), Single-Trigger |
@@ -69,10 +56,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 | niedrig | HV-Interlock (HVIL) | Hochvolt/Sicherheitskreis | voraussichtlich ja auf der Niedervoltseite; nicht verifiziert |
 | niedrig | Elektrischer Klimakompressor (HV) – Strom und Drehzahlansteuerung | Hochvolt/Thermomanagement | LIN-Seite ja; HV-Strom nur mit HV-tauglicher Zange |
 | niedrig | Resolver der E-Maschine (Rotorlage) | HV-Antrieb (EV/Hybrid) | nur eingeschränkt: Die Kanäle haben gemeinsame Masse, floatende Wicklungen erfordern Differenztastköpfe; eine Messung wie bei Pico (3 Kanäle) ist mit 2 Kanälen nicht vollständig möglich |
-| niedrig | Ethanol-/Flex-Fuel-Sensor (Kraftstoffzusammensetzung) | Motor – Kraftstoff | ja |
-| niedrig | Luftmengenmesser Stauklappe (Potentiometer, Altfahrzeuge) | Motor – Luft | ja (gut geeignet, um Aussetzer auf der Kohlebahn zu finden) |
 | niedrig | Turbolader-Drehzahlsensor | Motor – Luft/Aufladung | vermutlich ja (Frequenzbereich unbekannt, nicht geprüft) |
-| niedrig | Drosselklappenschalter (Leerlauf-/Volllastkontakt) | Motor – Luft/Position | ja (CH1 Leerlauf, CH2 Volllast) |
 | niedrig | Schrittmotor (Leerlauf, Drosselklappenanschlag) | Motorsteuerung (älter) | ja, aber nur 2 von 4 Phasen gleichzeitig |
 | niedrig | Leerlaufsteller (Drehsteller oder Linearmagnet) | Motorsteuerung Otto (älter) | ja (2 Kanäle reichen auch für die Doppelwicklung) |
 | niedrig | Kondensatorzündung (CDI) | Zündung (vor allem Zweirad und Kleinmotoren) | Triggerseite ja. Den Kondensatorkreis nein: er überschreitet 400 Vss mit 10:1, nur mit 100:1-Tastkopf. |
@@ -98,7 +82,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 - Sicherheit: keine besondere
 - Quellen: <https://www.picoauto.com/library/automotive-guided-tests/sensors/camshaft-position/AGT-061-camshaft-position-hall-effect/> · <https://www.picoauto.com/download/documents/manuals/picoscope-guide-to-oscilloscope-diagnostics.pdf>
 
-**Kurbelwellensensor mit Drehrichtungserkennung (Start-Stopp, pulsbreitencodiert)** · digital, pulsbreitencodiert (Open Collector) · Priorität mittel · Karte: fehlt (Ergänzung zu kw-hall)
+**Kurbelwellensensor mit Drehrichtungserkennung (Start-Stopp, pulsbreitencodiert)** · digital, pulsbreitencodiert (Open Collector) · Priorität mittel · Karte: kw-dir (V12)
 
 - Typische Werte: Bosch-Datenblatt HA-Di (Motorsport, Prinzip übertragbar, Serienwerte herstellerabhängig): Pulsbreite vorwärts 37–53 µs (typ. 45 µs), rückwärts 75–105 µs (typ. 90 µs). Max. Frequenz ≤ 10 kHz vorwärts und ≤ 6 kHz rückwärts. Versorgung 5–16 V, Ausgang Open Collector für 1 kΩ, Luftspalt 0,4–1,0 mm. Die Drehrichtung erkennt man am Oszi an der Pulsbreite, nicht am Pegel.
 - VDS1022I: ja. Für die µs-Pulsbreiten mindestens ~1 MS/s wählen; dann umfasst ein 5000-Punkte-Fenster nur ca. 5 ms. Für Auslaufen/Rückpendeln beim Motorstopp eine längere Zeitbasis mit geringerer Auflösung oder Einzelaufnahme mit Trigger.
@@ -164,7 +148,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 - Sicherheit: keine besondere
 - Quellen: <https://www.picoauto.com/library/automotive-guided-tests/sensors/air-flow-mass/AGT-095-air-mass-meter-digital/>
 
-**Luftmengenmesser Stauklappe (Potentiometer, Altfahrzeuge)** · analog (Schleiferpotentiometer) · Priorität niedrig · Karte: fehlt
+**Luftmengenmesser Stauklappe (Potentiometer, Altfahrzeuge)** · analog (Schleiferpotentiometer) · Priorität niedrig · Karte: lmm-klappe (V12)
 
 - Typische Werte: Die federbelastete Klappe bewegt einen Schleifer über eine Kohlebahn, die Spannung hängt von der Klappenstellung ab. Varianten mit 4, 5 (CO-Poti) und 7 Pins (zusätzlich Pumpenkontakt, schließt nach ca. 5° Klappenweg). Systeme: Bosch L/LE/LE3, Motronic, Ford EEC IV. Spannungswerte nennt Pico nicht.
 - VDS1022I: ja (gut geeignet, um Aussetzer auf der Kohlebahn zu finden)
@@ -195,7 +179,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Motor – Luft/Druck/Position
 
-**Sensoren mit SENT-Ausgang (LMM, Drossel-/Pedalposition, Druck, Temperatur)** · digital seriell (SENT, SAE J2716, Ein-Draht, Punkt-zu-Punkt) · Priorität mittel · Karte: teilweise: SENT-Erklärbild, edk, pos-sensor; eigene Karte fehlt
+**Sensoren mit SENT-Ausgang (LMM, Drossel-/Pedalposition, Druck, Temperatur)** · digital seriell (SENT, SAE J2716, Ein-Draht, Punkt-zu-Punkt) · Priorität mittel · Karte: sent (V12)
 
 - Typische Werte: Pico AGT-403/404: Tick typ. 3 µs, bis 90 µs möglich. Der Kalibrier-/Sync-Puls wird durch 56 geteilt (Beispiel 168 µs/56 = 3 µs). Ein Nibble hat 4 Bit, gemessen zwischen fallenden Flanken; Beispiel 51 µs = 17 Ticks → Wert 5. Ein Paket enthält Status-, bis zu 6 Daten- und ein CRC-Nibble; Sensordaten 12 Bit. Serielle Botschaft: kurz über 16, erweitert über 18 Pakete (CRC 4 bzw. 6 Bit). Pegel nennt Pico nicht. Sensoren mit SENT laut Pico: Luftmasse, Drosselposition, Druck, Temperatur.
 - VDS1022I: ja (Pegel und Timing). Für den 3-µs-Tick ≥ 1–2 MS/s nötig; ein 5000-Punkte-Fenster deckt dann nur 2,5–5 ms (≈ 1 Paket) ab. Eine SENT-Decodierung in der OWON-Software ist nicht geprüft, also gegebenenfalls Ticks manuell auszählen.
@@ -220,14 +204,14 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Motor – Luft/Position
 
-**Drosselklappenpotentiometer (einfach, ältere Systeme)** · analog (Potentiometer) · Priorität mittel · Karte: edk (teilweise)
+**Drosselklappenpotentiometer (einfach, ältere Systeme)** · analog (Potentiometer) · Priorität mittel · Karte: dk-alt (V12)
 
 - Typische Werte: Pico AGT-029: Die Spannung folgt der Drosselklappenstellung. Für Aussetzer langsam durchfahren; Werte herstellerabhängig.
 - VDS1022I: ja
 - Sicherheit: keine besondere
 - Quellen: <https://www.picoauto.com/library/automotive-guided-tests/sensors>
 
-**Drosselklappenschalter (Leerlauf-/Volllastkontakt)** · Schaltsignal (2 Kontakte) · Priorität niedrig · Karte: fehlt
+**Drosselklappenschalter (Leerlauf-/Volllastkontakt)** · Schaltsignal (2 Kontakte) · Priorität niedrig · Karte: dk-alt (V12)
 
 - Typische Werte: Pico AGT-028: meist 3-polig mit 5-V-Versorgung, bei sehr frühen Systemen 12 V. Klappe zu: Leerlaufkontakt geschlossen, Volllast offen. Teillast: beide offen. Vollgas: Leerlauf offen, Volllast geschlossen. Messung mit 2 Kanälen.
 - VDS1022I: ja (CH1 Leerlauf, CH2 Volllast)
@@ -329,7 +313,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Motor – Füllstand/Temperatur
 
-**Ölniveau-/Öltemperatursensor (Ultraschall, PWM-Rahmen, z. B. Hella PULS)** · PWM (Open Collector, 3 codierte Pulse pro Rahmen) · Priorität mittel · Karte: fehlt
+**Ölniveau-/Öltemperatursensor (Ultraschall, PWM-Rahmen, z. B. Hella PULS)** · PWM (Open Collector, 3 codierte Pulse pro Rahmen) · Priorität mittel · Karte: oelniveau (V12)
 
 - Typische Werte: Hella-Datenblatt: Rahmen alle 1000 ms ±10 % aus drei Pulsen in je 110-ms-Perioden: T1 Temperatur, T2 Füllstand, T3 Diagnose. T1 23 ms = −40 °C bis 87 ms = 160 °C (3,125 K/ms); 22 ms = Temperaturelement kurzgeschlossen, 88 ms = unterbrochen. T2 23 ms = 0 mm, 28,622 ms = 13 mm, 87,86 ms = 150 mm (2,3125 mm/ms); 22 ms = Signal unzuverlässig. T3 22 ms = Status OK; 33/44/55/66 ms = Fehlerklassen (Spannung, Piezo, Temperatur, Füllstand außerhalb des Bereichs). Pull-up 1,6–10 kΩ im Steuergerät, Pull-up-Spannung max. 16 V. Low-Pegel ≤ 0,0375·Vpullup + 1 V. Versorgung 9–16 V. Füllstand wird erst über −10 °C ausgegeben.
 - VDS1022I: ja. Zeitbasis so wählen, dass ≥ 1 Rahmen (≥ 1,2 s) erfasst wird; 5000 Punkte reichen für die ms-Pulse.
@@ -347,7 +331,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Motor/Karosserie – Füllstand
 
-**Tankgeber / Kraftstoffstandgeber (Hebelgeber mit Potentiometer)** · analog (Widerstand bzw. Spannungsteiler) · Priorität mittel · Karte: fehlt
+**Tankgeber / Kraftstoffstandgeber (Hebelgeber mit Potentiometer)** · analog (Widerstand bzw. Spannungsteiler) · Priorität mittel · Karte: tankgeber (V12)
 
 - Typische Werte: Der Schwimmer am Hebel bewegt einen Schleifer, der Widerstand ändert sich mit dem Füllstand. Das Steuergerät legt eine Referenzspannung an (Spannungsteiler). Typischer Fehler: Verschleiß der Bahn im meistgenutzten Bereich (Reserve bis ¾), außerdem vollgesogener oder klemmender Schwimmer, Stecker- und Masseprobleme. Satteltanks haben oft 2 Geber. Widerstands- und Spannungswerte sind herstellerabhängig, die Quelle nennt keine.
 - VDS1022I: ja (Oszi zeigt Aussetzer beim Durchfahren der Bahn, z. B. am ausgebauten Geber)
@@ -362,7 +346,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Motor – Kraftstoff
 
-**Ethanol-/Flex-Fuel-Sensor (Kraftstoffzusammensetzung)** · digital (Frequenz = Ethanolanteil, Pulsbreite = Kraftstofftemperatur) · Priorität niedrig · Karte: fehlt
+**Ethanol-/Flex-Fuel-Sensor (Kraftstoffzusammensetzung)** · digital (Frequenz = Ethanolanteil, Pulsbreite = Kraftstofftemperatur) · Priorität niedrig · Karte: ethanol (V12)
 
 - Typische Werte: Continental-Sensor laut HP Academy: 50 Hz = E0, 150 Hz = E100; Pulsbreite 1 ms = −40 °C, 5 ms = 125 °C. Versorgung und Pull-up nennt die Quelle nicht. In DE selten verbaut.
 - VDS1022I: ja
@@ -384,7 +368,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 - Sicherheit: heißes Abgas
 - Quellen: <https://www.picoauto.com/library/automotive-guided-tests/sensors/oxygen/AGT-022-oxygen-zirconia-output/>
 
-**Lambdasonde Titandioxid (Widerstandssonde)** · analog (Widerstandsänderung an 5-V-Referenz) · Priorität niedrig · Karte: fehlt
+**Lambdasonde Titandioxid (Widerstandssonde)** · analog (Widerstandsänderung an 5-V-Referenz) · Priorität niedrig · Karte: lam-tio2 (V12)
 
 - Typische Werte: Pico AGT-023: Die Sonde erzeugt selbst keine Spannung, das Steuergerät legt 5 V an. Fett ca. 4,5 V, mager ca. 0,2 V, Regelung ca. 1 Hz. Meist 4 Leitungen inkl. Heizung. Dauerhaft hoch heißt dauerhaft fett, dauerhaft niedrig heißt mager.
 - VDS1022I: ja
@@ -439,7 +423,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Getriebe/Antriebsstrang
 
-**Getriebedrehzahlsensor aktiv (Hall/MR, Eingang/Ausgang/Zwischenwelle)** · Strom- bzw. Rechtecksignal (2-polig, ähnlich aktivem Raddrehzahlsensor), optional CAN · Priorität mittel · Karte: fehlt (Prinzip wie raddreh-akt)
+**Getriebedrehzahlsensor aktiv (Hall/MR, Eingang/Ausgang/Zwischenwelle)** · Strom- bzw. Rechtecksignal (2-polig, ähnlich aktivem Raddrehzahlsensor), optional CAN · Priorität mittel · Karte: getriebe-dz (V12)
 
 - Typische Werte: Hella: Hall- oder magnetoresistiv; 1–3 Sensoren je nach Getriebe, teils in Mechatronik oder Schieberkasten. Betriebsspannung 4,5–24 V (Nenn 12 V), Stromaufnahme 6–10 mA, Ausgang Rechteck/Puls, Schnittstelle PWM oder optional CAN, Frequenz 0–10 kHz je nach Drehzahl, 2- oder 3-polig. Das Diagramm zeigt Strompegel 7 mA / 14 mA. Eingangssensor (Turbinenwelle) und Ausgangssensor liefern unterschiedliche Frequenzbereiche.
 - VDS1022I: ja, wenn außen zugänglich. Bei Stromsignal: Spannung an der Sensor-Masse- bzw. Versorgungsleitung gegen Fahrzeugmasse oder Messadapter mit Shunt (z. B. 100 Ω ergibt 0,7/1,4 V bei 7/14 mA; Spannungsverlust beachten). Eine Stromzange müsste mA auflösen. Sensoren in der Mechatronik sind nicht zugänglich.
@@ -474,7 +458,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Antriebsstrang / Start-Stopp / Tempomat
 
-**Kupplungspedal-/Kupplungspositionssensor (Hall)** · digital/analog (Hall, herstellerabhängig) · Priorität mittel · Karte: fehlt
+**Kupplungspedal-/Kupplungspositionssensor (Hall)** · digital/analog (Hall, herstellerabhängig) · Priorität mittel · Karte: kupplung (V12)
 
 - Typische Werte: Hella (VW Touran 2003–2006): Hall-Sensor am Kupplungsgeberzylinder. Eindringendes Wasser kann ihn zerstören oder die Sicherung auslösen. Symptom: Bremslicht leuchtet bei Zündung an, ABS/EPC/ESP-Leuchten an, ABS-Fehler 00526 'Signal Bremslichtschalter unplausibel'. Pegel nennt die Quelle nicht.
 - VDS1022I: ja (Pegelwechsel beim Treten, 2 Kanäle zusammen mit Bremslichtschalter für Plausibilität)
@@ -490,7 +474,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 - Sicherheit: Fahrzeug sicher anheben
 - Quellen: <https://www.hella.com/techworld/uk/Technical/Sensors-and-actuators/Check-change-ABS-sensor-4074/> · <https://www.picoauto.com/library/automotive-guided-tests/sensors/wheel-speed/AGT-847-wheel-speed-sensor-magnetoresistive/>
 
-**Raddrehzahlsensor aktiv Hall (3-polig, Spannungsausgang, ältere)** · digital (Rechteck) · Priorität mittel · Karte: raddreh-akt (teilweise)
+**Raddrehzahlsensor aktiv Hall (3-polig, Spannungsausgang, ältere)** · digital (Rechteck) · Priorität mittel · Karte: raddreh-hall3 (V12)
 
 - Typische Werte: Pico (ABS-Speed-Sensor digital): Hall-Raddrehzahlsensor mit positiver Versorgung, meist 5 V; Ausgang Rechteck. Weitere Pegel nennt Pico nicht.
 - VDS1022I: ja
@@ -539,7 +523,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Fahrwerk – Bremse (Motor-, ESP-, Start-Stopp-Plausibilität)
 
-**Bremslichtschalter / Bremspedalsensor** · Schaltsignale (meist 2 Kontakte) bzw. Hall · Priorität mittel · Karte: fehlt
+**Bremslichtschalter / Bremspedalsensor** · Schaltsignale (meist 2 Kontakte) bzw. Hall · Priorität mittel · Karte: bremslicht (V12)
 
 - Typische Werte: Hella (VW Touran): ABS-Fehler 00526 'Signal vom Bremslichtschalter unplausibel'; zuerst Schalter, dann Sicherung prüfen. Fachwissen, nicht quellengeprüft: zwei Kontakte, die sich beim Treten gegensinnig oder zeitversetzt ändern und vom Steuergerät plausibilisiert werden; Pegel herstellerabhängig.
 - VDS1022I: ja (CH1/CH2 beide Kontakte, zeitliche Reihenfolge beim Treten)
@@ -565,7 +549,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Fahrwerk – Niveau / Licht
 
-**Niveausensor / Höhenstandsensor (LWR, Luftfederung, Dämpferregelung)** · analog / PWM / SENT / PSI5 (versionsabhängig, auch CAN/LIN) · Priorität mittel · Karte: fehlt
+**Niveausensor / Höhenstandsensor (LWR, Luftfederung, Dämpferregelung)** · analog / PWM / SENT / PSI5 (versionsabhängig, auch CAN/LIN) · Priorität mittel · Karte: niveau (V12)
 
 - Typische Werte: Hella: Hebelarm mit Kugelgelenk am Fahrwerk, Sensorelement Potentiometer, Hall oder induktiv (CIPOS, berührungslos). Ausgang je nach Version analog, PWM, SENT, CAN oder LIN; die gelisteten Typen: analog, PWM, SENT, PSI5. Betriebsspannung 4–11 V, 12 Bit, −40 bis +125 °C. Typische Fehler: fehlende Versorgung oder Leitungsunterbrechung, interner Kurzschluss, mechanische Beschädigung.
 - VDS1022I: ja bei analog, PWM und SENT (Hebel langsam bewegen). PSI5-Varianten nur als Stromsignal (Shunt), Decodierung nicht geprüft.
@@ -583,7 +567,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Klima
 
-**Kältemitteldrucksensor Klimaanlage (analog oder PWM)** · analog (ratiometrisch 5 V) oder PWM (3-polig), teils LIN · Priorität hoch · Karte: fehlt
+**Kältemitteldrucksensor Klimaanlage (analog oder PWM)** · analog (ratiometrisch 5 V) oder PWM (3-polig), teils LIN · Priorität hoch · Karte: klima-druck (V12)
 
 - Typische Werte: Analog, Saab 9-5 (Beispiel): 5-V-Versorgung, Signal 0,25–4,75 V; Klimasteuergerät schaltet Kompressor unter 1,75 bar und über 28 bar ab, Lüfterstufen bei 9 und 18 bar. PWM laut Valeo: drei Leitungen zum Steuergerät; Beispielschwellen für R1234yf/R134a: Kompressorfreigabe über 2 bar, Lüfterstufe 2 über 16 bar (zurück unter 14 bar), Kompressor aus über 27 bar. Frequenz und Tastverhältnis der PWM-Variante: herstellerabhängig, in den Quellen nicht beziffert.
 - VDS1022I: ja (gleichzeitig Manometer an Hochdruckseite anschließen und vergleichen)
@@ -616,7 +600,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Assistenz/Karosserie
 
-**Ultraschall-Parksensor (PDC/Einparkhilfe)** · Ultraschall-Burst (akustisch) + digitale Signalleitung zum PDC-Steuergerät · Priorität hoch · Karte: fehlt
+**Ultraschall-Parksensor (PDC/Einparkhilfe)** · Ultraschall-Burst (akustisch) + digitale Signalleitung zum PDC-Steuergerät · Priorität hoch · Karte: pdc (V12)
 
 - Typische Werte: Pico AGT-814: Piezoelement sendet und empfängt, Ultraschall ca. 40 kHz. Nach dem Senden schwingt das Element aus, das Steuergerät wartet das Ausschwingen ab. Die Entfernung ergibt sich aus der Echo-Laufzeit. Diagnose durch Vergleich der Burst-Amplituden aller Sensoren bei gleichem Detektorabstand (ca. 25 mm). Bosch USS Gen. 6: variable Frequenz 43–60 kHz, Messbereich 15 cm bis 2,5/4,5/5,5 m (6.0/6.1/6.5). Elektrische Pegel der Signalleitung: herstellerabhängig, nicht quellengeprüft.
 - VDS1022I: Burst nur mit Ultraschall-Empfänger bzw. Detektor (Zubehör, z. B. 40-kHz-Wandler) am Kanal; die Bandbreite reicht. Signalleitung zum Steuergerät: ja (Spannung gegen Masse).
@@ -625,7 +609,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Komfort/Zugang
 
-**Keyless-Entry/-Go LF-Antennen (Fahrzeug → Schlüssel)** · LF-Funk (magnetisch, ca. 125 kHz), gepulst · Priorität mittel · Karte: fehlt
+**Keyless-Entry/-Go LF-Antennen (Fahrzeug → Schlüssel)** · LF-Funk (magnetisch, ca. 125 kHz), gepulst · Priorität mittel · Karte: keyless (V12)
 
 - Typische Werte: Pico AGT-849: periodische LF-Pulse von Antennen am Fahrzeug, ohne erkannten Schlüssel Intervalle von 250–750 ms; Erfassungsbereich ca. 0,7–1,0 m um Türgriff und Heckstoßfänger; nach 14 Tagen Inaktivität kann das System abschalten. NXP: Schlüssel-IC mit 125-kHz-Weckempfänger und UHF-Sender.
 - VDS1022I: ja über Aufnehmerspule bzw. Detektor (Pico nutzt einen Carrier-Signal-Detektor, ca. 300 mm vor dem Griff); 125 kHz liegt weit unter der Bandbreite. Direktmessung an der Antennenleitung: Resonanzspannung unbekannt (nicht quellengeprüft), nur mit 10:1 und nach Herstellerdaten.
@@ -1116,7 +1100,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Sensor-Schnittstelle (Druck, Temperatur, LMM, Drosselklappe)
 
-**SENT (SAE J2716)** · Digital, Pulsbreite pro Nibble (Single Edge Nibble Transmission) · Priorität mittel · Karte: fehlt (nur Erklärbild SENT)
+**SENT (SAE J2716)** · Digital, Pulsbreite pro Nibble (Single Edge Nibble Transmission) · Priorität mittel · Karte: sent (V12)
 
 - Typische Werte: Tick 3–90 µs, typ. 3 µs. Sync-/Kalibrierpuls 56 Ticks (Beispiel 177 µs / 56 ≈ 3 µs). Nibble 12–27 Ticks (Wert 0–15), Low-Phase ≥ 5 Ticks. Low unter 0,5 V, High über 4,1 V; 3 Leitungen: 5 V, Signal, Masse (Wikipedia, Pico).
 - VDS1022I: ja (1:1, Zeitauflösung ausreicht). Tick per Cursor aus dem Kalibrierpuls bestimmen. Keine Dekodierung dokumentiert.
