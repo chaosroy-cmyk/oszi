@@ -200,3 +200,19 @@ warn:"…", simpel:"…", profi:"…", check10:"…", wannschlecht:"…", wannok
   Ohne besondere Gefahr steht dort ein knapper Standardhinweis (Backprobing statt Isolierung durchstechen).
 - Das Werkzeug prüft das Schema mit (Fehler „Schema …“). Es schreibt außerdem `<id>-text.json` mit allen
   Kartentexten zum Gegenlesen.
+
+## 8. Hinweise für Aktoren, Bordnetz und Bus
+
+- **kat für neue Karten:** Einspritzung/Kraftstoff-Stellglieder `einspr`, Bordnetz/Versorgung/Strom `elektrik`,
+  sonstige Stellglieder `aktor`, Bussysteme `bus`. Danach richten sich der Kartenlisten-Filter und das Badge.
+- **Abläufe** (Start, Pedal, Gasstoß, Einschaltvorgang): im Modell `f.event = true` setzen. Die App erkennt Abläufe
+  zwar auch selbst (nach dem Bildfenster konstant), die Kennung ist aber eindeutiger.
+- **Induktive Abschaltspitzen, Hochspannung:** Spitzenwerte nur mit Quelle oder klar als Beispiel; `clip:true` nur
+  mit Begründung im `why` (z. B. Spitze über dem Messbereich). Grenze des VDS1022I mit 10:1 beachten (~400 Vss);
+  Zündung sekundär nur kapazitiv/mit Zündzange – nie direkt.
+- **Strom:** Strombilder zeigen die Spannung der Stromzange; Einheit `A` (unit:"A") nur, wenn die Zangenumrechnung
+  im Text steht (z. B. 100 mV/A). Der VDS1022I misst Strom nur über eine Zange mit Spannungsausgang (BNC).
+- **Busse:** Bitzeiten, Pegel und Rahmenaufbau nach Norm belegen (z. B. ISO 11898 CAN, ISO 17987 LIN,
+  ISO 17458 FlexRay, ISO 9141/14230 K-Leitung, SAE J2411, IEC 61851). Der VDS1022I dekodiert keine Protokolle:
+  Karten zeigen Physik (Pegel, Flanken, Abschluss, Störungen) und Bitlängen per Cursor.
+- **Hochvolt:** nur die 12-V- bzw. Niedervolt-Seite darstellen; jede Messung am HV-Kreis ausdrücklich ausschließen.

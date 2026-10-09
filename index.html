@@ -12260,6 +12260,9 @@ function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</
 
 /* Karten-Gruppierung für die Kategorie-Filterchips */
 function cardGroup(c){
+  /* neue Karten tragen einspr/elektrik direkt als kat (bestehende Karten über id-Regeln unten) */
+  if(c.kat==="einspr") return "einspr";
+  if(c.kat==="elektrik") return "elektrik";
   if(c.kat==="bus") return "bus";
   if(c.kat==="sensor") return "sensor";
   if(c.kat==="lambda") return "lambda";
