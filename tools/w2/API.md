@@ -150,3 +150,53 @@ node tools/w2/render-card.js <deine-datei.js> <ausgabeordner>
 Gib zurück: Dateipfad, je Karte die Liste der Bilder (Tag, Titel, Kernaussage), die Quellen mit dem, was sie
 belegen, Unsicherheiten (Werte ohne harte Quelle), gefundene Fachfehler im bestehenden Kartentext
 (`textFehler`) und das Prüfergebnis (Fehler/Warnungen).
+
+## 7. Neue Karte (NEUKARTE) – komplette Messkarte statt nur Bilder
+
+Für Signale, die noch keine Karte haben, schreibst du das **ganze Kartenobjekt**. Statt `CARDPATCH` steht in
+der Datei:
+
+```js
+NEUKARTE["klima-druck"] = {
+id:"klima-druck", kat:"sensor", sig:"analog", diff:2, sys:"druck-fluid",
+name:"Kältemitteldrucksensor Klimaanlage",
+aufgabe:"…", signalart:"…", equip:"…", anschluss:"…", messpunkte:"…",
+setup:{kanal:"CH1",kopp:"DC",tk:"1:1",vdiv:"1 V/div",tdiv:"500 ms/div, Roll",trig:"Auto",zustand:"…"},
+vorgang:["…","…"],
+gut:[ W2({ … }), … ],
+schlecht:[ W2({ … }), … ],
+ursachen:["…"], loesungen:["…"], gegen:"…", plaus:"…", dtc:"…", irrtuemer:["…"], tipps:["…"],
+warn:"…", simpel:"…", profi:"…", check10:"…", wannschlecht:"…", wannok:"…", next:"…"
+};
+```
+
+- **Erste Zeile** im Objekt: genau `id:"<id>", kat:"…", sig:"…", diff:N, sys:"…",` (eine Zeile, beginnt mit `id:`).
+- **Alle 28 Felder sind Pflicht**, mit diesen Typen (wie bei jeder bestehenden Karte):
+  - Text: `name aufgabe signalart equip anschluss messpunkte gegen plaus dtc warn simpel profi check10 wannschlecht wannok next`
+  - Liste von Texten: `vorgang ursachen loesungen irrtuemer tipps`
+  - `setup` mit `kanal kopp tk vdiv tdiv trig zustand`, außerdem `gut` und `schlecht` mit den W2-Bildern.
+  - `diff` ist eine Zahl: 1 leicht, 2 mittel, 3 schwer.
+- `kat` ∈ `sensor lambda aktor zuend einspr elektrik bus` · `sig` ∈ `induktiv digital analog pwm strom bus`
+- `sys` (Atlas-Gruppe) ∈ `drehzahl-position luft-ladung temperatur druck-fluid verbrennung fahrwerk-komfort
+  fuellstand lambda-abgas einspritzung zuendung stellglieder bordnetz-hochstrom bus-daten grundlagen`
+- **Stil:** Lies zuerst die Karten `map`, `kw-hall` und `oeldruck` in `index.html` und schreib genauso:
+  - kurze Werkstattsätze, Deutsch mit Umlauten, Dezimalkomma;
+  - `simpel` für Einsteiger (bildhaft), `profi` für Fortgeschrittene;
+  - `check10` als 10-Sekunden-Check mit Fragezeichen, endet mit „→ gut.“;
+  - `next` als „Signal gut, … → …; Signal schlecht → …“.
+- **Gleiche Belegpflicht wie bei den Bildern:** Jede Zahl im Kartentext (Pegel, Widerstand, Druck, Frequenz,
+  Fehlercode) ist in `QUELLEN` belegt oder als „typ./herstellerabhängig“ gekennzeichnet.
+  - Fehlercodes nur mit Quelle, sonst „herstellerabhängig (Herstellerdaten)“.
+  - Pin-Nummern nur mit Quelle, sonst neutral („Signal, 5-V-Versorgung, Masse – laut Stromlaufplan“).
+- **`setup` wird maschinell gelesen** („Karten-Setup übernehmen“):
+  - `vdiv`: erste Zahl, bei einer Spanne der OBERE Wert.
+  - `tdiv`: erste Zahl, bei einer Spanne der UNTERE Wert.
+  - `trig`: Flanke aus ↑/↓, Pegel aus der ersten Zahl mit V.
+  - Die zuerst gelesenen Werte müssen zum Normalbild `gut[0]` passen; das Werkzeug warnt sonst.
+- **`warn`** nennt die echte Gefahr der Messung, z. B.:
+  - Klimaanlage: Kältemittel unter Druck, Erfrierung;
+  - Ultraschall/Keyless: nur mit passendem Aufnehmer, nichts an Airbag-Leitungen.
+  
+  Ohne besondere Gefahr steht dort ein knapper Standardhinweis (Backprobing statt Isolierung durchstechen).
+- Das Werkzeug prüft das Schema mit (Fehler „Schema …“). Es schreibt außerdem `<id>-text.json` mit allen
+  Kartentexten zum Gegenlesen.

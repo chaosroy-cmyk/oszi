@@ -8518,6 +8518,8 @@ var ATLAS_SYS=[
  ['temperatur','Temperatur','b-sensor'],
  ['druck-fluid','Druck (Fluid/Abgas)','b-sensor'],
  ['verbrennung','Verbrennung / Klopf','b-sensor'],
+ ['fahrwerk-komfort','Fahrwerk, Komfort & Assistenz','b-sensor'],
+ ['fuellstand','Füllstand & Medien','b-sensor'],
  ['lambda-abgas','Lambda & Gemisch','b-lambda'],
  ['einspritzung','Einspritzung','b-aktor'],
  ['zuendung','Zündung','b-aktor'],
@@ -8674,7 +8676,21 @@ function wireAtlas(){
    werden NACHGEMESSEN. Alte W()-Bilder: V/div-Beschriftung vs. Zeichnung. */
 window.validateKompendium=function(){
   var errors=[], warnings=[], nImg=0, nW2=0, nW=0, OL=window.OsziLogic, oldMis={};
+  /* Kartenschema: jede Karte hat dieselben 28 Felder (Typen wie unten), gültige Filterwerte und Atlas-Gruppe */
+  var FELDER={id:'s',kat:'s',sig:'s',diff:'n',name:'s',aufgabe:'s',signalart:'s',equip:'s',anschluss:'s',messpunkte:'s',
+    setup:'o',vorgang:'a',gut:'a',schlecht:'a',ursachen:'a',loesungen:'a',gegen:'s',plaus:'s',dtc:'s',irrtuemer:'a',tipps:'a',
+    warn:'s',simpel:'s',profi:'s',check10:'s',wannschlecht:'s',wannok:'s',next:'s'};
+  var KATS=['sensor','lambda','aktor','zuend','einspr','elektrik','bus'], SIGS=['induktiv','digital','analog','pwm','strom','bus'], seen={};
   KARTEN.forEach(function(c){
+    Object.keys(FELDER).forEach(function(f){ var v=c[f], t=FELDER[f],
+        ok = t==='a' ? Array.isArray(v) : (t==='o' ? (v && typeof v==='object' && !Array.isArray(v)) : (t==='n' ? typeof v==='number' : (typeof v==='string' && v.trim().length>0)));
+      if(!ok) errors.push((c.id||'?')+': Feld '+f+' fehlt oder hat falschen Typ'); });
+    if(seen[c.id]) errors.push(c.id+': doppelte Karten-id'); seen[c.id]=1;
+    if(KATS.indexOf(c.kat)<0) errors.push(c.id+': kat "'+c.kat+'" ungültig');
+    if(SIGS.indexOf(c.sig)<0) errors.push(c.id+': sig "'+c.sig+'" ungültig');
+    if(!(c.diff>=1&&c.diff<=3)) errors.push(c.id+': diff muss 1–3 sein');
+    if(!SYSLBL[sysGroup(c)]) errors.push(c.id+': Atlas-Gruppe "'+sysGroup(c)+'" unbekannt');
+    ['kanal','kopp','tk','vdiv','tdiv','trig','zustand'].forEach(function(f){ if(!(c.setup&&typeof c.setup[f]==='string'&&c.setup[f].trim())) errors.push(c.id+': setup.'+f+' fehlt'); });
     if(!(c.gut&&c.gut.length)) errors.push(c.id+': kein Gutbild');
     if(!(c.schlecht&&c.schlecht.length)) warnings.push(c.id+': kein Fehlerbild');
     [['G',c.gut||[]],['F',c.schlecht||[]]].forEach(function(p){
@@ -8689,6 +8705,7 @@ window.validateKompendium=function(){
             /* gut[0] = Live-Referenz (rechnet in echten Einheiten); Zeitbasis nur grob plausibel zum Setup */
             var su=OL.parseSetup(c.setup), r10=su.secdiv?img.spec.tdiv/su.secdiv:1;
             if(r10>10||r10<0.1) warnings.push(tag+': Live-Referenz t/div '+img.spec.tdiv+' s weicht mehr als Faktor 10 vom Karten-Setup ('+su.secdiv+' s) ab');
+            else if(r10>2.5||r10<0.4) warnings.push(tag+': Karten-Setup t/div ('+su.secdiv+' s) passt nicht zum Normalbild ('+img.spec.tdiv+' s) – „Karten-Setup übernehmen“ zeigt dann ein anderes Fenster');
           }
         } else if(img && img.spec){
           nW++; var s=img.spec, st=OL.parseVdiv(s.vdiv||''), dr=s.yr?(s.yr[1]-s.yr[0])/8:null;

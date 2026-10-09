@@ -4,6 +4,8 @@
    - Modelle (/* @models *\/…) und Quellen (/* @quellen *\/…) je Datei als markierter Block vor
      "SIGNALMODELLE (Karten) — ENDE" (erneuter Lauf ersetzt den Block derselben Datei)
    - gut:[…] und schlecht:[…] jeder Karte durch den Inhalt aus CARDPATCH["id"] ersetzen
+   - NEUKARTE["id"] = {⏎id:"id", kat:"…", …} = komplette neue Karte: wird hinter der letzten Karte
+     derselben kat in KARTEN eingefügt; existiert die id schon (erneuter Lauf), wird das Objekt ersetzt
    - prüft: Karte existiert, Klammern passen, keine doppelten Modellnamen */
 const fs = require('fs'), path = require('path');
 const args = process.argv.slice(2), dry = args.includes('--dry');
@@ -69,7 +71,32 @@ for (const f of files) {
   html = html.replace(END, block + END);
   /* Karten-Arrays ersetzen */
   const ids = [...src.matchAll(/CARDPATCH\["([a-z0-9-]+)"\]\s*=/g)].map(m => m[1]);
-  if (!ids.length) throw new Error(base + ': kein CARDPATCH gefunden');
+  const neu = [...src.matchAll(/NEUKARTE\["([a-z0-9-]+)"\]\s*=/g)].map(m => m[1]);
+  if (!ids.length && !neu.length) throw new Error(base + ': weder CARDPATCH noch NEUKARTE gefunden');
+  for (const id of neu) {
+    const pi = src.indexOf('NEUKARTE["' + id + '"]'), o = src.indexOf('{', pi), c = matchBracket(src, o);
+    if (o < 0 || c < 0) throw new Error(base + '/' + id + ': Objekt nicht geschlossen');
+    let body = src.slice(o + 1, c).replace(/^\s+/, '');
+    if (body.indexOf('id:"' + id + '"') !== 0) throw new Error(base + '/' + id + ': Objekt muss mit id:"' + id + '" beginnen');
+    const lit = '{\n' + body.replace(/\s+$/, '') + '\n}';
+    const kat = (body.match(/\bkat:"([a-z]+)"/) || [])[1];
+    if (!kat) throw new Error(base + '/' + id + ': kat fehlt');
+    const ka = html.indexOf('var KARTEN=['), kb = matchBracket(html, ka + 'var KARTEN='.length);
+    if (ka < 0 || kb < 0) throw new Error('KARTEN-Array nicht gefunden');
+    const idMark = '\nid:"' + id + '"', ci = html.indexOf(idMark, ka);
+    if (ci >= 0 && ci < kb) {
+      const st = html.lastIndexOf('{', ci); if (html.slice(st + 1, ci).trim() !== '') throw new Error(id + ': Kartenanfang unklar');
+      const en = matchBracket(html, st); html = html.slice(0, st) + lit + html.slice(en + 1);
+      report.push({ datei: base, karte: id, neu: 'ersetzt' });
+    } else {
+      const re = new RegExp('\\nid:"[a-z0-9-]+", kat:"' + kat + '"', 'g'); re.lastIndex = ka; let m, last = -1;
+      while ((m = re.exec(html)) && m.index < kb) last = m.index;
+      if (last < 0) throw new Error(id + ': keine Karte mit kat ' + kat + ' als Einfügeort');
+      const st = html.lastIndexOf('{', last), en = matchBracket(html, st);
+      html = html.slice(0, en + 1) + ',\n\n' + lit + html.slice(en + 1);
+      report.push({ datei: base, karte: id, neu: 'eingefügt nach kat ' + kat, gut: (lit.match(/\bW2\(/g) || []).length });
+    }
+  }
   for (const id of ids) {
     const pi = src.indexOf('CARDPATCH["' + id + '"]');
     const pg = arrayInner(src, pi, 'gut', base + '/' + id), ps = arrayInner(src, pg.end, 'schlecht', base + '/' + id);
