@@ -1,6 +1,6 @@
 # Projektstatus und Übergabe
 
-Stand: Oktober 2026, Feature-Branch `claude/kfz-oszi-kompendium-vwhkd3` (main noch auf V10).
+Stand: Oktober 2026, Feature-Branch `claude/kfz-oszi-kompendium-vwhkd3` (main = V13, Stand 09.10.2026; nach main nur mit ausdrücklicher Erlaubnis).
 Eine neue Sitzung beginnt mit: „Lies docs/STATUS.md und mach weiter.“
 
 ## Erledigt
