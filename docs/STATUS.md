@@ -19,9 +19,11 @@ Katalog: 18 oszirelevante Signale noch offen.
 - Live-Demo (Mock): Signale mit sehr kurzen Pulsen bei langer Zeitbasis (Keyless, PDC, Ruhestrom-Pulse,
   K-Leitung bei 50 ms/div) werden zu grob abgetastet, die Übereinstimmung ist dort niedrig. Ruhestrom
   (20 s/div) liegt außerhalb der Live-Zeitbasis. Kein Kartenfehler.
-- setup.trig „Flanke“ ohne Richtung bei luefter-pwm, relais und den Zündkarten; gluehkerze: setup.kanal CH1,
-  messpunkte nennen CH2; starter: CH2-Belegung uneinheitlich; zuend-prim profi „sinkt bei Nebenschluss/fett“
-  ohne Beleg.
+- Erledigt (nach V13, Branch): setup.trig mit Richtung und Pegel bei lam-heiz, zuend-prim, zuend-sek,
+  pwm-ventil, luefter-pwm, relais (aus den Modellen am Triggerpunkt bestimmt); gluehkerze setup nennt CH2;
+  starter CH2-Belegung einheitlich beschrieben; zuend-prim profi nur noch BIAT-belegt.
+- Noch ohne Beleg: „fett“ als Ursache tiefer/langer Brennlinie im Theorie-Kapitel (Zündung) und im Glossar
+  „Brennlinie/Brennspannung“ – Quelle suchen oder streichen.
 - Kleinbefunde der Nachprüfung 2b, bewusst offen (optional): adblue G4/F5 Dosierimpulse verschmelzen bei
   10 s/div; adblue F1/F3 Sollbild-Abgrenzung optisch schwach; sensor-ref F6 ohne Startvorgang; flexray F5
   Statuszeile „CH2 Math“ (Werkzeug); sw-can G1 Notizposition.
