@@ -1349,7 +1349,7 @@ Perfekt geometrische Signale sind im Fahrzeug selten realistisch.
 </div>
 <button class="up" id="upbtn" title="Nach oben">▲</button>
 <footer>
-<p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-PWA · Stand v13.1 (72 Messkarten · 954 quellenbelegte Signalbilder · 1:1-Tastkopf-Hinweise · referenzgeprüft · Live-Modus · Auto-Setup · Auto-Deploy) · Alle Signalbilder schematisch.</p>
+<p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-PWA · Stand v13.2 (78 Messkarten · 1025 quellenbelegte Signalbilder · 1:1-Tastkopf-Hinweise · referenzgeprüft · Live-Modus · Auto-Setup · Auto-Deploy) · Alle Signalbilder schematisch.</p>
 <p>Richtwerte können je nach Hersteller, System, Motorsteuergerät und Messgerät abweichen. Herstellerdaten und Stromlaufplan haben Vorrang.</p>
 <p>Sicherheit zuerst: keine Messungen an Airbag-/PSI5-Zündkreisen, HV-Systemen nur mit Qualifikation.</p>
 <div class="owner-signature">
@@ -8981,6 +8981,459 @@ QUELLEN["transienten"] = [
   "Physik (ohne eigene Quelle): Spannungsfall U = I·R; Spule hält den Strom nach dem Abschalten aufrecht (mit Freilaufdiode ca. −0,7 V, ohne → hohe negative Spitze); laufender Gleichstrommotor wirkt nach dem Abschalten als Generator; Rippelfrequenz = Drehzahl × Übersetzung × Rippel je Umdrehung (Beispiel 1200 Hz); Übergangswiderstand an der Polklemme: Spannungsfall nur bei Strom (Starter → großer Einbruch hinter der Klemme, Ladestrom → Pol etwas niedriger als das Bordnetz). Alle Verläufe im Modell (Einbruch ~1 V, Erholzeit, Start-Plateau, Höhe der Schaltspitze, Wackelkontakt-Muster) sind Beispiele."
 ];
 /* --- @gruppe:b9-licht-trans.js ENDE --- */
+/* --- @gruppe:pd-atg.js START --- */
+/* --- pumpe-duese: Strom und Spannungen am PD-Magnetventil (VAG), Form nach Pico AGT-385 (abgelesen), Ablauf nach SSP 209 Bild 209_97 ---
+   Phasen (u = Zeit ab Ansteuerbeginn):
+   1. Anstieg: i = Iinf·(1 − e^(−u/tau)), an das Pico-Bild angepasst (Iinf ~20 A, tau ~0,31 ms – effektive Werte, die
+      Induktivität ändert sich mit dem Ankerweg, darum kein „echtes" R und L).
+   2. Anzugsstrom erreicht (~16 A): Endstufe taktet im Band pkLo..pkHi (Pico: ~14,3–16,1 A).
+   3. uW: Das STG beendet das Takten selbst (Beginn BIP-Fenster/„Regelgrenze", SSP 209; Patent US7023682B2: Anzugsstrom
+      wird kurz vor dem erwarteten BIP abgeschaltet). Im Fenster steigt der Strom ungetaktet weiter (Pico: bis ~17,7 A),
+      erst flach (Anker läuft, Gegenspannung), am BIP (Nadel am Sitz) kleiner Einbruch und danach steilerer Anstieg.
+   4. uP: Plusseite aus (Freilauf ~ −0,9 V), Strom fällt auf den Haltestrom, danach Takten im Band hoLo..hoHi (Pico ~10,8–12,7 A).
+   5. uE: Ansteuerende, Strom fällt in ~0,05 ms auf 0; Masseseite: Spitze ~48 V, Plateau ~34 V, dann Abklingen (Pico).
+   p: t0 (Ansteuerbeginn im Bild, s), sig ('i' Strom | 'u' Plusseite | 'g' Masseseite), Iinf, tau, kL (Faktor Induktivität),
+      kR (Faktor Widerstand), rs (Zusatzwiderstand Plusleitung, Ohm), rg (Zusatzwiderstand Masseseite, Ohm),
+      uW (Fensterbeginn = Taktende, s), uB (BIP-Zeitpunkt, s), dip (Einbruch am BIP, A – Beispiel), noBip, uP, uE (s),
+      fault: 'open' (Unterbrechung: kein Strom, Plusseite bleibt ein) | 'nodrive' (keine Ansteuerung), noise, seed */
+SIG.M.pumpeDuese = function (p) {
+  var t0 = p.t0 != null ? p.t0 : 0.00075, sig = p.sig || 'i', ub = 14.4, vf = 0.9,
+      R0 = 0.7, kR = p.kR || 1, kL = p.kL || 1, rs = p.rs || 0, rg = p.rg || 0,
+      Rt = R0 * kR + rs + rg, Iinf = p.Iinf != null ? p.Iinf : 14.0 / Rt,
+      tau = p.tau != null ? p.tau : 0.00031 * kL * (R0 / Rt),
+      pkLo = 14.3, pkHi = 16.1, TPk = 4.7e-5 * kL, dPk = 0.7,
+      hoLo = 10.8, hoHi = 12.7, hoMid = 11.75, THo = 3.5e-5 * kL, dHo = 0.3 + hoMid * (rs + rg) / (ub + vf),
+      uW = p.uW != null ? p.uW : 0.00068, uB = p.uB != null ? p.uB : 0.0008, noBip = !!p.noBip,
+      dip = p.dip != null ? p.dip : 0.4, s1 = 1000, kB = 5300,
+      uP = Math.max(p.uP != null ? p.uP : 0.00106, uB + 0.0001), uE = p.uE != null ? p.uE : 0.00187,
+      fault = p.fault || '',
+      nzi = SIG.lib.vnoise(p.seed || 61, p.noise != null ? p.noise : 0.06, 1e-6),
+      nzu = SIG.lib.vnoise((p.seed || 61) + 5, 0.06, 1e-6);
+  var uc = Iinf > pkHi ? -tau * Math.log(1 - pkHi / Iinf) : 1e9;
+  function iexp(u) { return Iinf * (1 - Math.exp(-u / tau)); }
+  function tri(x, T, dOn, lo, hi) { /* beginnt fallend bei hi */
+    var ph = ((x / T) % 1 + 1) % 1, offF = 1 - dOn;
+    if (ph < offF) return { i: hi - (hi - lo) * ph / offF, on: false };
+    return { i: lo + (hi - lo) * (ph - offF) / dOn, on: true };
+  }
+  function notch(u) { /* kleiner Einbruch am BIP */
+    if (noBip || u <= uB) return 0;
+    var x = u - uB; return dip * Math.min(1, x / 1.5e-5) * Math.exp(-x / 5e-5);
+  }
+  var iW = uc < uW ? tri(uW - uc, TPk, dPk, pkLo, pkHi).i : 0, uBe = noBip ? uW : Math.max(uB, uW);
+  /* Spitzenphase (bis uP): Strom und Plusseiten-Zustand */
+  function peak(u) {
+    var ln;
+    if (u < uc && (u < uW || uc >= uW)) return { i: iexp(u) - notch(u), on: true }; /* Anstieg (auch: Schwelle nie erreicht) */
+    if (u < uW) { var c = tri(u - uc, TPk, dPk, pkLo, pkHi); return { i: c.i - notch(u), on: c.on }; }
+    ln = 16.2 + s1 * (Math.min(u, uBe) - uW) + kB * Math.max(0, u - uBe);
+    return { i: ln - (16.2 - iW) * Math.exp(-(u - uW) / 2e-5) - notch(u), on: true };
+  }
+  var iP = peak(uP).i, a = vf / Rt,
+      uh = uP + (iP > hoMid ? tau * Math.log((iP + a) / (hoMid + a)) : 0),
+      offF = 1 - dHo;
+  function hold(u) {
+    if (u < uh) return { i: -a + (iP + a) * Math.exp(-(u - uP) / tau), on: false };
+    return tri(u - uh + offF * THo / 2, THo, dHo, hoLo, hoHi);
+  }
+  var iE = hold(uE).i, uOff = uE + iE / 2.6e5;
+  return function (t) {
+    var u = t - t0, s;
+    if (fault === 'nodrive') return sig === 'i' ? 0.5 * nzi(t) : nzu(t);
+    if (fault === 'open') {
+      if (sig === 'i') return 0.5 * nzi(t);
+      if (sig === 'u') return (u >= 0 && u < uE ? ub : 0) + nzu(t);
+      return nzu(t);
+    }
+    if (u < 0 || u > uE + 0.00103) return sig === 'i' ? 0.5 * nzi(t) : nzu(t);
+    if (u >= uE) {
+      var ii = Math.max(0, iE - 2.6e5 * (u - uE));
+      if (sig === 'i') return ii + 0.5 * nzi(t);
+      if (sig === 'u') return (u < uOff ? -vf : 0) + nzu(t);
+      if (u - uE < 3e-6) return 48 + nzu(t);
+      if (u < uOff) return 34 + nzu(t);
+      var x = u - uOff;
+      return 14 * Math.exp(-x / 6e-5) + 6 * Math.exp(-x / 6e-4) + nzu(t);
+    }
+    s = u < uP ? peak(u) : hold(u);
+    if (sig === 'i') return s.i + nzi(t);
+    if (sig === 'u') return (s.on ? ub - 0.107 * s.i - rs * s.i : -vf) + nzu(t);
+    return Math.max(0, 0.12 * s.i - 0.2) + rg * Math.max(0, s.i) + nzu(t);
+  };
+};
+/* Piezo-PD zum Vergleich (Abgrenzung): Ladestrom positiv, Entladestrom negativ, Form nach Pico AGT-146 (abgelesen).
+   p: e (Ladebeginn je Ereignis, s), d (Entladebeginn nach Ladebeginn, s), noise, seed */
+SIG.M.pumpeDueseP = function (p) {
+  var ev = p.e || [0.002, 0.00495], dd = p.d || [0.00055, 0.00093],
+      ch = [[0, 0], [0.02, 6.0], [0.06, 0.5], [0.1, -0.8], [0.15, 5.0], [0.21, 3.5], [0.3, 2.1], [0.36, 1.5], [0.39, -0.2], [0.43, -0.8], [0.48, 0]],
+      dc = [[0, 0], [0.03, -3.2], [0.1, -3.5], [0.15, -0.2], [0.2, 0.3], [0.24, -4.9], [0.29, -2.4], [0.35, -1.5], [0.45, -1.0], [0.5, 0]],
+      nz = SIG.lib.vnoise(p.seed || 67, 0.03, 2e-5), nr = SIG.lib.vnoise((p.seed || 67) + 2, 0.7, 4e-6);
+  function pl(tab, ms) {
+    if (ms <= tab[0][0] || ms >= tab[tab.length - 1][0]) return null;
+    for (var i = 1; i < tab.length; i++) if (ms < tab[i][0]) {
+      var a = tab[i - 1], b = tab[i]; return a[1] + (b[1] - a[1]) * (ms - a[0]) / (b[0] - a[0]);
+    }
+    return null;
+  }
+  return function (t) {
+    var k, v, ms;
+    for (k = 0; k < ev.length; k++) {
+      ms = (t - ev[k]) * 1000; v = pl(ch, ms); if (v !== null) return v + nr(t);
+      v = pl(dc, ms - dd[k] * 1000); if (v !== null) return v + nr(t);
+    }
+    return nz(t);
+  };
+};
+
+/* --- atg-ventil: Druckregler (stromgeregelt, PWM) und Schaltventil (Ein/Aus) im Automatikgetriebe ---
+   atgVentil: Druckregler, Plusseite getaktet (Saab AF40: „pulsing it with B+ (300 Hz PWM)"), Freilaufdiode.
+   Das STG stellt den Tastgrad so, dass der Mittelstrom dem Sollstrom entspricht (Stromregelung):
+     d = (I·Rt + vf) / (ub + vf); Strom im eingeschwungenen R-L-Kreis exakt je Periode
+     (Imin = [B(1−e2) + A·e2(1−e1)] / (1 − e1·e2), A = ub/Rt, B = −vf/Rt, e1 = e^(−dT/tau), e2 = e^(−(1−d)T/tau)).
+   p: f (Hz, 300), R (Spule, Ohm, 5), L (H, 0,03 – Annahme), rs (Zusatzwiderstand, Ohm), i (Sollstrom A, 0,9),
+      prof ([[t, i], …] Sollstromverlauf, linear; macht das Modell zum Ablauf), dith (Dither-Amplitude A), dithF (Hz),
+      ph (PWM-Phase, s), sig ('i' | 'u'), ls (true: Low-Side geschaltet – 'u' ist dann die Steuerleitung: ein ~0,3 V,
+      aus Ub + Freilauf ~0,8 V, Freilaufdiode zur Versorgung wie beim Infineon TLE8242),
+      fault: 'open' | 'gnd' (High-Side: Plusleitung an Masse) | 'plus' (High-Side: Plusleitung an Plus, Dauerstrom Ub/R) |
+      'wt' (Windungsschluss: R·0,5, L·0,25),
+      drop ([[t0,t1], …] Kontaktunterbrechung), noise, seed */
+SIG.M.atgVentil = function (p) {
+  var f = p.f || 300, R = p.R != null ? p.R : 5, L = p.L != null ? p.L : 0.03, rs = p.rs || 0,
+      ub = 13.8, vf = 0.8, iSet = p.i != null ? p.i : 0.9, prof = p.prof || null,
+      dA = p.dith || 0, dF = p.dithF || 100, ph = p.ph || 0, sig = p.sig || 'i', fault = p.fault || '', ls = !!p.ls,
+      drops = p.drop || [], T = 1 / f,
+      nzi = SIG.lib.vnoise(p.seed || 71, p.noise != null ? p.noise : 0.006, 2e-6),
+      nzu = SIG.lib.vnoise((p.seed || 71) + 3, 0.06, 2e-6);
+  if (fault === 'wt') { R *= 0.5; L *= 0.25; }
+  var Rt = R + rs, tau = L / Rt, A = ub / Rt, B = -vf / Rt;
+  function target(t) {
+    var v = iSet, k, x;
+    if (prof) {
+      if (t <= prof[0][0]) v = prof[0][1];
+      else if (t >= prof[prof.length - 1][0]) v = prof[prof.length - 1][1];
+      else for (k = 1; k < prof.length; k++) if (t < prof[k][0]) {
+        v = prof[k - 1][1] + (prof[k][1] - prof[k - 1][1]) * (t - prof[k - 1][0]) / (prof[k][0] - prof[k - 1][0]); break;
+      }
+    }
+    if (dA) { x = ((t * dF) % 1 + 1) % 1; v += dA * (x < 0.5 ? 4 * x - 1 : 3 - 4 * x); }
+    return v;
+  }
+  function inDrop(t) { for (var k = 0; k < drops.length; k++) if (t >= drops[k][0] && t < drops[k][1]) return true; return false; }
+  var fn = function (t) {
+    var x = (((t - ph) * f) % 1 + 1) % 1, I = target(t),
+        d = Math.min(0.99, Math.max(0.01, (I * Rt + vf) / (ub + vf))), on = x < d, i, e1, e2, iMin, iMax;
+    if (fault === 'gnd') return sig === 'i' ? nzi(t) : 0.05 + nzu(t);
+    if (fault === 'plus') return sig === 'i' ? ub / Rt + nzi(t) : ub + nzu(t);
+    if (fault === 'open' || inDrop(t)) return sig === 'i' ? nzi(t) : (ls ? (on ? 0 : ub) : (on ? ub : 0)) + nzu(t);
+    e1 = Math.exp(-d * T / tau); e2 = Math.exp(-(1 - d) * T / tau);
+    iMin = (B * (1 - e2) + A * e2 * (1 - e1)) / (1 - e1 * e2); iMax = A + (iMin - A) * e1;
+    i = on ? A + (iMin - A) * Math.exp(-x * T / tau) : B + (iMax - B) * Math.exp(-(x - d) * T / tau);
+    if (i < 0) i = 0;
+    if (sig === 'i') return i + nzi(t);
+    if (ls) return (on ? 0.3 : (i > 0.005 ? ub + vf : ub)) + nzu(t);
+    return (on ? ub - 0.1 : (i > 0.005 ? -vf : 0)) + nzu(t);
+  };
+  if (prof) fn.event = true;
+  return fn;
+};
+/* atgSchalt: Schaltventil Ein/Aus, Plusseite geschaltet (Saab: B+ vom STG, Masse über das Gehäuse), 13 Ohm (Saab).
+   Anzug: i = Iinf·(1 − e^(−u/tau1)) mit kleiner Induktivität (Anker offen); bei iM beginnt der Anker zu laufen:
+   Gegen-EMK → Strom sinkt (dm lang, um dip) – beim Anschlag Knick; danach Anstieg mit größerer Induktivität (tau2).
+   Aus: Freilaufdiode (−vf), Strom klingt mit tau2 ab. Zeiten sind Modellannahmen (herstellerabhängig).
+   p: tOn, tOff (s), R (13), tau1, tau2 (s), iM (A), dm (s), dip (A), fault: 'stuck' (Anker bewegt sich nicht) | 'wt' (Windungsschluss),
+      sig ('i' | 'u'), noise, seed */
+SIG.M.atgSchalt = function (p) {
+  var ub = 13.8, vf = 0.8, R = p.R || 13, tau1 = p.tau1 || 0.002, tau2 = p.tau2 || 0.0046,
+      iM = p.iM != null ? p.iM : 0.55, dm = p.dm || 0.0015, dip = p.dip != null ? p.dip : 0.12,
+      tOn = p.tOn != null ? p.tOn : 0.002, tOff = p.tOff, fault = p.fault || '', sig = p.sig || 'i',
+      nzi = SIG.lib.vnoise(p.seed || 77, p.noise != null ? p.noise : 0.005, 2e-5),
+      nzu = SIG.lib.vnoise((p.seed || 77) + 3, 0.05, 2e-5);
+  if (fault === 'wt') { R *= 0.6; tau1 *= 0.6; tau2 *= 0.6; iM *= 0.6; }
+  var Iinf = ub / R, u1 = iM < Iinf ? -tau1 * Math.log(1 - iM / Iinf) : 1e9, iL = iM - dip;
+  function ion(u) {
+    if (u <= 0) return 0;
+    if (fault === 'stuck' || u < u1) return Iinf * (1 - Math.exp(-u / tau1));
+    if (u < u1 + dm) return iM - dip * (u - u1) / dm;
+    return Iinf - (Iinf - iL) * Math.exp(-(u - u1 - dm) / tau2);
+  }
+  var fn = function (t) {
+    var u = t - tOn, i, x, i0;
+    if (tOff != null && t >= tOff) {
+      i0 = ion(tOff - tOn); x = t - tOff;
+      i = -vf / R + (i0 + vf / R) * Math.exp(-x / (fault === 'stuck' ? tau1 : tau2)); if (i < 0) i = 0;
+      return sig === 'i' ? i + nzi(t) : (i > 0.003 ? -vf : 0) + nzu(t);
+    }
+    i = ion(u);
+    return sig === 'i' ? i + nzi(t) : (u > 0 ? ub - 0.1 : 0) + nzu(t);
+  };
+  fn.event = true;
+  return fn;
+};
+QUELLEN["pumpe-duese"] = [
+  "Pico Technology – Guided Test AGT-385 „UI (VAG PD) solenoid injector“ (VAG PD current, voltage and earth): https://www.picoauto.com/library/automotive-guided-tests/vag-pd-current-voltage-and-earth/ – belegt (Text): Test bewertet Strom-, Spannungs- und Massekreis der Magnetventil-PD-Einheit (Unit Injection/Pumpe-Düse). Anschlussbild: Stromzange (Pico 20/60 A) um eine Ventilleitung zwischen STG und Ventil, zwei Spannungskanäle an beiden Ventilanschlüssen gegen Masse. Beispielbild (abgelesen, Betriebspunkt nicht angegeben): 500 µs/div, Trigger 5 A steigend, Kanal A ±20 A (20-A-Zange), B ±20 V, C ±100 V; Kanalnotizen „Switched positive signal“ und „Switched earth signal“ (STG schaltet beide Seiten). Strom: Anstieg in ~0,5 ms auf ~16 A, dann getaktet ~14,3–16,1 A, danach ungetaktet langsam bis ~17,7 A (bei ~1,05 ms ab Ansteuerbeginn), Abfall auf Halten ~10,8–12,7 A (getaktet), Ende nach ~1,9 ms, Abfall auf 0 in ~0,05 ms. Plusseite: Ruhe 0 V, ein ~14,4 V sinkend auf ~12,5 V, Freilauf ~−0,9 V. Masseseite: ein ~0,3–2 V, beim Abschalten Spitze ~48 V, Plateau ~34 V (~0,035 ms), dann Abklingen über ~1 ms.",
+  "Pico Technology – Guided Test AGT-146 „UI (VAG PD) piezo injector“: https://www.picoauto.com/library/automotive-guided-tests/vag-piezo-pd-current – belegt (Text): Test bewertet den Ansteuerstrom der Piezo-PD-Einheit unter verschiedenen Betriebsbedingungen. Beispielbild (abgelesen): 2 ms/div, ±10 A, Trigger 3 A; je Ereignis positiver Ladestrom bis ~6 A und negativer Entladestrom bis ~−5 A; zwei Ereignisse ~2,9 ms auseinander; Kanalnotiz „Unit injector (piezo type)“.",
+  "VW Selbststudienprogramm 209 „1,9 l TDI-Motor mit Pumpe-Düse-Einspritzsystem“ (1999): https://vwcampersite.wordpress.com/wp-content/uploads/2015/01/ssp_209-19tdi-motor-mit-pumpe-duse-einspritzsystem.pdf – belegt: Ventile für Pumpe-Düse N240–N243 (4-Zyl.) sind Magnetventile, mit Überwurfmutter an der PD-Einheit; bestimmen Förderbeginn und Einspritzmenge (Menge über die Ansteuerzeit). Ansteuerung → Strom steigt, Ventil schließt; beim Aufschlagen der Magnetventilnadel auf den Sitz auffälliger Knick im Stromverlauf = BIP (Beginning of Injection Period); danach fällt der Strom auf einen konstanten Haltestrom. Bild 209_97 (S. 40, gesichtet): Anzugsstrom mit wenigen Takten, dann Fenster „Regelgrenze“ – darin steigt der Strom ungetaktet, der BIP ist ein kleiner Einbruch/Knick im Fenster („Ventil-Schließzeitpunkt = BIP“), danach Abfall auf den getakteten Haltestrom. STG überwacht den Stromverlauf, korrigiert mit dem BIP den Ansteuerbeginn der nächsten Einspritzung; BIP außerhalb der Regelgrenze → Förderbeginn nach festen Kennfeldwerten, keine Regelung. Beispiel: Luft in der PD-Einheit → Ventil schließt schneller, BIP zu früh, Meldung „Regelgrenze unterschritten“. Ausfall: unrunder Lauf, weniger Leistung; Ventil bleibt offen → kein Druck, bleibt geschlossen → keine Befüllung, in beiden Fällen keine Einspritzung. Voreinspritzung beginnt bei ~180 bar, wird hydraulisch über den Ausweichkolben beendet (Ventil bleibt geschlossen); Haupteinspritzung ab ~300 bar, Druck bis 2050 bar.",
+  "SEAT Lehrheft Nr. 99 „2,0 l 16V TDI-Motor“ (BKD, EDC 16): https://esperformance.net/ssp/seat/SSP_099_DE.pdf – belegt: neue PD-Generation, weiterhin Ausweichkolben (beendet die Voreinspritzung); geführte Fehlersuche „Prüfung Kompressionsdruck“ über die mittleren Ausgleichsmengen je Zylinder, Idealwert 0,0 mg/Hub, Grenzwerte −2,8 bis +2,8 mg/Hub.",
+  "Ross-Tech Wiki – 18074/P1666 „Valve for Pump-Jet: Cylinder 1 (N240): Electrical Malfunction“: https://wiki.ross-tech.com/wiki/index.php/18074/P1666 – belegt: Symptom unregelmäßige Drehzahl; Ursachen Leitung/Verbindungen oder Ventil; das STG prüft jedes Ventil mit sehr kleinem Prüfstrom (unter 0,0001 A), darum kann schon zusätzlicher Widerstand den Fehler setzen; erst Leitungen prüfen und Verbindungen reinigen, Kabelbaum vor den Ventilen tauschen; zusätzlicher Widerstand in der Leitung (Beschädigung, Korrosion) kann den Fehler auslösen.",
+  "Ross-Tech Wiki – 17668/P1260/004704 „PD Unit Injector: Cylinder 1 (N240): Implausible Signal“: https://wiki.ross-tech.com/wiki/index.php/17668/P1260/004704 – belegt: Symptome MIL, Leistungsverlust; Ursachen Leitung/Stecker, PD-Einheit, verschlissene Nockenwelle.",
+  "Kfz-Meisterbetrieb Dietrich – Pumpe-Düse-Einspritzung (Werkstattartikel): https://kfz-dietrich.com/blog/pumpe-duese-einspritzung-werkstatt/ – belegt (Zusatz): elektrische Verbindung zu den Magnetventilen durch den Ventildeckel ist bekannte Schwachstelle; innerer Kabelbaum und Steckkontakte unter Bewegung, Hitze und Ölnebel; Scheuerstellen, gebrochene Litzen, korrodierte Kontakte → sporadische Aussetzer; Diagnose: Fehlerspeicher, Mengenkorrekturwerte im Leerlauf, Widerstands-/Durchgangsprüfung der Verbindung im Ventildeckel, Kompressionsprüfung.",
+  "SeatCupra.net Forum – „PD130 injector issue or something else?“: https://www.seatcupra.net/forums/threads/pd130-injector-issue-or-something-else.409575 – belegt (nur Zusatz, Forum): Injektorleitungen liegen unter dem Nockenwellendeckel (Hitze, Öl); Diagnose meldete Zyl.-4-Aussetzer und elektrische Fehlfunktion der PD-Einheit, Ursache war ein beschädigter Kabelbaum.",
+  "Patent US7023682B2 (BIP-Erkennung bei Magnet-Einspritzventilen): https://patents.google.com/patent/US7023682B2/en – belegt (allgemein, nicht VAG-spezifisch): Der Anzugsstrom wird üblicherweise unmittelbar vor dem Zeitpunkt abgeschaltet, an dem das BIP-Signal erwartet wird; der BIP wird in einem Zeitfenster („BIP window“) gesucht und erscheint dort als Unstetigkeit im Strom. Wie lange angezogen wird, legt also das STG fest, nicht das Ventil.",
+  "Physik (ohne eigene Quelle): Spule u = R·i + dΨ/dt; bewegter Anker erzeugt Gegenspannung, beim Anschlag endet die Bewegung → Knick im Strom; Freilauf über Diode ≈ −0,9 V; zusätzlicher Widerstand im Kreis senkt den erreichbaren Strom (Iinf = U/R) und verlangsamt den Anstieg."
+];
+QUELLEN["atg-ventil"] = [
+  "Saab WIS 9-5 (1998) – Solenoid valve ST, for system pressure: https://saabwisonline.com/9-5-9600/1998/4-transmission/automatic-transmission/technical-description/solenoid-valve-st-for-system-pressure – belegt: Magnetventil ST im Schieberkasten regelt den Systemdruck; Ansteuerung mit 300-Hz-PWM; hohes Tastverhältnis = hoher Strom (~1 A) = niedriger Systemdruck, niedriges = hoher Druck; Wicklung ~4 Ω; Leerlauf, Handbremse angezogen, Wählhebel D: ~900 mA und Systemdruck 3,4–4,6 bar; Fehler → DTC P0748 und Notlauf; Unterbrechung → Systemdruck maximal (Ventil ganz offen).",
+  "Saab WIS 9-5 (2002) – Solenoid valves SLS and SLT for system pressure: https://saabwisonline.com/9-5-9600/2002/4-transmission/automatic-transmission/technical-description/solenoid-valves-sls-and-slt-for-system-pressure – belegt: 300-Hz-PWM; Strom ändert sich hauptsächlich mit der Gaspedalstellung; hoher Strom (~1 A) = niedriger Systemdruck; Unterbrechung → maximaler Systemdruck; Wicklung SLS/SLT 5,1–5,5 Ω bei 20 °C; DTC P0748 (SLT), P0785 (SLS), Notlauf.",
+  "Saab WIS 9-3 (2006) AF40 – Solenoid valve SLT: https://saabwisonline.com/9-3-9440/2006/4-transmission/automatic-transmission/6-speed-af-40/technical-description/solenoid-valve-slt-tcm-af-40-531 – belegt: elektromagnetisch, variabel PWM-gesteuert; STG pulst das Ventil mit B+ (300 Hz PWM); Strom 0–1000 mA; stromlos offen, Hydraulikdruck sinkt mit steigendem Strom; Ventil im Schieberkasten.",
+  "Saab WIS 9-5 (2000) – Solenoid valves S1 and S2 for shifting: https://saabwisonline.com/9-5-9600/2000/4-transmission/automatic-transmission/technical-description/solenoid-valves-s1-and-s2-for-shifting – belegt: Schaltventile, Masse über das Gehäuse am Schieberkasten, STG schaltet B+ zu; stromlos geschlossen; Wicklung nominal 13 Ω; Zustandstabelle Ein (B+) / Aus (0 V) je Wählhebelstellung; Fehler → Notlauf; DTC P0753 (S1), P0758 (S2).",
+  "Saab WIS 900 (1994) – DTC P1847, P1848, P1849 (Druckregelventil): https://saabwisonline.com/900/1994/4-transmission/automatic-transmission-2/fault-diagnosis-with-diagnostic-trouble-codes/p1847-p1848-p1849 – belegt: STG steuert das Ventil mit veränderlichem Strom; P1847 Unterbrechung/Masseschluss → Systemdruck zu hoch, harte Schaltungen; P1848 Plusschluss → Druck zu niedrig, starker Verschleiß; P1849 Kurzschluss im Ventil oder zwischen den Ventilleitungen; Widerstand 2–6 Ω am Getriebe-Zwischenstecker; Stellgliedtest: Strom pendelt ~250–910 mA für ~30 s, Klicken hörbar; Stecker auf Feuchtigkeit und Korrosion prüfen; sporadische Fehler: Leitungen und Stecker bewegen und dabei messen.",
+  "Infineon – Datenblatt TLE8242-2 (Rev. 1.0, 2010): https://www.farnell.com/datasheets/2820304.pdf – belegt: 8-Kanal Low-Side-Konstantstromregler (Vortreiber für externen N-MOSFET, das Ventil hängt an der Versorgung, geschaltet wird die Masseseite) für Variable-Force-Solenoids (z. B. Automatikgetriebe); Strom 0–1,2 A (0,2-Ω-Shunt); PWM-Frequenz per SPI ~10 Hz bis 4 kHz (typ.); überlagerter dreieckförmiger Dither (Schrittweite und Periodenzahl programmierbar), gemessener Dither durch den Regelkreis gedämpft; Direkt-PWM-Modus mit Stromprofil-Erkennung, die die Ankerbewegung prüft; Diagnose Überstrom, offene Last (ein/aus), Masseschluss; externe Freilaufdiode.",
+  "VW Self-study programme 308 „Direct Shift Gearbox 02E“: https://www.volkspage.net/technik/ssp/ssp/SSP_308.pdf – belegt: alle Magnet- und Druckregelventile sitzen in der Mechatronik (elektrohydraulische Steuereinheit); Ja/Nein-Ventile (N88–N92: Gangsteller, Multiplexer, stromlos geschlossen) und Modulationsventile (N215–N218, N233, N371: Kupplungen, Hauptdruck, Kühlöl, Sicherheit); Ausfall N217 → maximaler Hauptdruck (Verbrauch, Schaltgeräusche); Ausfall Kupplungsventil → Teilgetriebe abgeschaltet.",
+  "Vehicle Service Pros (Motor Age) – „Those nagging codes“: https://www.vehicleservicepros.com/service-repair/underhood/article/21183817/those-nagging-codes – belegt (Zusatz, Fachzeitschrift): 722.6/NAG1: Probleme der Leiterplatte auf dem Schieberkasten und Getriebeöl, das im Kabelbaum zum TCM hochzieht, als häufige Ursache für Getriebecodes.",
+  "Physik (ohne eigene Quelle): R-L-Kreis mit PWM und Freilaufdiode – Mittelstrom ≈ (Tastgrad·Ub − (1 − Tastgrad)·Uf)/R; bei Stromregelung ändert das STG den Tastgrad, wenn sich R ändert (Windungsschluss kleiner, Übergangswiderstand größer); bewegter Anker → Gegenspannung → Stromknick; Ein/Aus-Ventil ohne Regelung: Endstrom = Ub/R."
+];
+/* --- @gruppe:pd-atg.js ENDE --- */
+/* --- @gruppe:llr-schritt.js START --- */
+/* Leerlaufsteller (Drehsteller) – eine Steuerleitung (geschaltete Masse) gegen Fahrzeugmasse.
+   Takt mit fester Frequenz f (typ. 100 Hz), Low-Anteil der Öffnen-Leitung = duty.
+   line:'auf' (Öffnen-Leitung bzw. einzige Leitung beim 2-poligen Steller) oder 'zu' (Schließen-Leitung, gegenphasig).
+   Low-Pegel = Spulenstrom × (Endstufe ron + Übergang rx); Strom steigt in der Einschaltzeit (tau) an.
+   Beim Abschalten kurze Überhöhung sp über Bordnetz (Pico-Beispiel: kleine Überhöhung, keine hohe Spitze).
+   p: f, duty, line, ub, R (Spule), ron, rx, sp, tsp, tau, ph (Phase in Perioden), steps [[t, dutyNeu, Übergangszeit]],
+      hunt {a, f, ph} (Tastgrad pendelt), fault 'open' (Wicklung offen) | 'noplus' (Plus fehlt)
+      | 'stgopen' (Leitung zum STG unterbrochen, am Steller gemessen → Bordnetz über die Wicklung)
+      | 'stuck' (Endstufe durchlegiert → dauerhaft Low), seed, noise */
+SIG.M.leerlaufstellerLs = function (p) {
+  var f = p.f || 100, d0 = p.duty != null ? p.duty : 0.35, line = p.line || 'auf',
+      ub = p.ub != null ? p.ub : 14.0, R = p.R || 12, ron = p.ron != null ? p.ron : 0.4, rx = p.rx || 0,
+      sp = p.sp != null ? p.sp : 1.6, tsp = p.tsp || 1.5e-4, tau = p.tau || 1.2e-3, ph = p.ph || 0,
+      steps = p.steps || [], hunt = p.hunt, fault = p.fault || '', tr = 2e-5,
+      nz = SIG.lib.vnoise(p.seed || 5, p.noise != null ? p.noise : 0.05, 5e-5);
+  var I = ub / (R + ron + rx);
+  function duty(t) {
+    var d = d0, prev = d0, i;
+    for (i = 0; i < steps.length; i++) { d += (steps[i][1] - prev) * SIG.lib.smooth((t - steps[i][0]) / (steps[i][2] || 0.01)); prev = steps[i][1]; }
+    if (hunt) d += hunt.a * Math.sin(2 * Math.PI * hunt.f * t + (hunt.ph || 0));
+    return Math.max(0.03, Math.min(0.97, d));
+  }
+  function low(ton) { return 0.05 + I * (0.55 + 0.45 * (1 - Math.exp(-ton / tau))) * (ron + rx); }
+  return function (t) {
+    if (fault === 'open' || fault === 'noplus') return 0.03 + 0.3 * nz(t);
+    if (fault === 'stgopen') return ub + nz(t);
+    if (fault === 'stuck') return low(1) + 0.3 * nz(t);
+    var x = t * f + ph, k = Math.floor(x), fr = x - k, d = duty((k - ph) / f), per = 1 / f, on, ton, toff;
+    if (line === 'auf') { on = fr < d; ton = fr * per; toff = (fr - d) * per; }
+    else { on = fr >= d; ton = (fr - d) * per; toff = fr * per; }
+    if (on) {
+      var vl = low(ton);
+      if (ton < tr) { var vprev = ub; return vprev + (vl - vprev) * (ton / tr) + nz(t); }
+      return vl + 0.3 * nz(t);
+    }
+    var tonPrev = (line === 'auf' ? d : 1 - d) * per, vlo = low(tonPrev);
+    var vh = ub + sp * Math.exp(-toff / tsp) + 0.25 * SIG.lib.ring(toff, 1, 9000, 3e-4);
+    if (toff < tr) return vlo + (vh - vlo) * (toff / tr) + nz(t);
+    return vh + nz(t);
+  };
+};
+
+/* Schrittmotor (IAC-Stepper), 5-Draht unipolar: Plus gemeinsam, vier geschaltete Massen (Phasen A–D = 0–3).
+   Zwei-Phasen-Erregung: Phase k an, wenn (Schritt − k) mod 4 ∈ {0,1} → Muster 1100, 0110, 0011, 1001 (Toyota-Patent US4392468).
+   Phase an: Low ≈ von (Pico-Beispiel ~0,8 V); aus: Bordnetz + kurze Abschaltspitze sp; beim Einschalten kurzer Unterschwinger dip.
+   Zwischen den Stellvorgängen stromlos (alle Phasen auf Bordnetz), Toyota-Patent: Muster 0000.
+   p: ts (Schrittzeit), phase (0..3), ub, von, sp, tsp, dip, tdip, t0/dir/s0 (Dauerschritt ab t0) oder
+      bursts [[tStart, nSchritte, dir], …], tub/ub2 (Bordnetz sinkt bei Zündung aus), trel (Hauptrelais fällt ab → 0 V), T,
+      fault 'open' (Phase offen) | 'short' (Windungsschluss) | 'noplus' (Plus fehlt)
+      | 'stgopen' (Leitung zum STG offen, am Motor gemessen → Bordnetz) | 'stuck' (Endstufe durchlegiert → dauerhaft Low), seed, noise */
+SIG.M.schrittmotorPh = function (p) {
+  var ts = p.ts || 0.008, ph = p.phase || 0, ub = p.ub != null ? p.ub : 13.8, von = p.von != null ? p.von : 0.8,
+      sp = p.sp != null ? p.sp : 2.0, tsp = p.tsp || 2.5e-4, dip = p.dip != null ? p.dip : 1.6, tdip = p.tdip || 1.2e-4,
+      fault = p.fault || '', T = p.T || 3, tr = 3e-5, ub2 = p.ub2 != null ? p.ub2 : ub,
+      nz = SIG.lib.vnoise((p.seed || 7) + ph * 13, p.noise != null ? p.noise : 0.05, 5e-5);
+  if (fault === 'short') { sp = sp * 0.12; dip = dip * 0.3; von = von + 0.35; }
+  var segs = p.bursts ? p.bursts : [[p.t0 != null ? p.t0 : -0.004, Math.ceil((T - (p.t0 != null ? p.t0 : -0.004)) / ts) + 1, p.dir || 1]];
+  var ev = [], cur = false, s = p.s0 || 0, i, j;
+  function isOn(st) { var m = ((st - ph) % 4 + 4) % 4; return m === 0 || m === 1; }
+  for (i = 0; i < segs.length; i++) {
+    var tb = segs[i][0], n = segs[i][1], dir = segs[i][2] || 1;
+    for (j = 0; j < n; j++) {
+      if (j > 0 || i > 0) s += dir;
+      var st = isOn(s);
+      if (st !== cur) { ev.push([tb + j * ts, st]); cur = st; }
+    }
+    if (p.bursts && cur) { ev.push([tb + n * ts, false]); cur = false; }
+  }
+  var f = function (t) {
+    if (fault === 'noplus' || fault === 'open') return 0.03 + 0.3 * nz(t);
+    if (fault === 'stgopen') return ub + nz(t);
+    if (fault === 'stuck') return von + 0.15 + 0.3 * nz(t);
+    if (p.trel != null && t >= p.trel) return 0.02 + 0.3 * nz(t) + ub2 * Math.exp(-(t - p.trel) / 2e-3);
+    var lo = 0, hi = ev.length - 1, k = -1;
+    while (lo <= hi) { var mid = (lo + hi) >> 1; if (ev[mid][0] <= t) { k = mid; lo = mid + 1; } else hi = mid - 1; }
+    var on = k >= 0 ? ev[k][1] : false, dt = k >= 0 ? t - ev[k][0] : 1e9;
+    var uu = (p.tub != null && t >= p.tub) ? ub2 : ub;
+    var vOn = von + 0.15 * (1 - Math.exp(-dt / 2e-3)), vOff = uu + sp * Math.exp(-dt / tsp);
+    if (on) {
+      var v1 = vOn - dip * Math.exp(-dt / tdip);
+      if (dt < tr) return uu + (v1 - uu) * (dt / tr) + nz(t);
+      return v1 + 0.3 * nz(t);
+    }
+    if (dt < tr) return von + 0.15 + (vOff - von - 0.15) * (dt / tr) + nz(t);
+    return vOff + nz(t);
+  };
+  if (p.bursts || p.trel != null) f.event = true;
+  return f;
+};
+QUELLEN["leerlaufsteller"] = [
+  "Pico Technology – Automotive Guided Test AGT 033 „Idle speed control valve (rotary solenoid)“: https://www.picoauto.com/library/automotive-guided-tests/actuators/idle-speed-control-valve-(iac)/AGT-033-idle-speed-control-valve-rotary-solenoid/ (gleicher Text unter https://www.picoauto.com/library/automotive-guided-tests/rotary/) – belegt: Drehsteller 2- oder 3-polig, ein Dauerplus (vom STG oder Steuerrelais) und eine bzw. zwei geschaltete Massen; Einfach-Masse öffnet gegen Schließfeder, Doppel-Masse: ein Kreis öffnet, der zweite schließt; Stellung über Tastgrad der geschalteten Masse, längere Einschaltzeit = mehr Strom = weiter offen; Kaltstart: schneller Leerlauf ~1200 /min; Ausgleich von Klima, Servolenkung, Automatik, Ladesystem; Messung CH A an der geschalteten Masse, Verbraucher zuschalten; Verkokung: elektrisch normales Bild, mechanisch trotzdem defekt möglich → ausbauen/reinigen; Symptome (unruhiger Leerlauf, Absterben, MKL, Gemischadaption) und Ursachen (Harz/Koks, Hitze/Vibration innen, Stecker); DTC P0505, P0506, P0507, P0508, P0509, P0511, P0518, P0519.",
+  "Pico AGT 033, Beispielbild AGT-033-example-waveform-01.png (aus dem Bild abgelesen, 10 ms/div, ±20 V, 1:1): https://www.picoauto.com/library/wp-content/uploads/automotive-guided-tests/webdata/images/AGT-033-example-waveform-01.png – belegt: Periode ~10 ms (~100 Hz), Low ~0,5 V, High ~15 V mit kurzen Überhöhungen bis ~16–18 V an der Abschaltflanke, Low-Anteil ~50 %.",
+  "Hella KGaA – Technische Information „Leerlaufsteller“ (29.08.2000): https://www.hella.com/tibi/ti/de/electronics/ti_d_electronics_leerlaufsteller1.pdf – belegt: Bypass-Luftventil, Regelung der Leerlaufdrehzahl bei Laständerung (Klima, Verbraucher); Ausfallfolgen: zu hohe Leerlaufdrehzahl, Absterben (auch beim Zuschalten von Verbrauchern), MKL; Ursachen: Verschmutzung/Verharzung, Kurzschlüsse in der Spule, Festsitzen, keine Versorgung vom STG; Prüfung: Versorgung bei Zündung ein 11–14 V, Spulenwiderstand 9,6 Ω ±15 % (Opel, sonst Herstellerangaben), Isolation Pin–Gehäuse > 30 MΩ, mechanische Prüfung, Fehlerspeicher.",
+  "Saab WIS, 900 (1994), Motronic 2.10.2, Prüfwerte Steuergeräteanschlüsse: https://saabwisonline.com/900/1994/2-engine/motronic-2-10-2/technical-data/test-values-control-moduleconnections (gleiche Werte Saab 9-3 1999 Motronic 2.10.3) – belegt: 3-poliges IAC-Ventil, Leerlauf warm, gemessen gegen Versorgungspin: Öffnen 2–5 V, 2–5 ms, 100 Hz; Schließen 7–10 V, 6–8 ms, 100 Hz.",
+  "Saab WIS, 900 (1997), Motronic 4.1 OBD II, Leerlaufregelung: https://saabwisonline.com/900/1997/2-engine/motronic-4-1-obd-ii/technical-description/idle-speed-control-2 – belegt: IAC-Ventil mit Doppelwicklung, Versorgung über Hauptrelais, 100-Hz-PWM über zwei STG-Pins; längere Masse auf der Öffnen-Leitung öffnet, auf der anderen schließt; bei Unterbrechung stellt eine Feder eine Notlaufstellung (warm mind. 1000 /min); Leerlauf-Soll 900 ±50 /min; Mehrluft bei Last (z. B. Klimakompressor ~1,4 g/s).",
+  "Saab WIS, 900 (1994), Motronic 2.8.1, Leerlaufregelung: https://saabwisonline.com/900/1994/2-engine/motronic-2-8-1/technical-description/idling-control-2 – belegt: IAC-Ventil mit einer Wicklung, Versorgung über Hauptrelais, 100-Hz-PWM, im Leerlauf ~5–7 V am Steuerpin, Strom öffnet, Feder schließt; bei Unterbrechung Notlaufstellung ~1500 /min; öffnet weiter bei Klima/Fahrstufe.",
+  "Hyundai Coupe/Tiburon 1998–2000, Werkstatthandbuch (Abschrift), ISC-Aktuator: https://www.newtonnet.co.uk/coupe/service/webtech/iindex.asp@id=12138 – belegt: Doppelspulen-Steller im Bypass, jede Spule mit eigener Endstufe, Tastverhältnis bestimmt das Kräftegleichgewicht der Spulen und damit den Winkel; Spulenwiderstand Pin 1–2 10,5–14 Ω, Pin 2–3 10–12,5 Ω (20 °C)."
+];
+QUELLEN["schrittmotor"] = [
+  "Pico Technology – Automotive Guided Test AGT 040 „Stepper motor“: https://www.picoauto.com/library/automotive-guided-tests/actuators/idle-speed-control-valve-(iac)/AGT-040-stepper-motor/ – belegt: Schrittmotor verstellt Bypass oder Drosselklappe in Schritten, Leerlaufregelung kalt erhöht und unter Last konstant; 5-Draht: 12-V-Versorgung und vier vom STG geschaltete Massepfade; 4-Draht-Beispiel: Leerlaufschalter (2 Pins) + Motor mit nur zwei Pins (Pin 3 „signal positive at five volts“, Pin 4), 4–6 Ω zwischen Pin 3 und 4 – das ist KEIN Phasenwert eines 5-Draht-Motors (im Kartentext deshalb nicht als Vergleichswert verwendet); zum 5-Draht-Typ nennt Pico keinen Widerstand; Messung: jede geschaltete Masse nacheinander mit CH A; DTC-Beispiele P1554, P1559, P1564, P1565, P1568, P1579, P1581, P1789.",
+  "Pico AGT 040, Beispielbild AGT-040-example-waveform-01.png (aus dem Bild abgelesen, 20 ms/div; Bild nur mit „Four wire“ beschriftet, also 4-Draht-Typ, nicht der modellierte 5-Draht-Motor): https://www.picoauto.com/library/wp-content/uploads/automotive-guided-tests/webdata/images/AGT-040-example-waveform-01.png – belegt: Rechteck Low ~0,8 V / High ~11,4 V, Periode ~31 ms, Low-Anteil ~50 %, kurze Spitze ~13 V (≈ 2 V über High) an der Anstiegsflanke, kurzer Unterschwinger ~−1 V an der Abfallflanke. Schaltbild „Further guidance“ (AGT-040-further-guidance-01.png): gemeinsames Plus, vier Spulen auf vier STG-Masseleitungen.",
+  "Toyota, Patent US 4,392,468 „Method and apparatus for controlling the idling speed of an engine“: https://patents.google.com/patent/US4392468 – belegt: vier Phasenspulen auf zwei Statoren mit je einer Mittelanzapfung (zwei Plus-Anschlüsse M1/M2 → 6-Draht-Ausführung); Dioden mit Widerstand zum Plus begrenzen die Abschaltspannung; Zwei-Phasen-Erregung (Nachbarphasen überlappen um eine halbe Dauer), Muster 1100/0110/0011, 0000 = stromlos; Ansteuerdaten alle 8 ms aktualisiert (→ Beispiel 8 ms je Schritt); Schritt 0 = zu; Totband ±20 /min.",
+  "Toyota, Patent US 4,491,922 „Method and apparatus for controlling stepping motor in idling rotational speed control“: https://patents.google.com/patent/US4491922 – belegt: 125 Schritte Vollhub, keine Lagerückmeldung (Schrittzähler im STG), bei Zündung aus (125 − Position + 15) Schritte Richtung offen = Referenzstellung, überzählige Schritte am Anschlag wirkungslos; Hauptrelais hält das STG nach Zündung aus noch kurz versorgt.",
+  "Blue Print (ADL) – Product Focus ADC47430 „Idle Speed Control Valve (Stepper Motor)“, Mitsubishi FTO/Galant, 01/2007: https://www.techtips.ie/Blue-Print/mitsubishi-fto-galant-idle-speed-control-valve-stepper-motor-1.pdf – belegt: Symptome Absterben, sägender/unruhiger Leerlauf (besonders kalt), anfangs sporadisch; Reinigen hilft evtl. nur vorübergehend; Ventilsitz auf Ölkohle prüfen; Tester-Istwert Schrittzahl normal ~50–70, defekter Steller zeigte 114."
+];
+/* --- @gruppe:llr-schritt.js ENDE --- */
+/* --- @gruppe:ion-cdi.js START --- */
+/* --- ionenstrom: Signale zwischen Saab-DI-Kassette und Trionic-STG (4-Zyl., Zündfolge 1-3-4-2) ---
+   Kurbelwinkel der Zündung je Zylinder relativ zu Zyl. 1: 1 = 0°, 3 = 180°, 4 = 360°, 2 = 540° (Zündabstand 180° bei 4 Zyl.).
+   Trigger (WIS: Logikprüfer HI mit LO-Pulsen; Forum: Ruhe 12 V, Zündung auf der fallenden Flanke): Ruhe = Bordnetz, das STG
+   zieht die Leitung je Zündung auf Masse; Low-Zeit tl nach WIS-Tabelle 14 ms (Leerlauf). Vor der Synchronisation (Start)
+   zündet das STG Zyl. 1 und 4 gemeinsam je Umdrehung (WIS), danach nur noch jede zweite Umdrehung.
+   Verbrennungssignal je Zylinderpaar (WIS: B+-Impuls; Logikprüfer LO mit HI-Pulsen): Ruhe 0 V, Plusimpulse nach jeder
+   Verbrennung. Form QUALITATIV: zwei Impulse (Flammenfront, Nachflammenphase – Mecel-Patent, rusEFI-Beobachtung) in
+   Kurbelwinkel nach der Zündung, Breite schwankt von Takt zu Takt. Die Winkel sind Annahmen, keine Messwerte.
+   p: rpm, t1 (Zeitpunkt Zündung Zyl. 1 im Bild, s), pair ([1,2]), ub, miss ({2:true} = Zyl. 2 ohne Verbrennung),
+      dead (Signal fehlt), hi (Leitung mit Schluss nach Plus: dauernd ~ub), drop ([ta,tb] Zeitfenster ohne Impulse, Wackelkontakt), seed, noise */
+SIG.M.ionenstromVb = function (p) {
+  var rpm = p.rpm || 825, t1 = p.t1 != null ? p.t1 : 0.02, pair = p.pair || [1, 2], ub = p.ub != null ? p.ub : 13.8,
+      miss = p.miss || {}, dead = !!p.dead, drop = p.drop || null, seed = p.seed || 31,
+      nz = SIG.lib.vnoise(seed, p.noise != null ? p.noise : 0.06, 2e-5),
+      ang = { 1: 0, 3: 180, 4: 360, 2: 540 }, trev = 60 / rpm, dps = 6 * rpm, edge = 1.5e-5;
+  function pulse(u, a, b) { /* u in s, a/b in s: Rechteck mit endlichen Flanken */
+    if (u < a || u > b + edge) return 0;
+    return Math.min(1, (u - a) / edge, (b + edge - u) / edge);
+  }
+  return function (t) {
+    if (dead) return nz(t) * 0.5;
+    if (p.hi) return ub + nz(t);
+    var v = 0, i, c, t0c, k, tev, u, f1, f2;
+    for (i = 0; i < pair.length; i++) {
+      c = pair[i]; if (miss[c]) continue;
+      t0c = t1 + ang[c] / 360 * trev; k = Math.floor((t - t0c) / (2 * trev)); tev = t0c + k * 2 * trev; u = t - tev;
+      if (drop && tev >= drop[0] && tev <= drop[1]) continue;
+      f1 = 0.85 + 0.3 * SIG.lib.hash(k * 7 + c, seed); f2 = 0.8 + 0.4 * SIG.lib.hash(k * 7 + c, seed + 3);
+      v = Math.max(v, pulse(u, 6 / dps, (6 + 7 * f1) / dps), pulse(u, (18 + 2 * f1) / dps, (18 + 2 * f1 + 15 * f2) / dps));
+    }
+    return v * ub + nz(t);
+  };
+};
+/* Triggerleitung eines Zylinders. p: rpm, t1, cyl (1), tl (Low-Zeit, s), ub, sync (Zeitpunkt der Synchronisation; vorher
+   Zündung jede Umdrehung), mode ('' | 'open' = Leitung zur Kassette am STG unterbrochen, Messpunkt kassettenseitig: bleibt High |
+   'nopower' = Kassette ohne Versorgung: alle Trigger 0 V, WIS | 'gnd' = diese Triggerleitung mit Masseschluss: dauernd ~0 V), seed, noise */
+SIG.M.ionenstromTrig = function (p) {
+  var rpm = p.rpm || 825, t1 = p.t1 != null ? p.t1 : 0.02, cyl = p.cyl || 1, tl = p.tl != null ? p.tl : 0.014,
+      ub = p.ub != null ? p.ub : 13.8, sync = p.sync != null ? p.sync : null, mode = p.mode || '',
+      nz = SIG.lib.vnoise(p.seed || 37, p.noise != null ? p.noise : 0.06, 2e-5),
+      ang = { 1: 0, 3: 180, 4: 360, 2: 540 }, trev = 60 / rpm, fall = 5e-6, rise = 3e-5;
+  return function (t) {
+    if (mode === 'nopower' || mode === 'gnd') return 0.5 * nz(t);
+    if (mode === 'open') return ub + nz(t);
+    var t0c = t1 + ang[cyl] / 360 * trev, k = Math.floor((t - t0c) / trev), tev = t0c + k * trev, u = t - tev;
+    var aktiv = (((k % 2) + 2) % 2 === 0) || (sync != null && tev < sync);
+    if (!aktiv || u > tl + rise) return ub + nz(t);
+    if (u < fall) return ub * (1 - u / fall) + nz(t);
+    if (u < tl) return 0.15 + nz(t) * 0.5;
+    return ub * (u - tl) / rise + nz(t);
+  };
+};
+
+/* --- cdi: Kondensatorzündung, Einzylinder, Pickup (Pulser) am Polrad: je Kurbelumdrehung ein Impulspaar ---
+   Pickup (NXP AN4006): Plusimpuls, ~25° später Minusimpuls (Minus = OT-Bezug). Induktionsgesetz: Spitzenspannung ~ Drehzahl
+   (vereinfacht linear; a = Beispielamplitude bei 1500 /min, KEIN Herstellerwert). Pulsform: Gauß-Hügel je Polkante (Breite wDeg).
+   Primär (CDI-Ausgang zur Zündspule): Kondensatorspannung uc springt schlagartig auf die Wicklung, danach gedämpftes
+   Ausschwingen (Pico: „release of the capacitor high voltage into the primary followed by ... coil ringing“).
+   Frequenz f0 und Abklingzeit tau sind SCHEMATISCH gewählt, sodass der Vorgang nach ~0,2 ms weitgehend abgeklungen ist
+   (Phelon-Patent: CD-Entladung ~200 µs oder weniger). Polarität schaltungsabhängig (pol).
+   Zündwinkel (digitale CDI, NXP): niedrige Drehzahl am Minusimpuls (0° Frühzündung), hohe Drehzahl am Plusimpuls (25° früh),
+   dazwischen proportional. Die Drehzahlgrenzen 2000/4000 /min sind ein BEISPIEL.
+   p (gemeinsam): rpm, ph0 (Zeit des ersten Plusimpulses, s), adv (0..1, sonst automatisch), skip (Umdrehungsindizes ohne Funken),
+   drop (Umdrehungsindizes ohne Pickup, Wackelkontakt) */
+function cdiAdv(p, rpm) {
+  if (p.adv != null) return p.adv;
+  return Math.max(0, Math.min(1, (rpm - 2000) / 2000));
+}
+function cdiIn(arr, k) { if (!arr) return false; for (var i = 0; i < arr.length; i++) if (arr[i] === k) return true; return false; }
+SIG.M.cdiPick = function (p) {
+  var rpm = p.rpm || 1500, a = p.a != null ? p.a : 4.5, gain = p.gain != null ? p.gain : 1, ph0 = p.ph0 != null ? p.ph0 : 0.006,
+      sep = p.sep != null ? p.sep : 25, w = p.wDeg || 3, open = !!p.open, drop = p.drop || null,
+      nz = SIG.lib.vnoise(p.seed || 41, p.noise != null ? p.noise : 0.02, 2e-5), amp = a * (rpm / 1500) * gain, dps = 6 * rpm;
+  function g(x) { return Math.exp(-x * x / (2 * w * w)); }
+  return function (t) {
+    if (open) return nz(t);
+    var deg = (t - ph0) * dps, k = Math.floor((deg + 160) / 360), d = deg - k * 360;
+    if (cdiIn(drop, k)) return nz(t);
+    return amp * (g(d) - g(d - sep)) + nz(t);
+  };
+};
+SIG.M.cdiPrim = function (p) {
+  var rpm = p.rpm || 1500, ph0 = p.ph0 != null ? p.ph0 : 0.006, sep = p.sep != null ? p.sep : 25,
+      uc = p.uc != null ? p.uc : 350, f0 = p.f0 || 12000, tau = p.tau || 7e-5, pol = p.pol || 1, fail = !!p.fail,
+      skip = p.skip || null, drop = p.drop || null, dps = 6 * rpm, sd = sep * (1 - cdiAdv(p, rpm)),
+      nz = SIG.lib.vnoise(p.seed || 43, p.noise != null ? p.noise : 0.6, 2e-6);
+  return function (t) {
+    if (fail) return nz(t);
+    var deg = (t - ph0) * dps, k = Math.floor((deg - sd) / 360), u = t - (ph0 + (k * 360 + sd) / dps);
+    if (cdiIn(skip, k) || cdiIn(drop, k) || u > 0.0012) return nz(t);
+    return pol * uc * Math.min(1, u / 8e-7) * Math.exp(-u / tau) * Math.cos(2 * Math.PI * f0 * u) + nz(t);
+  };
+};
+/* Spannung CDI-Masse gegen Batterie-Minus: Entladestrom über einen Übergangswiderstand erzeugt einen kurzen Spannungsfall
+   (U = R·i, Strom 90° gegen die Primärspannung verschoben). dv = Beispiel-Spitzenwert, 0 = Gutzustand. */
+SIG.M.cdiMasse = function (p) {
+  var rpm = p.rpm || 1500, ph0 = p.ph0 != null ? p.ph0 : 0.006, sep = p.sep != null ? p.sep : 25, dv = p.dv || 0,
+      f0 = p.f0 || 12000, tau = p.tau || 7e-5, dps = 6 * rpm, sd = sep * (1 - cdiAdv(p, rpm)),
+      nz = SIG.lib.vnoise(p.seed || 47, p.noise != null ? p.noise : 0.02, 2e-5);
+  return function (t) {
+    var deg = (t - ph0) * dps, k = Math.floor((deg - sd) / 360), u = t - (ph0 + (k * 360 + sd) / dps);
+    if (u > 0.0012) return nz(t);
+    return dv * Math.min(1, u / 8e-7) * Math.exp(-u / tau) * Math.sin(2 * Math.PI * f0 * u) + nz(t);
+  };
+};
+QUELLEN["ionenstrom"] = [
+  "Saab WIS 900 (1994), Trionic – Technical description „Ignition discharge module“: https://saabwisonline.com/900/1994/2-engine/trionic/technical-description/ignition-discharge-module – belegt: Kassette wandelt 12 V in 400 V Gleichspannung, gespeichert in einem Kondensator; Hochspannung max. 40 kV; der zweite Pol der Sekundärwicklung liegt an 80 V → 80 V über dem Kerzenspalt außer im Funkenmoment; nach der Verbrennung leitet das ionisierte Gas Strom über den Spalt ohne Funken; Messung paarweise Zyl. 1+2 und 3+4; Verbrennung → B+-Impuls an STG-Pin 17 bzw. 18; Klopfsignal an Pin 44; Rücknahme 1,5° je Klopfereignis, max. 12°; über ~140 kPa Kennfeldwechsel, dann Ladedruckrücknahme; Trigger Pins 9–12, STG legt die Leitung auf Masse; Unterbrechung Pin 17/18 → keine Synchronisation, Klopfregelung parallel 1+4 und 2+3; Mehrfachfunken unter 0 °C (210-mal pro Sekunde, bis 850 /min); Freibrennen nach Motor aus.",
+  "Saab WIS 9-3 (2001), Trionic T7 – Technical description „Ignition discharge module“: https://saabwisonline.com/9-3-9400/2001/2-engine/trionic-t7/technical-description/ignition-discharge-module – belegt: 400 V im Kondensator, 80 V am Kerzenspalt außer beim Funken, Verbrennung → B+-Impuls an STG-Pin 53 (Zyl. 1+2) bzw. 6 (3+4); beide offen → keine Synchronisation; Versorgung der Kassette unterbrochen → alle Triggerleitungen 0 V und P1310, Kraftstoffabschaltung; einzelne Triggerleitung offen → kein Fehlercode; P1312 (Pin 53 offen), P1334 (Pin 6 offen), P0340 (keine Synchronisation), P0300–P0304 (Aussetzer), P1300–P1304 (katalysatorschädigende Aussetzer); Kurzschluss eines Verbrennungssignals nach Masse → stattdessen Aussetzercode; Verbrennungssignale dienen auch der Aussetzererkennung.",
+  "Saab WIS 9-3 (1998), Trionic T5 OBDII – „Ignition discharge module“: https://saabwisonline.com/9-3-9400/1998/2-engine/trionic-t5-obdii/technical-description/ignition-discharge-module – belegt: 400 V, 80 V, Ionenstrom paarweise 1+2 / 3+4, Klopfsignal an Pin 44, offen → P0327; Unterbrechung Verbrennungssignal → P0340; Kurzschluss nach Masse → dauerhafte Aussetzermeldung des Paars (P0300); P0301–P0304; Mehrfachfunken 210/s von 10° v. OT bis 20° n. OT, endet über 900 /min; Freibrennen 210/s für 5 s.",
+  "Saab WIS 9-5 (1998), Trionic 4-Zyl. OBDII – Technical data „Test readings, control module connections“: https://saabwisonline.com/9-5-9600/1998/2-engine/trionic-4-cyl-obdii/technical-data/test-readings-control-module-connections – belegt: Leerlauf, gegen Pin 25 (Masse): Pin 53 Verbrennung Zyl. 1+2 und Pin 6 Verbrennung Zyl. 3+4 je 15–90 Hz (Logikprüfer LO mit HI-Pulsen); Pins 7, 54, 55, 8 Trigger Zyl. 1–4 je 7 Hz, 14 ms (−) (Logikprüfer HI mit LO-Pulsen); Pin 38 Klopfsignal 2,5 V (Bedingung nicht angegeben); Werte gelten für Fluke 88/97.",
+  "Saab WIS 9-5 (1998), Trionic 4-Zyl. – Test readings: https://saabwisonline.com/9-5-9600/1998/2-engine/trionic-4-cyl/technical-data/test-readings-control-module-connections – belegt: dieselben Werte bei 825 ± 50 /min (Verbrennung 15–90 Hz, Trigger 7 Hz / 14 ms (−), Klopfsignal 2,5 V).",
+  "Saab WIS 9-5 (2002), Trionic T7 4-Zyl. – „Knock control“: https://saabwisonline.com/9-5-9600/2002/2-engine/trionic-t7-4-cyl/technical-description/knock-control – belegt: kein konventioneller Klopfsensor, Kassette analysiert den Ionisationsstrom und sendet ein Klopfsignal je Zylinder an STG-Pin 38; STG wertet nach der Zündung aus; Unterbrechung/Kurzschluss → P0327.",
+  "Saab WIS 9-3 (2007), Trionic T8 – „Ionization current measurement“: https://saabwisonline.com/9-3-9440/2007/2-engine/4-cyl-petrol-e85/engine-management-system-trionic-t8/technical-description/ionization-current-measurement – belegt: Zündspulen legen ~120 V über die Kerzen; CDM verarbeitet die Ionisationssignale und bildet das Klopfsignal; STG ‚hört‘ in einem Kurbelwinkelfenster nach der Zündung; Verbrennungssignale für Synchronisation und Aussetzererkennung; beim Start Zyl. 1+4 und 2+3 gemeinsam gezündet bis zur Synchronisation.",
+  "Mecel AB (Nytomt, Forsberg) – Patent US5992386 „Method for knock control in combustion engines“: https://patents.google.com/patent/US5992386A/en – belegt: Messspannung über Kondensator/Zenerdiode, Bereich 80–400 V; Zündphase wird ausgeblendet; Flammenfrontphase und Nachionisationsphase, deren Maximum typ. mit dem Spitzendruck zusammenfällt; Klopfanteil über Bandpass, bevorzugt > 5 kHz; Auswertefenster ab −5° bis mind. 40° KW nach OT.",
+  "Wikipedia – Trionic T5.5: https://en.wikipedia.org/wiki/Trionic_T5.5 – belegt (Zusatz): 80 V Messspannung, 400 V im Kondensator, bis 40 kV; Verbrennungssignale paarweise als B+-Impuls; Klopfrücknahme 1,5°/max. 12°.",
+  "rusEFI Wiki – Saab 9-3 2005 (T8): https://wiki.rusefi.com/Saab-9-3-2005 – belegt (Zusatz, Reverse Engineering): CDM in analoger (12787708) und digitaler (55352173) Ausführung; Verbrennungssignale T8 für Zyl. 1+3 und 2+4; Klopfsignal aus allen vier Zylindern.",
+  "rusEFI Wiki – Saab Trionic 8 CDM an Mazda Miata: https://wiki.rusefi.com/Saab-Trionic-8-Combustion-Detection-Module-on-Mazda-Miata-running-rusEFI – belegt (Zusatz, Reverse Engineering): Ausgänge des digitalen CDM sind digital; Verbrennungssignal wirkt wie ein Komparator; zwei breite Impulse je Verbrennung (Flammenfront, Nachflammenphase).",
+  "MSExtra-Forum – „Does anyone know circuit/schematics of SAAB DI cassette?“: https://www.msextra.com/forums/viewtopic.php?t=17438 – belegt (nur Zusatz, Forum): Triggerpins liegen auf 12 V, Zündung auf der fallenden Flanke beim Auf-Masse-Ziehen, Low mindestens ~500 µs; Verbrennungs-/Aussetzersignal ist ein 0–12-V-Rechteck kurz nach dem Trigger; Klopfsignal in der Kassette zu ~7-kHz-Sinus gefiltert.",
+  "Physik (ohne eigene Quelle): 4-Zylinder-Viertakt, Zündfolge 1-3-4-2 → Zündabstand 180° KW; jeder Zylinder zündet einmal je zwei Kurbelumdrehungen → Triggerfrequenz je Zylinder = Drehzahl/120 (825 /min → ~6,9 Hz, passt zu WIS 7 Hz)."
+];
+QUELLEN["cdi"] = [
+  "NXP/Freescale – Application Note AN4006 „Digital Capacitive Discharge Ignition System using HC05/HC08 8-Bit Microcontrollers“ (Kenny Lam): https://www.nxp.com/docs/en/application-note/AN4006.pdf – belegt: Zweiräder (Roller, Motorräder, Mopeds) nutzen meist CDI; Polrad-Ladespule (Magneto) liefert 100–400 V Wechselspannung proportional zur Drehzahl; Pulser am Polrad erzeugt einen Plusimpuls und ~25° später einen Minusimpuls, Minus = OT-Bezug; Kondensator typ. 0,47–2 µF; SCR leitet, bis die Kondensatorspannung 0 V erreicht; Sekundär typ. 14 kV; mind. ~20 mJ an der Kerze; digitale CDI: niedrige Drehzahl Zündung am Minusimpuls, hohe Drehzahl am Plusimpuls (25° früh), dazwischen proportional.",
+  "Pico Technology Forum, Steve Smith (Pico Staff), 19./20.06.2014: https://www.picoauto.com/support/viewtopic.php?p=31295 und https://picoauto.com/support/viewtopic.php?p=31303 – belegt: CDI entlädt einen Kondensator in die Primärwicklung (400 V+); bei CDI sieht man nur die Entladung der Kondensatorspannung in die Primärwicklung und danach das Ausschwingen der Spule; Saab als einziger großer Pkw-Hersteller mit CDI in Stückzahl.",
+  "Wikipedia – Capacitor discharge ignition: https://en.wikipedia.org/wiki/Capacitor_discharge_ignition – belegt: Ladespannung 250–600 V; DC-CDI aus 12 V über Wandler auf 400–600 V; AC-CDI aus der Lichtmaschine (Kleinmotoren); kurze Funkendauer ~50–600 µs (dort ohne Einzelbeleg); schneller Spannungsanstieg 3–10 kV/µs gegenüber 300–500 V/µs induktiv; Einsatz Außenborder, Motorräder, Rasenmäher, Kettensägen.",
+  "Wikipedia (de) – Zündung (Verbrennungsmotor), Abschnitt Hochspannungskondensatorzündung: https://de.wikipedia.org/wiki/Zündung_(Verbrennungsmotor) – belegt: Kondensator auf ca. 500 V Gleichspannung geladen und schlagartig über den Zündtransformator entladen; Spulenzündung mit wesentlich längerer Funkendauer.",
+  "R.E. Phelon Co. – Patent US5513619 „Discharge ignition apparatus for internal combustion engine“: https://patents.google.com/patent/US5513619 – belegt: CD-Entladung dauert typ. etwa 200 µs oder weniger; Ladespule an einem Kondensator, Thyristor (SCR) als Schalter, Triggerspule.",
+  "Ross Farnham – „Ignition components“ (oldskoolsuzuki.info, 1998): https://oldskoolsuzuki.info/archives/411 – belegt: die meisten induktiven Systeme haben 1–2 ms Funkendauer; CDI legt bis zu einigen hundert Volt an die Primärwicklung.",
+  "Honda CRF450X (2005) Service Manual, S. 424 (ManualsLib): https://www.manualslib.com/manual/808664/Honda-Crf450x-2005.html?page=424 – belegt: Pulsgeber-Spitzenspannung beim Anlassen mind. 0,7 V, gemessen mit Peak-Voltage-Adapter bzw. Multimeter ≥ 10 MΩ; Prüfung an der CDI-Steckerseite.",
+  "Honda XR50R (2000) Service Manual, S. 187 (ManualsLib, OCR-Text): https://www.manualslib.com/manual/1106372/Honda-2000-Xr50r.html?page=187 – belegt: Ladespulen-Spitzenspannung mind. 100 V beim Ankicken (OCR „l00V“), Peak-Voltage-Adapter; Warnung, Kerze und Messspitzen nicht zu berühren (Stromschlag).",
+  "Saab WIS 900 (1994) – „Ignition discharge module“: https://saabwisonline.com/900/1994/2-engine/trionic/technical-description/ignition-discharge-module – belegt: Pkw-CDI (Saab Direct Ignition), 12 V → 400 V Gleichspannung im Kondensator, Hochspannung max. 40 kV.",
+  "Physik (ohne eigene Quelle): Energie im Kondensator E = ½·C·U² (1 µF, 300 V → 45 mJ); Pickup am Polrad → ein Impulspaar je Kurbelumdrehung, Abstand der Paare = 60 s / Drehzahl; induzierte Spannung steigt mit der Drehzahl (Induktionsgesetz); Strom über einen Übergangswiderstand erzeugt dort den Spannungsfall U = R·i."
+];
+/* --- @gruppe:ion-cdi.js ENDE --- */
 /* ===== SIGNALMODELLE (Karten) — ENDE ===== */
 
 /* ---------- 2) MESSKARTEN ---------- */
@@ -15773,6 +16226,282 @@ check10:"Bedarf moderat (~8–15 kV)? Brennlinie vorhanden? Reserve unter Last? 
 wannschlecht:"Sehr hoher Bedarf, kurze Brennlinie, fehlendes Ausschwingen.",
 wannok:"Lastabhängig steigender Bedarf; Toleranz zwischen Zylindern.",
 next:"Hoher Bedarf → Kerze/Kabel, Gemisch; mit Primärbild verifizieren."
+},
+
+{
+id:"ionenstrom", kat:"zuend", sig:"digital", diff:3, sys:"verbrennung",
+name:"Ionenstrom-Signal (Saab Trionic, Direct Ignition)",
+aufgabe:"Bei Saab Trionic (T5, T7, T8) ist die Zündkerze zugleich Sensor: Nach der Zündung leitet das heiße, ionisierte Gas im Kerzenspalt Strom, ohne dass ein Funke überspringt. Die Zündkassette (T8: Combustion Detection Module, CDM) wertet diesen Ionenstrom aus und meldet dem Motorsteuergerät „Verbrennung“ je Zylinderpaar und „Klopfen“. Damit ersetzt das System Nockenwellensensor und Klopfsensor: Zylindererkennung, Aussetzererkennung, zylinderselektive Klopfregelung (Saab WIS).",
+signalart:"Am Oszi nur die Niedervolt-Signale zwischen Kassette und STG: Trigger je Zylinder (Ruhe ~Bordnetz, STG zieht auf Masse = Zündung), Verbrennungssignal je Zylinderpaar (Ruhe 0 V, Plusimpulse bis Bordnetz nach jeder Verbrennung; WIS: Leerlauf 15–90 Hz) und Klopfsignal (T5/T7 analog, T8 je nach CDM analog oder digital). Der Ionenstrom selbst fließt im Sekundärkreis bei ~80 V (T5/T7) bzw. ~120 V (T8) Messspannung – nicht zugänglich, nicht antasten.",
+equip:"2-Kanal-Oszi, zwei 1:1-Tastköpfe, Backprobe-Nadeln oder Breakout-Box am Motorsteuergerät, Stromlaufplan/WIS für genau dieses Modelljahr, Diagnosetester (Aussetzerzähler, Zündwinkelrücknahme je Zylinder).",
+anschluss:"Die Kassette sitzt direkt auf den Kerzen. Leitungen zum STG: Versorgung (Batterie-Plus über Hauptrelais), Masse, je Zylinder ein Trigger, zwei Verbrennungssignale (T5/T7: Zyl. 1+2 und 3+4; T8: Zyl. 1+3 und 2+4) und das Klopfsignal. Pins sind modelljahrabhängig. Beispiel Saab 9-5 1998, Trionic 4-Zyl. (WIS): Verbrennung 1+2 = STG-Pin 53, 3+4 = Pin 6, Trigger Zyl. 1–4 = Pins 7, 54, 55, 8, Klopfsignal = Pin 38, Bezug Masse = Pin 25.",
+messpunkte:"CH1: Verbrennungssignal des Zylinderpaars gegen STG-Masse. CH2: Trigger Zyl. 1 gegen dieselbe Masse (beim VDS1022I haben beide Kanäle dieselbe Masse). Messen am STG-Stecker (Backprobe) oder per Breakout. Für die Gegenprobe (Bild Trigger unterbrochen) darf der Niedervolt-Stecker der Kassette abgegriffen werden: nur bei aufgesetzter Kassette, Nadeln bei Zündung aus setzen, nur an Trigger-, Verbrennungs- und Klopfsignal-Pin. Nie an Kerze, Kerzenschacht oder abgehobener Kassette.",
+setup:{kanal:"CH1 Verbrennungssignal · CH2 Trigger Zyl. 1",kopp:"DC",tk:"1:1",vdiv:"5 V/div",tdiv:"20 ms/div (Übersicht) · 2 ms/div (ein Ereignis)",trig:"Flanke ↓ auf CH2, ~6 V (Trigger Zyl. 1)",zustand:"Motor warm, Leerlauf"},
+tk11:{stufe:"ok", hinweis:"Trigger und Verbrennungssignal 0 V bis Bordnetz, Klopfsignal wenige Volt (T5 laut Forum Sinus ~±6 V) – alles innerhalb ±20 V, 1:1 passt. Mess- und Hochspannung im Sekundärkreis werden nicht gemessen."},
+vorgang:["Fehlerspeicher und Aussetzerzähler lesen. Modelljahr klären (T5, T7 oder T8) und die Pins aus WIS/Stromlaufplan holen.","Zündung aus. Backprobe-Nadeln oder Breakout am STG-Stecker setzen: CH1 Verbrennungssignal Zyl. 1+2, CH2 Trigger Zyl. 1, beide 5 V/div, 20 ms/div, Trigger ↓ auf CH2 ~6 V.","Leerlauf: Trigger Zyl. 1 geht einmal je zwei Kurbelumdrehungen auf Masse (WIS: ~7 Hz). Nach jeder Zündung von Zyl. 1 und Zyl. 2 kommen auf CH1 kurze Plusimpulse.","Auf 2 ms/div zoomen: Die Impulse kommen erst nach der Triggerflanke. Breite und Anzahl schwanken von Takt zu Takt – das ist normal.","Zweites Paar mit dem Trigger eines seiner Zylinder genauso prüfen.","Startvorgang aufzeichnen (100 ms/div): erst Zündung bei jeder Umdrehung (Zyl. 1 und 4 gemeinsam), nach der Synchronisation nur noch jede zweite."],
+gut:[
+  W2({ badge:"GUT", title:"Leerlauf: Trigger Zyl. 1 + Verbrennung 1+2", cond:"warm, LL ~825 /min", tdiv:0.02, vdiv:5, off:0, os:8,
+    trig:{t:0.02, v:6, ch:1},
+    ch:[{ m:"ionenstromVb", p:{}, lbl:"Verbr. 1+2" },
+        { m:"ionenstromTrig", p:{}, lbl:"Trigger Zyl. 1", vdiv:5, off:-3 }],
+    meas:[ {t:"span", ch:1, t0:0.02, t1:0.1655, v:3, pre:"2 Umdrehungen =", post:"→ ~825 /min"} ],
+    notes:[ {t:0.0268, v:7, txt:"Zyl. 1 hat gebrannt", dx:14, dy:-4},
+            {t:0.1288, v:7, txt:"Zyl. 2 hat gebrannt", dx:-14, dy:-4, anchor:"end"} ],
+    expect:[ {what:"freq", ch:1, v:6.875, tolRel:0.03, src:"Physik: 825/120; WIS: Trigger ~7 Hz im Leerlauf"},
+             {what:"max", min:13, max:14.5, src:"WIS: B+-Impuls"},
+             {what:"min", ch:1, max:0.5, src:"STG zieht auf Masse"},
+             {what:"max", t0:0.04, t1:0.12, max:0.5, src:"zwischen Zyl. 1 und Zyl. 2 keine Impulse"} ],
+    caption:"Trigger Zyl. 1 geht einmal je zwei Umdrehungen auf Masse (WIS: ~7 Hz bei 825 /min). Auf dem Verbrennungssignal des Paars 1+2 folgen kurze Plusimpulse nach Zyl. 1 und – 540° später – nach Zyl. 2.",
+    why:"Viertakt: Jeder Zylinder zündet einmal je zwei Umdrehungen, bei Zündfolge 1-3-4-2 liegt Zyl. 2 540° KW nach Zyl. 1. Die Kassette misst den Ionenstrom paarweise und schickt bei Verbrennung einen B+-Impuls (WIS). Über den Vergleich mit dem Trigger erkennt man, welcher Zylinder gebrannt hat. Impulsbreite und -form sind hier qualitativ (keine Herstellerangabe); WIS nennt nur die Zählfrequenz 15–90 Hz." }),
+  W2({ badge:"GUT", title:"Zoom: ein Ereignis Zyl. 1", cond:"warm, LL ~825 /min", tdiv:0.002, vdiv:5, off:0, os:8,
+    trig:{t:0.002, v:6, ch:1},
+    ch:[{ m:"ionenstromVb", p:{ t1:0.002 }, lbl:"Verbr. 1+2" },
+        { m:"ionenstromTrig", p:{ t1:0.002 }, lbl:"Trigger Zyl. 1", vdiv:5, off:-3 }],
+    meas:[ {t:"span", ch:1, t0:0.002, t1:0.016, v:3, pre:"Trigger low"} ],
+    notes:[ {t:0.0021, v:6.9, txt:"Zündung (Flanke ↓)", dx:14, dy:44, ch:1},
+            {t:0.0096, v:7, txt:"Impulse erst NACH der Zündung", dx:14, dy:-4} ],
+    expect:[ {what:"max", t0:0, t1:0.0025, max:0.5, src:"vor der Zündung kein Verbrennungsimpuls"},
+             {what:"max", t0:0.0025, t1:0.009, min:13, max:14.5, src:"WIS: B+-Impuls nach Verbrennung"},
+             {what:"max", ch:1, t0:0.004, t1:0.0155, max:0.5, src:"WIS-Tabelle: 14 ms (−)"} ],
+    caption:"Fallende Triggerflanke = Zündung. Erst danach kommen die Verbrennungsimpulse. Die Low-Zeit des Triggers liegt bei ~14 ms (WIS-Tabelle, Leerlauf).",
+    why:"Die Kassette zündet auf der fallenden Flanke (Forum-Angabe, passt zur WIS-Beschreibung „STG legt den Trigger auf Masse“). Der Ionenstrom hat nach der Zündung eine Flammenfront- und eine Nachflammenphase (Mecel-Patent); das digitale CDM gibt dafür zwei Impulse aus (rusEFI-Beobachtung). Lage und Breite der Impulse im Bild sind QUALITATIV gewählt – es gibt dazu keine Herstellerwerte. Ein Impuls vor der Triggerflanke wäre unplausibel." }),
+  W2({ badge:"GUT", title:"Erhöhte Drehzahl ~2500 /min", cond:"warm, ~2500 /min", tdiv:0.01, vdiv:5, off:0, os:12,
+    trig:{t:0.005, v:6, ch:1},
+    ch:[{ m:"ionenstromVb", p:{ rpm:2500, t1:0.005 }, lbl:"Verbr. 1+2" },
+        { m:"ionenstromTrig", p:{ rpm:2500, t1:0.005 }, lbl:"Trigger Zyl. 1", vdiv:5, off:-3 }],
+    meas:[ {t:"span", ch:1, t0:0.005, t1:0.053, v:3, pre:"2 Umdrehungen =", post:"→ 2500 /min"} ],
+    notes:[ {t:0.0412, v:7, txt:"Zyl. 2", dx:-14, dy:-4, anchor:"end"} ],
+    expect:[ {what:"freq", ch:1, v:20.83, tolRel:0.03, src:"Physik: 2500/120"},
+             {what:"max", min:13, max:14.5, src:"WIS: B+-Impuls"} ],
+    caption:"Gleiches Muster, nur dichter: Trigger Zyl. 1 alle 48 ms, die Impulse werden schmaler, weil sie an den Kurbelwinkel gebunden sind.",
+    why:"Bei 2500 /min dauert eine Umdrehung 24 ms. Verbrennung läuft im Kurbelwinkel ab, darum schrumpfen die Impulse in der Zeit. Die Trigger-Low-Zeit ist hier wie im Leerlauf gezeichnet; WIS nennt nur den Leerlaufwert, bei anderen Drehzahlen ist sie herstellerabhängig." }),
+  W2({ badge:"GUT", title:"Anlassen: Doppelzündung bis Synchronisation", cond:"Start ~300 /min", tdiv:0.1, vdiv:5, off:0, os:8,
+    trig:{t:0.05, v:6, ch:1},
+    ch:[{ m:"ionenstromVb", p:{ rpm:300, t1:0.05 }, lbl:"Verbr. 1+2" },
+        { m:"ionenstromTrig", p:{ rpm:300, t1:0.05, sync:0.5 }, lbl:"Trigger Zyl. 1", vdiv:5, off:-3 }],
+    notes:[ {t:0.25, v:0.2, txt:"Zündung je Umdrehung (1+4)", dx:10, dy:-150, ch:1},
+            {t:0.85, v:0.2, txt:"synchron: jede 2. Umdrehung", dx:-10, dy:-150, anchor:"end", ch:1} ],
+    expect:[ {what:"min", ch:1, t0:0.24, t1:0.27, max:0.5, src:"WIS: vor Synchronisation Zyl. 1+4 gemeinsam je Umdrehung"},
+             {what:"min", ch:1, t0:0.64, t1:0.67, min:13, src:"nach Synchronisation keine Zündung bei ungerader Umdrehung"} ],
+    caption:"Ohne Nockenwellensensor weiß das STG beim Start nicht, ob Zyl. 1 oder 4 verdichtet: Es zündet beide bei jeder Umdrehung. Sobald Verbrennungsimpulse kommen, synchronisiert es und zündet Zyl. 1 nur noch jede zweite Umdrehung.",
+    why:"So beschreibt es Saab WIS für T5/T7/T8. Der Impuls auf dem Paar 1+2 kommt nur, wenn Zyl. 1 im Verdichtungstakt zündet – im Ausstoßtakt brennt nichts. Daran erkennt das STG die Lage. Zyl. 2+3 werden beim Start ebenso gemeinsam gezündet (WIS); der zweite Impuls bei ~350 ms stammt von Zyl. 2. Startdrehzahl und Zeitpunkt der Synchronisation sind ein Beispiel." })
+],
+schlecht:[
+  W2({ badge:"FEHLER", title:"Verbrennungssignal fehlt (Leitung offen)", cond:"warm, LL ~825 /min", tdiv:0.02, vdiv:5, off:0, os:8,
+    trig:{t:0.02, v:6, ch:1},
+    ch:[{ m:"ionenstromVb", p:{ dead:true }, lbl:"Verbr. 1+2" },
+        { m:"ionenstromTrig", p:{}, lbl:"Trigger Zyl. 1", vdiv:5, off:-3 }],
+    ghost:[{ m:"ionenstromVb", p:{} }],
+    notes:[ {t:0.07, v:0, txt:"keine Impulse – Trigger normal", dx:10, dy:-40} ],
+    expect:[ {what:"max", max:0.5, src:"kein Signal"}, {what:"freq", ch:1, v:6.875, tolRel:0.03, src:"Trigger normal"} ],
+    caption:"Trigger normal, auf dem Verbrennungssignal keine Impulse – für beide Zylinder des Paars. Motor läuft trotzdem.",
+    why:"Fehlen die Impulse für BEIDE Zylinder eines Paars, liegt es an der Leitung, am Stecker oder an der Kassette – nicht an einem einzelnen Zylinder (dann fehlt nur jeder zweite Impuls). WIS T7: Pin 53 offen → P1312, Pin 6 offen → P1334; beide offen → keine Synchronisation. Ein Kurzschluss nach Masse sieht am Oszi genauso aus, das STG meldet dann Aussetzer (WIS). Unterscheiden: Stecker an der Kassette ab, Leitung auf Durchgang und Masseschluss prüfen." }),
+  W2({ badge:"FEHLER", title:"Aussetzer Zyl. 2", cond:"warm, LL, unrund", tdiv:0.02, vdiv:5, off:0, os:8,
+    trig:{t:0.02, v:6, ch:1},
+    ch:[{ m:"ionenstromVb", p:{ miss:{2:true} }, lbl:"Verbr. 1+2" },
+        { m:"ionenstromTrig", p:{}, lbl:"Trigger Zyl. 1", vdiv:5, off:-3 }],
+    ghost:[{ m:"ionenstromVb", p:{} }],
+    notes:[ {t:0.0225, v:13.8, txt:"Zyl. 1 normal", dx:46, dy:44},
+            {t:0.131, v:0, txt:"Zyl. 2: keine Verbrennung", dx:-10, dy:-60, anchor:"end"} ],
+    expect:[ {what:"max", t0:0.12, t1:0.16, max:0.5, src:"Zyl. 2 ohne Impuls"}, {what:"max", t0:0.02, t1:0.03, min:13, src:"Zyl. 1 normal"} ],
+    caption:"Nach Zyl. 1 kommt der Impuls, an der Stelle von Zyl. 2 (540° nach Zyl. 1) bleibt das Signal auf 0 V. Der Zylinder hat nicht gebrannt.",
+    why:"Die Verbrennungssignale dienen auch der Aussetzererkennung (WIS, P0300–P0304). Fehlt nur der Impuls EINES Zylinders, ist die Leitung in Ordnung – Ursache am Zylinder: Kerze, Zündung dieses Zylinders, Gemisch (Einspritzventil), Kompression. Ob auch der Trigger dieses Zylinders kommt, mit CH2 am Trigger Zyl. 2 prüfen (sonst siehe Bild Trigger unterbrochen)." }),
+  W2({ badge:"FEHLER", title:"Trigger Zyl. 1 unterbrochen", cond:"LL, Kassettenstecker", tdiv:0.02, vdiv:5, off:0, os:8,
+    ch:[{ m:"ionenstromVb", p:{ miss:{1:true} }, lbl:"Verbr. 1+2" },
+        { m:"ionenstromTrig", p:{ mode:"open" }, lbl:"Trigger Zyl. 1", vdiv:5, off:-3 }],
+    ghost:[{ m:"ionenstromVb", p:{} }, { m:"ionenstromTrig", p:{}, ch:1 }],
+    notes:[ {t:0.08, v:13.8, txt:"Trigger bleibt High", dx:20, dy:40, ch:1},
+            {t:0.0225, v:0, txt:"Zyl. 1 brennt nicht", dx:30, dy:-50} ],
+    expect:[ {what:"min", ch:1, min:13, src:"keine Triggerimpulse"}, {what:"max", t0:0.015, t1:0.05, max:0.5, src:"Zyl. 1 ohne Verbrennung"},
+             {what:"max", t0:0.12, t1:0.16, min:13, src:"Zyl. 2 normal"} ],
+    caption:"Auf der Triggerleitung Zyl. 1 kommt kein Masseimpuls an, der Pegel bleibt oben. Zyl. 1 zündet nicht, also fehlt sein Verbrennungsimpuls; Zyl. 2 ist normal.",
+    why:"WIS T7: Ist eine einzelne Triggerleitung offen, zündet dieser Zylinder nicht, und es wird KEIN Fehlercode für die Leitung gesetzt – anschlagen kann nur die Aussetzererkennung. Messpunkt hier: Niedervolt-Stecker der aufgesetzten Kassette (Backprobe, Nadeln bei Zündung aus setzen – siehe Messpunkte). Annahme: Die Kassette zieht die Triggerleitungen hoch (WIS: ohne Kassettenversorgung 0 V) – hinter der Unterbrechung bleibt der Pegel dann oben. Bei fehlender Versorgung liegen dagegen ALLE Trigger auf 0 V (WIS). Ob der STG-Pin hinter der Unterbrechung Impulse zeigt, hängt davon ab, wo der Pull-up sitzt (Stromlaufplan). Sicher ist: Zündung aus, Stecker an Kassette und STG ab, Leitung auf Durchgang prüfen." }),
+  W2({ badge:"FEHLER", title:"Kassette ohne Versorgung – Motor springt nicht an", cond:"Anlassen (Bsp.)", tdiv:0.1, vdiv:5, off:0, os:8,
+    ch:[{ m:"ionenstromVb", p:{ dead:true, rpm:300, t1:0.05 }, lbl:"Verbr. 1+2" },
+        { m:"ionenstromTrig", p:{ mode:"nopower", rpm:300, t1:0.05 }, lbl:"Trigger Zyl. 1", vdiv:5, off:-3 }],
+    ghost:[{ m:"ionenstromTrig", p:{ rpm:300, t1:0.05, sync:0.5 }, ch:1 }],
+    notes:[ {t:0.5, v:0, txt:"Trigger dauernd 0 V", dx:10, dy:-50, ch:1},
+            {t:0.3, v:0, txt:"keine Verbrennung", dx:10, dy:-40} ],
+    expect:[ {what:"max", ch:1, max:0.5, src:"WIS: alle Trigger 0 V"}, {what:"max", max:0.5, src:"keine Verbrennung"} ],
+    caption:"Beim Anlassen liegt die Triggerleitung dauerhaft auf 0 V, auf dem Verbrennungssignal kommt nichts. Kein Funke, kein Start.",
+    why:"WIS T7: Fehlt die Versorgung der Kassette, liegen alle Triggerleitungen auf 0 V, das STG setzt P1310 und schaltet den Kraftstoff ab. Unterschied zum Einzelfehler: ALLE Trigger tot, nicht nur einer. Prüfen: Batterie-Plus vom Hauptrelais und Masse an der Kassette unter Last (Spannungsfall), Sicherung, Relais." }),
+  W2({ badge:"FEHLER", title:"Wackelkontakt Verbrennungssignal", cond:"Kabelbaum bewegt", tdiv:0.05, vdiv:5, off:0, os:8,
+    trig:{t:0.02, v:6, ch:1},
+    ch:[{ m:"ionenstromVb", p:{ drop:[0.1, 0.35] }, lbl:"Verbr. 1+2" },
+        { m:"ionenstromTrig", p:{}, lbl:"Trigger Zyl. 1", vdiv:5, off:-3 }],
+    ghost:[{ m:"ionenstromVb", p:{} }],
+    notes:[ {t:0.21, v:0, txt:"Aussetzer im Signal, Trigger läuft weiter", dx:-10, dy:-50, anchor:"middle"} ],
+    expect:[ {what:"max", t0:0.11, t1:0.36, max:0.5, src:"Fenster ohne Impulse"}, {what:"max", t0:0.37, t1:0.5, min:13, src:"danach wieder normal"} ],
+    caption:"Mehrere Verbrennungen hintereinander ohne Impuls, für beide Zylinder des Paars, dann wieder normal – während der Kabelbaum bewegt wird.",
+    why:"Ein Verbrennungsaussetzer betrifft oft nur einen Zylinder; fallen die Impulse BEIDER Zylinder zeitgleich aus, ist es die gemeinsame Leitung oder der Stecker. Mit Normal-Trigger und 50 ms/div aufzeichnen, Kabelbaum zwischen Kassette und STG bewegen. Je nach Fehlerart setzt das STG Leitungs- oder Aussetzercodes (WIS T7: Unterbrechung → P1312/P1334, Kurzschluss nach Masse → Aussetzercode)." }),
+  W2({ badge:"FEHLER", title:"Verbrennungssignal dauernd High", cond:"warm, LL", tdiv:0.02, vdiv:5, off:0, os:8,
+    trig:{t:0.02, v:6, ch:1},
+    ch:[{ m:"ionenstromVb", p:{ hi:true }, lbl:"Verbr. 1+2" },
+        { m:"ionenstromTrig", p:{}, lbl:"Trigger Zyl. 1", vdiv:5, off:-3 }],
+    ghost:[{ m:"ionenstromVb", p:{} }],
+    notes:[ {t:0.07, v:13.8, txt:"dauernd ~Bordnetz, keine Einzelimpulse", dx:20, dy:50} ],
+    expect:[ {what:"min", min:13, src:"Schluss nach Plus: Pegel bleibt oben"}, {what:"freq", ch:1, v:6.875, tolRel:0.03, src:"Trigger normal"} ],
+    caption:"Das Verbrennungssignal klebt auf Bordnetzspannung, Einzelimpulse sind nicht zu erkennen. Trigger normal.",
+    why:"Ein Dauerpegel in Höhe von B+ heißt: Leitung mit Schluss nach Plus (Scheuerstelle am Kabelbaum) oder Ausgang der Kassette hängt. Das STG kann daraus keine Verbrennung je Zylinder mehr ablesen. Welcher Fehlercode kommt, ist herstellerabhängig (WIS nennt nur Unterbrechung und Masseschluss). Unterscheiden: Zündung aus, Stecker an Kassette und STG ab, Leitung gegen Plus und Masse ohmisch prüfen – Schluss nach Plus = Leitung, sonst Kassette (Stromlaufplan beachten). Gegenstück: Leitung offen oder Masseschluss → dauernd 0 V." }),
+  W2({ badge:"FEHLER", title:"Trigger Zyl. 1 dauernd 0 V (Masseschluss)", cond:"warm, LL", tdiv:0.02, vdiv:5, off:0, os:8,
+    ch:[{ m:"ionenstromVb", p:{ miss:{1:true} }, lbl:"Verbr. 1+2" },
+        { m:"ionenstromTrig", p:{ mode:"gnd" }, lbl:"Trigger Zyl. 1", vdiv:5, off:-3 }],
+    ghost:[{ m:"ionenstromTrig", p:{}, ch:1 }],
+    notes:[ {t:0.08, v:0, txt:"Trigger dauernd 0 V", dx:10, dy:-40, ch:1},
+            {t:0.0225, v:0, txt:"Zyl. 1 brennt nicht", dx:30, dy:-50} ],
+    expect:[ {what:"max", ch:1, max:0.5, src:"Masseschluss"}, {what:"max", t0:0.015, t1:0.05, max:0.5, src:"Zyl. 1 ohne Verbrennung"},
+             {what:"max", t0:0.12, t1:0.16, min:13, src:"Zyl. 2 normal"} ],
+    caption:"Die Triggerleitung Zyl. 1 liegt dauernd auf 0 V, Zyl. 1 brennt nicht, Zyl. 2 läuft normal.",
+    why:"Ableitung: Die Kassette zündet auf der fallenden Flanke (Forum, passt zu WIS „STG legt auf Masse“). Liegt die Leitung dauernd auf Masse, gibt es keine Flanke mehr – der Zylinder zündet nicht. Unterschied zur fehlenden Versorgung: dort liegen ALLE Trigger auf 0 V und kein Zylinder brennt (WIS: P1310); hier nur einer. Unterschied zur Unterbrechung: dort bleibt der Pegel oben. Prüfen: Stecker am STG und an der Kassette ab, Leitung gegen Masse messen; sonst STG-Endstufe." })
+],
+ursachen:["Leitung Verbrennungssignal unterbrochen, Masseschluss oder Stecker korrodiert","Einzelne Triggerleitung unterbrochen (Zylinder zündet nicht, laut WIS T7 ohne eigenen Fehlercode)","Versorgung oder Masse der Kassette fehlt (Hauptrelais, Sicherung, Leitung)","Kassette/CDM defekt (Ionenauswertung oder Zündteil)","Kerzen verschlissen oder nicht nach Herstellervorgabe (Typ, Elektrodenabstand)","Echte Aussetzer: Gemisch, Einspritzventil, Kompression"],
+loesungen:["Leitungen Kassette–STG auf Durchgang und Masseschluss prüfen, Stecker instand setzen","Versorgung und Masse der Kassette unter Last prüfen (Spannungsfall)","Kerzen nach Herstellervorgabe ersetzen","Kassette erst tauschen, wenn Versorgung, Trigger und Leitungen nachweislich in Ordnung sind","Gemisch und Kompression am auffälligen Zylinder prüfen"],
+gegen:"Tester: Aussetzerzähler je Zylinder, Zündwinkelrücknahme durch Klopfregelung je Zylinder. DMM/Logikprüfer gegen WIS-Tabelle (9-5 1998, Leerlauf): Trigger ~7 Hz, Verbrennungssignale 15–90 Hz, Klopfsignal ~2,5 V (Bedingung dort nicht genannt).",
+plaus:"Verbrennungsimpulse müssen zu den Triggern passen: Paar 1+2 meldet nach Zyl. 1 und Zyl. 2, Paar 3+4 nach Zyl. 3 und 4 (T8: 1+3 und 2+4). Gegen Laufruhe und Aussetzerzähler.",
+dtc:"Modelljahrabhängig (WIS). T7 (9-3 2001): P1310 Versorgung Kassette, P1312/P1334 Verbrennungssignal offen, P0340 keine Synchronisation, P0300–P0304 Aussetzer; T7 (9-5 2002): P0327 Klopfsignal. T5 OBDII (9-3 1998): P0340 Verbrennungssignal offen, P0327 Klopfsignal. Andere Jahre: Herstellerdaten.",
+irrtuemer:["Ionenstrom direkt an Kerze oder Kerzenschacht messen wollen – dort liegen Mess- und Hochspannung, auswertbar ist das Signal nur über die Kassette.","Fehlende Verbrennungsimpulse sofort der Kassette anlasten – oft ist es ein echter Aussetzer (Gemisch, Kompression) oder die Leitung.","Doppelzündung beim Start für einen Fehler halten – ohne Nockenwellensensor ist das gewollt, bis die Verbrennungssignale synchronisieren (WIS)."],
+tipps:["Klopfsignal: hier ohne Bild (Kurvenform je Generation verschieden). WIS 9-5 1998 nennt am Pin 38 ~2,5 V (DMM); Grundlagen zur Klopfmessung in der Karte Klopfsensor.","Paarlogik nutzen: Fehlt der Impuls nur nach einem Zylinder des Paars, liegt es am Zylinder (Kerze, Trigger, Gemisch); fehlen alle Impulse eines Paars, an Leitung oder Kassette.","Triggerflanke als Bezug: Der Verbrennungsimpuls kommt immer NACH der Zündung.","Bei sporadischen Fehlern Normal-Trigger auf CH2, 50 ms/div und Kabelbaum bewegen."],
+warn:"Lebensgefahr Hochspannung: Die Kassette lädt einen Kondensator auf ~400 V und erzeugt bis ~40 kV; im Sekundärkreis liegt dauernd die Messspannung (~80 V T5/T7, ~120 V T8, WIS). Nur Niedervolt-Leitungen abgreifen: am STG-Stecker, zur Gegenprobe am Niedervolt-Stecker der aufgesetzten Kassette (Nadeln bei Zündung aus setzen). Kassette nicht öffnen, bei laufendem Motor nicht abheben, keine Messspitze an Kerze oder Kerzenschacht. Zündung beim Anklemmen aus. Kein Hochvolt-Fahrzeug, keine Airbag-Leitungen.",
+simpel:"Die Zündkerze ist hier auch der Sensor. Nach dem Funken meldet die Kassette dem Steuergerät: „Hat gebrannt!“ – als kurzer Plusimpuls. Fehlt der Impuls, hat der Zylinder nicht gezündet.",
+profi:"Der Ionenstrom hat nach der Zündung eine Flammenfront- und eine Nachflammenphase; das Maximum der zweiten fällt typ. mit dem Spitzendruck zusammen (Mecel-Patent). Klopfen steckt als hochfrequenter Anteil (> 5 kHz) im Ionenstrom; die Kassette filtert ihn heraus, das STG wertet das Klopfsignal nur in einem Kurbelwinkelfenster nach der Zündung aus und nimmt den Zündwinkel zylinderselektiv zurück (T5: 1,5° je Klopfereignis, max. 12°).",
+check10:"Trigger Zyl. 1 einmal je zwei Umdrehungen auf Masse? Nach jeder Zündung des Paars ein Plusimpuls bis Bordnetz? Kein Impuls vor der Zündung? → gut.",
+wannschlecht:"Keine Impulse auf einem Verbrennungssignal oder Signal dauernd High; Impulse fehlen nach einem bestimmten Zylinder; Triggerleitung ohne Impulse oder dauerhaft 0 V.",
+wannok:"Anzahl und Breite der Impulse schwanken von Verbrennung zu Verbrennung. Doppelzündung beim Start bis zur Synchronisation. Mehrfachfunken beim Kaltstart unter 0 °C und Freibrennen nach Motor aus (WIS) sehen anders aus und sind gewollt.",
+next:"Signal gut, trotzdem Aussetzer oder Klopfen → Kerzen, Gemisch, Kompression, Kraftstoffqualität. Signal schlecht → Versorgung und Masse der Kassette, Leitungen, dann Kassette."
+},
+
+{
+id:"cdi", kat:"zuend", sig:"induktiv", diff:2, sys:"zuendung",
+name:"Kondensatorzündung (CDI) – Trigger und Primärseite",
+aufgabe:"Zündung vor allem bei Motorrädern, Rollern, Mopeds, Außenbordern und Kleinmotoren, früher auch im Pkw (Saab Direct Ignition). Ein Kondensator wird auf Hochspannung geladen und im Zündzeitpunkt über einen Thyristor in die Zündspule entladen; die Spule arbeitet nur als Übertrager. Den Zeitpunkt gibt ein induktiver Pickup (Pulser) am Polrad vor.",
+signalart:"Pickup: je Kurbelumdrehung ein Plus- und ein Minusimpuls, im NXP-Beispiel ~25° auseinander; Amplitude steigt mit der Drehzahl (Honda-Beispiel: beim Anlassen ≥ 0,7 V Spitze). Primär: Die Kondensatorspannung (typ. ~300–500 V, je nach System bis ~600 V) springt schlagartig auf die Spule, danach kurzes Ausschwingen. Funkendauer typ. ≤ ~0,2 ms statt ~1–2 ms bei der Transistorzündung.",
+equip:"2-Kanal-Oszi, 1:1-Tastkopf für den Pickup, 100:1-Tastkopf mit ausreichender Spannungsfestigkeit (CAT-Angabe beachten) für Primärseite und Ladespule, Backprobe-Nadeln, Stromlaufplan, Peak-Voltage-Adapter für Herstellerprüfwerte; Sekundär nur mit kapazitivem Abgriff (Karte Zündung Sekundär).",
+anschluss:"AC-CDI: Die Ladespule (Exciter) am Polrad lädt den Kondensator direkt (NXP: 100–400 V Wechselspannung, drehzahlabhängig). DC-CDI: Bordnetz 12 V, ein Wandler in der CDI erzeugt die Ladespannung. Dazu Pickup (zweipolig oder eine Leitung gegen Masse), Ausgang zur Zündspule, Masse, ggf. Zündschloss/Killschalter. Belegung laut Stromlaufplan.",
+messpunkte:"CH1: Pickup-Leitung gegen Masse am CDI-Stecker (Backprobe), 1:1. CH2: CDI-Ausgang zur Zündspule gegen Masse – NUR mit 100:1-Tastkopf. Beide Massekrokodile an denselben Massepunkt (gemeinsame Kanalmasse). Massefehler: CH1 an CDI-Masse gegen Batterie-Minus, ohne Batterie gegen Motor-/Rahmenmasse (z. B. Lichtmaschinen-/Polradgehäuse).",
+setup:{kanal:"CH1 Pickup · CH2 Primär (100:1)",kopp:"DC",tk:"1:1 (Pickup) · 100:1 (Primär)",vdiv:"2 V/div (Pickup) · 100–200 V/div (Primär, 100:1)",tdiv:"5 ms/div (Leerlauf) · 50 µs/div (Primärimpuls)",trig:"Flanke ↑ auf CH1, ~1 V (Pickup)",zustand:"Motor warm, Leerlauf (Beispiel 1500 /min)"},
+tk11:{stufe:"einschr", hinweis:"Pickup mit 1:1 (Leerlauf wenige V; bei hoher Drehzahl typabhängig über ±20 V möglich, dann 10:1). Primär- und Ladespannung (Hunderte Volt, mit 10:1 über 400 Vss) nur mit 100:1-Tastkopf; Sekundär nur kapazitiv."},
+vorgang:["Sichtprüfung: Stecker, Masse von CDI und Zündspule, Killschalter (herstellerabhängig auch Seitenständer- und Kupplungsschalter).","CH1 1:1 an die Pickup-Leitung, 0,5–2 V/div, Trigger ↑ ~1 V. Anlassen: je Umdrehung ein Plus- und ein Minusimpuls; Spitzenwert gegen Herstellerwert (Honda-Beispiel ≥ 0,7 V).","Leerlauf, 5 ms/div: Impulspaar regelmäßig, Abstand der Paare = eine Umdrehung (60 s / Drehzahl).","Motor aus, CH2 mit 100:1 an den CDI-Ausgang zur Spule, Leitungen sichern. Starten: je Pickup-Paar ein steiler Primärimpuls.","Auf 50 µs/div zoomen: Höhe (≈ Ladespannung) und Dauer des Impulses beurteilen.","Drehzahl erhöhen: Bei digitaler CDI wandert der Primärimpuls vom Minus- zum Plusimpuls (Frühverstellung, NXP-Beispiel)."],
+gut:[
+  W2({ badge:"GUT", title:"Pickup Leerlauf ~1500 /min", cond:"warm, LL ~1500 /min (Bsp.), 1 Zyl.", tdiv:0.005, vdiv:2, off:0, os:8,
+    trig:{t:0.006, v:1},
+    ch:[{ m:"cdiPick", p:{}, lbl:"Pickup" }],
+    meas:[ {t:"span", t0:0.006, t1:0.046, v:-6.6, pre:"1 Umdrehung =", post:"→ 1500 /min"} ],
+    notes:[ {t:0.006, v:4.5, txt:"Plusimpuls", dx:14, dy:4},
+            {t:0.00878, v:-4.5, txt:"Minusimpuls (OT-Bezug), ~25° später", dx:16, dy:4} ],
+    expect:[ {what:"max", min:4.2, max:4.8, src:"Modell: Beispielamplitude"}, {what:"min", min:-4.8, max:-4.2, src:"Modell"},
+             {what:"max", t0:0.012, t1:0.044, max:0.2, src:"zwischen den Paaren Ruhe"} ],
+    caption:"Je Kurbelumdrehung ein Impulspaar: erst plus, dann minus. Abstand der Paare = eine Umdrehung. Die Amplitude im Bild ist ein Beispiel – Herstellerwert gilt.",
+    why:"Der Pickup sitzt am Polrad; die Polkanten erzeugen einen Plus- und ~25° später einen Minusimpuls, der Minusimpuls ist der OT-Bezug (NXP AN4006). 1500 /min → 60 s/1500 = 40 ms je Umdrehung; 25° sind dann 40 ms·25/360 ≈ 2,8 ms. Die Spitzenspannung wächst mit der Drehzahl (Induktionsgesetz)." }),
+  W2({ badge:"GUT", title:"Pickup beim Anlassen", cond:"Anlassen ~400 /min (Bsp.)", tdiv:0.02, vdiv:0.5, off:0, os:8,
+    trig:{t:0.02, v:0.5},
+    ch:[{ m:"cdiPick", p:{ rpm:400, ph0:0.02 }, lbl:"Pickup" }],
+    meas:[ {t:"span", t0:0.02, t1:0.17, v:-1.7, pre:"1 Umdrehung =", post:"→ 400 /min"} ],
+    notes:[ {t:0.02, v:1.2, txt:"Spitze ≥ 0,7 V (Honda-Vorgabe)", dx:16, dy:4} ],
+    expect:[ {what:"max", min:0.9, max:1.5, src:"über Honda-Mindestwert 0,7 V"}, {what:"min", max:-0.9, src:"Modell"} ],
+    caption:"Beim Anlassen ist die Pickup-Spannung am kleinsten. Hier muss sie den Herstellerwert erreichen (Honda CRF450X: mind. 0,7 V Spitze, gemessen mit Peak-Voltage-Adapter).",
+    why:"Induzierte Spannung ~ Drehzahl: Bei Startdrehzahl ist das Signal am schwächsten – darum prüfen Hersteller hier. Die Amplitude im Bild (~1,2 V) ist ein Beispiel. Die Anlassdrehzahl ist herstellerabhängig." }),
+  W2({ badge:"GUT", title:"Pickup + Primärimpuls Leerlauf", cond:"LL ~1500 /min (Bsp.)", tdiv:0.005, vdiv:2, off:1, os:16,
+    trig:{t:0.006, v:1},
+    ch:[{ m:"cdiPick", p:{}, lbl:"Pickup" },
+        { m:"cdiPrim", p:{}, lbl:"Primär (100:1)", vdiv:200, off:-2 }],
+    notes:[ {t:0.00878, v:350, txt:"Funke am Minusimpuls (OT-Bezug)", dx:20, dy:4, ch:1} ],
+    expect:[ {what:"max", ch:1, min:320, max:370, src:"Beispiel-Ladespannung 350 V (typ. ~300–500 V)"},
+             {what:"max", ch:1, t0:0.012, t1:0.048, max:5, src:"zwischen den Zündungen ~0 V"} ],
+    caption:"Je Pickup-Paar ein steiler Primärimpuls in Höhe der Ladespannung. Bei niedriger Drehzahl zündet die digitale CDI am Minusimpuls.",
+    why:"NXP AN4006: niedrige Drehzahl → Zündung am Minusimpuls (OT), hohe Drehzahl → am Plusimpuls (25° früh). Die Primärspitze entspricht der Kondensatorspannung (Pico: 400 V+, Wikipedia 250–600 V; hier Beispiel 350 V). Der Impuls ist so kurz, dass er bei 5 ms/div nur als Strich erscheint. Polarität ist schaltungsabhängig." }),
+  W2({ badge:"GUT", title:"Erhöhte Drehzahl ~4000 /min: Frühzündung", cond:"~4000 /min (Bsp.)", tdiv:0.002, vdiv:5, off:1, os:16,
+    trig:{t:0.003, v:2},
+    ch:[{ m:"cdiPick", p:{ rpm:4000, ph0:0.003 }, lbl:"Pickup" },
+        { m:"cdiPrim", p:{ rpm:4000, ph0:0.003 }, lbl:"Primär (100:1)", vdiv:200, off:-2 }],
+    meas:[ {t:"span", t0:0.003, t1:0.018, v:-3, pre:"1 Umdrehung =", post:"→ 4000 /min"} ],
+    notes:[ {t:0.003, v:350, txt:"Funke am Plusimpuls (~25° früh)", dx:-10, dy:4, anchor:"end", ch:1} ],
+    expect:[ {what:"max", min:11, max:13, src:"Modell: Amplitude ~ Drehzahl"}, {what:"max", ch:1, min:320, max:370, src:"Beispiel-Ladespannung"} ],
+    caption:"Höhere Drehzahl: Pickup-Amplitude größer, Paare dichter. Der Primärimpuls sitzt jetzt am Plusimpuls – die CDI zündet früher.",
+    why:"Frühverstellung nach NXP AN4006: bei hoher Drehzahl am Plusimpuls (25° vor dem Minus-/OT-Impuls). Die Drehzahlgrenzen der Verstellung sind herstellerabhängig. Bei AC-CDI steigt die Ladespannung mit der Drehzahl (NXP: Magneto 100–400 V), hier vereinfacht konstant. Achtung 1:1: Pickup-Spitzen bei hoher Drehzahl können typabhängig über ±20 V gehen." }),
+  W2({ badge:"GUT", title:"Zoom: Primärimpuls (kurze Entladung)", cond:"LL, 100:1-Tastkopf", tdiv:0.00005, vdiv:100, off:0, os:8,
+    trig:{t:0.00005, v:100},
+    ch:[{ m:"cdiPrim", p:{ ph0:0.00005 - 25 / 9000 }, lbl:"Primär (100:1)" }],
+    meas:[ {t:"span", t0:0.00005, t1:0.00025, v:-300, pre:"Ausschwingen", txt:"≤ ~0,2 ms"} ],
+    notes:[ {t:0.00005, v:350, txt:"steiler Anstieg auf die Ladespannung", dx:30, dy:34} ],
+    expect:[ {what:"max", min:320, max:370, src:"Beispiel-Ladespannung 350 V"},
+             {what:"max", t0:0.00030, t1:0.0005, max:25, src:"Phelon: CD-Entladung ~200 µs oder weniger"},
+             {what:"min", t0:0.00030, t1:0.0005, min:-25, src:"abgeklungen"} ],
+    caption:"Die Kondensatorspannung springt in weniger als einem Kästchen auf die Spule und schwingt dann innerhalb von ~0,2 ms aus. Keine Schließzeit, keine lange Brennlinie wie bei der Transistorzündung.",
+    why:"CDI entlädt den Kondensator über den Thyristor in die Primärwicklung; danach sieht man nur das Ausschwingen (Pico). CD-Entladungen dauern typ. ~200 µs oder weniger (Phelon-Patent), induktive Systeme brennen ~1–2 ms (Ross Farnham; Karte Zündung primär). Frequenz und Dämpfung des Ausschwingens sind schematisch – sie hängen von Kondensator, Spule und Kerze ab. Polarität typabhängig: Liegt der Kondensator in Reihe zur Primärwicklung und zieht der Thyristor seine geladene Seite auf Masse, springt der Spulenanschluss zuerst nach MINUS – das Bild ist dann gespiegelt." })
+],
+schlecht:[
+  W2({ badge:"FEHLER", title:"Kein Triggersignal (Pickup offen)", cond:"Anlassen ~400 /min", tdiv:0.02, vdiv:0.5, off:1, os:8,
+    ch:[{ m:"cdiPick", p:{ rpm:400, ph0:0.02, open:true }, lbl:"Pickup" },
+        { m:"cdiPrim", p:{ rpm:400, ph0:0.02, uc:300, fail:true }, lbl:"Primär (100:1)", vdiv:200, off:-2 }],
+    ghost:[{ m:"cdiPick", p:{ rpm:400, ph0:0.02 } }, { m:"cdiPrim", p:{ rpm:400, ph0:0.02, uc:300 }, ch:1 }],
+    notes:[ {t:0.1, v:0, txt:"Pickup: nur Nulllinie", dx:10, dy:-30},
+            {t:0.1, v:0, txt:"kein Primärimpuls", dx:10, dy:40, ch:1} ],
+    expect:[ {what:"vpp", max:0.15, src:"kein Signal"}, {what:"vpp", ch:1, max:5, src:"keine Zündung"} ],
+    caption:"Beim Anlassen kommt vom Pickup nichts, also löst die CDI nie aus – kein Primärimpuls, kein Funke.",
+    why:"Ohne Trigger zündet die CDI nicht. Unterschied zu „CDI defekt“: Dort ist der Pickup da, nur der Primärimpuls fehlt. Prüfen: Pickup-Widerstand gegen Herstellerwert, Leitung und Stecker, Luftspalt, Pickup mechanisch beschädigt." }),
+  W2({ badge:"FEHLER", title:"Pickup zu schwach (Luftspalt/Schmutz)", cond:"Anlassen ~400 /min", tdiv:0.02, vdiv:0.5, off:1, os:8,
+    trig:{t:0.02, v:0.2},
+    ch:[{ m:"cdiPick", p:{ rpm:400, ph0:0.02, gain:0.35 }, lbl:"Pickup" },
+        { m:"cdiPrim", p:{ rpm:400, ph0:0.02, uc:300, skip:[0] }, lbl:"Primär (100:1)", vdiv:200, off:-2 }],
+    ghost:[{ m:"cdiPick", p:{ rpm:400, ph0:0.02 } }],
+    notes:[ {t:0.02, v:0.42, txt:"Spitze < 0,7 V", dx:16, dy:4},
+            {t:0.0304, v:0, txt:"kein Funke", dx:16, dy:-40, ch:1} ],
+    expect:[ {what:"max", max:0.6, src:"unter Honda-Mindestwert 0,7 V"}, {what:"max", ch:1, t0:0.0, t1:0.1, max:5, src:"Funke fehlt"},
+             {what:"max", ch:1, t0:0.15, t1:0.2, min:250, src:"nächster Funke kommt"} ],
+    caption:"Pickup-Spitzen deutlich unter dem Sollbild und unter dem Herstellerwert. Die CDI erkennt den Impuls nicht sicher – Funken fallen beim Start aus.",
+    why:"Zu großer Luftspalt, Metallabrieb am Polrad oder ein geschwächter Pickup verkleinern die Amplitude bei gleicher Frequenz. Wo die Auslöseschwelle der CDI liegt, ist herstellerabhängig. Unterschied zum Wackelkontakt: Hier sind ALLE Impulse klein, dort fehlen einzelne ganz." }),
+  W2({ badge:"FEHLER", title:"Ladespannung zu niedrig (Ladespule/Wandler)", cond:"LL, läuft schlecht, 100:1", tdiv:0.00005, vdiv:100, off:0, os:8,
+    trig:{t:0.00005, v:50},
+    ch:[{ m:"cdiPrim", p:{ ph0:0.00005 - 25 / 9000, uc:150 }, lbl:"Primär (100:1)" }],
+    ghost:[{ m:"cdiPrim", p:{ ph0:0.00005 - 25 / 9000 } }],
+    notes:[ {t:0.00005, v:150, txt:"Spitze nur ~150 V", dx:24, dy:-34} ],
+    expect:[ {what:"max", min:130, max:170, src:"Fehlerbeispiel"} ],
+    caption:"Form und Dauer stimmen, aber die Spitze erreicht nur einen Bruchteil des Sollbilds. Der Kondensator wird nicht voll geladen.",
+    why:"Die Primärspitze zeigt die Kondensatorspannung. Energie E = ½·C·U²: halbe Spannung = nur ein Viertel der Energie – der Funke wird schwach, besonders unter Last. Ursachen: AC-CDI – Ladespule schwach oder Windungsschluss (Honda XR50R: ≥ 100 V Spitze beim Ankicken); DC-CDI – Bordnetzspannung zu niedrig oder Wandler in der CDI defekt. Unterschied zu „CDI defekt“: hier kommt der Impuls, nur zu niedrig." }),
+  W2({ badge:"FEHLER", title:"CDI defekt: Pickup da, kein Primärimpuls", cond:"Anlassen ~400 /min", tdiv:0.02, vdiv:0.5, off:1, os:8,
+    trig:{t:0.02, v:0.5},
+    ch:[{ m:"cdiPick", p:{ rpm:400, ph0:0.02 }, lbl:"Pickup" },
+        { m:"cdiPrim", p:{ rpm:400, ph0:0.02, uc:300, fail:true }, lbl:"Primär (100:1)", vdiv:200, off:-2 }],
+    ghost:[{ m:"cdiPrim", p:{ rpm:400, ph0:0.02, uc:300 }, ch:1 }],
+    notes:[ {t:0.17, v:1.2, txt:"Pickup normal", dx:-16, dy:4, anchor:"end"},
+            {t:0.0304, v:0, txt:"kein Primärimpuls", dx:16, dy:-40, ch:1} ],
+    expect:[ {what:"max", min:0.9, src:"Pickup normal"}, {what:"vpp", ch:1, max:5, src:"keine Entladung"} ],
+    caption:"Der Pickup liefert saubere Impulse, am CDI-Ausgang kommt aber nichts. Die CDI lädt oder entlädt nicht.",
+    why:"Trigger ist da, also liegt der Fehler in der CDI oder ihrer Energieversorgung: Kondensator, Thyristor, Wandler (DC-CDI) – oder bei AC-CDI die Ladespule. Gleiches Bild, andere Ursache: Killschalter bzw. (herstellerabhängig) Seitenständer- oder Kupplungsschalter legt die CDI still – erst Schalterstellung und deren Leitungen prüfen. Vor dem Tausch: Ladespule (AC-CDI) bzw. 12-V-Versorgung (DC-CDI), Masse und Schalter prüfen. Ein Kurzschluss in Primärleitung oder Spule hält den Ausgang ebenfalls unten – Spule abklemmen und Widerstand messen." }),
+  W2({ badge:"FEHLER", title:"Wackelkontakt Pickup-Leitung", cond:"LL, Kabelbaum bewegt", tdiv:0.02, vdiv:2, off:1, os:16,
+    trig:{t:0.006, v:1},
+    ch:[{ m:"cdiPick", p:{ drop:[2, 3] }, lbl:"Pickup" },
+        { m:"cdiPrim", p:{ drop:[2, 3] }, lbl:"Primär (100:1)", vdiv:200, off:-2 }],
+    ghost:[{ m:"cdiPick", p:{} }],
+    notes:[ {t:0.106, v:0, txt:"2 Umdrehungen ohne Pickup und ohne Funke", dx:0, dy:-50, anchor:"middle"} ],
+    expect:[ {what:"vpp", t0:0.09, t1:0.16, max:0.15, src:"Pickup fehlt"}, {what:"max", ch:1, t0:0.09, t1:0.16, max:5, src:"Funke fehlt"},
+             {what:"max", t0:0.0, t1:0.05, min:4, src:"vorher normal"} ],
+    caption:"Einzelne Umdrehungen ohne Pickup-Impuls – genau dort fehlt auch der Primärimpuls. Danach wieder normal.",
+    why:"Fehlt der Trigger nur zeitweise, setzt die Zündung genau dann aus: Leitung gebrochen, Stecker korrodiert, Scheuerstelle. Mit 20 ms/div aufzeichnen und Kabelbaum bewegen. Unterschied zum schwachen Pickup: hier fehlen einzelne Impulse ganz, die übrigen haben volle Höhe." }),
+  W2({ badge:"FEHLER", title:"Masse der CDI schlecht", cond:"LL ~1500 /min (Bsp.)", tdiv:0.005, vdiv:1, off:1, os:16,
+    trig:{t:0.0088, v:0.5},
+    ch:[{ m:"cdiMasse", p:{ dv:2.5 }, lbl:"CDI-Masse" },
+        { m:"cdiPrim", p:{}, lbl:"Primär (100:1)", vdiv:200, off:-2 }],
+    ghost:[{ m:"cdiMasse", p:{} }],
+    notes:[ {t:0.0088, v:2.0, txt:"Spannungsfall bei jeder Entladung", dx:20, dy:4} ],
+    expect:[ {what:"max", min:1.5, src:"Spannungsfall an der Masse"}, {what:"vpp", t0:0.012, t1:0.045, max:0.1, src:"zwischen den Zündungen ~0 V"} ],
+    caption:"Zwischen CDI-Masse und Batterie-Minus (ohne Batterie: Motormasse) sollten fast 0 V liegen. Hier springt die Masse bei jeder Entladung um mehrere Volt (Beispielhöhe) – Übergangswiderstand im Massepfad.",
+    why:"Der Entladestrom fließt über die Masse zurück; ein Übergangswiderstand erzeugt dort U = R·i. Die Höhe im Bild ist ein Beispiel. Folgen: Pickup-Bezug verschiebt sich, Zündenergie geht verloren, Fehlauslösungen sind möglich. Sollbild: flache Linie bei 0 V. Massepunkte reinigen, festziehen und nachmessen." })
+],
+ursachen:["Pickup defekt oder Leitung unterbrochen","Luftspalt am Pickup zu groß, Polrad verschmutzt (Metallabrieb)","Ladespule (Exciter) schwach oder Windungsschluss (AC-CDI)","Bordnetzspannung zu niedrig oder Wandler in der CDI defekt (DC-CDI)","CDI defekt (Kondensator, Thyristor)","Masse von CDI oder Zündspule schlecht","Zündspule, Kerzenstecker oder Kerze defekt"],
+loesungen:["Pickup-Amplitude und -Widerstand gegen Herstellerwert prüfen, ggf. ersetzen","Luftspalt nach Herstellervorgabe einstellen, Polrad reinigen","Ladespule mit Peak-Voltage-Adapter oder 100:1-Tastkopf gegen Herstellerwert prüfen","Massepunkte reinigen und festziehen, Spannungsfall messen","CDI erst ersetzen, wenn Pickup, Ladespule bzw. Versorgung, Masse und Spule geprüft sind"],
+gegen:"DMM: Widerstände von Pickup, Ladespule und Zündspule gegen Herstellerwerte. Peak-Voltage-Adapter: Herstellerprüfwerte beim Anlassen (z. B. Honda: Pulsgeber ≥ 0,7 V). Funkenprüfer an der Kerze bzw. Sekundär kapazitiv (Karte Zündung Sekundär).",
+plaus:"Pickup und Primärimpuls müssen zusammenpassen: kein Pickup → kein Funke; Pickup da, kein Primärimpuls → CDI, Ladespule/Versorgung oder Spule. Drehzahl aus dem Abstand der Pickup-Paare gegen den Drehzahlmesser.",
+dtc:"Meist keine Eigendiagnose (Vergaser-Zweiräder, Kleinmotoren). Bei Systemen mit Motorsteuergerät herstellerabhängig (Herstellerdaten).",
+irrtuemer:["Den kurzen Funken für einen Fehler halten – bei CDI ist die Funkendauer systembedingt kurz.","Primärseite wie bei der Transistorzündung mit 10:1 messen – Kondensatorspannung samt Ausschwingen kann die 400 Vss des VDS1022I überschreiten.","Bei fehlendem Funken sofort die CDI tauschen – Pickup, Ladespule, Masse und Killschalter lassen sich ohne Ersatzteil prüfen."],
+tipps:["Pickup-Amplitude bei der Drehzahl vergleichen, die der Hersteller vorgibt (meist Anlassen).","Pickup und Primärimpuls gleichzeitig aufzeichnen: Fehlt nur der Primärimpuls, liegt es an der Lade-/Entladeseite.","Massespannungsfall prüfen: CH1 an CDI-Masse gegen Batterie-Minus (ohne Batterie: gegen Motor-/Rahmenmasse) – im Gutzustand fast 0 V."],
+warn:"Lebensgefahr Hochspannung: Der CDI-Kondensator wird typ. auf ~300–500 V geladen (je nach System bis ~600 V), die Ladespule liefert bis ~400 V Wechselspannung. Primärseite und Ladespule nur mit 100:1-Tastkopf (VDS1022I mit 10:1 max. 400 Vss), Messleitungen bei stehendem Motor anklemmen und sichern, im Betrieb nicht anfassen. Kerzenstecker oder Zündspule im Betrieb nicht abziehen – ohne Last kann die Hochspannung überschlagen oder die CDI schädigen; zum Funkentest einen Funkenprüfer verwenden. Sekundär nur kapazitiv. Weg von Polrad, Kette, Riemen. Kein Hochvolt-Fahrzeug, keine Airbag-Leitungen.",
+simpel:"Der Kondensator ist wie ein kleiner Eimer voll Spannung. Der Pickup ruft „Jetzt!“, dann wird der Eimer schlagartig in die Zündspule gekippt. Der Funke ist sehr kurz, aber kräftig.",
+profi:"Energie im Kondensator E = ½·C·U² (z. B. 1 µF bei 300 V ≈ 45 mJ; NXP: C typ. 0,47–2 µF, an der Kerze mind. ~20 mJ nötig). Die Spule arbeitet als Impulsübertrager – darum steile Flanke und kurze Funkendauer. Digitale CDI: niedrige Drehzahl Zündung am Minusimpuls (OT), hohe am Plusimpuls (~25° früh), dazwischen proportional (NXP-Beispiel). AC-CDI: Ladespannung wächst mit der Drehzahl, eine schwache Ladespule fällt zuerst beim Anlassen auf.",
+check10:"Je Umdrehung ein Pickup-Paar? Je Paar ein steiler Primärimpuls in Höhe der Ladespannung? Impuls kurz und regelmäßig? → gut.",
+wannschlecht:"Kein Pickup-Signal; Pickup da, aber kein oder zu niedriger Primärimpuls; Impulse fehlen sporadisch; Spannungsspitzen auf der Masse.",
+wannok:"Pickup-Amplitude steigt mit der Drehzahl; Primärimpuls verschiebt sich mit der Drehzahl (Frühverstellung); Polarität von Pickup und Primärimpuls schaltungsabhängig (Kondensator in Reihe zur Primärwicklung → Primärimpuls zuerst negativ, Bild gespiegelt).",
+next:"Signal gut, trotzdem kein Funke → Zündspule, Kerzenstecker, Kerze (Karte Zündung Sekundär, kapazitiv). Signal schlecht → Pickup/Luftspalt, Ladespule bzw. Versorgung, Masse, dann CDI."
 }
 
 ,
@@ -17551,6 +18280,503 @@ next:"Signal gut, NOx hoch → Spritzbild, AdBlue, SCR-Kat und NOx-Sensoren prü
 },
 
 {
+id:"atg-ventil", kat:"aktor", sig:"strom", diff:3, sys:"stellglieder",
+name:"Magnetventile Automatikgetriebe (Druckregler und Schaltventile)",
+aufgabe:"Im Schieberkasten bzw. in der Mechatronik des Automatikgetriebes stellen Magnetventile den Hydraulikdruck ein und schalten die Gänge. Zwei Arten: Schaltventile (Ein/Aus, „Ja/Nein“) öffnen oder sperren einen Ölkanal; Druckregelventile (Druckregler, EDS, Modulationsventil) stellen über den Strom einen Druck für Systemdruck, Kupplungen oder Bremsen ein (Saab WIS, VW SSP 308).",
+signalart:"Druckregler: stromgeregelt per PWM, Beispiel Saab 300 Hz, Strom 0–1000 mA; viel Strom = wenig Druck bei stromlos offenen Ventilen (Saab). Andere STG takten deutlich schneller und legen einen langsamen Dither über den Strom (Infineon TLE8242: PWM bis ~4 kHz, Dreieck-Dither). Schaltventil: Ein/Aus, Beispiel Saab: B+ an, Strom = Ub/R (13 Ω → ~1 A), beim Einschalten ein kleiner Stromknick, wenn der Anker läuft. Welche Seite schaltet, ist herstellerabhängig: High-Side (Saab) taktet die Plusseite, Low-Side-Regler (z. B. Infineon TLE8242) die Masseseite – dort liegt die Steuerleitung im Ein-Takt nahe 0 V.",
+equip:"2-Kanal-Oszi, DC-Stromzange mit mA-Auflösung (z. B. 100 mV/A), Backprobe-Nadeln oder Breakout am Getriebestecker, Stromlaufplan, Diagnosetester (Stellgliedtest, Soll-/Iststrom, Druck- und Drehzahl-Istwerte), Multimeter.",
+anschluss:"Oft sitzen die Ventile in der Mechatronik oder hinter einem Zwischenstecker am Getriebe; bei integrierter Mechatronik (z. B. VW DSG 02E, SSP 308) sind sie einzeln nicht erreichbar – dann nur am Getriebestecker messen, wenn der Stromlaufplan die Ventilleitungen dort zeigt. Belegung laut Stromlaufplan.",
+messpunkte:"CH1: Stromzange um die Ventilleitung am Getriebestecker oder am STG (vorher nullen). CH2: Ventil-Plusseite bzw. Steuerleitung gegen Batterie-Minus (Backprobe, 1:1). Bei Ventilen mit Masse über das Gehäuse (Saab S1/S2) gibt es nur eine Leitung.",
+setup:{kanal:"CH1 Strom (Zange) · CH2 Ventilspannung",kopp:"DC",tk:"Stromzange 100 mV/A · 1:1 Spannung",vdiv:"0,2 A/div (Zange) · 5 V/div (Spannung)",tdiv:"1 ms/div (PWM) · 2 ms/div (Schaltventil) · 50 ms/div (Verlauf)",trig:"Normal, Flanke ↑ auf CH1 (Strom ~0,9 A)",zustand:"Motor warm, Leerlauf, Wählhebel D, Feststellbremse angezogen und Bremse getreten, kein Gas"},
+tk11:{stufe:"einschr", hinweis:"Strom per Zange und Ventilspannung mit Freilaufdiode (ca. −1 bis 15 V) gehen mit 1:1. Ohne Freilauf (herstellerabhängig) kann beim Abschalten eine Spitze über 20 V entstehen – erst mit 10:1 ansehen."},
+vorgang:["Stromlaufplan: Welche Ventile, welche Art (Schaltventil oder Druckregler), welche Seite schaltet das STG, sind die Leitungen am Getriebestecker erreichbar?","Fehlerspeicher und Istwerte lesen (Soll-/Iststrom, Gang, Drücke falls vorhanden).","Zange nullen, um die Leitung des Druckreglers. Motor warm, Leerlauf, D, Bremse: PWM und Mittelstrom ablesen (Saab-Beispiel ~900 mA).","Stellgliedtest im Tester (Saab-Beispiel bei Zündung EIN: Strom pendelt ~250–910 mA) – oder in D nur kurz (wenige Sekunden) und mit wenig Gas antippen, nie Vollgas gegen die Bremse: Der Strom muss sich ändern.","Schaltventil: beim Gangwechsel oder Stellgliedtest einschalten lassen, Stromanstieg mit Knick ansehen (2 ms/div).","Auffällig: Widerstand am Getriebestecker (Herstellerwert, Saab-Beispiele 2–6 Ω Druckregler, 13 Ω Schaltventil), Stecker auf Öl und Korrosion prüfen, Leitungen bewegen."],
+gut:[
+  W2({ badge:"GUT", title:"Druckregler: PWM, Mittelstrom ~0,9 A", cond:"Leerlauf, D, Bremse (Saab)", tdiv:0.001, vdiv:0.2, off:-2, os:8,
+    trig:{t:0.0011, v:0.9},
+    ch:[{ m:"atgVentil", p:{ ph:0.0005 }, lbl:"Strom", unit:"A" },
+        { m:"atgVentil", p:{ ph:0.0005, sig:"u" }, lbl:"Plusseite", vdiv:5, off:-3.5 }],
+    meas:[ {t:"span", t0:0.0005, t1:0.003833, v:16, ch:1, pre:"Periode", post:"→ 300 Hz"},
+           {t:"level", v:0.9, t0:0.0, t1:0.01, txt:"Mittel ~0,9 A", dy:0} ],
+    expect:[ {what:"mean", min:0.87, max:0.93, t0:0.0005, t1:0.0105, src:"Saab ST: Leerlauf, D, Handbremse ~900 mA"},
+             {what:"freq", ch:1, v:300, tolRel:0.02, src:"Saab: 300-Hz-PWM"},
+             {what:"max", ch:1, min:13.4, max:14.0} ],
+    caption:"Die Plusseite taktet mit 300 Hz zwischen Bordnetz und knapp unter 0 V, der Strom pendelt als Sägezahn um ~0,9 A. Der Mittelwert ist die Stellgröße.",
+    why:"Saab-Beispiel: Druckregler mit 300-Hz-PWM, im Leerlauf in D mit angezogener Handbremse ~900 mA, Systemdruck 3,4–4,6 bar (Saab WIS). Die Spule glättet den Strom; im Aus-Takt fließt er über die Freilaufdiode weiter (Spannung ~−0,8 V). Die Höhe des Sägezahns hängt von der Induktivität ab (Modellannahme, herstellerabhängig). Modell mit 5 Ω (Saab SLS/SLT 5,1–5,5 Ω; ST ~4 Ω) – der Tastgrad (hier ~0,36) hängt von Bordnetz und Spulenwiderstand ab. Bei stromlos offenen Ventilen gilt: viel Strom = wenig Druck." }),
+  W2({ badge:"GUT", title:"Gas geben: Strom sinkt, Druck steigt", cond:"D, Bremse, kurz wenig Gas (Saab)", tdiv:0.05, vdiv:0.2, off:-3.5, os:4,
+    ch:[{ m:"atgVentil", p:{ prof:[[0,0.9],[0.15,0.9],[0.3,0.3],[0.5,0.3]] }, lbl:"Strom", unit:"A" }],
+    notes:[ {t:0.08, v:1.1, txt:"Leerlauf ~0,9 A", dx:10, dy:-30},
+            {t:0.4, v:0.45, txt:"weniger Strom = mehr Druck", dx:-10, dy:-50, anchor:"end"} ],
+    expect:[ {what:"mean", t0:0.02, t1:0.14, min:0.87, max:0.93},
+             {what:"mean", t0:0.33, t1:0.49, min:0.27, max:0.33} ],
+    caption:"Mit dem Gaspedal sinkt der Strom: Das STG erhöht den Druck für das größere Moment. Bei 50 ms/div ist der 300-Hz-Takt nur ein Band. In D nur kurz und mit wenig Gas – kein Vollgas gegen die Bremse.",
+    why:"Saab: Der Strom ändert sich hauptsächlich mit der Gaspedalstellung; wenig Strom = hoher Systemdruck (stromlos offenes Ventil). Das STG nutzt dazu Motormoment und Gang. Verlauf und Endwert im Bild sind ein Beispiel. Längeres Gasgeben gegen die Bremse ist ein Stall-Test: Wandler und Öl werden sehr schnell heiß – sicherer ist der Stellgliedtest (Bild G4). Bei stromlos geschlossenen Druckreglern ist die Richtung umgekehrt (herstellerabhängig)." }),
+  W2({ badge:"GUT", title:"Low-Side-Stromregler: hohe PWM, Dither", cond:"D (Beispiel)", tdiv:0.002, vdiv:0.2, off:-2, os:8,
+    ch:[{ m:"atgVentil", p:{ f:2000, i:0.6, dith:0.1, dithF:100, ls:true }, lbl:"Strom", unit:"A" },
+        { m:"atgVentil", p:{ f:2000, i:0.6, dith:0.1, dithF:100, ls:true, sig:"u" }, lbl:"Steuerleitung (Low-Side)", vdiv:5, off:-3.5 }],
+    meas:[ {t:"span", t0:0.005, t1:0.015, v:0.95, pre:"Dither-Periode"} ],
+    notes:[ {t:0.0101, v:0.3, ch:1, txt:"ein ≈ 0 V", dx:30, dy:22} ],
+    expect:[ {what:"mean", t0:0, t1:0.02, min:0.58, max:0.62, src:"Dither ändert den Mittelstrom nicht"},
+             {what:"vpp", t0:0, t1:0.02, min:0.19, max:0.3},
+             {what:"freq", ch:1, t0:0, t1:0.002, v:2000, tolRel:0.03},
+             {what:"max", ch:1, min:14.3, max:14.9, src:"Modell: aus = Ub 13,8 V + Freilaufdiode ~0,8 V"},
+             {what:"min", ch:1, max:0.6, src:"Modell: ein ≈ Spannungsfall am MOSFET"} ],
+    caption:"Hier schaltet das STG die Masseseite: Die Steuerleitung liegt im Ein-Takt nahe 0 V, im Aus-Takt knapp über Bordnetz. Der Strom zeigt eine langsame Dreieckswelle um den Sollwert – das ist Dither, kein Fehler.",
+    why:"Konstantstromregler für Getriebeventile wie der Infineon TLE8242 sind Low-Side-Treiber: Das Ventil hängt an der Versorgung, ein externer MOSFET schaltet die Masseseite, die Freilaufdiode führt zur Versorgung zurück – darum im Aus-Takt Ub plus ~0,8 V. Sie takten bis ~4 kHz und legen einen dreieckförmigen Dither über den Sollstrom, damit der Ventilschieber nicht haftet. Frequenzen und Dither-Höhe im Bild sind ein Beispiel. Ein High-Side-Bild (G0) sieht spiegelbildlich aus – erst im Stromlaufplan klären, welche Seite schaltet." }),
+  W2({ badge:"GUT", title:"Schaltventil ein: Knick = Anker zieht", cond:"Stellgliedtest (Beispiel)", tdiv:0.002, vdiv:0.2, off:-3, os:8,
+    ch:[{ m:"atgSchalt", p:{}, lbl:"Strom", unit:"A" },
+        { m:"atgSchalt", p:{ sig:"u" }, lbl:"Plusseite", vdiv:5, off:0 }],
+    notes:[ {t:0.00496, v:0.43, txt:"Knick: Anker am Anschlag", dx:30, dy:40},
+            {t:0.018, v:1.04, txt:"Endstrom ~Ub/13 Ω", dx:-10, dy:-30, anchor:"end"} ],
+    expect:[ {what:"mean", t0:0.018, t1:0.02, min:1.0, max:1.08, src:"Ub 13,8 V / 13 Ω (Saab S1/S2)"},
+             {what:"min", t0:0.004, t1:0.0055, min:0.38, max:0.48, src:"Modell: Gegen-EMK während der Ankerbewegung"} ],
+    caption:"Plusseite schaltet auf Bordnetz, der Strom steigt, knickt kurz ein und steigt dann weiter auf den Endwert. Der Knick zeigt: Der Anker hat sich bewegt.",
+    why:"Saab S1/S2: STG schaltet B+, Masse über das Gehäuse, Wicklung 13 Ω → Endstrom ≈ 13,8 V / 13 Ω ≈ 1,06 A (Ohm). Der laufende Anker erzeugt eine Gegenspannung, der Strom sinkt kurz; am Anschlag endet die Bewegung → Knick. Steuergeräte nutzen das zur Kontrolle (Infineon TLE8242: Stromprofil-Erkennung prüft die Ankerbewegung). Zeiten im Bild sind Modellannahmen – Lage und Tiefe des Knicks sind ventilabhängig, Vergleich mit einem gleichen Ventil hilft." }),
+  W2({ badge:"GUT", title:"Stellgliedtest: Strom pendelt", cond:"Zündung ein, Stellgliedtest (Saab 900)", tdiv:0.5, vdiv:0.2, off:-3.5, os:24,
+    ch:[{ m:"atgVentil", p:{ prof:[[0,0.25],[0.5,0.25],[1.5,0.91],[2.5,0.25],[3.5,0.91],[4.5,0.25],[5,0.25]] }, lbl:"Strom", unit:"A" }],
+    notes:[ {t:1.5, v:1.0, txt:"~910 mA", dx:10, dy:-24},
+            {t:2.5, v:0.2, txt:"~250 mA", dx:10, dy:30} ],
+    expect:[ {what:"mean", t0:0.05, t1:0.45, min:0.23, max:0.27, src:"Saab 900: Stellgliedtest ~250 mA"},
+             {what:"mean", t0:1.45, t1:1.55, min:0.86, max:0.93, src:"Saab 900: Stellgliedtest ~910 mA"} ],
+    caption:"Im Stellgliedtest pendelt der Strom gleichmäßig zwischen ~250 und ~910 mA, das Ventil klickt hörbar. Der einfachste Test ohne Fahrbetrieb.",
+    why:"Saab 900: Im Stellgliedtest bei Zündung EIN steuert das STG den Druckregler ~30 s lang mit einem Strom, der zwischen ~250 und ~910 mA pendelt; ein Klicken ist zu hören. Bei 500 ms/div ist der PWM-Takt nur ein Band. Form und Periode des Pendelns im Bild sind ein Beispiel, Ablauf und Werte anderer Getriebe laut Herstellerdaten." })
+],
+schlecht:[
+  W2({ badge:"FEHLER", title:"Druckregler: Spule offen", cond:"Leerlauf, D, Bremse", tdiv:0.001, vdiv:0.2, off:-2, os:8,
+    ch:[{ m:"atgVentil", p:{ ph:0.0005, fault:"open" }, lbl:"Strom", unit:"A" },
+        { m:"atgVentil", p:{ ph:0.0005, fault:"open", sig:"u" }, lbl:"Plusseite", vdiv:5, off:-3.5 }],
+    ghost:[{ m:"atgVentil", p:{ ph:0.0005 } }],
+    notes:[ {t:0.0075, v:0.05, txt:"kein Strom", dx:10, dy:-40} ],
+    expect:[ {what:"max", max:0.05}, {what:"min", ch:1, min:-0.3, src:"ohne Strom kein Freilauf unter 0 V"} ],
+    caption:"Die Spannung taktet, aber es fließt kein Strom; der Aus-Takt geht nur auf 0 V statt knapp darunter. Systemdruck maximal, harte Schaltungen, Notlauf.",
+    why:"Unterbrechung in Spule, Leitung oder Stecker: Ohne Strom gibt es keinen Freilauf, darum fehlt der kleine negative Anteil. Saab: Unterbrechung → Systemdruck maximal (stromlos offen, Ventil ganz offen), harte Schaltungen, Notlauf, DTC z. B. P0748 bzw. P1847. Widerstand am Getriebestecker messen: unendlich → zur Spule hin weitersuchen." }),
+  W2({ badge:"FEHLER", title:"Windungsschluss: Tastgrad zu klein", cond:"Leerlauf, D, Bremse", tdiv:0.001, vdiv:0.5, off:-1.5, os:8,
+    ch:[{ m:"atgVentil", p:{ ph:0.0005, fault:"wt" }, lbl:"Strom", unit:"A" },
+        { m:"atgVentil", p:{ ph:0.0005, fault:"wt", sig:"u" }, lbl:"Plusseite", vdiv:5, off:-3.5 }],
+    ghost:[{ m:"atgVentil", p:{ ph:0.0005 } }, { m:"atgVentil", p:{ ph:0.0005, sig:"u" }, ch:1 }],
+    notes:[ {t:0.0011, v:13.8, ch:1, txt:"kurze Ein-Zeit", dx:30, dy:-14} ],
+    expect:[ {what:"mean", t0:0.0005, t1:0.0105, min:0.86, max:0.94, src:"Regelung hält den Mittelstrom"},
+             {what:"duty", ch:1, t0:0.0005, t1:0.0105, min:0.17, max:0.24, src:"Modell: R halbiert → Tastgrad ~0,2 statt ~0,36"} ],
+    caption:"Mittelstrom stimmt, aber die Ein-Zeit ist viel kürzer als beim Sollbild und der Sägezahn steiler. Die Spule hat zu wenig Widerstand.",
+    why:"Windungsschluss: weniger Widerstand und viel weniger Induktivität. Die Stromregelung braucht für denselben Strom weniger Tastgrad (Mittelstrom ≈ (Tastgrad·Ub − (1 − Tastgrad)·Uf)/R). Der Strom stimmt, die Magnetkraft je Ampere ist aber kleiner → Druck falsch. Unterschied zum Übergangswiderstand: dort wird der Tastgrad größer. Saab nennt dafür eigene Codes (z. B. P1849 Kurzschluss im Ventil oder zwischen den Ventilleitungen). Tastgradwerte sind Modellwerte und hängen von Bordnetz und Spulenwiderstand ab. Widerstand mit Sollwert vergleichen." }),
+  W2({ badge:"FEHLER", title:"Übergangswiderstand am Stecker", cond:"Leerlauf, D, Bremse", tdiv:0.001, vdiv:0.2, off:-2, os:8,
+    ch:[{ m:"atgVentil", p:{ ph:0.0005, rs:5 }, lbl:"Strom", unit:"A" },
+        { m:"atgVentil", p:{ ph:0.0005, rs:5, sig:"u" }, lbl:"Plusseite am STG", vdiv:5, off:-3.5 }],
+    ghost:[{ m:"atgVentil", p:{ ph:0.0005, sig:"u" }, ch:1 }],
+    notes:[ {t:0.0027, v:13.8, ch:1, txt:"lange Ein-Zeit", dx:20, dy:-14} ],
+    expect:[ {what:"mean", t0:0.0005, t1:0.0105, min:0.87, max:0.93},
+             {what:"duty", ch:1, t0:0.0005, t1:0.0105, min:0.62, max:0.7, src:"Modell: R verdoppelt → Tastgrad ~0,66"} ],
+    caption:"Strom noch richtig, aber das STG muss viel länger einschalten. Reicht der Tastgrad irgendwann nicht mehr (Wärme, mehr Sollstrom), fehlt Strom.",
+    why:"Öl, Feuchtigkeit oder Korrosion im Getriebestecker (Saab: Stecker auf Feuchtigkeit und Korrosion prüfen; Getriebeöl kann im Kabelbaum hochziehen, Motor Age) liegen in Reihe zur Spule. Die Regelung gleicht aus, bis der Tastgrad am Anschlag ist. Im Bild als Beispiel +5 Ω; Tastgrad ist ein Modellwert. CH2 ist am STG-Pin gemessen – direkt am Ventil wäre der Ein-Pegel um den Spannungsfall (~0,9 A · 5 Ω ≈ 4,5 V) niedriger. Unterschied zum Windungsschluss: hier wird die Ein-Zeit länger. Spannungsfall unter Strom zwischen STG-Pin und Ventil messen." }),
+  W2({ badge:"FEHLER", title:"Wackelkontakt: Strom fällt kurz aus", cond:"Leerlauf, Stecker bewegt", tdiv:0.05, vdiv:0.2, off:-3.5, os:4,
+    ch:[{ m:"atgVentil", p:{ drop:[[0.12,0.16],[0.31,0.33]] }, lbl:"Strom", unit:"A" }],
+    ghost:[{ m:"atgVentil", p:{} }],
+    notes:[ {t:0.14, v:0.02, txt:"Aussetzer", dx:30, dy:-40} ],
+    expect:[ {what:"max", t0:0.125, t1:0.155, max:0.05}, {what:"mean", t0:0.02, t1:0.1, min:0.87, max:0.93} ],
+    caption:"Der Strom fällt kurz auf 0 und kommt wieder. In dem Moment springt der Druck nach oben – ruckartige Schaltungen, sporadisch Notlauf.",
+    why:"Saab: Zeitweilige Kurzschlüsse und Unterbrechungen kommen in der Verkabelung vor – Leitungen und Stecker an mehreren Stellen bewegen und dabei messen. Bei 50 ms/div sieht man den Takt nur als Band, die Aussetzer aber deutlich. Zeiten im Bild als Beispiel." }),
+  W2({ badge:"FEHLER", title:"Masseschluss (High-Side, z. B. Saab)", cond:"Leerlauf, D, Bremse", tdiv:0.001, vdiv:0.2, off:-2, os:8,
+    ch:[{ m:"atgVentil", p:{ ph:0.0005, fault:"gnd" }, lbl:"Strom", unit:"A" },
+        { m:"atgVentil", p:{ ph:0.0005, fault:"gnd", sig:"u" }, lbl:"Plusseite", vdiv:5, off:-3.5 }],
+    ghost:[{ m:"atgVentil", p:{ ph:0.0005 } }, { m:"atgVentil", p:{ ph:0.0005, sig:"u" }, ch:1 }],
+    notes:[ {t:0.005, v:0.05, ch:1, txt:"Plusseite liegt auf 0 V", dx:10, dy:-40} ],
+    expect:[ {what:"max", max:0.05}, {what:"max", ch:1, max:0.4} ],
+    caption:"Kein Takt mehr, die Plusseite liegt auf 0 V, durch die Spule fließt nichts. Die Endstufe hat sich wegen Überstrom abgeschaltet (Beispiel High-Side).",
+    why:"Gilt für High-Side geschaltete Ventile: Die Ventil-Plusleitung hat Kontakt zur Masse, der Endstufenstrom fließt am Ventil vorbei, eine geschützte Endstufe schaltet bei Überstrom ab (Schutzverhalten herstellerabhängig). Folge wie bei Unterbrechung: Systemdruck zu hoch, Notlauf (Saab P1847). Unterschied zur Unterbrechung: dort taktet die Spannung weiter. Bei Low-Side geschalteten Ventilen ist es umgekehrt: Masseschluss der Steuerleitung bedeutet Dauerstrom (stromlos offener Druckregler → Druck minimal), Überstrom entsteht dort bei Plusschluss. Stecker abziehen, Leitung gegen Masse messen." }),
+  W2({ badge:"FEHLER", title:"Plusschluss (High-Side, z. B. Saab)", cond:"Leerlauf, D, Bremse", tdiv:0.001, vdiv:1, off:-3, os:8,
+    ch:[{ m:"atgVentil", p:{ ph:0.0005, fault:"plus" }, lbl:"Strom", unit:"A" },
+        { m:"atgVentil", p:{ ph:0.0005, fault:"plus", sig:"u" }, lbl:"Plusseite", vdiv:5, off:-3.5 }],
+    ghost:[{ m:"atgVentil", p:{ ph:0.0005 } }, { m:"atgVentil", p:{ ph:0.0005, sig:"u" }, ch:1 }],
+    notes:[ {t:0.005, v:2.76, txt:"Dauerstrom ~Ub/R", dx:10, dy:-30} ],
+    expect:[ {what:"mean", min:2.6, max:2.9, src:"13,8 V / 5 Ω (Modell) ≈ 2,8 A"}, {what:"min", ch:1, min:13.4, src:"Plusseite fest auf Bordnetz"} ],
+    caption:"Die Plusseite taktet nicht mehr, sie liegt fest auf Bordnetz. Durch die Spule fließt Dauerstrom weit über dem Sollwert – Systemdruck zu niedrig.",
+    why:"Die Ventil-Plusleitung hat Kontakt zu Plus: Das STG kann nicht mehr abschalten, der Strom ist nur noch Ub/R (im Modell 13,8 V / 5 Ω ≈ 2,8 A). Beim stromlos offenen Druckregler heißt viel Strom wenig Druck: Saab 900 P1848 (Plusschluss) → Druck zu niedrig, starker Verschleiß. Unterschied zum Windungsschluss: dort taktet die Spannung weiter und der Mittelstrom stimmt. Stecker abziehen, Leitung gegen Plus messen." }),
+  W2({ badge:"FEHLER", title:"Schaltventil klemmt: kein Knick", cond:"Stellgliedtest", tdiv:0.002, vdiv:0.2, off:-3, os:8,
+    ch:[{ m:"atgSchalt", p:{ fault:"stuck" }, lbl:"Strom", unit:"A" },
+        { m:"atgSchalt", p:{ fault:"stuck", sig:"u" }, lbl:"Plusseite", vdiv:5, off:0 }],
+    ghost:[{ m:"atgSchalt", p:{} }],
+    notes:[ {t:0.0055, v:0.85, txt:"glatter Anstieg ohne Knick", dx:30, dy:30} ],
+    expect:[ {what:"mean", t0:0.018, t1:0.02, min:1.0, max:1.08, src:"Widerstand unverändert"},
+             {what:"min", t0:0.0045, t1:0.0055, min:0.6, src:"kein Einbruch"} ],
+    caption:"Der Strom steigt glatt ohne Knick auf den Endwert. Elektrisch ist alles da, aber der Anker hat sich nicht bewegt.",
+    why:"Ohne Ankerbewegung keine Gegenspannung und keine Änderung der Induktivität – darum kein Knick, der Strom steigt schneller als beim Sollbild. Ursache meist Schmutz oder Abrieb im Öl, der Schieber hängt. Endstrom stimmt → Spule und Leitung in Ordnung (Unterschied zum Windungsschluss). Öl und Ölwanne auf Abrieb prüfen." }),
+  W2({ badge:"FEHLER", title:"Schaltventil: Windungsschluss", cond:"Stellgliedtest", tdiv:0.002, vdiv:0.5, off:-3, os:8,
+    ch:[{ m:"atgSchalt", p:{ fault:"wt" }, lbl:"Strom", unit:"A" },
+        { m:"atgSchalt", p:{ fault:"wt", sig:"u" }, lbl:"Plusseite", vdiv:5, off:0 }],
+    ghost:[{ m:"atgSchalt", p:{} }],
+    notes:[ {t:0.016, v:1.77, txt:"Endstrom zu hoch", dx:-10, dy:-30, anchor:"end"} ],
+    expect:[ {what:"mean", t0:0.016, t1:0.02, min:1.68, max:1.82, src:"13,8 V / (0,6 · 13 Ω) ≈ 1,77 A"} ],
+    caption:"Der Endstrom liegt deutlich über dem Sollbild, der Anstieg ist schneller. Die Spule hat Windungsschluss.",
+    why:"Ein Schaltventil wird nicht geregelt: Endstrom = Ub/R. Mit Windungsschluss sinkt R (im Bild als Beispiel auf 60 %), der Strom steigt auf ~1,77 A statt ~1,06 A. Das belastet die Endstufe; Codes dafür sind herstellerabhängig. Widerstand mit Sollwert vergleichen (Saab S1/S2: nominal 13 Ω)." })
+],
+ursachen:["Spule offen oder mit Windungsschluss","Öl, Feuchtigkeit oder Korrosion im Getriebestecker (Saab; Motor Age: Öl zieht im Kabelbaum hoch)","Kurzschluss der Ventilleitung gegen Masse oder Plus (Saab P1847/P1848)","Ventilschieber klemmt (Schmutz, Abrieb im Öl)","Leiterplatte bzw. interne Leitungen der Mechatronik","Endstufe im Getriebe-STG","Druck falsch trotz richtigem Strom: Hydraulik (Schieber, Dichtungen, Kupplung)"],
+loesungen:["Stecker reinigen, abdichten bzw. Dichtungen ersetzen, Leitung instand setzen","Ventil ersetzen, wenn einzeln erhältlich; sonst Schieberkasten bzw. Mechatronik nach Herstellervorgabe","Ölzustand prüfen, Öl und ggf. Filter wechseln, Ursache des Abriebs klären","Getriebe-STG erst ersetzen, wenn Leitung und Ventil nachweislich gut sind","Nach Reparatur Grundeinstellung bzw. Anlernen nach Herstellervorgabe"],
+gegen:"Tester: Fehlerspeicher, Soll-/Iststrom, Stellgliedtest (Saab-Beispiel: Strom pendelt ~250–910 mA, Klicken hörbar). Multimeter: Widerstand am Getriebestecker (Saab-Beispiele: Druckregler 2–6 Ω bzw. ~4 Ω, SLS/SLT 5,1–5,5 Ω, Schaltventile 13 Ω) und Isolation gegen Masse. Hydraulik: Leitungsdruck mit Manometer, falls ein Prüfanschluss vorhanden ist. Abgrenzung: Bei N75, AGR- oder Tankentlüftungsventil (Karte pwm-ventil) ist der Tastgrad selbst die Stellgröße; stromgeregelte Ventile wie hier oder das Klima-Regelventil (Karte klima-ventil) stellen den Mittelstrom ein.",
+plaus:"Strom ändert sich mit Gaspedal und Gang; Schaltventile schalten passend zur Zustandstabelle des Herstellers; Iststrom im Tester = gemessener Mittelstrom; Schaltqualität passt zum Strombild.",
+dtc:"Herstellerabhängig. Beispiele Saab: P0748 (Druckregler ST bzw. SLT), P0785 (SLS), P0753/P0758 (Schaltventile S1/S2); Saab 900: P1847 (offen/Masseschluss), P1848 (Plusschluss), P1849 (Kurzschluss im Ventil oder zwischen den Ventilleitungen). Andere Getriebe laut Herstellerdaten.",
+irrtuemer:["„Strom stimmt = Druck stimmt“ – der Strom zeigt nur die Ansteuerung; Schieber, Dichtungen und Kupplungen können trotzdem den Druck verfälschen.","„Mehr Strom = mehr Druck“ – bei stromlos offenen Druckreglern ist es umgekehrt (Saab).","„Die Dreieckswelle im Strom ist ein Fehler“ – das ist Dither, gewollt (Infineon TLE8242).","„Ventile in der Mechatronik kann man einzeln messen“ – oft nur über den Getriebestecker oder gar nicht (VW SSP 308)."],
+tipps:["Erst Stromlaufplan: sind die Ventilleitungen am Getriebestecker herausgeführt?","Zange nullen; bei Strömen um 1 A eine mA-Zange oder den kleinsten Bereich nehmen.","Druckregler: 1 ms/div für Takt und Mittelwert, 50 ms/div für den Verlauf beim Gasgeben.","Gleiche Ventile vergleichen (z. B. S1 gegen S2) – gleiche Form, gleicher Endstrom, Knick an ähnlicher Stelle."],
+warn:"Fahrzeug steht in D: Feststellbremse anziehen, Bremse treten, Räder sichern, niemand vor oder hinter dem Fahrzeug. In D nicht länger als wenige Sekunden und nur mit wenig Gas gegen die Bremse – kein Vollgas: Wandler und Getriebeöl überhitzen, das Fahrzeug kann anrollen; Herstellervorgabe zum Stall-Test beachten. Wo möglich den Stellgliedtest nutzen. Motor läuft: Riementrieb, heiße Teile, heißes Getriebeöl. Nur backproben, keine Stecker im Lauf trennen (Notlauf, Fehlercodes).",
+simpel:"Im Automatikgetriebe schalten kleine Elektromagnete die Gänge und stellen den Öldruck. Manche sind nur an oder aus, andere werden schnell getaktet. Am Strom siehst du, ob die Spule zieht und wie viel Strom das Steuergerät schickt.",
+profi:"Zwei Ventilarten: Schaltventil (ungeregelt, Endstrom = Ub/R, Ankerbewegung als Stromknick) und Druckregler (stromgeregelt: PWM-Tastgrad stellt den Mittelstrom, ggf. mit Dither). Bei Stromregelung zeigt der Tastgrad den Kreiswiderstand: kleiner → Windungsschluss, größer → Übergangswiderstand. Richtiger Strom + falscher Druck → Hydraulik.",
+check10:"Druckregler taktet, Mittelstrom ändert sich mit dem Gas? Schaltventil mit Knick und Endstrom passend zum Widerstand? → gut.",
+wannschlecht:"Kein Strom trotz Takt, Plusseite fest auf 0 V oder fest auf Bordnetz mit Dauerstrom, Tastgrad deutlich anders als beim gleichen Ventil im Vergleichsfahrzeug, Strom-Aussetzer beim Bewegen der Leitungen, Schaltventil ohne Knick oder mit zu hohem Endstrom.",
+wannok:"Mittelstrom ändert sich mit Last und Gang; Dither-Welle im Strom; Sägezahnhöhe je nach Ventil verschieden; Schaltventile sind je nach Gang an oder aus.",
+next:"Signal gut, Schaltprobleme bleiben → Öl, Hydraulik, Drehzahlsensoren (Karte getriebe-dz), Adaption; Signal schlecht → Getriebestecker, Leitungen, Ventilwiderstand, dann STG."
+},
+
+{
+id:"leerlaufsteller", kat:"aktor", sig:"pwm", diff:2, sys:"stellglieder",
+name:"Leerlaufsteller (Drehsteller)",
+aufgabe:"Bypass-Luftsteller an Motoren mit Seilzug-Drosselklappe. Bei geschlossener Drosselklappe regelt das Motorsteuergerät über den freigegebenen Luftquerschnitt die Leerlaufdrehzahl: kalt erhöht, bei Last (Klima, Servolenkung, Automatik, Generator) ausgeglichen. Getaktete Hubmagnet-Leerlaufventile (Bypassventil mit Magnet) misst man genauso: 2-polig, fester Takt, Tastgrad. E-Gas-Stellmotoren: Karte stellmotor. Schrittmotor-Steller: Karte schrittmotor.",
+signalart:"PWM auf geschalteter Masse mit fester Frequenz, typ. ~100 Hz (Saab, Pico-Beispiel; herstellerabhängig). Low typ. ~0,5 V (Endstufe leitet), High ≈ Bordnetz. 2-polig: Plus + eine getaktete Masse, öffnet gegen eine Feder. 3-polig: Plus + zwei gegenphasige Massen (Öffnen/Schließen, Doppelwicklung). Je länger die Öffnen-Leitung auf Masse liegt, desto weiter öffnet der Steller.",
+equip:"2-Kanal-Oszi, Backprobe-Nadeln, Multimeter (Spulenwiderstand), Diagnosetester (Soll-/Ist-Drehzahl, Tastgrad), Stromlaufplan.",
+anschluss:"2- oder 3-polig: Dauerplus (vom Steuergerät oder Hauptrelais) und eine bzw. zwei vom Steuergerät geschaltete Massen. Belegung laut Stromlaufplan.",
+messpunkte:"CH1: Öffnen-Leitung (geschaltete Masse) gegen Fahrzeugmasse · CH2: Schließen-Leitung (nur 3-polig). Plus-Pin bei Zündung ein mit dem Multimeter: 11–14 V (Hella).",
+setup:{kanal:"CH1+CH2",kopp:"DC",tk:"10:1 (1:1 möglich)",vdiv:"5 V/div",tdiv:"2 ms/div (Tastgrad) · 10–50 ms/div (Lastwechsel)",trig:"Flanke ↓, ~7 V auf CH1",zustand:"Motor warm, Leerlauf; dann Verbraucher (Klima, Licht, Gebläse) zuschalten"},
+tk11:{stufe:"ok", hinweis:"Pegel zwischen ~0,5 V und Bordnetz, im Pico-Beispiel kurze Überhöhung bis ~18 V – passt in ±20 V. Unbekannte Steller zuerst mit 10:1 ansehen, dann 1:1 für feinere Low-Pegel."},
+vorgang:[
+  "Zündung ein: Plus am Steller 11–14 V (Hella).",
+  "Motor warm, Leerlauf: Takt auf der Öffnen-Leitung (CH1), beim 3-poligen Steller gegenphasig auf CH2. Frequenz und Low-Anteil ablesen.",
+  "Verbraucher zuschalten (Klima, Licht, Gebläse): Der Low-Anteil der Öffnen-Leitung steigt, die Drehzahl bleibt stehen.",
+  "Kaltstart vergleichen: höherer Öffnen-Anteil, erhöhte Drehzahl (Pico: ~1200 /min).",
+  "Bild normal, Leerlauf trotzdem unruhig: Steller ausbauen und auf Verkokung prüfen (Pico)."
+],
+gut:[
+  W2({ badge:"GUT", title:"Leerlauf warm: 100 Hz, Öffnen ~35 %, Schließen gegenphasig", cond:"Motor warm, Leerlauf, 3-polig",
+    vdiv:5, off:0, tdiv:0.002, os:8,
+    ch:[{ m:"leerlaufstellerLs", p:{ ph:0.6 }, lbl:"Öffnen" },
+        { m:"leerlaufstellerLs", p:{ ph:0.6, line:"zu", seed:9 }, lbl:"Schließen", off:-4 }],
+    trig:{ t:0.004, v:7, ch:0 },
+    meas:[ {t:"span", t0:0.004, t1:0.0075, v:-1.2, pre:"Öffnen ein", dy:2},
+           {t:"span", t0:0.004, t1:0.014, v:10, ch:1, pre:"Periode", post:"→ 100 Hz"} ],
+    notes:[ {t:0.0105, v:0.6, ch:1, txt:"Schließen: Low, wenn Öffnen High", dx:12, dy:-22} ],
+    expect:[ {what:"freq", ch:0, v:100, tolRel:0.02, src:"Saab WIS Motronic 2.10/4.1: 100 Hz"},
+             {what:"duty", ch:0, v:0.65, tol:0.03, src:"Saab WIS: Öffnen 2–5 ms Low von 10 ms"},
+             {what:"duty", ch:1, v:0.35, tol:0.03, src:"Saab WIS: Schließen 6–8 ms Low"},
+             {what:"max", ch:0, min:14.5, max:17, src:"Pico-Bild: High ~15 V, kleine Überhöhung"},
+             {what:"min", ch:0, max:0.8, src:"Pico-Bild: Low ~0,5 V"} ],
+    caption:"Öffnen-Leitung (CH1) 3,5 ms von 10 ms auf Masse, Schließen-Leitung (CH2) genau in der Lücke dazwischen. Feste 100 Hz, nur das Verhältnis ändert sich.",
+    why:"3-poliger Drehsteller: zwei Wicklungen, jede mit eigener Endstufe; das Tastverhältnis legt das Kräftegleichgewicht und damit den Winkel fest (Hyundai-Handbuch). Saab Motronic 2.10 nennt für den warmen Leerlauf Öffnen 2–5 ms und Schließen 6–8 ms bei 100 Hz – zusammen eine Periode. Low ~0,5 V = Endstufe leitet; High = Bordnetz über die Spule. Die kleine Überhöhung an der Abschaltflanke zeigt auch das Pico-Beispiel. Die Spannungen am Kanal kommen vom Fahrzeug: beide Kanäle haben die gemeinsame Masse des VDS1022I – nur gegen Fahrzeugmasse messen." }),
+  W2({ badge:"GUT", title:"Kaltstart: Öffnen-Anteil höher (Beispiel ~50 %)", cond:"kalt, schneller Leerlauf, 3-polig",
+    vdiv:5, off:0, tdiv:0.002, os:8,
+    ch:[{ m:"leerlaufstellerLs", p:{ ph:0.6, duty:0.5 }, lbl:"Öffnen" },
+        { m:"leerlaufstellerLs", p:{ ph:0.6, duty:0.5, line:"zu", seed:9 }, lbl:"Schließen", off:-4 }],
+    trig:{ t:0.004, v:7, ch:0 },
+    meas:[ {t:"span", t0:0.004, t1:0.009, v:-1.2, pre:"Öffnen ein", dy:2} ],
+    notes:[ {t:0.0115, v:14.2, txt:"Frequenz bleibt 100 Hz", dx:12, dy:-30} ],
+    expect:[ {what:"freq", ch:0, v:100, tolRel:0.02},
+             {what:"duty", ch:0, v:0.5, tol:0.03, src:"Beispielwert"},
+             {what:"duty", ch:1, v:0.5, tol:0.03} ],
+    caption:"Kalter Motor: Die Öffnen-Leitung liegt länger auf Masse (Beispiel ~5 ms), die Schließen-Leitung entsprechend kürzer. Drehzahl erhöht.",
+    why:"Pico: Beim Kaltstart öffnet das STG den Steller weiter, um schnell aufzuwärmen – schneller Leerlauf ~1200 /min. Längere Einschaltzeit = mehr Strom = weiter offen (Pico). Der genaue Kalt-Tastgrad ist herstellerabhängig; hier ein Beispiel. Mit dem Warmlauf wandert der Öffnen-Anteil langsam auf den Warmwert zurück." }),
+  W2({ badge:"GUT", title:"Klima ein: Öffnen-Anteil steigt (Beispiel 35 → 45 %)", cond:"Leerlauf warm, Klima ein",
+    vdiv:5, off:0, tdiv:0.01, os:8,
+    ch:[{ m:"leerlaufstellerLs", p:{ ph:0.6, steps:[[0.045, 0.45, 0.015]] }, lbl:"Öffnen" },
+        { m:"leerlaufstellerLs", p:{ ph:0.6, steps:[[0.045, 0.45, 0.015]], line:"zu", seed:9 }, lbl:"Schließen", off:-4 }],
+    notes:[ {t:0.0055, v:0.5, txt:"vor Klima: kurze Low-Phasen", dx:-20, dy:36},
+            {t:0.0858, v:0.5, txt:"Klima ein: Low-Phasen länger", dx:-60, dy:36, anchor:"end"} ],
+    expect:[ {what:"duty", ch:0, t0:0, t1:0.04, v:0.65, tol:0.03, src:"Warm-Leerlauf wie G0"},
+             {what:"duty", ch:0, t0:0.065, t1:0.1, v:0.55, tol:0.03, src:"Beispielwert unter Last"},
+             {what:"freq", ch:0, v:100, tolRel:0.02} ],
+    caption:"Kompressor schaltet zu: Das STG verlängert innerhalb weniger Perioden die Öffnen-Zeit, die Drehzahl bleibt stehen.",
+    why:"Pico und Hella: Bei zusätzlicher Last braucht der Motor mehr Luft, sonst fällt die Drehzahl oder er stirbt ab. Saab beziffert den Mehrbedarf für den Klimakompressor mit ~1,4 g/s (warm). Der Regler erhöht deshalb den Öffnen-Anteil; die Frequenz bleibt. Wie stark der Tastgrad steigt, ist herstellerabhängig (Werte hier Beispiel). Fällt die Drehzahl trotz steigendem Öffnen-Anteil, kommt die Luft nicht an (Verkokung, F1)." }),
+  W2({ badge:"GUT", title:"2-poliger Steller: eine Leitung, 100 Hz, Low ~50 %", cond:"Motor warm, Leerlauf, 2-polig (Pico-Beispiel)",
+    vdiv:5, off:-3, tdiv:0.005, os:8,
+    ch:[{ m:"leerlaufstellerLs", p:{ ph:0.8, duty:0.5 }, lbl:"Steuerleitung" }],
+    trig:{ t:0.002, v:7, ch:0 },
+    meas:[ {t:"span", t0:0.002, t1:0.012, v:17.5, pre:"Periode", post:"→ 100 Hz"},
+           {t:"level", v:0.6, t0:0, t1:0.05, lx:0.0125, txt:"Low ≈ 0,5–0,7 V", dy:22} ],
+    expect:[ {what:"freq", v:100, tolRel:0.02, src:"Pico-Beispielbild: Periode ~10 ms"},
+             {what:"duty", v:0.5, tol:0.03, src:"Pico-Beispielbild: Low ~50 %"},
+             {what:"mean", t0:0.0025, t1:0.0065, min:0.4, max:0.8, src:"Pico-Bild: Low ~0,5 V"} ],
+    caption:"Nur eine getaktete Masse: Low-Anteil ~50 %, Periode 10 ms. Öffnen gegen eine Feder.",
+    why:"Pico: Der 2-polige Drehsteller hat Plus und eine geschaltete Masse; er öffnet gegen eine Schließfeder. Das Pico-Beispielbild zeigt ~100 Hz, Low ~0,5 V, High ~15 V, Low-Anteil ~50 %. Saab Motronic 2.8.1 (eine Wicklung) nennt 100 Hz und ~5–7 V Mittelwert am Steuerpin im Leerlauf – das passt zu einem Low-Anteil um die Hälfte. Fehlt der Strom ganz, zieht die Feder in eine Notlaufstellung (Saab: ~1500 /min)." })
+],
+schlecht:[
+  W2({ badge:"FEHLER", title:"Schließwicklung offen: CH2 ohne Takt", cond:"Motor warm, Leerlauf, 3-polig",
+    vdiv:5, off:0, tdiv:0.002, os:8,
+    ch:[{ m:"leerlaufstellerLs", p:{ ph:0.6, duty:0.2 }, lbl:"Öffnen" },
+        { m:"leerlaufstellerLs", p:{ ph:0.6, line:"zu", fault:"open", seed:9 }, lbl:"Schließen", off:-4 }],
+    ghost:[{ m:"leerlaufstellerLs", p:{ ph:0.6 } },
+           { m:"leerlaufstellerLs", p:{ ph:0.6, line:"zu", seed:9 }, ch:1 }],
+    notes:[ {t:0.011, v:0.1, ch:1, txt:"~0 V: kein Plus über die Wicklung", dx:12, dy:-36},
+            {t:0.0045, v:0.5, txt:"Öffnen nur noch kurz (Beispiel)", dx:30, dy:-40} ],
+    expect:[ {what:"max", ch:1, max:0.3, src:"keine Verbindung zum Plus"},
+             {what:"duty", ch:0, v:0.8, tol:0.03, src:"Beispielwert"} ],
+    caption:"CH2 bleibt flach bei ~0 V – kein Bordnetz, kein Takt. Die Öffnen-Wicklung arbeitet allein, der Steller öffnet zu weit; das STG nimmt den Öffnen-Anteil zurück.",
+    why:"Ohne durchgängige Wicklung kommt das Plus nicht an die Steuerleitung: Endstufe aus → Leitung hängt offen, ~0 V. Ohne Gegenkraft der Schließwicklung steht der Steller zu weit offen. Zu hohe Leerlaufdrehzahl ist eine typische Ausfallfolge des Leerlaufstellers (Hella); bei offener Schließwicklung ist sie physikalisch naheliegend. Wie weit das STG gegensteuert, ist herstellerabhängig (Beispiel). Abgrenzung zu „Plus fehlt“ (F3): dort sind beide Leitungen tot. Ist dagegen die Leitung zwischen Steller und STG unterbrochen und man misst am Steller, steht die Leitung konstant auf Bordnetz (F5). Gegenprobe: Wicklungswiderstand (Hyundai-Beispiel 10–14 Ω, Herstellerdaten)." }),
+  W2({ badge:"FEHLER", title:"Verkokt: Öffnen-Anteil am oberen Ende", cond:"warm, Leerlauf unruhig",
+    vdiv:5, off:0, tdiv:0.002, os:8,
+    ch:[{ m:"leerlaufstellerLs", p:{ ph:0.6, duty:0.75 }, lbl:"Öffnen" },
+        { m:"leerlaufstellerLs", p:{ ph:0.6, duty:0.75, line:"zu", seed:9 }, lbl:"Schließen", off:-4 }],
+    ghost:[{ m:"leerlaufstellerLs", p:{ ph:0.6 } },
+           { m:"leerlaufstellerLs", p:{ ph:0.6, line:"zu", seed:9 }, ch:1 }],
+    meas:[ {t:"span", t0:0.004, t1:0.0115, v:-1.2, pre:"Öffnen ein", dy:2} ],
+    notes:[ {t:0.0125, v:0.6, ch:1, txt:"Schließen nur noch kurz", dx:10, dy:-34} ],
+    expect:[ {what:"duty", ch:0, v:0.25, tol:0.03, src:"Beispielwert"},
+             {what:"freq", ch:0, v:100, tolRel:0.02} ],
+    caption:"Warmer Motor ohne Last, aber die Öffnen-Leitung liegt ~7,5 ms von 10 ms auf Masse (Sollbild ~3,5 ms). Das STG reißt den Steller auf, weil zu wenig Luft durchgeht.",
+    why:"Pico und Hella: Koks und Harz verengen Steller und Bypasskanal. Der Regler erhöht den Öffnen-Anteil bis zum Anschlag; reicht das nicht, fällt die Drehzahl, sägt oder der Motor stirbt beim Zuschalten von Verbrauchern ab (Hella). Der Anschlagwert ist herstellerabhängig (Beispiel). Abgrenzung: Falschluft hinter der Drosselklappe ergibt das Gegenteil – Öffnen-Anteil am unteren Ende. Gegenprobe: Steller ausbauen, Sicht- und Gängigkeitsprüfung (Hella), Tester-Istwerte." }),
+  W2({ badge:"FEHLER", title:"Steller klemmt: Tastgrad pendelt, Drehzahl sägt", cond:"warm, Leerlauf sägt, Ausschnitt 0,5 s",
+    vdiv:5, off:-3, tdiv:0.05, os:8,
+    ch:[{ m:"leerlaufstellerLs", p:{ ph:0.6, hunt:{ a:0.17, f:1, ph:1.5708 } }, lbl:"Öffnen" }],
+    ghost:[{ m:"leerlaufstellerLs", p:{ ph:0.6 } }],
+    notes:[ {t:0.015, v:15.5, txt:"lange Low-Phasen: Regler drückt auf", dx:10, dy:-40},
+            {t:0.485, v:15.5, txt:"kurze Low-Phasen: Regler nimmt zurück", dx:-10, dy:-40, anchor:"end"} ],
+    expect:[ {what:"duty", t0:0, t1:0.06, max:0.53, src:"Modell: Öffnen-Anteil ~50 %"},
+             {what:"duty", t0:0.44, t1:0.5, min:0.75, src:"Modell: Öffnen-Anteil ~19 %"},
+             {what:"freq", v:100, tolRel:0.02} ],
+    caption:"Der Low-Anteil schwankt im Takt der sägenden Drehzahl zwischen viel und wenig. Das elektrische Bild ist in sich sauber – das STG regelt gegen einen Steller, der hängt und springt.",
+    why:"Pico: Verkokung kann den Steller mechanisch festsetzen, obwohl das Spannungsbild normal ist. Der Regler sieht die Drehzahl fallen, öffnet weiter, der Steller springt los, die Drehzahl schießt hoch, der Regler nimmt zurück – Pendeln. Am Oszi sieht man nur den Befehl; ob der Steller folgt, zeigen Tester-Drehzahl oder Ausbau. Abgrenzung zu F1: dort steht der Tastgrad dauerhaft hoch. Pendelperiode (hier ~1 s) und -höhe sind Beispiel; das Bild zeigt eine halbe Pendelperiode. Für mehrere Pendel die Zeitbasis auf Roll (z. B. 500 ms/div) stellen – dann sieht man nur noch die Hüllkurve." }),
+  W2({ badge:"FEHLER", title:"Plus fehlt: beide Leitungen ~0 V", cond:"Motor läuft (Notlauf), 3-polig",
+    vdiv:5, off:0, tdiv:0.002, os:8,
+    ch:[{ m:"leerlaufstellerLs", p:{ fault:"noplus" }, lbl:"Öffnen" },
+        { m:"leerlaufstellerLs", p:{ fault:"noplus", seed:9 }, lbl:"Schließen", off:-4 }],
+    ghost:[{ m:"leerlaufstellerLs", p:{ ph:0.6 } },
+           { m:"leerlaufstellerLs", p:{ ph:0.6, line:"zu", seed:9 }, ch:1 }],
+    notes:[ {t:0.01, v:0.1, txt:"Öffnen: ~0 V, kein Takt", dx:10, dy:-60},
+            {t:0.01, v:0.1, ch:1, txt:"Schließen: ~0 V", dx:10, dy:-36} ],
+    expect:[ {what:"max", ch:0, max:0.3}, {what:"max", ch:1, max:0.3} ],
+    caption:"Weder High-Pegel noch Takt auf beiden Leitungen. Der Steller steht stromlos in der Federstellung.",
+    why:"Das High auf der Steuerleitung ist das Bordnetz, das durch die Spule kommt. Fehlt das Plus (Sicherung, Hauptrelais, Leitung), bleiben beide Leitungen bei ~0 V, egal was die Endstufe macht. Hella nennt „keine Spannungsversorgung“ als Ausfallursache; Prüfung: Plus bei Zündung ein 11–14 V. Saab: Bei Unterbrechung stellt eine Feder den Notlauf (warm mind. 1000 /min). Abgrenzung zu F0: dort ist nur eine Leitung tot." }),
+  W2({ badge:"FEHLER", title:"Übergangswiderstand Masseweg: Low ~2 V statt ~0,5 V", cond:"Motor warm, Leerlauf, 3-polig",
+    vdiv:5, off:0, tdiv:0.002, os:8,
+    ch:[{ m:"leerlaufstellerLs", p:{ ph:0.6, rx:1.5 }, lbl:"Öffnen" },
+        { m:"leerlaufstellerLs", p:{ ph:0.6, line:"zu", seed:9 }, lbl:"Schließen", off:-4 }],
+    ghost:[{ m:"leerlaufstellerLs", p:{ ph:0.6 } },
+           { m:"leerlaufstellerLs", p:{ ph:0.6, line:"zu", seed:9 }, ch:1 }],
+    meas:[ {t:"level", v:1.85, t0:0.004, t1:0.0075, lx:0.0076, txt:"Low ≈ 1,9 V", dy:20} ],
+    notes:[ {t:0.011, v:0.7, ch:1, txt:"Schließen-Low normal", dx:10, dy:-34} ],
+    expect:[ {what:"mean", ch:0, t0:0.0047, t1:0.0072, min:1.6, max:2.1, src:"Modell: ~1 A × (0,4 Ω + 1,5 Ω)"},
+             {what:"mean", ch:1, t0:0.0085, t1:0.013, max:0.8, src:"Schließen-Leitung unverändert"} ],
+    caption:"Die Öffnen-Leitung kommt beim Einschalten nur auf ~1,9 V herunter, die Schließen-Leitung normal. Die Öffnen-Wicklung bekommt weniger Strom, der Steller zieht schwächer auf.",
+    why:"Ein Übergangswiderstand (Beispiel 1,5 Ω, korrodierter Pin) liegt in Reihe mit Spule (Modell 12 Ω, vgl. Hyundai 10–14 Ω) und Endstufe: Strom ~14 V / 13,9 Ω ≈ 1 A, am Messpunkt bleibt 1 A × 1,9 Ω ≈ 1,9 V stehen. Sitzt der Übergang zwischen Messpunkt und Spule (z. B. im Steckerpin am Steller), bleibt der Low-Pegel am Messpunkt normal – dann den Spannungsfall über den Stecker messen. Pico nennt Stecker-Schäden/-Verschmutzung als typische Ursache. Abgrenzung: Endstufe im STG verschlissen ergibt dasselbe Bild – Spannungsfall direkt am STG-Pin messen. Sind die Low-Pegel auf BEIDEN Leitungen erhöht, liegt eher ein Masseversatz am STG vor: Spannungsfall STG-Masse gegen Batterie-Minus messen. Nur eine Leitung erhöht → Übergang in dieser Leitung oder deren Endstufe." }),
+  W2({ badge:"FEHLER", title:"Öffnen-Leitung zum STG offen: am Steller konstant Bordnetz", cond:"am Stellerstecker, 3-polig",
+    vdiv:5, off:0, tdiv:0.002, os:8,
+    ch:[{ m:"leerlaufstellerLs", p:{ ph:0.6, fault:"stgopen" }, lbl:"Öffnen" },
+        { m:"leerlaufstellerLs", p:{ ph:0.6, duty:0.75, line:"zu", seed:9 }, lbl:"Schließen", off:-4 }],
+    ghost:[{ m:"leerlaufstellerLs", p:{ ph:0.6 } },
+           { m:"leerlaufstellerLs", p:{ ph:0.6, line:"zu", seed:9 }, ch:1 }],
+    notes:[ {t:0.006, v:14, txt:"Öffnen: starr Bordnetz, kein Takt", dx:10, dy:40},
+            {t:0.0125, v:0.6, ch:1, txt:"Schließen nur kurz (Beispiel)", dx:10, dy:-34} ],
+    expect:[ {what:"min", ch:0, min:13.5}, {what:"max", ch:0, max:14.5},
+             {what:"duty", ch:1, v:0.75, tol:0.03, src:"Beispielwert: Regler drückt auf"} ],
+    caption:"Die Öffnen-Leitung steht am Stellerstecker fest auf Bordnetz, ohne einen einzigen Low-Puls. Die Schließen-Leitung taktet weiter. Der Steller geht zu, die Drehzahl fällt.",
+    why:"Die Leitung ist zwischen Messpunkt und STG unterbrochen. Das Plus kommt über die intakte Wicklung bis zum Messpunkt, es fließt aber kein Strom, also gibt es auch keinen Spannungsfall: Bordnetz. Am STG-Pin gemessen läge dieselbe Leitung dagegen bei ~0 V wie bei offener Wicklung (F0). Nur die Schließwicklung zieht, der Steller geht zu (physikalisch hergeleitet); Absterben ist eine typische Ausfallfolge (Hella). Das STG drückt den Öffnen-Anteil hoch, sichtbar am kurzen Schließen-Low (Beispiel). Gegenprobe: Durchgang Steller-Pin zu STG-Pin bei abgezogenen Steckern. Eine Endstufe, die nie einschaltet, sieht genauso aus." }),
+  W2({ badge:"FEHLER", title:"Öffnen dauerhaft Low: Endstufe durchlegiert/Masseschluss", cond:"Leerlauf zu hoch, 3-polig",
+    vdiv:5, off:0, tdiv:0.002, os:8,
+    ch:[{ m:"leerlaufstellerLs", p:{ ph:0.6, fault:"stuck" }, lbl:"Öffnen" },
+        { m:"leerlaufstellerLs", p:{ ph:0.6, duty:0.2, line:"zu", seed:9 }, lbl:"Schließen", off:-4 }],
+    ghost:[{ m:"leerlaufstellerLs", p:{ ph:0.6 } },
+           { m:"leerlaufstellerLs", p:{ ph:0.6, line:"zu", seed:9 }, ch:1 }],
+    meas:[ {t:"level", v:0.5, t0:0, t1:0.02, lx:0.0105, txt:"Öffnen dauerhaft ≈ 0,5 V", dy:-24} ],
+    notes:[ {t:0.0125, v:0.6, ch:1, txt:"Schließen lange Low (Beispiel)", dx:10, dy:-34} ],
+    expect:[ {what:"max", ch:0, max:1.0}, {what:"mean", ch:0, min:0.35, max:0.75, src:"Modell: ~1,1 A × 0,4 Ω"},
+             {what:"duty", ch:1, v:0.2, tol:0.03, src:"Beispielwert: Regler nimmt zurück"} ],
+    caption:"Die Öffnen-Leitung liegt ohne Unterbrechung auf Low, die Schließen-Leitung taktet mit langem Low dagegen an. Der Steller steht weit offen, die Leerlaufdrehzahl ist zu hoch.",
+    why:"Die Öffnen-Wicklung bekommt Dauerstrom: Endstufe durchlegiert (Low wie beim Einschalten, Modell ~0,5 V) oder Leitung mit Masseschluss (~0 V). Das STG kann nur noch über die Schließwicklung gegensteuern (Beispiel). Zu hohe Leerlaufdrehzahl ist eine typische Ausfallfolge (Hella), hier physikalisch naheliegend. Abgrenzung zu F3 (Plus fehlt): dort ist auch CH2 tot, hier taktet CH2 mit vollem High, das Plus ist also da. Unterscheidung Endstufe oder Kabel: Stecker am STG abziehen. Bleibt die Leitung auf Masse, liegt der Masseschluss im Kabelbaum; geht sie auf Bordnetz, ist die Endstufe schuld." })
+],
+ursachen:["Verkokung/Verharzung von Steller und Bypasskanal (Hella, Pico)","Windungsschluss oder Unterbrechung einer Wicklung (Hella)","Steller mechanisch fest (Hella)","Keine Versorgung vom Steuergerät/Hauptrelais (Hella)","Stecker korrodiert oder beschädigt (Pico)","Falschluft hinter der Drosselklappe (Regler fährt den Steller zu)"],
+loesungen:["Steller und Bypasskanal reinigen, danach Grundeinstellung/Anlernen nach Herstellervorgabe","Steller ersetzen, wenn Spulenwert oder Isolation außer Toleranz","Versorgung, Masse und Stecker instand setzen","Falschluft suchen (z. B. Rauchtest)"],
+gegen:"Multimeter: Spulenwiderstand je Wicklung (Hella: Opel-Bypassventil mit Magnet-Servoeinheit 9,6 Ω ±15 %; Hyundai-Doppelspulen-Drehsteller 10–14 Ω; sonst Herstellerdaten) und Isolation gegen Gehäuse (Hella: > 30 MΩ). Tester: Soll-/Ist-Leerlaufdrehzahl, Tastgrad, Stellgliedtest.",
+plaus:"Öffnen-Anteil, Drehzahl und Last zusammen bewerten: Last zu → Öffnen-Anteil höher, Drehzahl bleibt. Öffnen-Anteil dauerhaft am oberen Ende ohne Last → Steller/Kanal verkokt; am unteren Ende → Falschluft.",
+dtc:"Leerlaufregelung typ. P0505–P0509, P0511, P0518, P0519 (Pico); genaue Bedeutung herstellerabhängig.",
+irrtuemer:["Sauberes Taktbild = Steller in Ordnung – Pico: elektrisch normal, mechanisch trotzdem verkokt möglich.","Hohen Öffnen-Tastgrad dem Steuergerät anlasten – es gleicht nur aus, was der Luftweg nicht schafft.","2- und 3-polige Steller verwechseln: Beim 3-poligen sind zwei gegenphasige Takte richtig."],
+tipps:["Beide Leitungen gleichzeitig messen (CH1/CH2 gegen Fahrzeugmasse): gegenphasig und zusammen eine Periode = Doppelwicklung angesteuert.","Multimeter (DC) zwischen Plus und Steuerleitung zeigt indirekt den Tastgrad – Saab gibt so Sollwerte an (Öffnen 2–5 V, Schließen 7–10 V).","Klimaanlage ein/aus ist der einfachste Lasttest."],
+warn:"Motor läuft: Abstand zu Lüfter und Riemen. Nur backproben, Isolierung nicht anstechen. Steller nicht bei laufendem Motor abziehen – die Drehzahl kann in die Notlaufstellung hochlaufen (Saab: mind. 1000 bzw. ~1500 /min).",
+simpel:"Ein kleines Luft-Türchen neben der Drosselklappe. Das Steuergerät tippt es typ. 100-mal pro Sekunde an: lange tippen = weiter auf = mehr Leerlaufdrehzahl.",
+profi:"Der Drehsteller mittelt den Takt mechanisch: Die Stellung folgt dem Tastgrad (Einwicklung gegen Feder, Doppelwicklung als Kräftegleichgewicht der Spulen). Die Frequenz bleibt fest, nur der Low-Anteil ändert sich. Das Taktbild zeigt den Befehl, nicht die Wirkung: Ob der Steller folgt, zeigen Drehzahl, Tester-Istwerte oder ein Strombild.",
+check10:"Takt ~100 Hz da? Low typ. unter ~1 V, High ≈ Bordnetz? Öffnen-Anteil steigt bei Klima ein? → gut.",
+wannschlecht:"Kein Takt, Leitung starr auf ~0 V, auf Low oder auf Bordnetz, Low-Pegel deutlich erhöht, Öffnen-Anteil am Anschlag oder pendelnd mit sägender Drehzahl.",
+wannok:"Leicht schwankender Tastgrad im Leerlauf (Regler arbeitet); höherer Öffnen-Anteil bei kaltem Motor und unter Last.",
+next:"Signal gut, Leerlauf schlecht → Steller ausbauen, Verkokung und Falschluft prüfen (Pico); Signal schlecht → Versorgung, Spulenwiderstand, Leitungen zum Steuergerät.",
+},
+
+{
+id:"schrittmotor", kat:"aktor", sig:"digital", diff:3, sys:"stellglieder",
+name:"Schrittmotor Leerlauf (IAC-Stepper)",
+aufgabe:"Leerlaufsteller mit Schrittmotor: Das Steuergerät verstellt einen Kegel im Bypasskanal (oder über ein Gestänge die Drosselklappe) in einzelnen Schritten und hält so die Leerlaufdrehzahl – kalt erhöht, unter Last konstant (Pico). Es gibt keine Lagerückmeldung: Das Steuergerät zählt die Schritte ab einer Referenzstellung (Toyota-Patent). Getaktete Drehsteller: Karte leerlaufsteller.",
+signalart:"Rechteckpulse auf vier geschalteten Massen (5-Draht: gemeinsames Plus + 4 Phasen, Pico; 6-Draht: zwei Plus über Mittelanzapfungen, Toyota-Patent). Phase an: Low typ. unter ~1 V, aus ≈ Bordnetz, beim Abschalten kurze induktive Spitze. Höhe von Low und Spitze sind herstellerabhängig (Klemmung im STG); das Pico-Beispiel eines 4-Draht-Stellers zeigt Low ~0,8 V und ~2 V Spitze. Zwei-Phasen-Erregung: zwei benachbarte Phasen gleichzeitig an, Nachbarphasen um einen Schritt versetzt. Pulse nur während des Verstellens; Schrittzeit herstellerabhängig (Beispiel 8 ms). Bipolare 4-Draht-Stepper mit H-Brücke: Beide Pins einer Wicklung wechseln gegen Masse zwischen Low und Bordnetz, es gibt kein festes Plus – die 5-Draht-Logik dieser Karte gilt dort nicht (Bauart und Sollbild nach Herstellerdaten).",
+equip:"2-Kanal-Oszi, Backprobe-Nadeln, Multimeter, Diagnosetester (Schrittzahl/Ist-Position), Stromlaufplan.",
+anschluss:"5-Draht: Plus (12 V) und vier vom Steuergerät geschaltete Massen (Pico). 6-Draht: zwei Plus-Anschlüsse über die Mittelanzapfungen der zwei Statoren, je zwei Phasen dahinter (Toyota-Patent). 4-Draht-Beispiel bei Pico: Leerlaufschalter (2 Pins) + Motor (2 Pins). Belegung immer laut Stromlaufplan.",
+messpunkte:"CH1: Phase A gegen Fahrzeugmasse · CH2: Nachbarphase B oder Gegenphase C. Mit 2 Kanälen nur zwei Phasen gleichzeitig – die übrigen paarweise nacheinander (Pico: jede Masseleitung einzeln).",
+setup:{kanal:"CH1+CH2",kopp:"DC",tk:"10:1 (1:1 möglich)",vdiv:"5 V/div",tdiv:"20 ms/div (Schritte) · 200 ms/div (Referenzfahrt)",trig:"Flanke ↓, ~7 V auf CH1, Single",zustand:"Motor warm, Leerlauf, Last zuschalten (Schritte); Zündung aus (Referenzfahrt)"},
+tk11:{stufe:"ok", hinweis:"Phasen schalten zwischen Low und Bordnetz, im Pico-Beispiel (4-Draht) Spitzen nur ~2 V darüber – passt in ±20 V. Unbekannte Steuergeräte können höher spitzen: erstes Bild mit 10:1."},
+vorgang:[
+  "Plus und Phasen im Stromlaufplan suchen. Zündung ein: Plus ≈ Bordnetz.",
+  "CH1 auf Phase A, CH2 auf Phase B, Trigger Flanke ↓ auf CH1, Single.",
+  "Motor warm, Leerlauf: Verbraucher zuschalten – das Steuergerät fährt einige Schritte, danach ruhen die Phasen wieder.",
+  "Zeitbasis 200 ms/div, Zündung aus: Referenzfahrt aufnehmen (viele Schritte am Stück, danach Ruhe). Je nach System auch bei Zündung ein.",
+  "CH2 nacheinander auf Phase C und D: Alle Phasen müssen gleich aussehen, nur zeitversetzt."
+],
+gut:[
+  W2({ badge:"GUT", title:"Stellvorgang: Phase A und B, 8 ms/Schritt (Beispiel)", cond:"Leerlauf, Stellvorgang",
+    vdiv:5, off:0, tdiv:0.02, os:8,
+    ch:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25 }, lbl:"Phase A" },
+        { m:"schrittmotorPh", p:{ phase:1, T:0.25 }, lbl:"Phase B", off:-4 }],
+    trig:{ t:0.028, v:7, ch:0 },
+    meas:[ {t:"span", t0:0.028, t1:0.036, v:-4, pre:"A↓ → B↓ = 1 Schritt:"} ],
+    notes:[ {t:0.06, v:0.9, txt:"Periode = 4 Schritte = 32 ms", dx:30, dy:30} ],
+    expect:[ {what:"period", ch:0, v:0.032, tolRel:0.03, src:"4 × 8 ms (Toyota-Patent: 8-ms-Raster)"},
+             {what:"duty", ch:0, v:0.5, tol:0.03, src:"Zwei-Phasen-Erregung: 2 von 4 Schritten an"},
+             {what:"duty", ch:1, v:0.5, tol:0.03},
+             {what:"max", ch:0, min:15, max:16.5, src:"Pico-Bild: Spitze ~2 V über High"},
+             {what:"mean", ch:0, t0:0.047, t1:0.058, min:13.5, max:14.1, src:"Bordnetz Motor läuft"} ],
+    caption:"Jede Phase ist zwei von vier Schritten auf Masse. Phase B schaltet einen Schritt nach Phase A – das ist die Drehrichtung. Beim Abschalten eine kleine Spitze.",
+    why:"Zwei-Phasen-Erregung nach Toyota-Patent: Muster 1100 → 0110 → 0011 → 1001, also Low-Anteil 50 % und Periode = 4 Schritte. Das Patent aktualisiert die Ansteuerung im 8-ms-Raster; hier 8 ms je Schritt als Beispiel → Periode 32 ms. Das Pico-Beispiel eines 4-Draht-Stellers zeigt ein ähnliches Rechteck (~31 ms, Low ~0,8 V, Spitze ~2 V über High); die Pegel hier sind daran angelehnt. Beim 5-/6-Draht-Motor hängen Low-Pegel und Spitzenhöhe von Endstufe und Klemmung im STG ab (Toyota-Patent: Dioden mit Widerstand zum Plus) – typ., herstellerabhängig. Andere Systeme fahren andere Schrittzeiten (herstellerabhängig)." }),
+  W2({ badge:"GUT", title:"Phase A und C: genau gegenläufig", cond:"Leerlauf, STG verstellt",
+    vdiv:5, off:0, tdiv:0.02, os:8,
+    ch:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25 }, lbl:"Phase A" },
+        { m:"schrittmotorPh", p:{ phase:2, T:0.25 }, lbl:"Phase C", off:-4 }],
+    trig:{ t:0.028, v:7, ch:0 },
+    meas:[ {t:"span", t0:0.028, t1:0.044, v:-4, pre:"A↓ → C↑ gleichzeitig nach 2 Schritten:"} ],
+    notes:[ {t:0.044, v:0.5, ch:1, txt:"C schaltet ein, wenn A ausschaltet", dx:14, dy:-40} ],
+    expect:[ {what:"duty", ch:1, v:0.5, tol:0.03}, {what:"period", ch:1, v:0.032, tolRel:0.03} ],
+    caption:"A und C sind nie gleichzeitig an: Wenn A abschaltet, schaltet C ein. Zusammen ergeben sie ein lückenloses Wechselbild.",
+    why:"Im Muster 1100/0110/0011/1001 (Toyota-Patent) sind Phase 1 und 3 genau um zwei Schritte = halbe Periode versetzt. Mit dem 2-Kanal-Oszi lassen sich so die Paare A/B (ein Schritt Versatz) und A/C (gegenläufig) nacheinander prüfen; D gegen B entsprechend. Abgrenzung zum Vertauschungsfehler (F2): dort steht an der Nachbarphase dieses gegenläufige Bild." }),
+  W2({ badge:"GUT", title:"Zündung aus: Referenzfahrt, dann Ruhe (Beispiel Toyota-Patent)", cond:"Zündung aus bei ~0,25 s",
+    vdiv:5, off:0, tdiv:0.2, os:4,
+    ch:[{ m:"schrittmotorPh", p:{ phase:0, bursts:[[0.3, 120, 1]], s0:-1, tub:0.25, ub:13.8, ub2:12.4, trel:1.75 }, lbl:"Phase A" },
+        { m:"schrittmotorPh", p:{ phase:1, bursts:[[0.3, 120, 1]], s0:-1, tub:0.25, ub:13.8, ub2:12.4, trel:1.75 }, lbl:"Phase B", off:-4 }],
+    meas:[ {t:"span", t0:0.3, t1:1.26, v:-4, pre:"120 Schritte × 8 ms ="} ],
+    notes:[ {t:0.15, v:13.8, txt:"Motor läuft: ~13,8 V", dx:-6, dy:40},
+            {t:1.5, v:12.4, txt:"Ruhe: stromlos auf Batterie", dx:-30, dy:40, anchor:"end"},
+            {t:1.85, v:0.3, txt:"Hauptrelais aus", dx:-10, dy:-40, anchor:"end"} ],
+    expect:[ {what:"mean", ch:0, t0:0.05, t1:0.24, min:13.6, max:14.0},
+             {what:"mean", ch:0, t0:1.35, t1:1.7, min:12.2, max:12.6},
+             {what:"max", ch:0, t0:1.8, t1:2.0, max:0.3},
+             {what:"period", ch:0, t0:0.35, t1:1.2, v:0.032, tolRel:0.04} ],
+    caption:"Nach Zündung aus fährt das Steuergerät eine lange Schrittfolge am Stück an den Anschlag, danach liegen die Phasen stromlos auf Batteriespannung, bis das Hauptrelais abfällt.",
+    why:"Toyota-Patent: Bei Zündung aus fährt das STG (125 − Position + 15) Schritte Richtung offen; überzählige Schritte am Anschlag bleiben wirkungslos – so ist die Stellung danach sicher bekannt. Das Hauptrelais hält das STG dafür noch kurz versorgt. Hier Position 20 → 120 Schritte, 8 ms je Schritt (Beispiel). Andere Systeme referenzieren bei Zündung ein oder in die andere Richtung (herstellerabhängig). Ein lückenloser Pulsblock auf allen Phasen ist der beste Gesamttest." }),
+  W2({ badge:"GUT", title:"Last zugeschaltet: kurzer Schrittblock (Beispiel 6 Schritte)", cond:"Leerlauf, Last ein",
+    vdiv:5, off:0, tdiv:0.02, os:8,
+    ch:[{ m:"schrittmotorPh", p:{ phase:0, bursts:[[0.06, 6, 1]], s0:-1 }, lbl:"Phase A" },
+        { m:"schrittmotorPh", p:{ phase:1, bursts:[[0.06, 6, 1]], s0:-1 }, lbl:"Phase B", off:-4 }],
+    trig:{ t:0.06, v:7, ch:0 },
+    meas:[ {t:"span", t0:0.06, t1:0.108, v:-4, pre:"6 Schritte ="} ],
+    notes:[ {t:0.03, v:13.8, txt:"vorher stromlos", dx:-10, dy:40},
+            {t:0.16, v:13.8, txt:"danach wieder stromlos", dx:10, dy:40, anchor:"end"} ],
+    expect:[ {what:"mean", ch:0, t0:0.0, t1:0.055, min:13.6, max:14.0},
+             {what:"mean", ch:0, t0:0.12, t1:0.2, min:13.6, max:14.0} ],
+    caption:"Die Drehzahl sinkt unter Last, das Steuergerät öffnet um einige Schritte und schaltet die Phasen danach wieder ab.",
+    why:"Toyota-Patent: Der Regler mittelt die Drehzahl, bewegt den Motor nur außerhalb eines Totbands (±20 /min) und schaltet zwischen den Stellvorgängen stromlos (Muster 0000). Ruhige Leitungen auf Bordnetz sind deshalb normal. Anzahl und Takt der Schritte sind herstellerabhängig (hier Beispiel). Manche Systeme halten die Phasen bestromt – dann bleibt das letzte Muster stehen." }),
+  W2({ badge:"GUT", title:"Zoom Umschaltung: Spitze an A, Unterschwinger an C", cond:"Leerlauf, Stellvorgang, Zoom",
+    vdiv:5, off:0, tdiv:0.0005, os:16,
+    ch:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25, t0:-0.0140 }, lbl:"Phase A" },
+        { m:"schrittmotorPh", p:{ phase:2, T:0.25, t0:-0.0140 }, lbl:"Phase C", off:-4 }],
+    trig:{ t:0.002, v:7, ch:0 },
+    notes:[ {t:0.00203, v:15.6, txt:"Abschaltspitze ~2 V über Bordnetz", dx:30, dy:40},
+            {t:0.00203, v:-0.7, ch:1, txt:"kurzer Unterschwinger", dx:20, dy:-30} ],
+    expect:[ {what:"max", ch:0, min:15, max:16.5, src:"Pico-Bild: ~2 V über High"},
+             {what:"min", ch:1, max:-0.3, min:-1.5, src:"Pico-Bild: ~−1 V an der Abfallflanke"},
+             {what:"mean", ch:0, t0:0.0002, t1:0.0018, min:0.8, max:1.1} ],
+    caption:"Im Umschaltmoment springt A auf Bordnetz mit kurzer Spitze, C fällt gleichzeitig auf Masse mit kurzem Unterschwinger.",
+    why:"Beim Abschalten will die Spulenenergie weiterfließen und hebt die Leitung kurz über das Bordnetz; Höhe und Dauer hängen von Spule und Klemmung im STG ab. Das Pico-Beispiel (4-Draht-Steller) zeigt ~2 V Spitze und etwa minus 1 V Unterschwinger; beim 5-/6-Draht-Motor typ. ähnlich, Höhe herstellerabhängig (Klemmung im STG, Toyota-Patent: Dioden mit Widerstand). Phase ohne Spitze trotz Puls → Windungsschluss (F1); Phase ganz ohne High → offen (F0)." })
+],
+schlecht:[
+  W2({ badge:"FEHLER", title:"Phase B offen: keine Pulse, keine Spitze", cond:"Leerlauf, STG verstellt",
+    vdiv:5, off:0, tdiv:0.02, os:8,
+    ch:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25 }, lbl:"Phase A" },
+        { m:"schrittmotorPh", p:{ phase:1, T:0.25, fault:"open" }, lbl:"Phase B", off:-4 }],
+    ghost:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25 } },
+           { m:"schrittmotorPh", p:{ phase:1, T:0.25 }, ch:1 }],
+    notes:[ {t:0.1, v:0.1, ch:1, txt:"B flach ~0 V: kein Plus über die Wicklung", dx:10, dy:-34} ],
+    expect:[ {what:"max", ch:1, max:0.3}, {what:"period", ch:0, v:0.032, tolRel:0.03} ],
+    caption:"Phase A pulst normal, Phase B bleibt bei ~0 V – weder Bordnetz noch Spitze. Der Motor ruckelt oder bleibt stehen, die gezählte Stellung stimmt nicht mehr.",
+    why:"Das High einer Phase ist das gemeinsame Plus, das durch die Wicklung kommt (Pico: 12 V + vier Massepfade). Ist die Wicklung oder Leitung offen, fehlt es: Leitung hängt bei ~0 V, und ohne Strom gibt es auch keine Abschaltspitze. Abgrenzung zu „Plus fehlt“ (F5): dort sind alle Phasen dieses Plus tot. Ist dagegen die Leitung zum STG offen und man misst am Motor, steht die Phase konstant auf Bordnetz (F6). Gegenprobe: Wicklungswiderstand Plus → jede Phase (Herstellerdaten); alle vier Phasen müssen etwa gleich sein." }),
+  W2({ badge:"FEHLER", title:"Windungsschluss Phase B: Spitze fehlt, Low höher", cond:"Leerlauf, Stellvorgang, Zoom",
+    vdiv:5, off:0, tdiv:0.002, os:16,
+    ch:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25, t0:-0.0060 }, lbl:"Phase A" },
+        { m:"schrittmotorPh", p:{ phase:1, T:0.25, t0:-0.0060, fault:"short" }, lbl:"Phase B", off:-4 }],
+    ghost:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25, t0:-0.0060 } },
+           { m:"schrittmotorPh", p:{ phase:1, T:0.25, t0:-0.0060 }, ch:1 }],
+    notes:[ {t:0.0181, v:14.1, ch:1, txt:"kaum Spitze (Sollbild grau)", dx:-40, dy:-28, anchor:"end"},
+            {t:0.008, v:1.2, ch:1, txt:"Low etwas höher", dx:16, dy:-34} ],
+    expect:[ {what:"max", ch:1, max:14.5, src:"Modell: Spitze stark gedämpft"},
+             {what:"max", ch:0, min:15, src:"Phase A normal"},
+             {what:"mean", ch:1, t0:0.004, t1:0.017, min:1.1, max:1.45, src:"Modell: mehr Strom"} ],
+    caption:"Phase B schaltet zwar, aber die Abschaltspitze fehlt fast ganz und der Low-Pegel liegt etwas höher als bei A.",
+    why:"Kurzgeschlossene Windungen wirken wie eine Kurzschlusswicklung: Sie nehmen die gespeicherte Energie auf, die Spitze bricht zusammen; der kleinere Widerstand lässt mehr Strom fließen, der Low-Pegel steigt (Modellwerte). Das Bild ist ein Hinweis, kein Beweis – Bestätigung mit Wicklungswiderstand im Vergleich der vier Phasen (Herstellerdaten). Abgrenzung zu F0: dort fehlt das High komplett." }),
+  W2({ badge:"FEHLER", title:"Phasen vertauscht: B läuft gegenläufig zu A", cond:"nach Steckerreparatur",
+    vdiv:5, off:0, tdiv:0.02, os:8,
+    ch:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25 }, lbl:"Phase A" },
+        { m:"schrittmotorPh", p:{ phase:2, T:0.25 }, lbl:"Pin Phase B", off:-4 }],
+    ghost:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25 } },
+           { m:"schrittmotorPh", p:{ phase:1, T:0.25 }, ch:1 }],
+    meas:[ {t:"span", t0:0.028, t1:0.044, v:-4, pre:"Versatz 2 Schritte statt 1:"} ],
+    expect:[ {what:"duty", ch:1, v:0.5, tol:0.03}, {what:"period", ch:1, v:0.032, tolRel:0.03} ],
+    caption:"Am Motorpin von Phase B kommt das Signal von C an: gegenläufig zu A statt einen Schritt versetzt. Der Motor zittert auf der Stelle oder läuft falsch.",
+    why:"Gemessen am Motorstecker nach Stromlaufplan: Jede Leitung zeigt nur, was das STG an diesem Draht ausgibt. Sind B und C vertauscht, bekommt die Wicklung B das Gegenphasen-Muster; aus 1100/0110/0011 (Toyota-Patent) wird eine Folge, die vor- und zurückzieht. Am STG-Pin gemessen sieht alles richtig aus – deshalb am Motorstecker messen und mit dem Plan vergleichen. Abgrenzung: Bei offener Phase (F0) fehlt das Signal ganz." }),
+  W2({ badge:"FEHLER", title:"Keine Ansteuerung: keine Referenzfahrt bei Zündung aus", cond:"Zündung aus bei ~0,25 s",
+    vdiv:5, off:0, tdiv:0.2, os:4,
+    ch:[{ m:"schrittmotorPh", p:{ phase:0, bursts:[], tub:0.25, ub:13.8, ub2:12.4, trel:1.75 }, lbl:"Phase A" },
+        { m:"schrittmotorPh", p:{ phase:1, bursts:[], tub:0.25, ub:13.8, ub2:12.4, trel:1.75 }, lbl:"Phase B", off:-4 }],
+    ghost:[{ m:"schrittmotorPh", p:{ phase:0, bursts:[[0.3, 120, 1]], s0:-1, tub:0.25, ub:13.8, ub2:12.4, trel:1.75 } }],
+    notes:[ {t:0.8, v:12.4, txt:"kein einziger Schritt", dx:-40, dy:40} ],
+    expect:[ {what:"min", ch:0, t0:0.3, t1:1.7, min:12.0}, {what:"min", ch:1, t0:0.3, t1:1.7, min:12.0} ],
+    caption:"Nach Zündung aus bleiben alle Phasen ruhig auf Batteriespannung, bis das Hauptrelais abfällt. Plus und Wicklungen sind da, das Steuergerät taktet nicht.",
+    why:"Das High beweist: Plus und Wicklungen sind durchgängig. Fehlen trotzdem alle Pulse, steuert das STG nicht (Endstufe, Freigabe, Software, Hauptrelais-Nachlauf zu kurz). Ohne Referenzfahrt verliert das STG die Stellung (Toyota-Patent: Schrittzähler ohne Rückmeldung) – Folge sind falscher Leerlauf und Absterben. Abgrenzung zu F5: dort liegen die Leitungen bei ~0 V. Nur am Stellgliedtest im Tester sicher bestätigen." }),
+  W2({ badge:"FEHLER", title:"Mechanisch blockiert: Spannungsbild kaum verändert", cond:"Last zu, Drehzahl folgt nicht",
+    vdiv:5, off:0, tdiv:0.02, os:8,
+    ch:[{ m:"schrittmotorPh", p:{ phase:0, bursts:[[0.06, 6, 1]], s0:-1 }, lbl:"Phase A" },
+        { m:"schrittmotorPh", p:{ phase:1, bursts:[[0.06, 6, 1]], s0:-1 }, lbl:"Phase B", off:-4 }],
+    ghost:[{ m:"schrittmotorPh", p:{ phase:0, bursts:[[0.06, 6, 1]], s0:-1 } },
+           { m:"schrittmotorPh", p:{ phase:1, bursts:[[0.06, 6, 1]], s0:-1 }, ch:1 }],
+    notes:[ {t:0.076, v:0.9, txt:"kaum Unterschied zum Sollbild", dx:-10, dy:40},
+            {t:0.15, v:13.8, ch:1, txt:"Wirkung im Spannungsbild kaum sichtbar", dx:-10, dy:40, anchor:"end"} ],
+    expect:[ {what:"mean", ch:0, t0:0.0, t1:0.055, min:13.6, max:14.0}, {what:"max", ch:1, min:15, src:"Spitze wie im Sollbild"} ],
+    caption:"Pulse, Pegel und Spitzen praktisch wie im Sollbild – trotzdem bewegt sich der Kegel nicht, die Drehzahl fällt unter Last ab oder sägt.",
+    why:"Ein Schrittmotor hat keine Lagerückmeldung (Toyota-Patent); das STG zählt Schritte, auch wenn sie mechanisch verloren gehen. Bei den langsamen Schritten ist die Gegenspannung des drehenden Motors klein – das Spannungsbild ändert sich durch eine Blockade kaum (im Modell gar nicht). Feinere Prüfung (physikalisch hergeleitet, nicht aus Quellen): Strombild per Zange am gemeinsamen Plus – läuft der Rotor mit, verformt seine induzierte Spannung die Stromflanke; blockiert steigt der Strom gleichmäßig wie an einer reinen RL-Last. Sichere Gegenprobe: Schrittzahl im Tester gegen Drehzahl (Blue Print, Mitsubishi: normal ~50–70, defekt 114), Steller ausbauen und Kegel/Sitz auf Ölkohle prüfen (Blue Print)." }),
+  W2({ badge:"FEHLER", title:"Plus fehlt: alle Phasen ~0 V", cond:"Leerlauf, STG verstellt",
+    vdiv:5, off:0, tdiv:0.02, os:8,
+    ch:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25, fault:"noplus" }, lbl:"Phase A" },
+        { m:"schrittmotorPh", p:{ phase:1, T:0.25, fault:"noplus" }, lbl:"Phase B", off:-4 }],
+    ghost:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25 } },
+           { m:"schrittmotorPh", p:{ phase:1, T:0.25 }, ch:1 }],
+    notes:[ {t:0.1, v:0.1, txt:"A: ~0 V", dx:10, dy:-40},
+            {t:0.1, v:0.1, ch:1, txt:"B: ~0 V (C, D ebenso)", dx:10, dy:-34} ],
+    expect:[ {what:"max", ch:0, max:0.3}, {what:"max", ch:1, max:0.3} ],
+    caption:"Auf keiner Phase ein High-Pegel. Das gemeinsame Plus des 5-Draht-Motors fehlt.",
+    why:"Pico: Der 5-Draht-Motor hat ein gemeinsames 12-V-Plus und vier geschaltete Massen. Fehlt das Plus (Sicherung, Relais, Leitung), bleiben alle Phasen bei ~0 V, egal was das STG schaltet. Beim 6-Draht-Motor (zwei Plus über Mittelanzapfungen, Toyota-Patent) fallen bei einem fehlenden Plus nur die zwei Phasen dieses Stators aus – dann wie F0, aber an zwei Phasen. Bestätigen: Plus-Pin bei Zündung ein gegen Masse messen und alle vier Phasen nacheinander prüfen. Abgrenzung zu F0: dort fehlt nur eine Phase, zu F3: dort ist das High da, aber keine Pulse." }),
+  W2({ badge:"FEHLER", title:"Phase B starr auf Bordnetz: Leitung zum STG offen", cond:"am Motorstecker, STG verstellt",
+    vdiv:5, off:0, tdiv:0.02, os:8,
+    ch:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25 }, lbl:"Phase A" },
+        { m:"schrittmotorPh", p:{ phase:1, T:0.25, fault:"stgopen" }, lbl:"Phase B", off:-4 }],
+    ghost:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25 } },
+           { m:"schrittmotorPh", p:{ phase:1, T:0.25 }, ch:1 }],
+    notes:[ {t:0.1, v:13.8, ch:1, txt:"B: Bordnetz ohne Pulse", dx:10, dy:30} ],
+    expect:[ {what:"min", ch:1, min:13.3}, {what:"max", ch:1, max:14.3}, {what:"period", ch:0, v:0.032, tolRel:0.03} ],
+    caption:"Phase A pulst, Phase B steht am Motorstecker fest auf Bordnetz – ohne Low und ohne Spitze. Der Motor ruckelt oder bleibt stehen.",
+    why:"Die Leitung ist zwischen Messpunkt und STG unterbrochen. Das gemeinsame Plus kommt über die intakte Wicklung bis zum Messpunkt; ohne Strom gibt es keinen Spannungsfall, also Bordnetz (physikalisch hergeleitet). Am STG-Pin gemessen läge die Leitung dagegen bei ~0 V wie bei offener Wicklung (F0). Eine Endstufe, die nie einschaltet, sieht genauso aus. Gegenprobe: Durchgang Motor-Pin zu STG-Pin bei abgezogenen Steckern. Abgrenzung zu F3: dort ruhen alle Phasen, hier pulst A." }),
+  W2({ badge:"FEHLER", title:"Phase B dauerhaft Low: Endstufe durchlegiert/Masseschluss", cond:"Leerlauf, STG verstellt",
+    vdiv:5, off:0, tdiv:0.02, os:8,
+    ch:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25 }, lbl:"Phase A" },
+        { m:"schrittmotorPh", p:{ phase:1, T:0.25, fault:"stuck" }, lbl:"Phase B", off:-4 }],
+    ghost:[{ m:"schrittmotorPh", p:{ phase:0, T:0.25 } },
+           { m:"schrittmotorPh", p:{ phase:1, T:0.25 }, ch:1 }],
+    meas:[ {t:"level", v:0.95, t0:0, t1:0.2, ch:1, lx:0.1, txt:"B dauerhaft Low ≈ 1 V (Modell)", dy:-24} ],
+    expect:[ {what:"max", ch:1, max:1.5}, {what:"mean", ch:1, min:0.8, max:1.15, src:"Modell: Low wie Phase an"},
+             {what:"period", ch:0, v:0.032, tolRel:0.03} ],
+    caption:"Phase B kommt nie auf Bordnetz, sie liegt dauerhaft auf Low. Die Wicklung B zieht ständig, der Motor zittert auf der Stelle oder verliert Schritte.",
+    why:"Endstufe durchlegiert oder Leitung mit Masseschluss: Durch Wicklung B fließt Dauerstrom. Bei durchlegierter Endstufe bleibt der Low-Pegel wie bei eingeschalteter Phase stehen (Modell ~1 V), bei Masseschluss ~0 V. Abgrenzung zu F0 (offen, ~0 V, kein Strom): Hier ist Strom da – Stromzange am Plus zeigt Dauerstrom, der Steller wird warm. Unterscheidung Endstufe oder Kabel: Stecker am STG abziehen. Bleibt B auf Masse, liegt der Masseschluss im Kabelbaum; geht B auf Bordnetz, ist die Endstufe schuld (physikalisch hergeleitet)." })
+],
+ursachen:["Ölkohle am Kegel/Ventilsitz (Blue Print)","Phase unterbrochen oder Windungsschluss","Stecker/Leitung beschädigt, Phasen nach Reparatur vertauscht","Keine Versorgung oder Endstufe im Steuergerät defekt","Gewinde/Lager schwergängig – Schritte gehen verloren"],
+loesungen:["Kegel und Sitz reinigen (hilft oft nur vorübergehend, Blue Print) bzw. Steller ersetzen","Wicklungswiderstände vergleichen, Leitungen instand setzen","Belegung gegen Stromlaufplan prüfen","Nach Arbeiten Zündung aus/ein: Referenzfahrt bzw. Grundeinstellung nach Herstellervorgabe"],
+gegen:"Tester: Schrittzahl/Ist-Position (Blue Print, Mitsubishi FTO/Galant: normal ~50–70, defekter Steller 114). Multimeter: Wicklungswiderstand Plus → jede Phase herstellerabhängig (Herstellerdaten); alle vier Phasen müssen etwa gleich sein.",
+plaus:"Schrittzahl im Tester gegen Leerlaufdrehzahl und Last: hohe Schrittzahl (weit offen) bei warmem Motor ohne Last → Luftweg verkokt oder Steller folgt nicht.",
+dtc:"Herstellerspezifisch; Pico nennt z. B. P1554, P1559, P1564, P1565, P1568, P1579, P1581, P1789. Allgemeine Leerlaufcodes P0505–P0507 (Pico, Drehsteller-Test) – Bedeutung herstellerabhängig.",
+irrtuemer:["Pulse da = Steller gut – ein blockierter Schrittmotor zeigt ein kaum verändertes Spannungsbild.","Ruhige Leitungen im Leerlauf als Defekt deuten – zwischen den Stellvorgängen sind die Phasen oft stromlos (Toyota-Patent: Muster 0000).","Mit zwei Kanälen alle vier Phasen auf einmal beurteilen wollen – Phasen paarweise nacheinander messen."],
+tipps:["Nachbarphasen (A/B) sind um einen Schritt versetzt, Gegenphasen (A/C) genau gegenläufig.","Die Referenzfahrt ist der beste Komplett-Test: viele Schritte am Stück, alle Phasen müssen mitlaufen.","Schrittzahl im Tester mitloggen: Sie ist die einzige Lageinformation des Steuergeräts."],
+warn:"Motor läuft: Abstand zu Lüfter und Riemen. Nur backproben. Stecker nicht bei Zündung ein ziehen – das Steuergerät verliert die gezählte Stellung, danach Referenzfahrt/Grundeinstellung nötig.",
+simpel:"Ein kleiner Motor, der in Rasten weiterklickt. Das Steuergerät zählt die Klicks mit – so weiß es, wie weit das Luftventil offen ist.",
+profi:"Vier Phasen, Zwei-Phasen-Erregung: 1100 → 0110 → 0011 → 1001, Richtungswechsel = Folge rückwärts. Ohne Lagerückmeldung merkt das Steuergerät verlorene Schritte erst an der Drehzahl. Das Spannungsbild prüft Ansteuerung und Wicklung (Pulse, Spitze), nicht die Mechanik.",
+check10:"Alle Phasen pulsen beim Verstellen? Low deutlich unter ~1–2 V, High ≈ Bordnetz, alle Phasen gleich, kleine Spitze beim Abschalten? Nachbarphase um einen Schritt versetzt? → gut.",
+wannschlecht:"Eine Phase ohne Pulse oder ohne Spitze, starr auf Bordnetz oder dauerhaft Low, keine Referenzfahrt, Phasen in falscher Reihenfolge, Leerlauf sägt trotz sauberem Bild.",
+wannok:"Zwischen den Stellvorgängen stehen die Phasen auf Bordnetz (stromlos) oder auf Haltestrom – herstellerabhängig.",
+next:"Signal gut, Leerlauf schlecht → Steller ausbauen, Kegel/Sitz reinigen, Schrittzahl im Tester prüfen; Signal schlecht → Wicklungen messen, Leitungen und Endstufe im Steuergerät.",
+},
+
+{
 id:"cr-drv", kat:"einspr", sig:"pwm", diff:2, sys:"einspritzung",
 name:"Common-Rail-Druckregelventil (DRV)",
 aufgabe:"Stellt den Raildruck ein: Das Magnetventil am Rail (bei manchen Systemen an der Hochdruckpumpe) lässt so viel Kraftstoff in den Rücklauf, dass der Druck zum Sollwert passt. Mehr Strom drückt das Ventil zu → Druck steigt, weniger Strom → Ventil öffnet → Druck sinkt. Oft zusammen mit der Zumesseinheit (Zweisteller-Konzept).",
@@ -18193,6 +19419,159 @@ check10:"Strom steigt steil? Knick (Anker öffnet) sichtbar? Haltestrom ruhig ge
 wannschlecht:"Kein Strom im Gasbetrieb, Peak deutlich höher oder niedriger als an den anderen Ventilen, Knick fehlt oder kommt spät, keine Haltephase, Dauerstrom ohne Impulse, fehlende oder abgebrochene Impulse.",
 wannok:"Gaszeit länger oder kürzer als die Benzinzeit (Umrechnung); verlängerte Peak-Zeit bei kaltem Gas (Beispiel IG7: bis +20 % unter 10 °C); kleine Unterschiede in der Peakhöhe durch Toleranz.",
 next:"Signal gut, Gemisch falsch → Gasdruck, Filter, Verdampfer und Kalibrierung der Gasanlage (Fachbetrieb); Signal schlecht → Spulenwiderstand, Stecker, Versorgung, dann Gas-STG."
+},
+
+{
+id:"pumpe-duese", kat:"einspr", sig:"strom", diff:3, sys:"einspritzung",
+name:"Pumpe-Düse-Einheit (VAG PD) – Magnetventil",
+aufgabe:"Bei VW/Audi/Seat/Skoda-TDI mit Pumpe-Düse sitzt je Zylinder eine Pumpe-Düse-Einheit im Zylinderkopf. Ein Nocken drückt den Pumpenkolben, das Magnetventil (z. B. N240–N243) entscheidet: Ventil zu → Druckaufbau und Einspritzung, Ventil auf → Kraftstoff geht zurück in den Vorlauf. So bestimmt das STG Förderbeginn und Einspritzmenge (VW SSP 209).",
+signalart:"Strom (Zange): steiler Anstieg, Anzugsstrom getaktet; dann beendet das STG das Takten (Beginn BIP-Fenster), der Strom steigt ungetaktet weiter, darin ein kleiner Knick beim Schließen des Ventils (BIP), dann getakteter Haltestrom und schnelles Abschalten. Pico-Beispiel: Anzug ~14–16 A, Spitze ~17,7 A, Halten ~11–12,7 A, Dauer ~1,9 ms. Das STG schaltet beide Seiten: Plusseite ~14 V mit Freilauf ~−0,9 V, Masseseite nahe 0 V mit Abschaltspitze ~48 V (Pico AGT-385). Ein Strompuls je Einspritzung – die Voreinspritzung entsteht hydraulisch (Ausweichkolben, SSP 209).",
+equip:"2-Kanal-Oszi, DC-Stromzange mit BNC-Spannungsausgang und mindestens 20-A-Bereich (z. B. 100 mV/A), 10:1-Tastkopf für die Masseseite, Backprobe-Nadeln oder Breakout-Kabel, Stromlaufplan, Diagnosetester (Fehlerspeicher, Mengenabweichung je Zylinder).",
+anschluss:"2 Leitungen je Ventil, beide vom Motorsteuergerät geschaltet (Plusseite und Masseseite, Pico AGT-385). Die Ventilstecker und der innere Kabelbaum liegen unter dem Ventildeckel; die Verbindung nach außen geht durch den Ventildeckel. Belegung laut Stromlaufplan.",
+messpunkte:"CH1: Stromzange um eine Ventilleitung (vorher nullen, Pfeilrichtung beachten). CH2: Plusseite gegen Batterie-Minus (1:1) oder Masseseite (10:1, Abschaltspitze). Zugang am Übergang des Kabelbaums nach außen oder per Breakout am STG – nicht die Isolierung anstechen. Beim VDS1022I haben beide Kanäle dieselbe Masse.",
+setup:{kanal:"CH1 Strom (Zange) · CH2 Plusseite oder Masseseite",kopp:"DC",tk:"Stromzange 100 mV/A (20-A-Bereich) · 1:1 Plusseite · 10:1 Masseseite",vdiv:"5 A/div (Zange) · 5 V/div (Plusseite) · 10–20 V/div (Masseseite, 10:1)",tdiv:"500 µs/div (ein Impuls) · 100 µs/div (BIP-Zoom)",trig:"Normal, Flanke ↑ auf CH1 (Strom ~5 A)",zustand:"Motor warm, Leerlauf"},
+tk11:{stufe:"einschr", hinweis:"Strom per Zange und Plusseite (ca. −1 bis 15 V) gehen mit 1:1. Die Masseseite hat beim Abschalten eine Spitze von ca. 48 V (Pico) – dort 10:1 (Bild gut[2]). Ersatz mit 1:1: nur Strom und Plusseite messen."},
+vorgang:["Fehlerspeicher lesen, Mengenabweichung je Zylinder im Leerlauf ansehen: Welcher Zylinder fällt auf?","Zange nullen, um eine Ventilleitung des verdächtigen Zylinders legen. CH1 5 A/div, 500 µs/div, Trigger ↑ ~5 A. Motor warm, Leerlauf.","Form ansehen: Anstieg, getakteter Anzug, Taktende (Beginn BIP-Fenster), Knick (BIP) im ungetakteten Anstieg, Spitze, Halten, Abschalten. Mit 100 µs/div auf den BIP zoomen.","CH2 an die Plusseite (1:1): schaltet sie ein, taktet sie, bricht sie unter Strom stark ein? Dann Masseseite mit 10:1: nahe 0 V im Betrieb, Spitze beim Abschalten.","Alle Zylinder nacheinander gleich messen und vergleichen – gleiche Form, BIP an gleicher Stelle, gleicher Anstieg?","Auffällige Elektrik: Leitungen bis zum Ventildeckel und den inneren Kabelbaum prüfen (Durchgang, Übergangswiderstand, Scheuerstellen, Öl), dabei bewegen."],
+gut:[
+  W2({ badge:"GUT", title:"Ein Impuls: Anzug, BIP, Halten", cond:"Leerlauf (Pico-Beispiel)", tdiv:0.0005, vdiv:5, off:0, os:8,
+    trig:{t:0.00081, v:5},
+    ch:[{ m:"pumpeDuese", p:{}, lbl:"Strom", unit:"A" },
+        { m:"pumpeDuese", p:{ sig:"u" }, lbl:"Plusseite", vdiv:5, off:-3.6 }],
+    meas:[ {t:"span", t0:0.00075, t1:0.00262, v:-1.2, pre:"Ansteuerung"} ],
+    notes:[ {t:0.00155, v:16.0, txt:"BIP (Knick im Fenster)", dx:10, dy:44},
+            {t:0.0022, v:12.5, txt:"Halten ~11–12,7 A", dx:40, dy:-40} ],
+    expect:[ {what:"max", t0:0.0007, t1:0.0019, min:17.4, max:18.0, src:"Pico AGT-385: Spitze ~17,7 A"},
+             {what:"mean", t0:0.0020, t1:0.0026, min:11.4, max:12.1, src:"Pico: Halten ~10,8–12,7 A"},
+             {what:"max", t0:0.0027, t1:0.005, max:0.3, src:"nach dem Abschalten 0 A"},
+             {what:"max", ch:1, t0:0.0007, t1:0.0009, min:14.0, max:14.6, src:"Pico: Plusseite ~14,4 V beim Einschalten"},
+             {what:"min", ch:1, t0:0.0018, t1:0.0026, min:-1.1, max:-0.7, src:"Pico: Freilauf ~−0,9 V"} ],
+    caption:"Ein Strompuls je Einspritzung: Anstieg, Anzug getaktet um ~15 A, dann ungetaktet mit kleinem Knick (BIP) bis ~17,7 A, Halten getaktet, nach ~1,9 ms aus. Die Plusseite schaltet ein und taktet.",
+    why:"Werte und Form nach dem Pico-Beispiel AGT-385 (abgelesen, Betriebspunkt dort nicht angegeben). Hoher Strom schließt das Ventil schnell. Kurz vor dem erwarteten Schließen beendet das STG das Takten und sucht den BIP im ungetakteten Anstieg (SSP 209, Bild 209_97); danach reicht weniger Strom – Halten spart Wärme. Lage des BIP im Bild als Beispiel, Pico beschriftet ihn nicht. Das STG begrenzt den Strom durch Takten der Plusseite; im Aus-Takt fließt der Strom über den Freilauf weiter (Plusseite ~−0,9 V). Die Ansteuerdauer bestimmt die Menge (SSP 209), sie ändert sich mit der Last." }),
+  W2({ badge:"GUT", title:"Zoom: Knick beim Schließen (BIP)", cond:"Leerlauf (Pico-Beispiel)", tdiv:0.0001, vdiv:5, off:-1, os:16,
+    trig:{t:0.00011, v:5},
+    ch:[{ m:"pumpeDuese", p:{ t0:0.00005 }, lbl:"Strom", unit:"A" },
+        { m:"pumpeDuese", p:{ t0:0.00005, sig:"u" }, lbl:"Plusseite", vdiv:10, off:-3.5 }],
+    meas:[ {t:"span", t0:0.00055, t1:0.00073, v:12.0, pre:"Anzug getaktet"} ],
+    notes:[ {t:0.00074, v:16.2, txt:"Taktende = Beginn BIP-Fenster", dx:-10, dy:-44, anchor:"end"},
+            {t:0.00087, v:15.95, txt:"BIP: Nadel am Sitz", dx:30, dy:52} ],
+    expect:[ {what:"max", t0:0.0005, t1:0.00072, min:15.9, max:16.4, src:"Pico: Anzug bis ~16,1 A"},
+             {what:"min", t0:0.0006, t1:0.00072, min:13.9, max:14.7, src:"Pico: Takt bis ~14,3 A"},
+             {what:"max", t0:0.00008, t1:0.00015, min:5.0, max:6.6, src:"Pico: ~6 A ~0,1 ms nach Beginn"},
+             {what:"min", t0:0.00077, t1:0.00084, min:15.5, src:"Fenster: kein Takt mehr"} ],
+    caption:"Zoom auf den Anzug: Takten zwischen ~14 und ~16 A, dann hört das STG auf zu takten – das BIP-Fenster beginnt. Im ungetakteten Anstieg folgt ein kleiner Knick: der BIP. Danach steigt der Strom steiler.",
+    why:"Das STG beendet den getakteten Anzug kurz bevor es den BIP erwartet und beobachtet den Strom in einem Fenster (Regelgrenze, SSP 209 Bild 209_97; Patent US7023682B2). Solange der Anker läuft, bremst seine Gegenspannung den Anstieg; beim Aufschlagen der Nadel auf den Sitz entsteht ein auffälliger Knick (SSP 209). Damit korrigiert das STG den Ansteuerbeginn der nächsten Einspritzung. Taktende nach dem Pico-Beispiel (~0,6 ms nach dem 5-A-Trigger); Lage und Tiefe des Knicks sind ein Beispiel und hängen vom Betriebspunkt ab." }),
+  W2({ badge:"GUT", title:"Masseseite: Abschaltspitze (10:1)", cond:"Leerlauf (Pico-Beispiel)", tdiv:0.0005, vdiv:5, off:-0.5, os:16,
+    trig:{t:0.00081, v:5},
+    ch:[{ m:"pumpeDuese", p:{}, lbl:"Strom", unit:"A" },
+        { m:"pumpeDuese", p:{ sig:"g" }, lbl:"Masseseite", vdiv:20, off:-3.8 }],
+    notes:[ {t:0.00262, v:48, ch:1, txt:"Spitze ~48 V", dx:34, dy:-14},
+            {t:0.0015, v:2, ch:1, txt:"ein: nahe 0 V", dx:0, dy:-40} ],
+    expect:[ {what:"max", ch:1, min:46, max:50, src:"Pico AGT-385: Spitze ~48 V"},
+             {what:"mean", ch:1, t0:0.00263, t1:0.00266, min:33, max:35, src:"Pico: Plateau ~34 V"},
+             {what:"max", ch:1, t0:0.0008, t1:0.0026, max:2.6, src:"Pico: ein ~0,3–2 V"},
+             {what:"max", ch:1, t0:0.0037, t1:0.005, max:0.3, src:"Pico: nach ~1 ms wieder 0 V"} ],
+    caption:"Masseseite: während der Ansteuerung nahe 0 V, beim Abschalten eine Spitze bis ~48 V und ein Plateau um ~34 V, dann klingt sie ab. Darum 10:1.",
+    why:"Beim Abschalten will die Spule den Strom weitertreiben; die Endstufe begrenzt die Spannung (Plateau) und baut den Strom so in ~0,05 ms ab – das Ventil öffnet schnell und die Einspritzung endet sauber. Werte nach dem Pico-Beispiel AGT-385. Ein deutlich höherer Pegel im Betrieb deutet auf Übergangswiderstand in der Masseseite." }),
+  W2({ badge:"GUT", title:"Mehr Last: längeres Halten", cond:"Motor warm, Last (Beispiel)", tdiv:0.0005, vdiv:5, off:0, os:8,
+    trig:{t:0.00081, v:5},
+    ch:[{ m:"pumpeDuese", p:{ uE:0.00287 }, lbl:"Strom", unit:"A" },
+        { m:"pumpeDuese", p:{ uE:0.00287, sig:"u" }, lbl:"Plusseite", vdiv:5, off:-3.6 }],
+    meas:[ {t:"span", t0:0.00075, t1:0.00362, v:-1.2, pre:"Ansteuerung"} ],
+    notes:[ {t:0.0029, v:10.9, txt:"Halten länger = mehr Menge", dx:-10, dy:40, anchor:"end"} ],
+    expect:[ {what:"max", t0:0.0007, t1:0.0019, min:17.4, max:18.0},
+             {what:"mean", t0:0.0025, t1:0.0035, min:11.4, max:12.1},
+             {what:"max", t0:0.0037, t1:0.005, max:0.3} ],
+    caption:"Anzug und BIP wie im Leerlauf, nur die Haltephase dauert länger. Die Ansteuerzeit ist die Einspritzmenge.",
+    why:"Solange das Ventil geschlossen ist, wird eingespritzt; die Menge bestimmt die Ansteuerzeit (SSP 209). Die Haltedauer im Bild ist ein Beispiel – wie lang sie wird, hängt von Last und Drehzahl ab (herstellerabhängig)." }),
+  W2({ badge:"GUT", title:"Zum Vergleich: Piezo-PD", cond:"Piezo-PD, Motor läuft (Pico AGT-146)", tdiv:0.002, vdiv:2, off:0, os:8,
+    trig:{t:0.0020, v:3},
+    ch:[{ m:"pumpeDueseP", p:{}, lbl:"Strom", unit:"A" }],
+    notes:[ {t:0.00202, v:6.0, txt:"Laden: +", dx:40, dy:30},
+            {t:0.00281, v:-4.9, txt:"Entladen: −", dx:30, dy:10} ],
+    expect:[ {what:"max", min:5.6, max:7.5, src:"Pico AGT-146: Laden bis ~6 A"},
+             {what:"min", min:-6.5, max:-4.3, src:"Pico AGT-146: Entladen bis ~−5 A"} ],
+    caption:"Piezo-PD sieht ganz anders aus: kurze Ladepulse nach plus, Entladepulse nach minus, kein Halten. Dann gilt dieses Setup nicht.",
+    why:"Ein Piezo-Aktor wird wie ein Kondensator geladen und entladen; der Strom fließt nur beim Umladen und wechselt die Richtung (Pico AGT-146, abgelesen). Ein Magnetventil zieht dagegen die ganze Ansteuerzeit Strom in eine Richtung. Piezo-Einheiten arbeiten mit hoher Spannung – Messung und Bewertung siehe Karte Piezo-Injektor (inj-piezo)." })
+],
+schlecht:[
+  W2({ badge:"FEHLER", title:"BIP zu früh (Luft in der PD-Einheit)", cond:"Motor warm, Leerlauf", tdiv:0.0001, vdiv:5, off:-1, os:16,
+    ch:[{ m:"pumpeDuese", p:{ t0:0.00005, uB:0.00074, dip:0.8 }, lbl:"Strom", unit:"A" }],
+    ghost:[{ m:"pumpeDuese", p:{ t0:0.00005 } }],
+    notes:[ {t:0.00081, v:15.6, txt:"Knick früher als im Sollbild", dx:-40, dy:90, anchor:"end"},
+            {t:0.00087, v:15.95, txt:"Soll: Knick im Fenster", dx:30, dy:60} ],
+    expect:[ {what:"min", t0:0.00055, t1:0.00072, min:13.9, max:14.7, src:"Takt wie beim Sollbild – Taktende legt das STG fest"},
+             {what:"min", t0:0.00079, t1:0.00086, max:15.8, src:"Modell: Einbruch am frühen BIP"},
+             {what:"max", t0:0.0007, t1:0.0011, min:17.3, src:"Modell: danach steiler Anstieg schon ab Fensterbeginn"} ],
+    caption:"Getakteter Anzug und Taktende wie beim Sollbild, aber der Knick kommt gleich am Anfang des BIP-Fensters statt in der Mitte. Danach steigt der Strom gleich steil an. Das STG meldet „Regelgrenze unterschritten“.",
+    why:"Wie lange getaktet wird, legt das STG fest (SSP 209 Bild 209_97, Patent US7023682B2). Der BIP dagegen kommt vom Ventil: Mit Luft in der PD-Einheit schließt das Ventil schneller, der BIP erscheint früher als erwartet – am Fensterbeginn oder noch davor; Meldung „Regelgrenze unterschritten“ (SSP 209). Dann steuert das STG den Förderbeginn nur noch nach Kennfeld. Lage im Bild als Beispiel. Elektrik ist in Ordnung: Anstieg und Pegel stimmen. Erst Kraftstoffversorgung prüfen (Luft, Vorlauf)." }),
+  W2({ badge:"FEHLER", title:"Kein BIP-Knick (Ventil klemmt)", cond:"Motor warm, Leerlauf", tdiv:0.0001, vdiv:5, off:-1, os:16,
+    ch:[{ m:"pumpeDuese", p:{ t0:0.00005, noBip:true }, lbl:"Strom", unit:"A" }],
+    ghost:[{ m:"pumpeDuese", p:{ t0:0.00005 } }],
+    notes:[ {t:0.00087, v:16.6, txt:"hier fehlt der Knick, gleichmäßig steil", dx:-10, dy:60, anchor:"end"} ],
+    expect:[ {what:"min", t0:0.00055, t1:0.00072, min:13.9, max:14.7, src:"Takt wie beim Sollbild"},
+             {what:"min", t0:0.00078, t1:0.00095, min:16.2, src:"Modell: kein Einbruch im Fenster"} ],
+    caption:"Takt, Taktende und Haltestrom wie beim Sollbild, aber im BIP-Fenster fehlt der Knick: Der Strom steigt glatt durch. Der Anker erreicht den Sitz nicht oder bewegt sich nicht.",
+    why:"Der Knick entsteht nur, wenn die Nadel auf den Sitz schlägt (SSP 209). Bewegt sich der Anker nicht (klemmend, verschmutzt), fehlt seine Gegenspannung – der Strom steigt im Fenster gleichmäßig und etwas steiler als beim Sollbild (Physik; Steigung im Bild als Beispiel). Das STG bricht den Puls deshalb nicht ab: Takt und Fenster legt es selbst fest, ohne BIP steuert es den Förderbeginn nur nach Kennfeld (SSP 209). Anstieg bis zum Anzugsstrom normal → Spule und Leitungen sind wahrscheinlich in Ordnung." }),
+  W2({ badge:"FEHLER", title:"Windungsschluss: Anstieg zu steil", cond:"Motor warm, Leerlauf", tdiv:0.0001, vdiv:5, off:-1, os:16,
+    ch:[{ m:"pumpeDuese", p:{ t0:0.00005, kL:0.6, kR:0.75 }, lbl:"Strom", unit:"A" }],
+    ghost:[{ m:"pumpeDuese", p:{ t0:0.00005 } }],
+    notes:[ {t:0.00027, v:15.5, txt:"Anzug viel früher erreicht", dx:-10, dy:-30, anchor:"end"} ],
+    expect:[ {what:"max", t0:0.00005, t1:0.0003, min:15.0, src:"Modell: kürzere Anstiegszeit"},
+             {what:"max", t0:0.0007, t1:0.0011, min:17.0, max:18.2} ],
+    caption:"Der Strom erreicht den Anzugsstrom viel schneller als beim Sollbild, das Takten ist schneller. Die Pegel stimmen trotzdem – die Regelung kaschiert den Fehler.",
+    why:"Windungsschluss: weniger wirksame Windungen → kleinere Induktivität (∝ Windungszahl²) und kleinerer Widerstand → steilerer Anstieg und schnelleres Takten bei gleichem Regelband (Physik; Faktoren im Bild als Beispiel). Weil das STG den Strom regelt, sagen die Pegel wenig – der Vergleich der Anstiegszeit mit den anderen Zylindern zeigt es. Taktende und BIP-Lage im Bild unverändert (Beispiel)." }),
+  W2({ badge:"FEHLER", title:"Übergangswiderstand Plusleitung", cond:"Motor warm, Leerlauf", tdiv:0.0001, vdiv:5, off:-1, os:16,
+    ch:[{ m:"pumpeDuese", p:{ t0:0.00005, rs:0.15, uB:0.00088 }, lbl:"Strom", unit:"A" },
+        { m:"pumpeDuese", p:{ t0:0.00005, rs:0.15, uB:0.00088, sig:"u" }, lbl:"Plus am Ventil", vdiv:10, off:-3.5 }],
+    ghost:[{ m:"pumpeDuese", p:{ t0:0.00005 } }, { m:"pumpeDuese", p:{ t0:0.00005, sig:"u" }, ch:1 }],
+    notes:[ {t:0.0007, v:14.4, txt:"Anstieg flacher", dx:-20, dy:50, anchor:"end"},
+            {t:0.00095, v:11.6, ch:1, txt:"Plusseite bricht ein", dx:-10, dy:30, anchor:"end"} ],
+    expect:[ {what:"max", t0:0.00005, t1:0.0006, max:15.6, src:"Modell: Anzug später erreicht"},
+             {what:"min", ch:1, t0:0.0007, t1:0.001, max:11.9, src:"Spannungsfall an 0,15 Ω bei ~16 A ≈ 2,4 V"} ],
+    caption:"Der Strom steigt flacher und erreicht die Anzugsschwelle im Beispiel kaum noch, der BIP-Knick kommt später und schwächer. Gleichzeitig bricht die Plusseite am Ventil unter Strom stärker ein als beim Sollbild.",
+    why:"Ein Übergangswiderstand (Stecker, Kabelbaum unter dem Ventildeckel, Masse) liegt in Reihe zur Spule: Bei ~16 A fallen an 0,15 Ω (Beispielwert) schon ~2,4 V ab – weniger Spannung an der Spule, langsamerer Anstieg, schwächere Magnetkraft, BIP später. Unterschied zum Windungsschluss: dort steigt der Strom schneller. Spannung direkt am Ventil und am STG vergleichen – die Differenz ist der Spannungsfall in der Leitung. Ross-Tech nennt Zusatzwiderstand durch Beschädigung oder Korrosion als Ursache für elektrische Fehler (18074/P1666)." }),
+  W2({ badge:"FEHLER", title:"Unterbrechung: kein Strom", cond:"Motor warm, Leerlauf", tdiv:0.0005, vdiv:5, off:0, os:8,
+    ch:[{ m:"pumpeDuese", p:{ fault:"open" }, lbl:"Strom", unit:"A" },
+        { m:"pumpeDuese", p:{ fault:"open", sig:"u" }, lbl:"Plusseite", vdiv:5, off:-3.6 }],
+    ghost:[{ m:"pumpeDuese", p:{} }],
+    notes:[ {t:0.0017, v:14.4, ch:1, txt:"Plusseite bleibt ein, taktet nicht", dx:20, dy:40} ],
+    expect:[ {what:"max", max:0.4, src:"kein Stromkreis"},
+             {what:"min", ch:1, t0:0.0009, t1:0.0026, min:13.9, src:"Endstufe ein ohne Takt"} ],
+    caption:"Kein Strom, obwohl die Plusseite einschaltet. Sie taktet nicht, weil der Strom die Regelschwelle nie erreicht. Der Zylinder spritzt nicht ein.",
+    why:"Der Kreis ist offen: Spule, innerer Kabelbaum unter dem Ventildeckel, Stecker oder Masseseite. Das STG schaltet, aber es fließt kein Strom – ohne Strom kein Grund zum Takten. Ventil bleibt offen → kein Druckaufbau, keine Einspritzung, unrunder Lauf (SSP 209). Ross-Tech 18074/P1666 (N240, elektrische Fehlfunktion): erst Leitungen und Verbindungen prüfen; das STG prüft jedes Ventil mit sehr kleinem Prüfstrom, darum fällt schon zusätzlicher Widerstand auf. Kommt der Fehler sporadisch, den Kabelbaum bei laufender Aufnahme bewegen. Unterschied zu „keine Ansteuerung“: dort bleibt auch die Plusseite auf 0 V." }),
+  W2({ badge:"FEHLER", title:"Übergangswiderstand Masseseite", cond:"Motor warm, Leerlauf", tdiv:0.0005, vdiv:5, off:-0.5, os:16,
+    trig:{t:0.00081, v:5},
+    ch:[{ m:"pumpeDuese", p:{ rg:0.15, uB:0.00088 }, lbl:"Strom", unit:"A" },
+        { m:"pumpeDuese", p:{ rg:0.15, uB:0.00088, sig:"g" }, lbl:"Masseseite", vdiv:20, off:-3.8 }],
+    ghost:[{ m:"pumpeDuese", p:{} }, { m:"pumpeDuese", p:{ sig:"g" }, ch:1 }],
+    notes:[ {t:0.0015, v:4.2, ch:1, txt:"Masseseite angehoben (CH2, 20 V/div)", dx:10, dy:-40} ],
+    expect:[ {what:"max", ch:1, t0:0.0008, t1:0.0026, min:3.5, src:"Modell: 0,15 Ω · ~16 A ≈ 2,4 V zusätzlich"},
+             {what:"max", ch:1, min:46, max:50, src:"Abschaltspitze unverändert (Pico ~48 V)"} ],
+    caption:"Die Masseseite liegt während der Ansteuerung deutlich höher als beim Sollbild, der Strom steigt flacher. Die Plusseite bleibt dabei unauffällig.",
+    why:"Ein Übergangswiderstand in der Masseseite (Stecker, Kabelbaum unter dem Ventildeckel) liegt in Reihe zur Spule: Bei ~16 A fallen an 0,15 Ω (Beispielwert) ~2,4 V ab, die man auf der Masseseite gegen Batterie-Minus sieht (Soll nach Pico ~0,3–2 V). Wie beim Übergangswiderstand in der Plusleitung steigt der Strom flacher; Unterschied: dort bricht die Plusseite ein, hier steigt die Masseseite. Ross-Tech 18074/P1666 nennt Zusatzwiderstand durch Beschädigung oder Korrosion als Ursache." }),
+  W2({ badge:"FEHLER", title:"Keine Ansteuerung vom STG", cond:"Motor warm, Leerlauf", tdiv:0.0005, vdiv:5, off:0, os:8,
+    ch:[{ m:"pumpeDuese", p:{ fault:"nodrive" }, lbl:"Strom", unit:"A" },
+        { m:"pumpeDuese", p:{ fault:"nodrive", sig:"u" }, lbl:"Plusseite", vdiv:5, off:-3.6 }],
+    ghost:[{ m:"pumpeDuese", p:{} }, { m:"pumpeDuese", p:{ sig:"u" }, ch:1 }],
+    notes:[ {t:0.0017, v:0, ch:1, txt:"Plusseite bleibt auf 0 V", dx:20, dy:-30} ],
+    expect:[ {what:"max", max:0.4, src:"kein Strom"}, {what:"max", ch:1, max:0.4, src:"keine Ansteuerung"} ],
+    caption:"Weder Strom noch Spannung: Die Plusseite schaltet gar nicht ein. Anders als bei der Unterbrechung fehlt hier schon die Ansteuerung.",
+    why:"Schaltet die Plusseite nie ein, kommt vom STG kein Befehl oder die Endstufe bzw. die Leitung zur Plusseite ist unterbrochen (Messpunkt am STG-Pin und am Ventil vergleichen). Bei der Unterbrechung im Ventilkreis schaltet die Plusseite dagegen ein und taktet nicht. Erst Fehlerspeicher und die anderen Zylinder ansehen: Fehlen alle Pulse, liegt es eher an Versorgung, Drehzahlsignal oder STG (Physik/Plausibilität; Ablauf herstellerabhängig)." })
+],
+ursachen:["Innerer Kabelbaum oder Stecker unter dem Ventildeckel: Scheuerstellen, gebrochene Litzen, Öl, Korrosion (Kfz-Dietrich, Ross-Tech)","Übergangswiderstand in Plus- oder Masseseite","Spule mit Windungsschluss oder Unterbrechung","Ventil klemmt oder schließt nicht sauber (kein oder verschobener BIP)","Luft im Kraftstoff bzw. in der PD-Einheit (BIP zu früh, SSP 209)","Nockenwelle verschlissen (Ross-Tech 17668/P1260)","Endstufe im Motorsteuergerät defekt"],
+loesungen:["Kabelbaum und Stecker unter dem Ventildeckel prüfen, instand setzen oder ersetzen (Ross-Tech: Kabelbaum vor den Ventilen)","Übergangswiderstände beseitigen, Kontakte reinigen","PD-Einheit bzw. Magnetventil ersetzen (Einbau nach Herstellervorgabe)","Kraftstoffversorgung entlüften und prüfen","Nockenwelle und Rollenkipphebel prüfen","Motorsteuergerät erst ersetzen, wenn Leitungen und Ventil nachweislich gut sind"],
+gegen:"Tester: Fehlerspeicher, Mengenabweichung je Zylinder im Leerlauf, Kompressionsprüfung über die Ausgleichsmengen (SEAT BKD: Grenzen −2,8 bis +2,8 mg/Hub). Multimeter: Durchgang und Übergangswiderstand der Leitungen bis zum Ventil, Spulenwiderstand laut Herstellerdaten im Zylindervergleich.",
+plaus:"Alle Zylinder zeigen dieselbe Form; der BIP liegt bei allen an ähnlicher Stelle; die Ansteuerzeit wächst mit der Last; der auffällige Zylinder im Tester ist auch im Strombild auffällig.",
+dtc:"Herstellerabhängig. Beispiele VAG (Ross-Tech): 18074/P1666 Ventil Pumpe-Düse Zyl. 1 (N240) elektrische Fehlfunktion; 17668/P1260/004704 PD-Einheit Zyl. 1 (N240) unplausibles Signal. SSP 209: Meldung „Regelgrenze unterschritten“. Andere Zylinder und Codes laut Herstellerdaten.",
+irrtuemer:["„Strombild gut = Einspritzung gut“ – der Strom zeigt die Ansteuerung und das Schließen des Ventils, nicht Düse, Kolben oder Nocke.","„Die Voreinspritzung muss ein eigener Strompuls sein“ – bei der Magnetventil-PD endet die Voreinspritzung hydraulisch über den Ausweichkolben (SSP 209).","„Fehlercode Ventil = Ventil tauschen“ – Ross-Tech: erst Kabelbaum und Verbindungen prüfen.","„Piezo-PD misst man genauso“ – Piezo-Einheiten laden und entladen mit Strom in beide Richtungen (Pico AGT-146), siehe Karte inj-piezo.","„Das ist dasselbe wie ein Common-Rail-Magnetinjektor“ – die Strompegel sind ähnlich, aber beim CR-Magnetinjektor (Karte inj-cr-mag) sind Vor- und Haupteinspritzung eigene Strompulse; die Magnetventil-PD hat einen Puls je Einspritzung mit BIP-Fenster (SSP 209).","„Das STG taktet, bis der BIP kommt“ – das Taktende legt das STG selbst fest, der BIP wird danach im Fenster gesucht (SSP 209 Bild 209_97)."],
+tipps:["Erst 500 µs/div für den ganzen Impuls, dann 100 µs/div auf den BIP.","Zylinder immer vergleichen: gleiche Zange, gleiche Position, gleicher Betriebspunkt.","Sporadische Aussetzer: lange Aufnahme mit Bildpuffer und dabei den Kabelbaum am Ventildeckel bewegen.","Zange vor jeder Messung nullen; der Anzugsstrom liegt nahe an 20 A – Zangenbereich passend wählen."],
+warn:"Motor läuft: Riementrieb, Lüfter und heiße Teile. Beim Abschalten des Ventils entstehen auf der Masseseite ~48 V (Pico) – nur mit 10:1 messen. Nur backproben, keine Stecker im Lauf trennen. Den Ventildeckel nicht bei laufendem Motor öffnen. Die PD-Einheit erzeugt bis 2050 bar (SSP 209) – Kraftstoffleitungen nur nach Herstellervorgabe öffnen. Diesel ist brennbar: keine Funken, Feuerlöscher bereit.",
+simpel:"Jeder Zylinder hat seine eigene kleine Pumpe mit Ventil. Das Ventil schließt, dann wird gespritzt. Auf dem Oszi siehst du einen Strombuckel. Darin ein kleiner Knick: Da ist das Ventil zu.",
+profi:"Strombild = Ansteuerung plus Rückmeldung: Der BIP-Knick ist die Schließ-Rückmeldung, mit der das STG den Förderbeginn regelt. Pegel sind geregelt und sagen wenig; aussagekräftig sind Anstiegszeit (Spule, Leitungswiderstand), BIP-Lage (Mechanik, Luft) und der Zylindervergleich. Plusseite unter Strom und Masseseite zeigen Spannungsfälle in Leitung und Masse.",
+check10:"Strompuls mit Anzug, Knick, Halten? Knick an gleicher Stelle wie bei den anderen Zylindern? Anstieg gleich steil? → gut.",
+wannschlecht:"Kein Strom trotz Ansteuerung, Knick fehlt oder liegt deutlich anders als bei den anderen Zylindern, Anstieg viel steiler oder flacher, Plusseite bricht unter Strom stark ein, Masseseite im Betrieb deutlich über ~2 V.",
+wannok:"Haltedauer ändert sich mit Last und Drehzahl; kleine Unterschiede im Takt von Puls zu Puls (Stromregelung); BIP-Lage verschiebt sich etwas mit dem Betriebspunkt; Abschaltspitze auf der Masseseite.",
+next:"Signal gut, Zylinder trotzdem auffällig → Kompression, Nocke/Rollenkipphebel, Düse, Kraftstoffversorgung; Signal schlecht → Kabelbaum und Stecker unter dem Ventildeckel, Masse, Spule, dann STG."
 },
 
 {

@@ -1099,7 +1099,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "nur mit Stromzange (Spannungsausgang, BNC); Kanal 2 parallel für das Spannungsbild",
     "sicherheit": "wie Spannungsbild (induktive Spitze)",
-    "abgedecktDurch": "fehlt (inj-saug zeigt nur das Spannungsbild)",
+    "abgedecktDurch": "inj-saug (Strombilder mit Zange: Low-Pegel, Peak & Hold, Windungsschluss, Nadel klemmt)",
     "prioritaet": "mittel",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/actuators",
@@ -1161,7 +1161,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "Magnetventil-Variante: Strom ja mit Zange, Spannung ja mit 10:1. Piezo-Variante wie Piezo-Injektor (grenzwertig).",
     "sicherheit": "Gefährliche Spannung",
-    "abgedecktDurch": "fehlt (Prinzip teilweise in inj-cr-mag)",
+    "abgedecktDurch": "pumpe-duese (Magnetventil; Piezo-PD als Vergleichsbild, Details inj-piezo)",
     "prioritaet": "niedrig",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/vag-pd-current-voltage-and-earth",
@@ -1280,7 +1280,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja, 1:1 möglich; Kanal 2 mit Stromzange auf der Versorgung",
     "sicherheit": "gering (Niedervolt); Hochspannung an der Kerze nicht berühren",
-    "abgedecktDurch": "zuend-prim (nur falls die Trigger-Variante enthalten ist, sonst fehlt)",
+    "abgedecktDurch": "zuend-prim (Trigger-Variante mit integrierter Endstufe enthalten)",
     "prioritaet": "hoch",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/ignition/coil-on-plug/AGT-162-trigger-vs-primary-current/",
@@ -1310,7 +1310,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "nur indirekt (Ausgangssignale der Kassette, 12-V-Pegel). Den Ionenstrom selbst nicht abgreifen; Machbarkeit unsicher.",
     "sicherheit": "Hochspannung an der Kassette",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "ionenstrom (nur Niedervolt-Seite: Verbrennungs- und Triggersignale)",
     "prioritaet": "niedrig",
     "quellen": [
      "https://en.wikipedia.org/wiki/Trionic_T5.5"
@@ -1338,7 +1338,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "Triggerseite ja. Den Kondensatorkreis nein: er überschreitet 400 Vss mit 10:1, nur mit 100:1-Tastkopf.",
     "sicherheit": "Hochspannung, gespeicherte Energie",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "cdi (Pickup und Primärseite mit 100:1)",
     "prioritaet": "niedrig",
     "quellen": [
      "https://de.wikipedia.org/wiki/Zündung_(Verbrennungsmotor)"
@@ -1396,7 +1396,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja (2 Kanäle reichen auch für die Doppelwicklung)",
     "sicherheit": "keine besonderen",
-    "abgedecktDurch": "fehlt (Prinzip wie pwm-ventil)",
+    "abgedecktDurch": "leerlaufsteller",
     "prioritaet": "niedrig",
     "quellen": [
      "https://www.hella.com/tibi/ti/de/electronics/ti_d_electronics_leerlaufsteller1.pdf",
@@ -1411,7 +1411,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja, aber nur 2 von 4 Phasen gleichzeitig",
     "sicherheit": "keine besonderen",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "schrittmotor",
     "prioritaet": "niedrig",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/actuators/idle-speed-control-valve-(iac)/AGT-040-stepper-motor/"
@@ -1491,7 +1491,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja, sofern die Leitungen zugänglich sind (oft in der Mechatronik integriert)",
     "sicherheit": "keine besonderen",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "atg-ventil",
     "prioritaet": "niedrig",
     "quellen": []
    },

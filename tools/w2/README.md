@@ -13,6 +13,7 @@ Kurve immer zusammen. Dieselben Modelle liefern im Live-Modus Demo, Referenz-Ove
 | `render-card.js` | Lädt die echte App, spielt eine Kartendatei ein und prüft jedes Bild (`SIG.check`: Clipping, Sollbild, Nachmessen der `expect`-Werte). Schreibt Kontaktbogen und Einzelbilder als PNG. Exit 1 bei Fehlern |
 | `integrate.js` | Baut Kartendateien in `index.html` ein: Modelle und Quellen als markierter Block `@gruppe:<datei>`, `gut`/`schlecht` der Karte ersetzt. Idempotent |
 | `apply-patch.js` | Prüft bzw. wendet Textkorrekturen an Kartentexten an. Jeder Ausschnitt muss genau einmal und außerhalb der Bilder vorkommen; geschützte Texte bleiben erhalten |
+| `workflow-neukarten.js` | Agenten-Pipeline für NEUKARTE (V13.2, Schritt 3a): Autor schreibt ganze Karte → Prüfer → Korrektur → Nachprüfung; args {scr, groups:[{key, ids, related, focus}]} |
 | `workflow-sensorkarten.js` | Agenten-Pipeline, mit der die 20 Sensor- und Lambdakarten in V11 entstanden sind: Autor → unabhängiger Prüfer → Korrektur → Nachprüfung, dazu der Signal-Katalog |
 
 ## Ablauf für eine neue Karte

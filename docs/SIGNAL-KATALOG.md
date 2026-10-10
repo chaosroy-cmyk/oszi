@@ -1,10 +1,10 @@
 # Signal-Katalog: am Fahrzeug messbare Signale
 
-Stand: V13 (Oktober 2026). Planungsgrundlage für die nächsten Messkarten des Kompendiums.
+Stand: V13.2 (Oktober 2026). Planungsgrundlage für die nächsten Messkarten des Kompendiums.
 
 **So ist der Katalog entstanden:** Zwei Recherche-Agenten haben den Katalog erstellt, getrennt nach Sensoren sowie Aktoren, Zündung, Versorgung, Bussen und Hochvolt. Als Quellen dienten Pico Technology (Guided Tests, Forum), Bosch, Hella, Normen und Herstellerunterlagen. Unter „Quellen“ steht nur, was tatsächlich geöffnet und gelesen wurde. Werte ohne Quelle sind als „nicht quellengeprüft“ bzw. „Fachwissen“ gekennzeichnet. Die Websuche war gegen Ende der Recherche ausgeschöpft, deshalb sind einige Randbereiche dünner belegt.
 
-**Wichtig:** Dieser Katalog ist eine Arbeitsliste, kein geprüfter Kartentext. In die App kommen Werte erst, wenn eine Karte nach dem Verfahren Autor → unabhängige Prüfung → Korrektur gebaut ist. So wurden auch die 20 Sensor- und Lambdakarten in V11 die 16 neuen Sensorkarten in V12 sowie die 18 Aktor-, Bordnetz- und Buskarten in V13 erstellt.
+**Wichtig:** Dieser Katalog ist eine Arbeitsliste, kein geprüfter Kartentext. In die App kommen Werte erst, wenn eine Karte nach dem Verfahren Autor → unabhängige Prüfung → Korrektur gebaut ist. So wurden auch die 20 Sensor- und Lambdakarten in V11 die 16 neuen Sensorkarten in V12 die 18 Aktor-, Bordnetz- und Buskarten in V13 sowie 6 weitere Aktor- und Zündungskarten in V13.2 erstellt.
 
 > **Sicherheit:** Airbag, Gurtstraffer, PSI5 und alle pyrotechnischen Kreise werden **niemals** angemessen, nur mit dem Diagnosetester nach Herstellervorgabe. Hochvolt nur mit HV-Qualifikation, Herstellervorgaben, PSA und CAT-bewertetem Zubehör. Der VDS1022I hat keine bekannte CAT-Einstufung, und seine Kanäle haben eine gemeinsame Masse.
 
@@ -14,8 +14,8 @@ Stand: V13 (Oktober 2026). Planungsgrundlage für die nächsten Messkarten des K
 |---|---|
 | Signale gesamt | 146 |
 | davon mit dem Oszi sinnvoll diagnostizierbar | 117 |
-| durch eine Karte (ganz oder teilweise) abgedeckt | 102 |
-| noch ohne eigene Karte | 37 |
+| durch eine Karte (ganz oder teilweise) abgedeckt | 109 |
+| noch ohne eigene Karte | 30 |
 | nicht anwendbar (kein Oszi-Thema oder Messverbot) | 7 |
 
 ## Fehlende Karten nach Priorität
@@ -24,11 +24,8 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 | Priorität | Signal | System | Messbar mit VDS1022I |
 |---|---|---|---|
-| mittel | Einspritzventil Saugrohr (MPI) – Strombild | Einspritzung Otto, Saugrohr | nur mit Stromzange (Spannungsausgang, BNC); Kanal 2 parallel für das Spannungsbild |
 | niedrig | Automotive Ethernet 10BASE-T1S | Bussystem (Multidrop-Ethernet, neu) | eingeschränkt: Pegel und Aktivität ja (2 Kanäle gegen Masse, Math A−B). Flanken und Timing bei 25 MHz grenzwertig; Pico nutzt x10-High-Speed-Tastköpfe. |
 | niedrig | SAE J1850 PWM/VPW | Diagnose- und Fahrzeugbus (ältere US-Fahrzeuge) | ja |
-| niedrig | Pumpe-Düse-Einheit (VAG PD) – Magnetventil bzw. Piezo | Einspritzung Diesel, Pumpe-Düse | Magnetventil-Variante: Strom ja mit Zange, Spannung ja mit 10:1. Piezo-Variante wie Piezo-Injektor (grenzwertig). |
-| niedrig | Automatikgetriebe-Magnetventile (Druckregler, Schaltventile) | Getriebe | ja, sofern die Leitungen zugänglich sind (oft in der Mechatronik integriert) |
 | niedrig | Resolver (Rotorlage E-Maschine) | Hochvolt/E-Antrieb | nur sehr eingeschränkt: Pico hält Oszis mit gemeinsamer Kanalmasse für ungeeignet (mehrere Differenzmessungen, Differenztastkopf 1400 V auf der Erregung). Der VDS1022I hat gemeinsame Masse und nur 2 Kanäle; höchstens 2 Signale, jeweils mit Differenztastkopf. |
 | niedrig | Phasenströme E-Maschine (Inverter-Ausgang) | Hochvolt/E-Antrieb | eingeschränkt: max. 2 von 3 Phasen, nur mit HV-tauglicher (CAT-bewerteter) Stromzange mit Spannungsausgang; keine galvanische Verbindung zum HV |
 | niedrig | HV-Batterie- und Zwischenkreisstrom (Antrieb/Rekuperation) | Hochvolt/E-Antrieb | nur mit HV-tauglicher DC-Hochstromzange (BNC-Ausgang) |
@@ -38,10 +35,6 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 | niedrig | Elektrischer Klimakompressor (HV) – Strom und Drehzahlansteuerung | Hochvolt/Thermomanagement | LIN-Seite ja; HV-Strom nur mit HV-tauglicher Zange |
 | niedrig | Resolver der E-Maschine (Rotorlage) | HV-Antrieb (EV/Hybrid) | nur eingeschränkt: Die Kanäle haben gemeinsame Masse, floatende Wicklungen erfordern Differenztastköpfe; eine Messung wie bei Pico (3 Kanäle) ist mit 2 Kanälen nicht vollständig möglich |
 | niedrig | Turbolader-Drehzahlsensor | Motor – Luft/Aufladung | vermutlich ja (Frequenzbereich unbekannt, nicht geprüft) |
-| niedrig | Schrittmotor (Leerlauf, Drosselklappenanschlag) | Motorsteuerung (älter) | ja, aber nur 2 von 4 Phasen gleichzeitig |
-| niedrig | Leerlaufsteller (Drehsteller oder Linearmagnet) | Motorsteuerung Otto (älter) | ja (2 Kanäle reichen auch für die Doppelwicklung) |
-| niedrig | Kondensatorzündung (CDI) | Zündung (vor allem Zweirad und Kleinmotoren) | Triggerseite ja. Den Kondensatorkreis nein: er überschreitet 400 Vss mit 10:1, nur mit 100:1-Tastkopf. |
-| niedrig | Ionenstrommessung (Saab Trionic) | Zündung/Verbrennungserkennung | nur indirekt (Ausgangssignale der Kassette, 12-V-Pegel). Den Ionenstrom selbst nicht abgreifen; Machbarkeit unsicher. |
 
 ## Sensoren
 
@@ -681,7 +674,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 - Sicherheit: Induktive Spitze: Tastkopf und Zubehör spannungsfest wählen (Pico-Warnhinweis)
 - Quellen: <https://www.picoauto.com/library/automotive-guided-tests/actuators/injector-(gasoline)/AGT-388-mpi-injector-voltage-and-current/> · <https://www.hella.com/tibi/ti/de/electronics/ti_d_electronics_einspritzventile1.pdf>
 
-**Einspritzventil Saugrohr (MPI) – Strombild** · Strom (Stromzange); induktiver Anstieg mit Knick bei Nadelbewegung · Priorität mittel · Karte: fehlt (inj-saug zeigt nur das Spannungsbild)
+**Einspritzventil Saugrohr (MPI) – Strombild** · Strom (Stromzange); induktiver Anstieg mit Knick bei Nadelbewegung · Priorität mittel · Karte: inj-saug (Strombilder mit Zange: Low-Pegel, Peak & Hold, Windungsschluss, Nadel klemmt)
 
 - Typische Werte: Pico misst im 20-A-Bereich der Niederstromzange (Spitzen also deutlich darunter). Absolutwerte herstellerabhängig, keine Zahlen in den geöffneten Quellen. Pico hat einen eigenen Test dafür (AGT-036).
 - VDS1022I: nur mit Stromzange (Spannungsausgang, BNC); Kanal 2 parallel für das Spannungsbild
@@ -728,7 +721,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Einspritzung Diesel, Pumpe-Düse
 
-**Pumpe-Düse-Einheit (VAG PD) – Magnetventil bzw. Piezo** · Strom, Spannung und Masse des Magnetventils; Piezo-Variante · Priorität niedrig · Karte: fehlt (Prinzip teilweise in inj-cr-mag)
+**Pumpe-Düse-Einheit (VAG PD) – Magnetventil bzw. Piezo** · Strom, Spannung und Masse des Magnetventils; Piezo-Variante · Priorität niedrig · Karte: pumpe-duese (Magnetventil; Piezo-PD als Vergleichsbild, Details inj-piezo)
 
 - Typische Werte: Pico prüft Strom, Spannung und Masse (AGT-385) sowie eine Piezo-PD-Variante (AGT-146). Zahlenwerte stehen nur in den Bildern und sind herstellerabhängig (nicht quellenverifiziert).
 - VDS1022I: Magnetventil-Variante: Strom ja mit Zange, Spannung ja mit 10:1. Piezo-Variante wie Piezo-Injektor (grenzwertig).
@@ -786,7 +779,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 - Sicherheit: wie Primärspannung
 - Quellen: <https://www.picoauto.com/library/automotive-guided-tests/ignition>
 
-**Zündspule mit integrierter Endstufe – Triggersignal (COP 3/4-polig)** · Logikpegel-Ansteuerimpuls vom Motorsteuergerät; teils mit Rückmeldesignal · Priorität hoch · Karte: zuend-prim (nur falls die Trigger-Variante enthalten ist, sonst fehlt)
+**Zündspule mit integrierter Endstufe – Triggersignal (COP 3/4-polig)** · Logikpegel-Ansteuerimpuls vom Motorsteuergerät; teils mit Rückmeldesignal · Priorität hoch · Karte: zuend-prim (Trigger-Variante mit integrierter Endstufe enthalten)
 
 - Typische Werte: Der Primärkreis wird intern geschaltet (Pico AGT-162); Impulslänge ≈ Schließzeit. Pegel typ. 5 V (nicht quellenverifiziert, herstellerabhängig). Pico hat Varianten für Trigger, Versorgung, Masse, Strom und Rückmeldung.
 - VDS1022I: ja, 1:1 möglich; Kanal 2 mit Stromzange auf der Versorgung
@@ -802,7 +795,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Zündung/Verbrennungserkennung
 
-**Ionenstrommessung (Saab Trionic)** · Ionenstrom über den Kerzenspalt; Ausgangsimpulse der Kassette zum Steuergerät · Priorität niedrig · Karte: fehlt
+**Ionenstrommessung (Saab Trionic)** · Ionenstrom über den Kerzenspalt; Ausgangsimpulse der Kassette zum Steuergerät · Priorität niedrig · Karte: ionenstrom (nur Niedervolt-Seite: Verbrennungs- und Triggersignale)
 
 - Typische Werte: Ein Pol der Sekundärwicklung liegt an 80 V statt an Masse. Der Ionenstrom nach der Verbrennung dient der Zylindererkennung sowie der Klopf- und Aussetzererkennung. Die Kassette meldet über Batteriespannungsimpulse an das Steuergerät (Wikipedia Trionic T5.5).
 - VDS1022I: nur indirekt (Ausgangssignale der Kassette, 12-V-Pegel). Den Ionenstrom selbst nicht abgreifen; Machbarkeit unsicher.
@@ -820,7 +813,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Zündung (vor allem Zweirad und Kleinmotoren)
 
-**Kondensatorzündung (CDI)** · Kondensatorentladung über Zündtransformator · Priorität niedrig · Karte: fehlt
+**Kondensatorzündung (CDI)** · Kondensatorentladung über Zündtransformator · Priorität niedrig · Karte: cdi (Pickup und Primärseite mit 100:1)
 
 - Typische Werte: Kondensator ca. 500 V (Wikipedia Zündung)
 - VDS1022I: Triggerseite ja. Den Kondensatorkreis nein: er überschreitet 400 Vss mit 10:1, nur mit 100:1-Tastkopf.
@@ -854,7 +847,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Motorsteuerung Otto (älter)
 
-**Leerlaufsteller (Drehsteller oder Linearmagnet)** · PWM über 1–2 geschaltete Massen · Priorität niedrig · Karte: fehlt (Prinzip wie pwm-ventil)
+**Leerlaufsteller (Drehsteller oder Linearmagnet)** · PWM über 1–2 geschaltete Massen · Priorität niedrig · Karte: leerlaufsteller
 
 - Typische Werte: Versorgung bei Zündung ein 11–14 V; Spulenwiderstand 9,6 Ω ±15 % (Opel) (Hella). Drehsteller mit 2–3 Anschlüssen: Plus und 1–2 geschaltete Massen; der Tastgrad bestimmt die Öffnung. Kaltstart-Leerlauf ca. 1200/min (Pico).
 - VDS1022I: ja (2 Kanäle reichen auch für die Doppelwicklung)
@@ -863,7 +856,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Motorsteuerung (älter)
 
-**Schrittmotor (Leerlauf, Drosselklappenanschlag)** · Schrittimpulse auf mehreren geschalteten Massen · Priorität niedrig · Karte: fehlt
+**Schrittmotor (Leerlauf, Drosselklappenanschlag)** · Schrittimpulse auf mehreren geschalteten Massen · Priorität niedrig · Karte: schrittmotor
 
 - Typische Werte: 4-Draht: Pin 3 Stepper-Plus 5 V, Wicklung 4–6 Ω. 5-Draht: 12-V-Versorgung, 4 geschaltete Massen (Pico). Frequenz nicht angegeben.
 - VDS1022I: ja, aber nur 2 von 4 Phasen gleichzeitig
@@ -915,7 +908,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Getriebe
 
-**Automatikgetriebe-Magnetventile (Druckregler, Schaltventile)** · PWM bzw. stromgeregelt · Priorität niedrig · Karte: fehlt
+**Automatikgetriebe-Magnetventile (Druckregler, Schaltventile)** · PWM bzw. stromgeregelt · Priorität niedrig · Karte: atg-ventil
 
 - Typische Werte: Herstellerabhängig; keine Quelle geöffnet
 - VDS1022I: ja, sofern die Leitungen zugänglich sind (oft in der Mechatronik integriert)
