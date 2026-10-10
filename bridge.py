@@ -6,8 +6,10 @@ bridge.py - OWON VDS1022(I) <-> WebSocket-Bridge fuer das KFZ-Oszi-Kompendium
 Server:  ws://localhost:8765
 
 Frames an Clients
-  JSON:   {"cmd":"frame","t":..,"dt":..,"range":[v1,v2],"probe":[p1,p2],
+  JSON:   {"cmd":"frame","t":..,"dt":..,"range":[v1,v2],"probe":[p1,p2],"trig":0.2,
            "n1":..,"n2":..,"ch1":[Volt..],"ch2":[..]}
+          Jeder Frame ist EINE Aufnahme des Geraets (5000 Punkte = 10 Divisionen der
+          Anzeige, Samplerate = 5000 / (10 * secdiv)); "trig" = Lage des Geraete-Triggers.
   Binaer: [b'OSZ1'][uint32 LE header_len][header-JSON, mit Spaces auf
           4-Byte-Grenze gepolstert][ch1 float32 LE * n1][ch2 float32 LE * n2]
           -> aktiv bei gemessener RTT > 100 ms oder --binary on
@@ -17,7 +19,7 @@ Ping:    Server sendet {"cmd":"ping","t":..}; Client antwortet {"cmd":"pong","t"
 Kommandos vom Client (JSON):
   {"cmd":"channel","ch":1,"on":true,"vdiv":2.0,"coupling":"DC","probe":10}
   {"cmd":"timebase","secdiv":0.001}
-  {"cmd":"trigger","ch":1,"edge":"rise","level":1.4}
+  {"cmd":"trigger","ch":1,"edge":"rise","level":1.4,"position":0.2}
   {"cmd":"run"} / {"cmd":"stop"} / {"cmd":"single"}
   Das Geraet laeuft immer im Sweep AUTO (frei bzw. getriggert); run/stop/single
   entscheidet nur die Bridge, welche Frames weitergehen. single = naechstes
@@ -29,7 +31,7 @@ Voraussetzungen:
   (github.com/florentbr/OWON-VDS1022 -> API: VDS1022, set_channel,
    set_sampling, set_trigger, fetch/fetch_iter, frames.ch1/ch2)
 
-Start:  python bridge.py [--port 8765] [--binary auto|on|off] [--fps 10]
+Start:  python bridge.py [--port 8765] [--binary auto|on|off] [--fps 20]
 
 Verhalten: reconnect-sicher (Geraet ab-/anstecken), Fehler ins Log,
 kein Absturz. Die Bridge fuehrt Buch ueber die selbst gesetzten Einstellungen
@@ -108,20 +110,20 @@ SET = {
     ],
     "secdiv": 1e-3,
     "rate": 100_000,
-    "trigger": {"ch": 1, "edge": "rise", "level": 1.0},
+    "trigger": {"ch": 1, "edge": "rise", "level": 1.0, "position": 0.2},
 }
 STATUS = {"device": "getrennt"}
 
-RATE_LADDER = [1_000, 10_000, 100_000, 1_000_000, 10_000_000, 100_000_000]
+SAMPLES = 5000            # Punkte je Aufnahme (Frame) des VDS1022
+RATE_MIN, RATE_MAX = 2.5, 100_000_000   # Grenzen der vds1022-Lib (100 MS/s / Prescaler)
 
 
 def pick_rate(secdiv):
-    """Samplerate so waehlen, dass 10 Divisionen >= 2000 Punkte ergeben."""
+    """Samplerate so waehlen, dass EINE Aufnahme (5000 Punkte) genau die 10 Divisionen
+    der Anzeige fuellt. Dann ist jedes Bild der App eine einzelne, vom Geraet getriggerte
+    Aufnahme - ohne Nahtstelle zwischen zwei Aufnahmen (Pulsbreiten springen sonst)."""
     window = secdiv * 10
-    for r in RATE_LADDER:
-        if r * window >= 2000:
-            return r
-    return RATE_LADDER[-1]
+    return max(RATE_MIN, min(RATE_MAX, SAMPLES / window))
 
 
 def rate_str(r):
@@ -186,7 +188,7 @@ def apply_settings(dev):
     try:
         fn = getattr(dev, "set_sampling", None) or getattr(dev, "set_timerange", None)
         if fn:
-            fn(rate_str(SET["rate"]))
+            fn(float(SET["rate"]))   # Zahl: die Lib rundet auf 100 MS/s / ganzzahliger Prescaler
     except Exception as e:
         log.warning("set_sampling: %s", e)
     t = SET["trigger"]
@@ -199,7 +201,8 @@ def apply_settings(dev):
     # haengen bleiben (in NORMAL/ONCE blockiert fetch_iter bis zum Trigger).
     args = (NS.get("CH%d" % int(t["ch"]), int(t["ch"])), NS.get("EDGE", "edge"),
             NS.get("RISE" if t["edge"] == "rise" else "FALL"))
-    kw = {"position": 1 / 2, "level": "%gv" % float(t["level"])}
+    # position = Pre-Trigger-Anteil der Aufnahme, gleich dem Trigger-Anteil der App-Anzeige
+    kw = {"position": float(t.get("position", 0.2)), "level": "%gv" % float(t["level"])}
     try:
         try:
             dev.set_trigger(*args, sweep=NS.get("AUTO", 0), **kw)
@@ -229,9 +232,10 @@ def drain_cmds(dev):
             SET["rate"] = pick_rate(SET["secdiv"])
             changed = True
         elif k == "trigger":
-            for f in ("ch", "edge", "level"):
+            for f in ("ch", "edge", "level", "position"):
                 if f in c:
                     SET["trigger"][f] = c[f]
+            SET["trigger"]["position"] = min(0.9, max(0.05, float(SET["trigger"].get("position", 0.2))))
             changed = True
         elif k == "run":
             RUNNING.set()
@@ -405,6 +409,7 @@ def device_worker(fps):
                     "dt": _dt(frames),
                     "range": [SET["ch"][0]["vdiv"], SET["ch"][1]["vdiv"]],
                     "probe": [SET["ch"][0]["probe"], SET["ch"][1]["probe"]],
+                    "trig": float(SET["trigger"].get("position", 0.2)),   # Lage des Geraete-Triggers im Frame (0..1)
                     "n1": int(len(ch1)) if ch1 is not None else 0,
                     "n2": int(len(ch2)) if ch2 is not None else 0,
                 }
@@ -437,7 +442,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="OWON VDS1022 WebSocket-Bridge")
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--binary", choices=("auto", "on", "off"), default="auto")
-    ap.add_argument("--fps", type=int, default=10, help="Frames/s vom Geraet")
+    ap.add_argument("--fps", type=int, default=20, help="Frames/s vom Geraet")
     a = ap.parse_args()
     FORCE_BINARY = a.binary
     try:

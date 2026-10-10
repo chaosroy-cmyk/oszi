@@ -26,6 +26,12 @@ Katalog: 11 oszirelevante Signale noch offen (davon 7 Hochvolt – ausgeschlosse
   `sweep=ONCE`; die Bridge übergab keinen Sweep → Einzelschuss, `fetch_iter` wartet danach auf einen neuen
   Trigger. Fix in `bridge.py`: `sweep=AUTO` (mit Rückfall für alte Lib ohne Parameter). **Hardwaretest am
   VDS1022I steht noch aus (Roy).** Falls es damit nicht behoben ist: Bridge-Log ansehen.
+  Nachtrag: Roys Hardwaretest – Kurve läuft (Fix greift), aber ruckelig mit springenden Pulsbreiten. Ursache:
+  Bridge wählte die Samplerate aus einer Dekadenleiter (1 ms/div → 1 MS/s → Aufnahme 5 ms, Fenster 10 ms),
+  die App setzte zwei unabhängige Aufnahmen aneinander und triggerte per Software über die Naht. Fix: Rate
+  = 5000/(10·secdiv) (eine Aufnahme = ein Fenster), Geräte-Trigger auf App-Triggerposition, Header `trig`,
+  App zeigt die letzte Aufnahme direkt (Demo/Wiedergabe weiter über Ringpuffer); fps 10 → 20. Node-Test
+  der Fensterwahl im Scratchpad, **Hardwaretest erneut offen.**
 - Live-Demo (Mock): Signale mit sehr kurzen Pulsen bei langer Zeitbasis (Keyless, PDC, Ruhestrom-Pulse,
   K-Leitung bei 50 ms/div) werden zu grob abgetastet, die Übereinstimmung ist dort niedrig. Ruhestrom
   (20 s/div) liegt außerhalb der Live-Zeitbasis. Kein Kartenfehler.

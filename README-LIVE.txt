@@ -34,6 +34,13 @@ PROTOKOLL (bridge.py):
   entscheidet die Bridge (Single = nächstes vollständiges Bild), die
   Anzeige triggert in der App per Software (Trigger-Pegel/Flanke).
 
+  Anzeige = eine Aufnahme (ab V13.2): Die Bridge stellt die Samplerate so
+  ein, dass eine Geräte-Aufnahme (5000 Punkte) genau die 10 Divisionen
+  füllt, und legt den Geräte-Trigger auf die Trigger-Position der App
+  (10/20/50/80 %). Die App zeigt die letzte Aufnahme direkt, ohne zwei
+  Aufnahmen aneinanderzusetzen (vorher: Pulsbreiten sprangen an der Naht).
+  Bildrate: --fps 20 (Standard); bei Rucklern am PC --fps 10 versuchen.
+
 STÖRUNG "Kurve läuft kurz an und bleibt stehen":
   bridge.py aktualisieren (Sweep AUTO, s. o.). Bleibt es dabei: Log der
   Bridge prüfen (Warnung "set_trigger ohne sweep-Parameter" = alte Lib,
