@@ -36,6 +36,8 @@ Katalog: 11 oszirelevante Signale noch offen (davon 7 Hochvolt – ausgeschlosse
   Spannung am Tastkopf für 10 Divisionen; die Bridge übergab V/div (2 V/div → ±1 V). Fix: V/div × 10 mit
   Gerätegrenzen 50 mV–50 V × Tastkopffaktor; Header `probe` [1,1] (Lib-Werte sind schon am Tastkopf, die App
   multiplizierte bei 10:1 sonst doppelt), `probeUi` zur Info. **Hardwaretest offen.**
+  Wunsch Roy umgesetzt: vertikale Positionsschieber neben dem Schirm (CH1 links, CH2 rechts, ±4 div,
+  Doppelklick = Mitte), 0-V-Marken in Kanalfarbe am linken Rand; Zahlenfeld und Schieber synchron.
 - Live-Demo (Mock): Signale mit sehr kurzen Pulsen bei langer Zeitbasis (Keyless, PDC, Ruhestrom-Pulse,
   K-Leitung bei 50 ms/div) werden zu grob abgetastet, die Übereinstimmung ist dort niedrig. Ruhestrom
   (20 s/div) liegt außerhalb der Live-Zeitbasis. Kein Kartenfehler.

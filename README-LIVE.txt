@@ -74,7 +74,9 @@ AUTO-SETUP (ab v6):
   Hinweiszeile nennt den Grund (Zangenfaktor).
 
 MEHR EINSTELLUNGEN (ab v8):
-  Pro Kanal: Position (+-4 div), Invertieren, Zangenfaktor
+  Pro Kanal: Position (+-4 div; ab V13.2 auch als Schieber links/rechts
+  neben dem Schirm, Doppelklick = Mitte, 0-V-Marke in Kanalfarbe am
+  linken Rand), Invertieren, Zangenfaktor
   (1/10/100 mV/A -> Anzeige, Messwerte und Cursor in Ampere).
   Trigger-Position 10/20/50/80 % (Pre-Trigger-Anteil im Bild).
   Nachleuchten kurz/lang: vorherige Durchlaeufe bleiben als blasse
