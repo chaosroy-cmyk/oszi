@@ -32,6 +32,10 @@ Katalog: 11 oszirelevante Signale noch offen (davon 7 Hochvolt – ausgeschlosse
   = 5000/(10·secdiv) (eine Aufnahme = ein Fenster), Geräte-Trigger auf App-Triggerposition, Header `trig`,
   App zeigt die letzte Aufnahme direkt (Demo/Wiedergabe weiter über Ringpuffer); fps 10 → 20. Node-Test
   der Fensterwahl im Scratchpad, **Hardwaretest erneut offen.**
+  Nachtrag 2: Testsignal 5 V/1 kHz zeigte Vpp 984 mV, Max 1,00 V = Begrenzung. Die Lib erwartet `range` als
+  Spannung am Tastkopf für 10 Divisionen; die Bridge übergab V/div (2 V/div → ±1 V). Fix: V/div × 10 mit
+  Gerätegrenzen 50 mV–50 V × Tastkopffaktor; Header `probe` [1,1] (Lib-Werte sind schon am Tastkopf, die App
+  multiplizierte bei 10:1 sonst doppelt), `probeUi` zur Info. **Hardwaretest offen.**
 - Live-Demo (Mock): Signale mit sehr kurzen Pulsen bei langer Zeitbasis (Keyless, PDC, Ruhestrom-Pulse,
   K-Leitung bei 50 ms/div) werden zu grob abgetastet, die Übereinstimmung ist dort niedrig. Ruhestrom
   (20 s/div) liegt außerhalb der Live-Zeitbasis. Kein Kartenfehler.

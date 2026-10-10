@@ -6,7 +6,8 @@ bridge.py - OWON VDS1022(I) <-> WebSocket-Bridge fuer das KFZ-Oszi-Kompendium
 Server:  ws://localhost:8765
 
 Frames an Clients
-  JSON:   {"cmd":"frame","t":..,"dt":..,"range":[v1,v2],"probe":[p1,p2],"trig":0.2,
+  JSON:   {"cmd":"frame","t":..,"dt":..,"range":[v1,v2],"probe":[1,1],"probeUi":[p1,p2],"trig":0.2,
+          (Werte in Volt am Tastkopf; "probe" ist deshalb [1,1], "probeUi" nur zur Info)
            "n1":..,"n2":..,"ch1":[Volt..],"ch2":[..]}
           Jeder Frame ist EINE Aufnahme des Geraets (5000 Punkte = 10 Divisionen der
           Anzeige, Samplerate = 5000 / (10 * secdiv)); "trig" = Lage des Geraete-Triggers.
@@ -178,7 +179,12 @@ def apply_settings(dev):
     for i, chk in enumerate(("CH1", "CH2")):
         c = SET["ch"][i]
         try:
-            kw = {"range": vdiv_str(c["vdiv"]), "probe": "x%d" % int(c["probe"]), "offset": 1 / 2}
+            # Lib: "range" = Spannung am TASTKOPF fuer 10 Divisionen (nicht V/div!), Geraeteseite 50 mV..50 V.
+            # Vorher wurde V/div als Gesamtbereich uebergeben -> 2 V/div ergab +-1 V, ein 5-V-Signal lief
+            # bei 1,00 V in die Begrenzung.
+            pr = max(1, int(c["probe"]))
+            rng = min(50.0 * pr, max(0.05 * pr, float(c["vdiv"]) * 10.0))
+            kw = {"range": vdiv_str(rng), "probe": "x%d" % pr, "offset": 1 / 2}
             cp = str(c.get("coupling", "DC")).upper()
             if cp in NS:
                 kw["coupling"] = NS[cp]
@@ -408,7 +414,10 @@ def device_worker(fps):
                     "t": time.time(),
                     "dt": _dt(frames),
                     "range": [SET["ch"][0]["vdiv"], SET["ch"][1]["vdiv"]],
-                    "probe": [SET["ch"][0]["probe"], SET["ch"][1]["probe"]],
+                    # y() der Lib liefert bereits Volt am Tastkopf (Tastkopffaktor eingerechnet):
+                    # die App darf NICHT noch einmal mit dem Faktor multiplizieren -> probe [1, 1].
+                    "probe": [1, 1],
+                    "probeUi": [SET["ch"][0]["probe"], SET["ch"][1]["probe"]],
                     "trig": float(SET["trigger"].get("position", 0.2)),   # Lage des Geraete-Triggers im Frame (0..1)
                     "n1": int(len(ch1)) if ch1 is not None else 0,
                     "n2": int(len(ch2)) if ch2 is not None else 0,

@@ -41,6 +41,13 @@ PROTOKOLL (bridge.py):
   Aufnahmen aneinanderzusetzen (vorher: Pulsbreiten sprangen an der Naht).
   Bildrate: --fps 20 (Standard); bei Rucklern am PC --fps 10 versuchen.
 
+  Messbereich (ab V13.2): Die Lib erwartet als "range" die Spannung am
+  Tastkopf für 10 Divisionen. Die Bridge rechnet V/div × 10 (Grenzen des
+  Geräts 50 mV…50 V je 10 Div, mal Tastkopffaktor). Vorher wurde V/div
+  als Gesamtbereich übergeben: 2 V/div ergab ±1 V, ein 5-V-Testsignal
+  lief bei 1,00 V in die Begrenzung. Die Werte der Lib sind bereits Volt
+  am Tastkopf, deshalb meldet der Header probe [1,1].
+
 STÖRUNG "Kurve läuft kurz an und bleibt stehen":
   bridge.py aktualisieren (Sweep AUTO, s. o.). Bleibt es dabei: Log der
   Bridge prüfen (Warnung "set_trigger ohne sweep-Parameter" = alte Lib,
