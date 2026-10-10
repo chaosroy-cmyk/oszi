@@ -1349,7 +1349,7 @@ Perfekt geometrische Signale sind im Fahrzeug selten realistisch.
 </div>
 <button class="up" id="upbtn" title="Nach oben">▲</button>
 <footer>
-<p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-PWA · Stand v13 (72 Messkarten · 954 quellenbelegte Signalbilder · referenzgeprüft · Live-Modus · Auto-Setup · Auto-Deploy) · Alle Signalbilder schematisch.</p>
+<p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-PWA · Stand v13.1 (72 Messkarten · 954 quellenbelegte Signalbilder · 1:1-Tastkopf-Hinweise · referenzgeprüft · Live-Modus · Auto-Setup · Auto-Deploy) · Alle Signalbilder schematisch.</p>
 <p>Richtwerte können je nach Hersteller, System, Motorsteuergerät und Messgerät abweichen. Herstellerdaten und Stromlaufplan haben Vorrang.</p>
 <p>Sicherheit zuerst: keine Messungen an Airbag-/PSI5-Zündkreisen, HV-Systemen nur mit Qualifikation.</p>
 <div class="owner-signature">
@@ -8998,6 +8998,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf, Backprobe-Nadeln, Stromlaufplan.",
 anschluss:"Pin 1/2 = Spulenwicklung (Polarität laut Plan), ggf. Pin 3 = Schirm. Sensor am Kurbelgehäuse/Getriebeflansch über dem Geberrad.",
 messpunkte:"CH1: Signalleitung gegen zweite Sensorleitung (differenznah) oder gegen Sensormasse. Backprobing am Stecker, Sensor angesteckt. Bei 2-Kanal-Messung beide Kanäle gegen Fahrzeugmasse (je eine Leitung, Hauptsignalleitung; gemeinsame Kanalmasse). Wahre Amplitude per A−B (Math) oder Differenztastkopf.",
 setup:{kanal:"CH1",kopp:"AC (oder DC)",tk:"10:1",vdiv:"2 V/div (LL) · 0,5 V/div (Start) · 5–10 V/div (hohe Drehzahl)",tdiv:"10–20 ms/div (LL) · 50–200 ms/div (Start)",trig:"Flanke ↑, knapp über den normalen Zahnspitzen → triggert nur auf den Zahn nach der Lücke",zustand:"Starten, dann Leerlauf"},
+tk11:{stufe:"einschr", hinweis:"Leerlauf und Start mit 1:1 messen, das ist sogar feiner. Bei hoher Drehzahl (3000/min, Gasstoß) kann der Induktivgeber typabhängig über ±20 V gehen: Drehzahl begrenzen, bei 5 V/div auf Übersteuern achten."},
 vorgang:["Stecker lokalisieren, Backprobe-Nadeln setzen (Sensor bleibt angesteckt).","Starten: Amplitude und Lücke (fehlender Zahn) beurteilen.","Leerlauf: gleichmäßiges Sinusband mit periodischer Lücke.","Gasstoß: Amplitude und Frequenz steigen gemeinsam.","Bei Aussetzern: Kabelbaum-Rütteltest unter laufender Aufnahme."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf ~800 /min", cond:"Motor warm, Leerlauf · Leitung gegen Leitung · AC", vdiv:2, tdiv:0.010,
@@ -9117,7 +9118,7 @@ W2({ badge:"FEHLER", title:"Amplitude zu klein (Luftspalt)", cond:"Leerlauf ~800
     notes:[ {t:0.07, v:0, ch:1, txt:"B flach – Soll: gespiegeltes Signal (gestrichelt)", dx:-12, dy:-60, anchor:"end"} ],
     expect:[ {what:"freq", v:800, tolRel:0.02, ch:0}, {what:"vpp", min:10.4, max:12.0, ch:0, src:"Modell: volle Sensorspannung auf A (= Vpp Leitung gegen Leitung, G0)"},
              {what:"max", max:0.1, ch:1, src:"Leitung auf Masse"}, {what:"min", min:-0.1, ch:1} ],
-    caption:"Je Leitung gegen Masse gemessen: Leitung B bleibt flach, Leitung A trägt die ganze Sensorspannung – etwa doppelt so viel wie im Sollbild. Leitung gegen Leitung gemessen sähe das Signal normal aus.",
+    caption:"Je Leitung gegen Masse gemessen: Leitung B bleibt flach, Leitung A trägt die ganze Sensorspannung – etwa doppelt so viel wie sonst je Leitung gegen Masse (entspricht der vollen Sensorspannung des Sollbilds Leitung gegen Leitung). Leitung gegen Leitung gemessen sähe das Signal normal aus.",
     why:"Schwimmend angeschlossener Sensor: Normal spiegeln sich beide Leitungen (Pico), jede trägt etwa die halbe Spannung. Liegt B auf Masse (Scheuerstelle, Stecker), gilt weiter A − B = Sensorspannung, mit B = 0 → A trägt alles. Ob der Motor noch läuft oder ein Fehler gesetzt wird, hängt vom STG-Eingang ab (Pico: Kurzschluss als Fehlerursache). Mit DC-Kopplung nachprüfen: B bei 0 V = Masseschluss, bei Bordnetzspannung = Plusschluss. Achtung: Beim nicht schwimmenden Anschluss liegt eine Sensorseite ohnehin fest auf einer Bezugsspannung (Pico AGT-017) – dort ist eine flache Leitung normal. Stromlaufplan prüfen. Zwei Kanäle mit gemeinsamer Masse: beide gegen Fahrzeugmasse." })
 ],
 ursachen:["Luftspalt zu groß / Späne am Sensorkopf (magnetisch!)","Geberrad beschädigt, verdreht, Scherstift abgeschert","Leitungsbruch, Stecker-/Crimpkorrosion (Wackelkontakt)","Schirmung unterbrochen → Einstreuung","Windungsschluss im Sensor (Amplitude klein, R zu niedrig)"],
@@ -9144,7 +9145,8 @@ signalart:"Digitales Rechteck, 3-polig: Versorgung (5/12 V), Masse, Signal (Open
 equip:"2-Kanal-Oszi, 10:1-Tastkopf, Backprobe, Stromlaufplan.",
 anschluss:"Belegung laut Plan: typ. 1=Versorgung, 2=Signal, 3=Masse (variiert!). Pegel meist 0/5 V, teils 0/12 V.",
 messpunkte:"CH1: Signalpin gegen gute Masse (Batterie-Minus/STG-Masse). Für Massefehler zusätzlich Spannungsfall Sensormasse ↔ Batterie-Minus messen. Versorgung am Stecker zusätzlich prüfen.",
-setup:{kanal:"CH1 (CH2: Versorgung)",kopp:"DC",tk:"10:1",vdiv:"2 V/div",tdiv:"10 ms/div LL",trig:"Flanke ↓, 2,5 V",zustand:"Zündung ein → Starten → Leerlauf"},
+setup:{kanal:"CH1 (CH2: Versorgung)",kopp:"DC",tk:"10:1",vdiv:"1 V/div (Versorgung/Plusschluss: 2 V/div)",tdiv:"10 ms/div LL",trig:"Flanke ↓, 2,5 V",zustand:"Zündung ein → Starten → Leerlauf"},
+tk11:{stufe:"ok", hinweis:"Pegel 0/5 V, Versorgung 5/12 V, Plusschluss max. Bordnetz: alles sicher unter ±20 V. 1:1 ist hier die bessere Wahl (1 V/div ohne 10:1-Rauschen); auch der µs-Flankenzoom (4 µs) liegt in der 1:1-Bandbreite."},
 vorgang:["Versorgung prüfen (5/12 V, Zündung ein).","Rad/Motor langsam von Hand drehen: Pegel muss sauber 0↔5 V wechseln.","Starten/Leerlauf: klare Flanken, Low nahe 0 V, High nahe Versorgung.","Flanken im µs-Zoom: senkrecht, ohne Zwischenstufen."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf ~800 /min", cond:"Motor warm, Leerlauf", vdiv:1, off:-3, tdiv:0.010,
@@ -9318,7 +9320,8 @@ signalart:"CH1 KW (induktiv/Hall), CH2 NW (Hall). Bewertet wird die relative Lag
 equip:"2-Kanal-Oszi, 2× Backprobe, Stromlaufplan, idealerweise Referenzbild des Motortyps.",
 anschluss:"Beide Sensoren angesteckt, Backprobing an den Signalleitungen.",
 messpunkte:"CH1: KW · CH2: NW, beide gegen (gemeinsame) Masse.",
-setup:{kanal:"CH1+CH2",kopp:"DC (Hall) / AC (ind.)",tk:"10:1",vdiv:"CH1 5–10 V/div · CH2 2 V/div",tdiv:"20 ms/div",trig:"CH2 Flanke ↑",zustand:"Leerlauf warm; bei VVT zusätzlich kalt"},
+setup:{kanal:"CH1+CH2",kopp:"DC (Hall) / AC (ind.)",tk:"10:1",vdiv:"CH1 5 V/div (bei Drehzahl 10 V/div) · CH2 2 V/div",tdiv:"20 ms/div",trig:"CH2 Flanke ↑",zustand:"Leerlauf warm; bei VVT zusätzlich kalt"},
+tk11:{stufe:"einschr", hinweis:"Hall-KW ohne Einschränkung. Induktiv-KW: Leerlauf- und Startbilder gehen mit 1:1; bei ~2000/min (CH1 10 V/div) kann es über ±20 V gehen – Drehzahl niedrig halten. Zähne zählen braucht keine volle Amplitude."},
 vorgang:["Auf NW triggern → stehendes Bild über 2 KW-Umdrehungen.","Lage der NW-Flanke relativ zur KW-Zahnlücke ablesen (Zähne zählen!).","Bild speichern, mit Referenz/zweiter Bank vergleichen.","Bei VVT: Drehzahl/Last ändern – Verstellung muss kontrolliert wandern und zurückkehren."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf ~800 /min: Lage NW zu KW", cond:"Motor warm, Leerlauf", tdiv:0.020,
@@ -9492,6 +9495,7 @@ equip:"2-Kanal-Oszi, Backprobe, Stromlaufplan.",
 anschluss:"Signalpin laut Plan gegen Sensormasse. Versorgung 12 V prüfen.",
 messpunkte:"CH1: LMM-Signal · optional CH2: DK-/Pedalsignal als Lastreferenz.",
 setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"1 V/div",tdiv:"500 ms/div, Roll",trig:"Auto",zustand:"Zündung ein → LL → Gasstoß → Lastfahrt"},
+tk11:{stufe:"ok", hinweis:"Signal 0,5–5 V, Versorgung 12 V: alles sicher unter ±20 V. 1:1 bevorzugen – der Pulsationszoom bei 100 mV/div ist mit 10:1 (10 mV/div am Gerät) deutlich verrauschter."},
 vorgang:["Zündung ein (Motor aus): Ruhespannung notieren (~1,0 V typisch).","Leerlauf: typ. ~1,2–1,8 V (herstellerabhängig) mit feiner Welligkeit.","Mehrere Gasstöße: Signal schnell und wiederholbar auf typ. 3,6–4,4 V.","Lastfahrt: glatt, ohne Einbrüche.","Rütteltest am Stecker."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf → Gasstoß", cond:"Benziner, Motor warm, LL, 1 Gasstoß", os:16, tdiv:0.5, vdiv:1, off:-3.5,
@@ -9640,6 +9644,7 @@ equip:"Oszi, Backprobe, Stromlaufplan; Tester für Luftmasse-Istwert.",
 anschluss:"Signalpin laut Plan gegen Sensormasse; Versorgung (12 V, teils zusätzlich 5 V) mitprüfen.",
 messpunkte:"CH1: LMM-Frequenzsignal · optional CH2: DK-/Pedalsignal als Lastreferenz.",
 setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"1 V/div (5-V-Typen) · 2 V/div (Pierburg ~12 V)",tdiv:"200 µs/div (kHz-Typen) · 5 ms/div (alte Hz-Typen)",trig:"Flanke ↑, 2,5 V",zustand:"LL warm → Gasstöße"},
+tk11:{stufe:"ok", hinweis:"Rechteck 0–5 V bzw. 0–12 V (Pierburg), Frequenzen bis ~20 kHz: mit 1:1 voll messbar, Flanken sauber darstellbar. 10:1 bringt hier nur Rauschen, 1:1 ist vorzuziehen."},
 vorgang:["Zeitbasis so wählen, dass 5–10 Perioden stehen (bei ~2,5 kHz: 200 µs/div).","Leerlauf warm: Frequenz notieren – das ist die fahrzeugspezifische Referenz.","Pegel prüfen: High stabil, typabhängig ~5 V oder ~Bordnetz (Pierburg ~12 V), Low < 0,5 V, senkrechte Flanken.","Gasstöße: Frequenz muss schnell, deutlich und reproduzierbar reagieren (Richtungslogik beachten).","Rütteltest an Stecker/Leitung unter laufender Aufnahme."],
 gut:[
 W2({ badge:"GUT", title:"Typ A (f steigt): Leerlauf ~2,5 kHz", cond:"LL warm · Typ A, 0–5 V", tdiv:200e-6, vdiv:1, off:-3, trig:{t:0.0002, v:2.5},
@@ -9767,7 +9772,7 @@ W2({ badge:"FEHLER", title:"Typ A: Low-Pegel angehoben", cond:"LL warm · Messun
     notes:[ {t:0.000355, v:5.0, txt:"fester Takt, reagiert nicht auf Gas", dx:-150, dy:-40} ],
     expect:[ {what:"freq", v:20000, tolRel:0.02, src:"Pico AGT-095: IAT-PWM ~20 kHz"} ],
     caption:"Viel zu schneller, fester Takt – das ist nicht die Luftmasse, sondern das Ansaugluft-Temperatursignal am Nachbarpin.",
-    why:"Pico: Das digitale Temperatursignal sieht dem Luftmassensignal ähnlich, ist aber oft eine PWM mit festem Takt um ~20 kHz; die Temperatur steckt im Tastgrad. Beim Gasstoß ändert sich der Takt nicht. Pinbelegung im Stromlaufplan prüfen, dann am richtigen Pin messen. Sollbild grau: das echte LMM-Signal (~2,5 kHz, Periode 400 µs) hätte in diesem Fenster nur eine Flanke." })
+    why:"Pico: Das digitale Temperatursignal sieht dem Luftmassensignal ähnlich, ist aber oft eine PWM mit festem Takt um ~20 kHz; die Temperatur steckt im Tastgrad. Beim Gasstoß ändert sich der Takt nicht. Pinbelegung im Stromlaufplan prüfen, dann am richtigen Pin messen. Sollbild grau: das echte LMM-Signal (~2,5 kHz, Periode 400 µs) hätte in diesem Fenster nur zwei bis drei Flanken." })
 ],
 ursachen:["Heißfilm verschmutzt/gedriftet (Ölnebel, offener Sportfilter)","Massefehler → Low-Pegel angehoben","Wackelkontakt Stecker/Versorgung (Frequenz-Aussetzer)","Falschluft nach dem LMM","Nachbau mit falscher Kennlinie/Frequenzbereich"],
 loesungen:["LMM ersetzen (Reinigung selten dauerhaft), Filterqualität klären","Massepfad sanieren","Stecker/Crimps instand setzen","Ansaugstrecke abdrücken/abnebeln","OE-Qualität verbauen"],
@@ -9795,6 +9800,7 @@ equip:"2-Kanal-Oszi, Backprobe, Handvakuumpumpe.",
 anschluss:"5 V, Masse, Signal laut Plan.",
 messpunkte:"CH1: Signal gegen Sensormasse. CH2 optional: 5-V-Referenz.",
 setup:{kanal:"CH1 (+CH2 5 V)",kopp:"DC",tk:"10:1",vdiv:"1 V/div",tdiv:"500 ms/div, Roll",trig:"Auto",zustand:"Zündung ein → LL → Gasstoß → (Last)"},
+tk11:{stufe:"ok", hinweis:"Signal 0,2–4,9 V an 5 V: 1:1 voll nutzbar. Die Karte verlangt für die 20-mV/div-Ansaugpulsbilder ohnehin 1:1 – damit ist 1:1 hier die Standardwahl."},
 vorgang:["Zündung ein, Motor aus: Signal = Umgebungsdruck (typabhängig: Saugmotor-Sensor ~4–4,6 V, 2,5-bar-Turbosensor ~1,8–1,9 V).","Leerlauf (Sauger/DI): Spannung fällt deutlich (Unterdruck).","Gasstoß: schneller Sprung Richtung Umgebungsdruck (Turbo darüber).","Handvakuumpumpe am Sensor: Spannung muss linear folgen."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf → Gasstoß → Schub (Saugbenziner)", cond:"Motor warm, Gasstoß im Stand, 20–105-kPa-Sensor",
@@ -9997,6 +10003,7 @@ equip:"2- (besser 4-)Kanal-Oszi, Backprobe, Stromlaufplan (Spurlogik!).",
 anschluss:"DK: meist gemeinsame 5 V und Masse für beide Spuren (+ 2 Motorpins). Pedal: oft je Spur eigene 5 V und Masse – Stromlaufplan prüfen.",
 messpunkte:"CH1: Spur 1 · CH2: Spur 2, beide gegen Sensormasse.",
 setup:{kanal:"CH1+CH2",kopp:"DC",tk:"10:1",vdiv:"1 V/div",tdiv:"500 ms/div, Roll",trig:"Auto",zustand:"Zündung ein, Pedal/DK langsam + schnell"},
+tk11:{stufe:"ok", hinweis:"Beide Spuren 0–5 V: 1:1 voll nutzbar und wegen besserer Auflösung bei 1 V/div vorzuziehen."},
 vorgang:["Zündung ein (DK per Pedal oder Stellgliedtest bewegen).","Pedal mehrfach langsam durchtreten: beide Spuren glatt und – je nach Logik – exakt gegenläufig, im Verhältnis oder gleichläufig mit festem Versatz.","Schnelle Stöße: keine Aussetzer.","Cursor: Summen-/Verhältnisprüfung an mehreren Stellungen."],
 gut:[
 W2({ badge:"GUT", title:"DK gegenläufig: Pedal langsam", cond:"Zündung ein, DK folgt dem Pedal", tdiv:0.5, vdiv:1, off:-3,
@@ -10164,7 +10171,8 @@ signalart:"Analoge Gleichspannung am Spannungsteiler (5 V über STG-Vorwiderstan
 equip:"Oszi oder DMM, Backprobe, ggf. IR-Thermometer.",
 anschluss:"2-polig: Signal + Sensormasse.",
 messpunkte:"CH1: Signalpin gegen Sensormasse.",
-setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"1 V/div",tdiv:"10 s/div (Kaltstart) · 50–100 s/div Roll (ganzer Warmlauf)",trig:"Auto",zustand:"Kaltstart → Warmlauf (Langzeit)"},
+setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"0,5 V/div (Unterbrechung/Plusschluss: 1–2 V/div)",tdiv:"10 s/div (Kaltstart) · 50–100 s/div Roll (ganzer Warmlauf)",trig:"Auto",zustand:"Kaltstart → Warmlauf (Langzeit)"},
+tk11:{stufe:"ok", hinweis:"Teilerspannung 0–5 V, Plusschluss max. Bordnetz: 1:1 voll nutzbar. Für die 200-mV/div-Lüfterwelle ist 1:1 klar besser als 10:1 (20 mV/div am Gerät)."},
 vorgang:["Kalt: Spannung notieren (~3,5 V bei 20 °C – kennfeldabhängig).","Warmlauf im Roll-Modus: Spannung muss stetig und glatt fallen.","Mit IR-Thermometer/Tester quervergleichen.","Rütteltest an Stecker/Leitung."],
 gut:[
 W2({ badge:"GUT", title:"Kaltstart: Zündung ein → Start → Warmlauf", cond:"Motor kalt ~20 °C, Leerlauf, Roll", tdiv:10, vdiv:0.5, off:-5,
@@ -10322,7 +10330,8 @@ signalart:"Schalter: digital (Masse-Schalter, Lampe). Sensor: analog 0,5–4,5 V
 equip:"Oszi, Backprobe, mechanisches Öldruckmanometer (Referenz!).",
 anschluss:"Schalter: 1-polig gegen Masse. Sensor: 3-polig 5 V/Masse/Signal.",
 messpunkte:"CH1: Signal-/Schalterleitung.",
-setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"1 V/div (Sensor) · 5 V/div (Schalter)",tdiv:"1 s/div Roll",trig:"Auto",zustand:"Start → LL → Drehzahlrampen"},
+setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"0,5 V/div (Sensor) · 5 V/div (Schalter)",tdiv:"1 s/div Roll",trig:"Auto",zustand:"Start → LL → Drehzahlrampen"},
+tk11:{stufe:"ok", hinweis:"Sensor 0,5–4,5 V, Schalter springt auf Bordnetz (≤ 15 V): beides sicher unter ±20 V. 1:1 reicht für Sensor (0,5 V/div) und Schalter (5 V/div)."},
 vorgang:["Start: Öffner öffnet beim Druckaufbau (Lampe aus) bzw. Sensorspannung steigt. Zusatzschalter (Schließer) schließt erst bei Druck – Typ im Stromlaufplan prüfen.","Drehzahlrampen: Sensorsignal folgt der Drehzahl bis zur Regelgrenze.","Heißer Leerlauf = kritischster Punkt.","IMMER gegen mechanisches Manometer prüfen, bevor Mechanikverdacht."],
 gut:[
 W2({ badge:"GUT", title:"Start → Leerlauf → Gas (warm)", cond:"Motor warm, Sensor 0,5–4,5 V", tdiv:1, vdiv:0.5, off:-3,
@@ -10516,7 +10525,8 @@ signalart:"Analog 0,5–4,5 V an 5 V, druckproportional.",
 equip:"2-Kanal-Oszi, Backprobe, Tester (Solldruck!).",
 anschluss:"3-polig: 5 V, Masse, Signal.",
 messpunkte:"CH1: Signal · CH2 optional: KW oder Mengenregelventil-Strom.",
-setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"1 V/div",tdiv:"500 ms/div, Single beim Start",trig:"Single auf Anstieg",zustand:"Starten → LL → Lastsprünge"},
+setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"0,5 V/div (Unterbrechung: 1 V/div)",tdiv:"500 ms/div, Single beim Start",trig:"Single auf Anstieg",zustand:"Starten → LL → Lastsprünge"},
+tk11:{stufe:"ok", hinweis:"Signal 0,5–4,5 V an 5 V: 1:1 voll nutzbar. Für den 5-mV/div-AC-Zoom (Einspritzpulse) schreibt die Karte selbst 1:1 vor – also durchgehend 1:1 verwenden."},
 vorgang:["Zündung ein nach Standzeit (Rail drucklos): Ruhewert laut Herstellerdaten (Bosch typ. 0,5 V, Denso z. B. ~1 V) – Restdruck ausschließen, erst dann Abweichung = Offsetfehler.","Start Single-Shot: Anstieg auf Startschwelle (~1,0–1,3 V ≈ 200+ bar Diesel) in Sekundenbruchteilen (Bosch: schnell bis ~1,6 V); langsamer Anstieg = Förder-/Leckproblem.","Leerlauf: stabil mit feiner Regelbewegung.","Lastsprünge: Druck folgt schnell, ohne Schwingen/Einbrüche."],
 gut:[
 W2({ badge:"GUT", title:"Start → Leerlauf (Single-Shot)", cond:"Diesel-CR, Zündung ein → Start → LL",
@@ -10685,7 +10695,8 @@ signalart:"Analog 0,5–4,5 V an 5 V; Differenzdruck typ. wenige mbar im LL, unt
 equip:"Oszi, Backprobe, Handpumpe mit Manometer.",
 anschluss:"3-polig elektrisch + 2 Druckschläuche (vor/nach DPF).",
 messpunkte:"CH1: Signal gegen Sensormasse.",
-setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"500 mV/div",tdiv:"1 s/div Roll",trig:"Auto",zustand:"Zündung ein → LL → Gasstoß → Lastfahrt"},
+setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"200 mV/div (Lastfahrt/Beladung: 500 mV/div)",tdiv:"1 s/div Roll",trig:"Auto",zustand:"Zündung ein → LL → Gasstoß → Lastfahrt"},
+tk11:{stufe:"ok", hinweis:"Signal 0,4–4,8 V an 5 V: 1:1 voll nutzbar. Die kleinen Hübe (100–200 mV/div) sieht man mit 1:1 deutlich besser als mit 10:1."},
 vorgang:["Zündung ein, Motor aus: ≤ ~0,5 V (typ. 0,4–0,5 V, Differenz null!); über ~0,7 V Sensor verdächtig (herstellerabhängig) – wichtigster Plausibilitätspunkt.","Leerlauf: minimal über Offset.","Gasstöße: kurze saubere Druckspitzen, Rückkehr auf den Leerlaufwert.","Schläuche auf Risse/Verstopfung prüfen (Vorsicht Ruß)."],
 gut:[
 W2({ badge:"GUT", title:"Zündung ein → Start → LL → Gasstoß", cond:"Motor warm, DPF frei", tdiv:1, vdiv:0.2, off:-3.5,
@@ -10860,7 +10871,8 @@ signalart:"Widerstandssensor am Spannungsteiler – als PTC (z. B. PT200: R stei
 equip:"Oszi/DMM, Backprobe, Heizlüfter oder Heißluftgebläse.",
 anschluss:"2-polig: Signal/Masse.",
 messpunkte:"CH1: Signal gegen Sensormasse.",
-setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"500 mV/div",tdiv:"10 s/div (Kaltstart, Lastwechsel) · 100 s/div Roll (Regeneration)",trig:"Auto",zustand:"Kaltstart → Warmlauf → Lastfahrt/Regeneration"},
+setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"200 mV/div (Kaltstart/Kaltvergleich) · 500 mV/div (Last, Regeneration)",tdiv:"10 s/div (Kaltstart, Lastwechsel) · 100 s/div Roll (Regeneration)",trig:"Auto",zustand:"Kaltstart → Warmlauf → Lastfahrt/Regeneration"},
+tk11:{stufe:"ok", hinweis:"Teilerspannung 0,7–2,2 V, offen 5 V, Plusschluss max. Bordnetz: 1:1 voll nutzbar. Bei 200 mV/div (Kaltvergleich, 80-mV-Unterschiede) ist 1:1 wegen weniger Rauschen klar vorzuziehen."},
 vorgang:["Kalt: alle AGT eines Strangs ähnlich (Tester!).","Warmlauf aufzeichnen: stetig, keine Sprünge.","Ausgebaut mit Heizlüfter oder Heißluftgebläse erwärmen (NGK), Messbereich passend wählen: sofortige stetige Reaktion ohne Aussetzer.","Diesel-Regeneration: Temperatur vor DPF muss deutlich steigen (Richtwert ab ~580 °C, herstellerabhängig)."],
 gut:[
 W2({ badge:"GUT", title:"Kaltstart: Zündung ein → Start (2 Sensoren)", cond:"Nachtstandzeit, Leerlauf", tdiv:10, vdiv:0.2, off:-4,
@@ -10999,8 +11011,9 @@ aufgabe:"Hört Körperschall; das STG filtert daraus klopfende Verbrennung und n
 signalart:"Piezoelektrisch: breitbandige AC-Spannung (mV bis wenige V), kein Gleichsignal. Bauartabhängig 1-, 2- oder 3-polig (Schirm).",
 equip:"Oszi (hohe Abtastrate!), Backprobe.",
 anschluss:"Bauartabhängig: resonant typ. 1 Anschluss (Masse über den Block), Breitband typ. 2 Signalleitungen (differenziell ans STG), ggf. 3. Anschluss als Schirm.",
-messpunkte:"CH1: Signalleitung gegen zweite Leitung/Sensormasse.",
-setup:{kanal:"CH1",kopp:"AC",tk:"10:1",vdiv:"200 mV/div",tdiv:"10 ms/div",trig:"Auto",zustand:"LL → Drehzahl erhöhen; Klopftest am Block (Motor aus!)"},
+messpunkte:"CH1: Signalleitung gegen zweite Leitung/Sensormasse. Bei 2-Kanal-Messung mit Bezugskanal (Zündung Zyl. 1, Bild Echtes Klopfen) CH1 gegen Sensormasse messen und beide Massekrokodile an denselben Massepunkt – die Kanalmassen des Oszis sind verbunden.",
+setup:{kanal:"CH1",kopp:"AC",tk:"10:1",vdiv:"50 mV/div (Leerlauf) · 100–200 mV/div (Drehzahl/Last) · 1 V/div (Klopftest)",tdiv:"10 ms/div",trig:"Auto",zustand:"LL → Drehzahl erhöhen; Klopftest am Block (Motor aus!)"},
+tk11:{stufe:"ok", hinweis:"mV-Signale, Klopftest-Burst bis ~3 V: alles weit unter ±20 V. 1:1 ist hier die richtige Wahl (50–200 mV/div ohne 10:1-Rauschen); 25 kHz Bursts liegen in der 1:1-Bandbreite."},
 vorgang:["Motor/Zündung aus: mit Schraubendrehergriff neben den Sensor klopfen → deutliche Bursts = Sensor wandelt.","Leerlauf: feines 'Gras' (Grundrauschen), mit Drehzahl wachsend.","Tester parallel: Zündwinkelrücknahme je Zylinder beobachten (der eigentliche Funktionsbeweis)."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf ~800 /min", cond:"Motor warm, Leerlauf, AC-gekoppelt", vdiv:0.05, tdiv:0.010, os:16,
@@ -11160,7 +11173,8 @@ signalart:"Stromsignal (2-Draht): Rechteck 7/14 mA (Speed-only) oder Pulse 7→1
 equip:"Oszi, Messwiderstand 100–120 Ω ODER mA-Stromzange, Backprobe.",
 anschluss:"2-polig: Versorgung vom ABS-STG (Höhe herstellerabhängig, z. B. ~5 V geregelt oder Bordnetzspannung) + Rückleitung; Strom fließt moduliert.",
 messpunkte:"Messwiderstand in Serie in die Masseleitung, CH1 über den Widerstand (1 mA ≙ 0,1 V bei 100 Ω).",
-setup:{kanal:"CH1",kopp:"DC",tk:"1:1",vdiv:"0,5 V/div (über 100 Ω)",tdiv:"20 ms/div",trig:"Auto",zustand:"Rad von Hand drehen / langsame Fahrt"},
+setup:{kanal:"CH1",kopp:"DC",tk:"1:1",vdiv:"0,2 V/div (über 100 Ω; AK-Speed-Puls 28 mA: 0,5 V/div)",tdiv:"20 ms/div",trig:"Auto",zustand:"Rad von Hand drehen / langsame Fahrt"},
+tk11:{stufe:"ok", hinweis:"Stromsignal über 100 Ω: 0,7/1,4 V, AK-Puls 2,8 V – alles sicher unter ±20 V. Die Karte setzt ohnehin 1:1 (setup.tk), passt. µs-Pulse (45–180 µs) sind mit 1:1 sauber darstellbar."},
 vorgang:["Messwiderstand in Reihe (oder mA-Zange ohne Eingriff).","Rad langsam drehen: Strom muss sauber zwischen 7 und 14 mA wechseln (über 100 Ω: 0,7 ↔ 1,4 V).","Drehrichtung/Stillstand-Codierung (falls vorhanden) im Standbild prüfen.","Lenken/Federn während der Aufnahme → Kabelbruch im Radlauf provozieren."],
 gut:[
 W2({ badge:"GUT", title:"Rad von Hand gedreht", cond:"Zündung ein, Rad ~½ Umdrehung/s", vdiv:0.2, off:-4, tdiv:0.020,
@@ -11330,7 +11344,8 @@ signalart:"Sinusähnliche AC-Spannung, Amplitude und Frequenz geschwindigkeitsab
 equip:"2-Kanal-Oszi, Backprobe.",
 anschluss:"2-polig Spule (Polarität laut Plan).",
 messpunkte:"CH1: Signalleitung gegen zweite Leitung. Für Seitenvergleich/Zuordnungstest mit 2 Kanälen je eine Leitung gegen Fahrzeugmasse (gemeinsame Kanalmasse).",
-setup:{kanal:"CH1",kopp:"AC",tk:"10:1",vdiv:"0,5–2 V/div",tdiv:"20 ms/div (Rad von Hand) · 10 ms/div (~20 km/h) · 100–200 ms/div (≥1 Radumdrehung für Zahn-/Taumelfehler)",trig:"Flanke ↑",zustand:"Rad von Hand drehen"},
+setup:{kanal:"CH1",kopp:"AC",tk:"10:1",vdiv:"0,5 V/div (von Hand) · 1 V/div (~20 km/h) · 2 V/div (Fahrt)",tdiv:"20 ms/div (Rad von Hand) · 10 ms/div (~20 km/h) · 100–200 ms/div (≥1 Radumdrehung für Zahn-/Taumelfehler)",trig:"Flanke ↑",zustand:"Rad von Hand drehen"},
+tk11:{stufe:"einschr", hinweis:"Rad von Hand und aufgebockt bis ~20 km/h problemlos mit 1:1 (0,1–1 V/div, sogar feiner als 10:1). Probefahrt-Bild 50 km/h: über 10 Vss, typabhängig mehr – bei Übersteuern Tempo senken oder nur bis ~30 km/h fahren."},
 vorgang:["Rad zügig von Hand drehen: gleichmäßiger Sinus, Amplitude typ. deutlich > 0,5 Vss (herstellerabhängig) – entscheidend: Vergleich mit Gegenseite bei gleichem Tempo.","Schneller drehen: Amplitude + Frequenz steigen.","Auf Einbrüche/Aussetzer achten (Zahnkranz!).","Vergleich mit gegenüberliegendem Rad."],
 gut:[
 W2({ badge:"GUT", title:"Rad von Hand gedreht (~1 U/s)", cond:"Rad frei, zügig von Hand · AC", vdiv:0.5, tdiv:0.020,
@@ -11464,6 +11479,7 @@ equip:"Oszi, Backprobe, Stromlaufplan; ggf. Stellgliedtest über Tester.",
 anschluss:"Geber 3-adrig (5 V, Masse, Signal); Stecker oft 5–6-polig mit Motor-/Spulenanschluss.",
 messpunkte:"CH1: Lagesignal · CH2 optional: Ansteuerung des Stellers (PWM/Strom).",
 setup:{kanal:"CH1 (+CH2 Ansteuerung)",kopp:"DC",tk:"10:1",vdiv:"1 V/div",tdiv:"500 ms/div Roll",trig:"Auto",zustand:"Stellgliedtest / Lastfahrt"},
+tk11:{stufe:"einschr", hinweis:"Lagesignal (0–5 V) und Strom per Zange gehen voll mit 1:1. Nur die Spannung an Pin 1 (getaktete Masse des Hubmagneten) nicht mit 1:1 antasten: Abschaltspitzen weit über 20 V. Stattdessen Strom per Zange, Bordnetz an Pin 5 messen."},
 vorgang:["Stellgliedtest auslösen (Tester) oder Fahrsituation provozieren.","Lagesignal muss der Ansteuerung sauber und verzögerungsarm folgen.","Endanschläge anfahren: definierte Min-/Max-Spannung erreicht?","Mehrfach betätigen: Wiederholbarkeit, keine Hänger/Sprünge."],
 gut:[
 W2({ badge:"GUT", title:"AGR elektrisch: auf – zu", cond:"LL warm, Gas o. Stellgliedtest", tdiv:0.5, vdiv:1, off:-3,
@@ -11626,6 +11642,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf, Backprobe-Nadeln, Manometer bzw. Klimaservic
 anschluss:"Analogausführung 3-polig: 5-V-Versorgung, Masse, Signal. PWM- und LIN-Ausführung: Versorgung und Belegung laut Stromlaufplan. Sensor sitzt oft auf einem Schrader-Ventil an Hochdruckleitung, Trockner oder Kondensator (Tausch oft ohne Absaugen, herstellerabhängig).",
 messpunkte:"CH1: Signal gegen Batterie-Minus. CH2: 5-V-Versorgung am Sensor – oder Sensormasse gegen Batterie-Minus (Masseversatz). Beide Massekrokodile an denselben Punkt (Batterie-Minus): Die Kanalmassen sind im Oszi verbunden. Gleichzeitig Manometer an der Hochdruckseite ablesen.",
 setup:{kanal:"CH1 (CH2: 5-V-Versorgung)",kopp:"DC",tk:"10:1",vdiv:"0,5 V/div (Abschaltung: 1 V/div)",tdiv:"2 s/div, Roll",trig:"Auto",zustand:"Zündung ein (Ruhedruck) → Motor an, AC ein, ~30 °C → Hochdruck stabil"},
+tk11:{stufe:"ok", hinweis:"Analog 0,25–4,75 V, PWM-Variante max. Bordnetz: alles sicher unter ±20 V. 1:1 voll nutzbar und bei 0,5 V/div (kleiner Lüfter-Sägezahn) wegen weniger Rauschen vorzuziehen. HV-Kompressor bleibt tabu."},
 vorgang:["Zündung ein, Anlage seit Stunden aus: Signal = Ruhedruck. Er entspricht dem Dampfdruck des Kältemittels bei Umgebungstemperatur (z. B. R1234yf bei ~30 °C ≈ 6,8 bar; mit Beispielkennlinie ≈ 1,1 V).","5-V-Versorgung auf CH2 prüfen (GM-Beispiel: 4,8–5,2 V).","Motor an, AC ein, Gebläse hoch: Der Hochdruck steigt in Sekunden und wird ruhig (Beispiel Saab 9-2X bei 30–35 °C: ~14,7–16,7 bar).","Manometerwert, Oszi-Wert (über Kennlinie) und Tester-Istwert vergleichen.","Lüfterstufen und Kupplungstakte beobachten: Sägezahn zwischen festen Schwellen ist Regelung, kein Fehler."],
 gut:[
 W2({ badge:"GUT", title:"Zündung ein → AC ein: Druckaufbau", cond:"R1234yf, ~30 °C, Leerlauf, Gebläse hoch",
@@ -11790,6 +11807,7 @@ equip:"Oszi, Backprobe, Multimeter (Widerstand), Widerstandsdekade (Anzeigetest)
 anschluss:"Geber oft im Pumpenmodul: Signal und Masse, teils im gleichen Stecker wie die Pumpe. Satteltank: oft zwei Geber. Belegung laut Stromlaufplan.",
 messpunkte:"CH1: Signal am Kombi-/STG-Eingang oder am Modulstecker gegen Batterie-Minus. CH2: Gebermasse gegen Batterie-Minus (Übergangswiderstand).",
 setup:{kanal:"CH1 (CH2: Gebermasse)",kopp:"DC",tk:"10:1",vdiv:"0,5 V/div (Spitzen/Unterbrechung: 2 V/div)",tdiv:"1 s/div, Roll",trig:"Auto",zustand:"Geber ausgebaut, Stecker gesteckt, Zündung ein: Schwimmer langsam leer → voll"},
+tk11:{stufe:"ok", hinweis:"Teilerspannung 0,6–3,4 V, offene Leitung springt auf Speisung (5 V GM, 12 V Saab): alles sicher unter ±20 V. 1:1 voll nutzbar, bei 0,5 V/div vorzuziehen."},
 vorgang:["Zündung ein, Stand: Signal muss zum Tankinhalt passen (Richtung typabhängig).","Stecker ab, Zündung ein: Die Signalleitung zeigt die Speisespannung (GM: 4,8–5,2 V; Saab 9-3: Speisung 12 V über 1,1 kΩ).","Masse prüfen (GM-Beispiel: unter 30 Ω) bzw. mit CH2 den Spannungsfall Gebermasse ↔ Batterie-Minus messen.","Pumpe stromlos machen, Geber ausbauen, Tanköffnung abdecken, Geber außerhalb der Öffnung halten, Stecker gesteckt lassen. Zündung nur für die Messung ein: Schwimmer langsam leer → voll führen – die Rampe muss glatt und ohne Sprünge laufen. Alternative ohne Spannung: Widerstandsverlauf mit dem Ohmmeter.","Widerstand leer/voll am ausgebauten Geber gegen Herstellerwert (z. B. Saab 9-3: 60/390 Ω; Citroën C1: 405–415/12–18 Ω)."],
 gut:[
 W2({ badge:"GUT", title:"Durchfahren leer → voll: glatte Rampe", cond:"ausgebaut, Stecker dran, Zündung ein (Saab 9-3)",
@@ -11935,6 +11953,7 @@ equip:"2-Kanal-Oszi (gemeinsame Masse genügt, beide Signale gegen Fahrzeugmasse
 anschluss:"Typ. 4-polig: Versorgung und Ausgang des Bremslichtkontakts, Versorgung und Ausgang des zweiten Kontakts – Belegung laut Stromlaufplan. Beispiele mit Quelle: Toyota 1NZ-FE STP (A21-36) und ST1- (A21-35) gegen E1 am Motorsteuergerät; Mazda RX-8 Bremsschalter an PCM 4P. Analoger Sensor: 5-V-Referenz, Signal, Sensormasse.",
 messpunkte:"CH1: Ausgang Bremslichtkontakt (Leitung zu den Bremsleuchten bzw. STP) gegen gute Masse. CH2: Ausgang zweiter Kontakt (zum Steuergerät). Beide Tastkopf-Massen an dieselbe Masse. Bei falschen Pegeln zusätzlich die Versorgung am Schalter messen, Spannungsfall immer unter Last (Bremsleuchten an).",
 setup:{kanal:"CH1 Bremslichtkontakt · CH2 zweiter Kontakt",kopp:"DC",tk:"10:1",vdiv:"5 V/div",tdiv:"500 ms/div, Roll · Zoom 5 ms/div",trig:"Auto (Roll) · Zoom: Flanke ↑ CH1, 6 V",zustand:"Zündung ein, Motor aus → Bremspedal mehrmals treten (normal, leicht, lang)"},
+tk11:{stufe:"ok", hinweis:"Bordnetzpegel bis ~15 V, mit 1:1 bei 5 V/div problemlos; Glühlampen sind ohmsch, keine Abschaltspitzen. Analogsensor 5 V ebenfalls 1:1. 10:1 unnötig, 1:1 bringt mehr Auflösung."},
 vorgang:["Stromlaufplan: Welcher Pin geht zu den Bremsleuchten, welcher zum Steuergerät? Schließer oder Öffner?","Zündung ein, Motor aus. CH1 an den Bremslicht-Ausgang, CH2 an den zweiten Kontakt, 5 V/div, Roll 500 ms/div.","Pedal normal treten und halten (wie an der Ampel), dann leicht und lang treten: Bei normalem, gehaltenem Bremsen müssen beide Kanäle gegenläufig umschalten. Bei sehr leichtem Antippen darf kurz nur der Bremslichtkontakt schalten (Bosch, herstellerabhängig).","Pegel prüfen: getreten ≈ Bordnetz, los nahe 0 V (Öffner umgekehrt). Beispiel Toyota: 7,5–14 V bzw. unter 1,5 V.","Zoom 5 ms/div, Trigger auf die steigende Flanke von CH1: Reihenfolge der Kontakte und kurzes Prellen ansehen.","Pedal getreten halten und am Stecker rütteln: Der Pegel darf nicht einbrechen. Bremsleuchten vom Helfer bestätigen lassen."],
 gut:[
   W2({ badge:"GUT", title:"Normal, leicht, lang treten", cond:"Zündung ein, Motor aus", vdiv:5, tdiv:0.5,
@@ -12109,6 +12128,7 @@ equip:"Oszi (1–2 Kanäle), 10:1-Tastkopf, Backprobe-Nadeln, Stromlaufplan, Dia
 anschluss:"Schalter: Signal und Masse (bzw. Plus) laut Stromlaufplan. Beispiel mit Quelle: Mazda RX-8 Kupplungsschalter Klemme B an PCM 4F, Klemme A an Masse. Poti/Hall-Geber: Versorgung (5 V oder Bordnetz), Masse, Signal – Belegung laut Plan.",
 messpunkte:"CH1: Signal am Steuergerät oder am Sensorstecker gegen gute Masse. CH2 optional: Versorgung des Gebers, 5-V-Referenz am Poti, zweiter Schalter (Endschalter) oder Bremsleuchte (VW Touran, Hella).",
 setup:{kanal:"CH1 Schalter-/Sensorsignal (CH2: Versorgung oder Endschalter)",kopp:"DC",tk:"10:1",vdiv:"2 V/div (Schalter) · 1 V/div (Poti)",tdiv:"500 ms/div, Roll",trig:"Auto",zustand:"Zündung ein, Motor aus, Gang raus → Kupplung 2× langsam ganz durchtreten"},
+tk11:{stufe:"einschr", hinweis:"Schalter am STG-Eingang und Poti (5 V) mit 1:1 bestens. Ausnahme Ford-Variante direkt im Anlasserrelais-Kreis: beim Öffnen Spulen-Abschaltspitze möglich – dort nicht mit 1:1 am Relais messen, sondern am STG-Eingang/Tester."},
 vorgang:["Stromlaufplan: Schalter (nach Masse oder nach Plus schaltend), Poti oder Hall-Geber? Welche Versorgung, welche Sicherung?","Zündung ein, Motor aus, Gang raus, Handbremse an. Roll 500 ms/div.","Kupplung langsam ganz durchtreten und loslassen, zweimal.","Schalter: sauberer Wechsel zwischen Bordnetz und nahe 0 V, immer an derselben Pedalstellung.","Poti/Wegsensor: glatte Rampe ohne Zacken, Endwerte prüfen (Beispiel Lotus: oben 100–160 Bit, unten 900–990 Bit im Tester).","Start-Stopp-Fahrzeug (nur auf abgesperrtem Gelände, Helfer bedient das Oszi, Messleitungen fern der Pedale): im Auto-Stopp Kupplung treten – Signal wechselt, Motor startet wieder."],
 gut:[
   W2({ badge:"GUT", title:"Kupplung 2× getreten (Schalter)", cond:"Zündung ein, Motor aus", vdiv:2, off:-3.5, tdiv:0.5,
@@ -12244,6 +12264,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf, Backprobe-Nadeln, Stromlaufplan. Für die Pu
 anschluss:"Versorgung (5 V oder Bordnetz, herstellerabhängig), Masse, Signal – Belegung laut Stromlaufplan. Ruhepegel High kommt vom Pull-up im STG.",
 messpunkte:"CH1: Signalleitung gegen gute Masse (Batterie-Minus/STG-Masse). CH2: Versorgung am Sensorstecker. Bei zu hohem Low zusätzlich Spannungsfall Sensormasse ↔ Batterie-Minus messen.",
 setup:{kanal:"CH1 (CH2: Versorgung)",kopp:"DC",tk:"10:1",vdiv:"1 V/div",tdiv:"10 ms/div LL · 20 µs/div Pulsbreite",trig:"Flanke ↓, 2,5 V",zustand:"Leerlauf → Abstellen (Rückpendeln) → Start"},
+tk11:{stufe:"ok", hinweis:"5-V-Open-Collector-Signal, Versorgung höchstens Bordnetz: 1:1 ideal. 45-µs-Pulse mit ~4-µs-RC-Flanke sind für 1:1 (≤10 MHz) kein Problem. 10:1 bringt nur mehr Rauschen bei 1 V/div."},
 vorgang:["Zündung ein, Motor aus: Versorgung am Stecker prüfen, Signal steht auf High (Pull-up).","Leerlauf, 10 ms/div: je Zahn ein schmaler Low-Puls, einmal pro Umdrehung die Lücke.","Zoom 20 µs/div, Trigger ↓: Pulsbreite messen – vorwärts typ. ~45 µs (Herstellerwert).","Rückpendeln: Trigger auf Pulsbreite umstellen (negativer Puls > ~70 µs), 20 µs/div, Single, vor dem Abstellen scharf schalten. Auslösen kann nur ein Rückwärtspuls – Breite messen (typ. ~90 µs).","Gesamtbild des Abstellens: gleicher Pulsbreiten-Trigger, 100 ms/div, Triggerpunkt weit rechts (viel Vortrigger), Erfassung Peak-Detect – sonst fehlen Pulse (5000 Punkte → 200 µs je Punkt). Mehrmals abstellen: Nicht jedes Abstellen endet mit Rückpendeln."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf ~800 /min", cond:"Motor warm, Leerlauf, Beispiel 60-2", vdiv:1, off:-3, tdiv:0.010, os:16,
@@ -12408,6 +12429,7 @@ equip:"Oszi, Messadapter mit 100-Ω-Widerstand, Backprobe, Stromlaufplan. Stromz
 anschluss:"2-polig: Versorgung vom STG + Signal-/Rückleitung, der Strom wird moduliert. 3-polig: Versorgung, Masse, Signal. Belegung laut Stromlaufplan; Sensoren in der Mechatronik sind nicht zugänglich.",
 messpunkte:"2-polig: 100-Ω-Messadapter in die Rückleitung, CH1 an die Sensorseite, Masseklemme an die Kabelbaumseite des Widerstands (1 mA ≙ 0,1 V). Gemeinsame Masse beider Kanäle: CH2 dann nicht an anderes Potenzial. 3-polig: CH1 Signal gegen gute Masse.",
 setup:{kanal:"CH1",kopp:"DC",tk:"1:1 (100-Ω-Messadapter) · 10:1 (3-polig)",vdiv:"0,2 V/div (über 100 Ω) · 1 V/div (3-polig)",tdiv:"5 ms/div",trig:"Flanke ↑, ~1 V",zustand:"P/N, Leerlauf (Eingangssensor) → Fahrstufe/Fahrt (Abtrieb)"},
+tk11:{stufe:"ok", hinweis:"Shunt-Messung ist ohnehin 1:1 (0,7/1,4 V über 100 Ω). 3-poliger Typ 0/5 V ebenfalls 1:1. Nichts über 20 V. Masseklemme nur an die Kabelbaumseite des Shunts, zweite Klemme nicht anderswo."},
 vorgang:["Sensor klären: 2-polig (Strom) oder 3-polig (Spannung), zugänglich oder in der Mechatronik.","Eingangssensor: P oder N, Motor im Leerlauf – die Turbine dreht mit, das Rechteck muss stehen.","Frequenz gegen Rechnung prüfen: f = Zähne × Drehzahl / 60.","N → D mit getretener Bremse: Turbine bleibt stehen, Pegel friert ein (kein Fehler).","Abtrieb: auf der Hebebühne in Fahrstufe Räder drehen lassen (zweite Person) oder Probefahrt; Frequenz folgt der Geschwindigkeit.","Leitung und Stecker während der Messung bewegen."],
 gut:[
 W2({ badge:"GUT", title:"Eingang (Turbine) in P/N, Leerlauf", cond:"P/N, Motor im Leerlauf, Beispiel 12 Zähne", vdiv:0.2, off:-4, tdiv:0.005,
@@ -12563,6 +12585,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf, Backprobe-Nadeln, Stromlaufplan, Diagnosetes
 anschluss:"3-polig: 5-V-Versorgung, Masse, SENT-Signal (Belegung laut Stromlaufplan). Pull-up im STG (Beschaltungsvorschlag von onsemi zu J2716: 51 kΩ auf 5 V; Allegro AN296108: Sensor spezifiziert für Pull-up 10–50 kΩ; herstellerabhängig), im Sensor Gegentakt- (onsemi) oder Open-Drain-Ausgang (Freescale) mit RC-Filter (typabhängig).",
 messpunkte:"CH1: Signal am Sensorstecker (Backprobe) gegen Batterie-Minus bzw. STG-Masse. CH2: 5-V-Versorgung am Sensorstecker. Bei Dauerpegel zusätzlich direkt am STG-Pin messen. Spannungsfall Sensormasse ↔ Batterie-Minus prüfen. Beide OWON-Kanäle haben dieselbe Masse.",
 setup:{kanal:"CH1 Signal (CH2: 5-V-Versorgung)",kopp:"DC",tk:"10:1",vdiv:"1 V/div",tdiv:"100 µs/div (Rahmen) · 20 µs/div (Nibble) · 500 µs/div (mehrere Rahmen)",trig:"Single, Flanke ↓, 2,5 V",zustand:"Zündung ein (Sensor sendet sofort), Motor aus → Leerlauf"},
+tk11:{stufe:"ok", hinweis:"0/5-V-Signal, 1:1 ideal. Der 1:1-Tastkopf hat ~100 pF: bei 51-kΩ-Pull-up wird die steigende Flanke etwas runder (bleibt unter 18 µs), gewertet wird nur die fallende. Masse nah am Sensor klemmen."},
 vorgang:["Zündung ein: 5-V-Versorgung (CH2) und Masse am Sensor prüfen.","CH1 auf das Signal, 500 µs/div: Es müssen lückenlos gleichartige Pakete aus 0/5-V-Pulsen kommen.","Single-Aufnahme, dann auf einen Rahmen zoomen (100 µs/div): Sync-Puls (56 Ticks), danach Status-, Daten- und CRC-Nibble, ggf. Pause-Puls.","Tick bestimmen: Sync von fallender zu fallender Flanke messen und durch 56 teilen (Pico: 168 µs / 56 = 3 µs). Sync = Puls direkt nach dem Pause-Puls bzw. nach der CRC – nicht einfach den breitesten Puls nehmen, das kann die Pause sein.","Nibble-Wert = Zeit zwischen fallenden Flanken ÷ Tick − 12 (Pico: 51 µs ÷ 3 µs = 17 Ticks → Wert 5).","Messwert ändern (Pedal, Motor starten, Gasstoß): Die Daten-Nibbles ändern ihre Breite, der Sync bleibt gleich.","Pegel und Flanken prüfen: Low < 0,5 V, High > 4,1 V, keine Zusatzflanken."],
 gut:[
 W2({ badge:"GUT", title:"Ein Rahmen (Tick 3 µs)", cond:"Zündung ein, Bsp. Drucksensor 2 × 12 Bit", vdiv:1, off:-3, tdiv:0.0001,
@@ -12728,6 +12751,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf, Backprobe-Nadeln, Stromlaufplan, Peilstab bz
 anschluss:"3-polig. Hella PULS laut Datenblatt: Pin 1 Signal (Open Collector), Pin 2 Masse (Kl. 31), Pin 3 Kl. 15 (9–16 V). Pull-up 1,6–10 kΩ im STG, Pull-up-Spannung max. 16 V. Im Fahrzeug Belegung laut Stromlaufplan.",
 messpunkte:"CH1: Signal am Sensorstecker gegen Batterie-Minus. CH2: Kl. 15 am Sensorstecker (gemeinsame Masse beider Kanäle). Bei Dauerpegel zusätzlich am STG-Pin messen. Sensormasse gegen Batterie-Minus prüfen.",
 setup:{kanal:"CH1 Signal (CH2: Kl. 15 am Sensor)",kopp:"DC",tk:"10:1",vdiv:"2 V/div (Pull-up bis 16 V: 5 V/div)",tdiv:"200 ms/div, Roll (Rahmen) · 50 ms/div (Pulse ausmessen)",trig:"Auto/Roll; zum Ausmessen Single, Flanke ↑, 6 V",zustand:"Zündung ein, Motor aus, Öl warm → Leerlauf"},
+tk11:{stufe:"ok", hinweis:"Pull-up laut Hella max. 16 V, 1:1 reicht sicher. Bei 16-V-Pull-up 5 V/div und Offset so wählen, dass 0–16 V im Bild liegt. 10:1 unnötig."},
 vorgang:["Ölstand mit dem Peilstab bzw. nach Herstellerverfahren prüfen (Referenz), Fahrzeug steht waagerecht.","Zündung ein: Kl. 15 und Masse am Sensor prüfen (CH2).","Nach dem Anlauf (~930 ms) muss jede Sekunde ein Rahmen aus drei Pulsen kommen (200 ms/div, Roll).","Auf einen Rahmen zoomen (50 ms/div, Single): T1, T2 und T3 von steigender bis fallender Flanke ausmessen. Damit das Bild sicher mit T1 beginnt: Triggerart Puls, Low-Breite > 500 ms (nur die Pause ist so lang).","Umrechnen (Hella, Periode 110 ms): Temperatur = 3,125 K/ms × (T1 − 23 ms) − 40 °C; Füllstand = 2,3125 mm/ms × (T2 − 23 ms).","T3 auswerten: 22 ms = OK; 33/44/55/66 ms = Diagnosemeldung (Tabelle im Datenblatt).","Plausibel? T1 gegen Öltemperatur im Tester, T2 gegen Peilstab bzw. Herstellerverfahren. Motor läuft: Füllstand niedriger als im Stand – normal."],
 gut:[
 W2({ badge:"GUT", title:"Rahmen: Öl warm, Motor aus", cond:"Zündung ein, Öl ~90 °C, Bsp. 80 mm, Pull-up 12 V", vdiv:2, off:-3, tdiv:0.2,
@@ -12907,6 +12931,7 @@ equip:"2-Kanal-Oszi, Ultraschall-Detektor mit BNC (z. B. Pico TA329, 2-m-Leitung
 anschluss:"Sensor typ. 3-polig: Versorgung, Daten, Masse (Hella-Beispiel VW Golf V: Pin 1 Power, Pin 2 Data, Pin 3 GND; sonst laut Stromlaufplan). Versorgung typ. 9–16 V (Hella), Elmos-IC 6–18 V. Der Detektor braucht keinen Anschluss am Fahrzeug.",
 messpunkte:"CH1: Detektor ~25 mm vor der Membran, direkt darauf gerichtet (Pico). CH2 (oder allein auf CH1): Datenleitung am Sensorstecker gegen Batterie-Minus, 10:1, Backprobe. Beide OWON-Kanäle haben dieselbe Masse – der Detektor hat keine elektrische Verbindung zum Fahrzeug, das stört deshalb nicht.",
 setup:{kanal:"CH1 Detektor (CH2: Datenleitung)",kopp:"DC",tk:"1:1 Detektor (BNC) · 10:1 Datenleitung",vdiv:"10 mV/div (Detektor) · 2 V/div (Datenleitung)",tdiv:"1 ms/div (Burst) · 50 µs/div (Träger) · 0,2–2 ms/div (Datenleitung)",trig:"Normal, Flanke ↑, 10 mV (Detektor)",zustand:"PDC aktiv (Zündung ein, Rückwärtsgang bzw. Taste; Motor möglichst aus), Detektor 25 mm vor dem Sensor, Umfeld frei"},
+tk11:{stufe:"ok", hinweis:"Detektor hängt per BNC 1:1 (mV-Signal). Datenleitung liegt auf Sensorversorgung 9–16 V, 1:1 reicht. 10:1 unnötig. Im Stoßfänger Crash-/PSI5-Leitungen meiden."},
 vorgang:["Sicherheit zuerst: Möglichst bei stehendem Motor messen (Zündung ein, Rückwärtsgang einlegen bzw. PDC per Taste oder Tester aktivieren – herstellerabhängig). Muss der Motor laufen: Feststellbremse fest, Kupplung getreten bzw. Fuß auf der Bremse, zweite Person mit Fahrerlaubnis am Steuer (Pico).","Detektor an CH1, ~25 mm vor die Membran halten, leicht kreisen und das größte Signal suchen (Pico).","Alle Sensoren nacheinander mit gleichem Abstand messen und die Burst-Amplituden vergleichen: deutlich kleiner oder gar nichts = Sensor prüfen (Pico).","Datenleitung mit 10:1 am Sensorstecker (Trigger Flanke abwärts, ~6 V): STG-Befehl (Low), dann Low beim Senden und Nachschwingen, später kurze Low-Pulse je Echo.","Hindernis in bekanntem Abstand (Wand, Stange): Laufzeit bis zum Echo-Puls messen, Abstand = 343 m/s × t ÷ 2 (bei ~20 °C) gegenrechnen.","Mit Live-Daten und Fehlerspeicher im Tester abgleichen, danach Fahrzeug in sicheren Zustand bringen (Motor aus)."],
 gut:[
 W2({ badge:"GUT", title:"Burst am Detektor (25 mm)", cond:"PDC aktiv, Detektor 25 mm vor dem Sensor", vdiv:0.01, off:0, tdiv:0.001, os:16,
@@ -13094,6 +13119,7 @@ equip:"2-Kanal-Oszi, LF-Detektor bzw. Aufnehmerspule mit BNC (z. B. Pico TA330, 
 anschluss:"Kein elektrischer Anschluss nötig: Aufnehmer an CH1 (BNC, 1:1). Die Antennen sind Spulen in Serienresonanz, angesteuert vom Keyless-Steuergerät (Beispiel Atmel: 125 kHz, bis 1 A Spitze). Nicht an den Antennenleitungen messen (siehe Warnung).",
 messpunkte:"CH1: Aufnehmer ~300 mm vor dem Türgriff, dann näher oder weiter, bis ein Signal erscheint (Pico). Danach jede Antenne einzeln: Türgriffe, Heckstoßfänger/Kofferraum, Innenraum (Startknopf). CH2 optional: zweiter Aufnehmer an einer bekannt guten Antenne, gleicher Abstand.",
 setup:{kanal:"CH1 Aufnehmerspule (CH2: Vergleich)",kopp:"DC",tk:"1:1 (BNC-Aufnehmer)",vdiv:"1 V/div (aufnehmer- und abstandsabhängig)",tdiv:"100 ms/div (Polling) · 1 ms/div (Telegramm) · 5 µs/div (Träger)",trig:"Auto; Zoom: Flanke ↑, 0,5 V",zustand:"Fahrzeug verriegelt, Schlüssel außerhalb der Erfassungszonen (Pico); Erfassung Peak Detect"},
+tk11:{stufe:"ok", hinweis:"Aufnehmerspule per BNC, wenige Volt: 1:1 ist bereits vorgesehen. Nie an den Antennenleitungen selbst messen (Serienresonanz, hunderte Volt) – gilt für 1:1 erst recht."},
 vorgang:["Fahrzeug verriegeln, Schlüssel mehrere Meter weg legen (Erfassungszonen ~0,7–1 m um Griff und Heck, Pico).","Aufnehmer an CH1, Erfassung Peak Detect, 100 ms/div. Aufnehmer ~300 mm vor den Türgriff halten, Abstand ändern, bis Pulse erscheinen (Pico). Kommt kein Polling: verriegelt lassen, Normal-Trigger, am Griff ziehen bzw. ihn betätigen und dabei messen – manche Systeme senden erst dann (Francillon). Erst wenn auch dann nichts kommt, die Antenne verdächtigen.","Intervall messen: typ. ~250 ms; nach längerer Standzeit länger (Pico-Beispiel 750 ms nach 5 Tagen).","Zoom auf ein Telegramm (1 ms/div) und auf den Träger (5 µs/div): Frequenz prüfen.","Jede Außenantenne mit gleichem Abstand messen und die Amplituden vergleichen. Innenraumantennen senden beim Betätigen von Türschloss, Bremspedal oder Startschalter (Toyota).","Bekannt guten Schlüssel heranbringen: Das Polling muss enden (Pico). Ob vorher ein längeres Telegramm kommt bzw. ob erst beim Entriegeln Schluss ist, ist typabhängig (Francillon, Toyota)."],
 gut:[
 W2({ badge:"GUT", title:"Polling ohne Schlüssel (~250 ms)", cond:"verriegelt, Schlüssel weit weg", vdiv:1, off:0, tdiv:0.1, os:64,
@@ -13225,6 +13251,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf, Backprobe-Nadeln, Stromlaufplan, Helfer zum 
 anschluss:"Analoger Typ oft 3-polig (typ., laut Stromlaufplan): Versorgung (Beispiel Land Rover 5 V vom Steuergerät), Masse, Signal. Es gibt auch Achssensoren mit eingebauter LWR-Elektronik an 12 V mit mehr Pins (HELLA-Beispiel: Pin 1 Masse, Pin 2 12 V, Pin 7 Ausgang je nach Hebelstellung 2–11,2 V). SENT-, PSI5-, CAN- und LIN-Typen liefern kein Spannungsbild wie hier.",
 messpunkte:"CH1: Signal am Sensorstecker (Backprobing, Sensor angesteckt) gegen gute Masse. CH2: Versorgung am Sensorstecker. Bei unplausiblem Ruhewert oder Signal nahe Versorgung zusätzlich Sensormasse gegen Batterie-Minus messen.",
 setup:{kanal:"CH1 Signal (CH2: Versorgung)",kopp:"DC",tk:"10:1",vdiv:"0,5 V/div (Kennlinientest 1 V/div)",tdiv:"1 s/div, Roll (Fahrt 200 ms/div)",trig:"Auto",zustand:"Zündung ein, Fahrzeug steht auf den Rädern → Karosserie von Hand ein- und ausfedern"},
+tk11:{stufe:"ok", hinweis:"5-V-Signale bzw. 12-V-Typ bis 11,2 V: 1:1 ideal, bessere Auflösung bei 0,5 V/div. 10:1 unnötig. PSI5-Varianten wie in der Karte gar nicht messen."},
 vorgang:["Typ klären (Stromlaufplan, Teilekatalog): analog, PWM oder digital (SENT, PSI5, CAN, LIN). PSI5-Varianten nicht messen.","Luftfederung: Für die Sensormessung Regelung nach Herstellerangabe sperren (z. B. Wagenheber- oder Werkstattmodus, herstellerabhängig), Fahrzeug sichern. Nur zur Funktionsprüfung der Niveauregelung freigeben, Fahrzeug steht dann auf den Rädern.","Zündung ein: Versorgung am Sensorstecker prüfen (Beispiel Land Rover 5 V, herstellerabhängig). Fehlt sie: Sensor abstecken und am Kabelstecker nachmessen – jetzt da → der Sensor zieht sie herunter (innerer Kurzschluss); weiter weg → Leitung oder Steuergerät.","Fahrzeug steht auf den Rädern: Ruhewert ablesen und mit Tester-Istwert oder Gegenseite vergleichen.","Karosserie an dieser Ecke von Hand ein- und ausfedern: Das Signal folgt weich, ohne Sprünge, und kehrt zum Ruhewert zurück.","Bei Verdacht Kennlinientest: Koppelstange aushängen, Hebel langsam über den Bereich bewegen, den er im Einbau hat (nicht gewaltsam überdrehen) – glatter Verlauf, keine Aussetzer, Endwerte laut Herstellerangabe (Land Rover: beim Einfedern Richtung 0,5 bzw. 4,5 V).","Nach Sensortausch oder Fahrwerksarbeiten: Grundeinstellung/Anlernen und Scheinwerfereinstellung nach Herstellerangabe."],
 gut:[
   W2({ badge:"GUT", title:"Karosserie von Hand eingefedert", cond:"Fahrzeug steht, Sensor vorn links", vdiv:0.5, off:-4, tdiv:1,
@@ -13379,6 +13406,7 @@ equip:"2-Kanal-Oszi (CH2 für Versorgung oder zweites Rad), 10:1-Tastkopf, Backp
 anschluss:"3-polig: Versorgung (meist ~5 V, Pico), Masse, Signal – Belegung laut Stromlaufplan (Beispiel Bosch HA-P2: 1 = Versorgung, 2 = Signal, 3 = Masse). Ein dreipoliger Stecker beweist noch keinen Hall-Sensor (HELLA): Typ vorher klären.",
 messpunkte:"CH1: Signal gegen gute Masse (Batterie-Minus/STG-Masse), zuerst steuergeräteseitig (am STG-Stecker, wenn zugänglich, sonst so nah am Steuergerät wie möglich), zur Eingrenzung am Sensorstecker. CH2: Versorgung am Sensorstecker oder Signal des Gegenrads. Bei Pegelfehlern Sensormasse gegen Batterie-Minus messen.",
 setup:{kanal:"CH1 Signal (CH2: Versorgung oder Gegenrad)",kopp:"DC",tk:"10:1",vdiv:"1 V/div (Pull-up 12 V: 2 V/div)",tdiv:"20 ms/div (Rad von Hand)",trig:"Flanke ↓, 2,5 V",zustand:"Zündung ein, Rad angehoben und von Hand gedreht (~½ Umdrehung/s)"},
+tk11:{stufe:"ok", hinweis:"0/5-V- oder 0/Bordnetz-Rechteck, nichts über 16 V: 1:1 voll nutzbar, 10:1 unnötig. Bei 12-V-Variante 2 V/div wie in der Karte."},
 vorgang:["Typ klären (Stromlaufplan, Teilekatalog): zweipolig Strom, zweipolig induktiv oder dreipolig mit Spannungsausgang. Kein Ohmmeter, solange der Typ unklar ist (HELLA, Pico).","Zündung ein: Versorgung am Sensorstecker gegen Masse messen (meist ~5 V, herstellerabhängig). Fehlt sie: Sensor abstecken und am Kabelstecker nachmessen – jetzt da → der Sensor zieht sie herunter (innerer Kurzschluss); weiter weg → Leitung oder Steuergerät.","Rad anheben und langsam von Hand drehen: Rechteck zwischen nahe 0 V und Pull-up-Pegel; schneller drehen → nur die Frequenz steigt.","Rad anhalten: Der Pegel bleibt auf High oder Low stehen – normal.","Zwei Räder gleichzeitig vergleichen (CH1/CH2) bei einer Probefahrt geradeaus, Beifahrer bedient das Oszi (Sicherheitshinweis beachten): gleiche Frequenz bei Geradeauslauf.","Während der Aufnahme Leitung bewegen, lenken, einfedern: keine Abrisse."],
 gut:[
   W2({ badge:"GUT", title:"Rad von Hand gedreht", cond:"Rad ~½ U/s, Beispiel 48 Zähne", vdiv:1, off:-3, tdiv:0.02,
@@ -13524,6 +13552,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf, Backprobe-Nadeln, Stromlaufplan (Pinbelegung
 anschluss:"4-polig: Versorgung, Masse (über STG), Signal, Ansauglufttemperatur. 5-polig: zusätzlich CO-Poti. 7-polig: zusätzlich Lufttemperatur und zwei Pumpenkontakte (Pico). Beispiel BMW LE-Jetronic: Bahn an Bordnetz über das Systemrelais, Signal an STG-Pin 7. Sonst Belegung laut Stromlaufplan.",
 messpunkte:"CH1: Signal (Schleifer) gegen Batterie-Minus bzw. Motormasse. CH2: Versorgung am LMM (5-V-Referenz bzw. Bordnetz) gegen dieselbe Masse – beide Kanäle haben eine gemeinsame Masseklemme (VDS1022). Nicht gegen den Masse-Pin des Sensors messen: Bei offener Sensormasse zeigt das Oszi dort ~0 V statt ~5 V und es sieht aus wie „Versorgung fehlt“. Bei Massefehlern zusätzlich Sensormasse gegen Batterie-Minus messen.",
 setup:{kanal:"CH1 Signal (CH2: Versorgung)",kopp:"DC",tk:"10:1",vdiv:"1 V/div (5-V-Typ) · 2 V/div (Bordnetz-Typ)",tdiv:"1 s/div, Roll · Handtest 500 ms/div",trig:"Auto",zustand:"Motor warm, Leerlauf → Gasstoß (kurz Vollgas) → Schub → Leerlauf"},
+tk11:{stufe:"ok", hinweis:"5-V-Poti oder Bordnetz-Typ (≤ ~14 V): 1:1 reicht für alle Bilder, 10:1 unnötig; 1:1 zeigt Einbrüche feiner. Masseklemme an Batterie-Minus, nicht an den Sensor-Massepin."},
 vorgang:["Versorgung prüfen: 5-V-Typ meist ~5 V bei Zündung ein. Bordnetz-Typ mit drehzahlgesteuertem Relais (z. B. BMW LE-Jetronic): Spannung nur beim Starten und bei laufendem Motor.","Handtest (Zündung ein, Motor aus, Luftfilter ab): Klappe langsam von Hand öffnen und schließen. Die Spannung muss gleichmäßig folgen, die Klappe leichtgängig sein, die Feder schließt sie wieder. Typen mit Pumpenkontakt: Die Kraftstoffpumpe läuft dabei – nur bei geschlossenem Kraftstoffsystem.","Motor warm, Leerlauf: ruhiges Signal mit leichter Unruhe (Ansaugpulse).","Gasstoß (kurz Vollgas): schneller Anstieg mit kurzer Spitze, Gas weg: steiler Abfall, nach einigen Sekunden zurück auf den Leerlaufwert (Pico).","Bei Verdacht den Bereich knapp über Leerlauf mehrmals langsam überfahren und auf Einbrüche achten."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf → Gasstoß → Schub (5-V-Typ)", cond:"Motor warm, kurz Vollgas im Stand", vdiv:1, off:-3, tdiv:1,
@@ -13675,6 +13704,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf, Backprobe-Nadeln, Stromlaufplan (Kontaktlogi
 anschluss:"Schalter: gemeinsamer Anschluss, Leerlauf- und Volllastkontakt. Beispiel Bosch L-/LE-Jetronic: Klemme 18 gemeinsam, 2 = Leerlauf, 3 = Volllast. Poti: 5 V, Signal, Masse. Toyota-Kombination: VTA (Poti-Signal), IDL (Leerlaufkontakt), E2 (Sensormasse) plus 5-V-Versorgung (Lexus). Sonst Belegung laut Stromlaufplan.",
 messpunkte:"Schalter: CH1 Leerlaufkontakt, CH2 Volllastkontakt, jeweils gegen Masse (Pico) – Masseklemme an Batterie-Minus bzw. Motormasse. Poti: CH1 Signal gegen Batterie-Minus/Motormasse, nicht gegen den Sensormasse-Pin (bei offener Sensormasse zeigt das Oszi dort ~0 V statt ~5 V); bei Kombination CH2 auf den Leerlaufkontakt (IDL). Beide Kanäle haben eine gemeinsame Masseklemme (VDS1022).",
 setup:{kanal:"CH1 LL-Kontakt · CH2 VL-Kontakt (Poti: CH1 Signal, CH2 IDL)",kopp:"DC",tk:"10:1",vdiv:"2 V/div (Schalter 5 V) · 1 V/div (Poti) · 5 V/div (12-V-Logik)",tdiv:"500 ms/div, Roll",trig:"Auto",zustand:"Zündung ein, Motor aus → Gaspedal langsam ganz durchtreten, halten, loslassen"},
+tk11:{stufe:"ok", hinweis:"Schalter 0/4,7 V, Plus-Logik bis ~14 V, Poti 5 V, IDL ~12 V: alles sicher 1:1. 10:1 unnötig. Bei Plus-Logik 5 V/div, sonst 1–2 V/div."},
 vorgang:["Kontaktlogik im Stromlaufplan klären: schaltet der Kontakt gegen Masse oder gegen Plus?","Zündung ein, Motor aus: Pedal langsam ganz durchtreten, kurz halten, loslassen (Pico). LL öffnet sofort, VL schließt erst bei voll geöffneter Klappe.","Pedal halb (Teillast): beide Kontakte offen.","Poti: Klappe langsam öffnen und schließen – die Spannung steigt gleichmäßig und ohne Einbrüche (Pico, Toyota).","Systeme mit drehzahlgesteuertem Relais (BMW LE): Der Schalter bekommt erst beim Starten bzw. bei laufendem Motor Spannung – dann bei laufendem Motor messen.","Toyota mit Drosselklappenöffner: Öffner mit Unterdruck einziehen, sonst ist die Klappe bei Motor aus nicht ganz zu (MOTOR, Lexus)."],
 gut:[
 W2({ badge:"GUT", title:"Schalter: Pedal ganz durch, dann halb", cond:"Zündung ein; Kontakte gegen Masse", vdiv:2, off:0, tdiv:0.5,
@@ -13825,6 +13855,7 @@ equip:"2-Kanal-Oszi mit Frequenz- und Pulsbreitenmessung, 10:1-Tastkopf, Backpro
 anschluss:"3-polig: B+ (Bordnetz), Masse, Signal. Beispiel Saab 9-5 (2011): Klemme 1 = B+, 2 = Masse, 3 = Signal – sonst Belegung laut Stromlaufplan. Pull-up auf 5 V im STG. Versorgung mit Bordnetzspannung (HP Academy: 9–18 V, 5 V reichen nicht).",
 messpunkte:"CH1: Signalpin gegen gute Masse (Batterie-Minus/STG-Masse). CH2: B+ am Sensorstecker. Bei zu hohem Low-Pegel zusätzlich Spannungsfall Sensormasse ↔ Batterie-Minus messen.",
 setup:{kanal:"CH1 Signal (CH2: B+ am Sensor)",kopp:"DC",tk:"10:1",vdiv:"1 V/div (Kurzschluss nach Plus: 5 V/div)",tdiv:"10 ms/div · Zoom 1 ms/div (Low-Zeit)",trig:"Flanke ↓, 2,5 V",zustand:"Zündung ein → Motor läuft (Leerlauf), Tankinhalt bekannt"},
+tk11:{stufe:"ok", hinweis:"0/5-V-Rechteck, B+ bis ~15 V, Plus-Schluss-Bild 14 V: 1:1 deckt alles ab, 10:1 unnötig. Low-Zeit im Zoom mit Cursor messen."},
 vorgang:["Zündung ein: B+ am Sensor prüfen (Saab: Testlampe leuchtet). Signalpin bei abgezogenem Sensor 4,8–5,2 V (Pull-up, Saab).","Motor im Leerlauf: Rechteck 0 ↔ 5 V. Frequenz messen: Ethanol in % = Frequenz in Hz − 50.","Zoom 1 ms/div: Low-Zeit messen (1 ms = −40 °C … 5 ms = 125 °C) und mit der zu erwartenden Kraftstofftemperatur vergleichen.","Ergebnis gegen Tankinhalt bzw. Kraftstoffprobe prüfen (Saab: Abweichung zum Kraftstofftester höchstens 12 Hz)."],
 gut:[
   W2({ badge:"GUT", title:"Super E10, Kraftstoff ~20 °C", cond:"Motor läuft, Leerlauf, Tank E10", vdiv:1, off:-3, tdiv:0.010,
@@ -13982,6 +14013,7 @@ equip:"Oszi, Backprobe; warmer Motor zwingend.",
 anschluss:"Signal + Signalmasse (oft 2-/4-polig mit Heizung). Sondenmasse teils übers Gehäuse.",
 messpunkte:"CH1: Signal gegen Sondenmasse/Motormasse laut Plan.",
 setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"200 mV/div",tdiv:"1 s/div Roll",trig:"Auto",zustand:"Betriebswarm, geschlossener Regelkreis"},
+tk11:{stufe:"ok", hinweis:"0,1–0,9 V: 1:1 klar besser als 10:1 (Rauschen bei 200 mV/div). 1 MΩ Last ist für die warme Sonde unkritisch; bei kalter Sonde kann die 0,45-V-Bezugsspannung des STG leicht sinken. Plus-Schluss-Bild: Bordnetz, auch ok."},
 vorgang:["Motor warmfahren (Regelung aktiv).","Leerlauf: lebhaftes Pendeln 0,1–0,9 V, ~0,5–2 Hz.","Zwangstest fett (kurz Gas/Choke-Ersatz): Signal > 0,8 V stehen.","Zwangstest mager (Schub/Falschluft simulieren): < 0,2 V.","Reaktionszeit auf Sprünge beurteilen."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf warm: Regelschwingung ~1 Hz", cond:"Motor betriebswarm, Leerlauf, Regelung aktiv", tdiv:1, vdiv:0.2, off:-3,
@@ -14132,8 +14164,9 @@ aufgabe:"Überwacht die Sauerstoff-Speicherfähigkeit des Kats (OBD). Liegt im N
 signalart:"Wie Sprungsonde (0,1–0,9 V), aber im Normalbetrieb träge/ruhig, Lage herstellerabhängig (typ. ~0,45–0,7 V, GM/Saab per Trimm 580–665 mV) – entscheidend ist die Ruhe gegenüber der Vorkatsonde.",
 equip:"2-Kanal-Oszi (Vor- + Nachkat gleichzeitig!), Backprobe.",
 anschluss:"Signal + Masse; Heizung separat.",
-messpunkte:"CH1: Vorkatsonde · CH2: Nachkatsonde.",
+messpunkte:"CH1: Vorkatsonde · CH2: Nachkatsonde, beide Signale gegen dieselbe Masse (Batterie-Minus bzw. STG-Masse); nur eine Masseklemme setzen, die beiden OWON-Kanalmassen sind intern verbunden.",
 setup:{kanal:"CH1+CH2",kopp:"DC",tk:"10:1",vdiv:"200 mV/div",tdiv:"1 s/div Roll",trig:"Auto",zustand:"Betriebswarm, LL und 2500/min"},
+tk11:{stufe:"ok", hinweis:"Beide Sonden unter 1 V: 1:1 auf CH1 und CH2, 10:1 unnötig. Nur ein Massekrokodil an Batterie-Minus bzw. STG-Masse, nicht je Sonde eine Masse – die OWON-Kanalmassen sind verbunden."},
 vorgang:["Beide Sonden gleichzeitig aufzeichnen, warm.","Gut: CH1 pendelt lebhaft, CH2 liegt ruhig.","Gasstoß: beide kurz fett, CH2 deutlich gedämpfter.","Schubabschaltung: beide fallen mager; erholt sich CH2 SOFORT mit → Kat leer.","Bewertung erst nach Ausschluss von Falschluft/Vorkatsonden-Alterung."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf warm: Vorkat pendelt, Nachkat ruhig", cond:"Motor/Kat warm, Leerlauf", tdiv:1, vdiv:0.2, off:-4,
@@ -14300,7 +14333,8 @@ signalart:"Komplex: Nernst-Zelle + Pumpzelle. Auswertung über PUMPSTROM (µA-mA
 equip:"Oszi mit Messwiderstand/Strommessung am Pumpstromkreis ODER Tester-Istwert (λ/Pumpstrom). Stromlaufplan zwingend.",
 anschluss:"6-polig (LSU 4.9): 1 IP, 2 VM, 3 H−, 4 H+, 5 RT (Abgleich), 6 UN – LSU 4.2 anders belegt. Belegung herstellerspezifisch.",
 messpunkte:"Pumpstrom über Mess-Shunt laut Hersteller; ODER Tester-Istwerte nutzen. Shunt (LSU 4.9: Pin 5 gegen Pin 1) nur potentialfrei messen (isoliertes Oszi bzw. Laptop ohne Netzteil und ohne Diagnose-Interface, eine Masseklemme) oder CH1−CH2 gegen Fahrzeugmasse; Ip und UN nacheinander messen.",
-setup:{kanal:"CH1 (Pumpstrom-Shunt)",kopp:"DC",tk:"1:1",vdiv:"je nach Shunt",tdiv:"1 s/div Roll",trig:"Auto",zustand:"Betriebswarm"},
+setup:{kanal:"CH1 (Pumpstrom-Shunt)",kopp:"DC",tk:"1:1",vdiv:"50 mV/div (61,9-Ω-Messwiderstand: 1 mA ≙ 61,9 mV; Leerlauf-Zoom 5 mV/div; anderer Shunt entsprechend)",tdiv:"1 s/div Roll",trig:"Auto",zustand:"Betriebswarm"},
+tk11:{stufe:"ok", hinweis:"Karte sieht 1:1 vor. Shunt-Spannung im mV-Bereich bei ~2,5 V Gleichanteil ist unkritisch, aber nur potentialfrei messen: VDS1022I isoliert, Laptop auf Akku, einzige Masseklemme an Pin 1. 100 µA sind nur 6 mV – oft Tester besser."},
 vorgang:["Sicher die richtige Belegung klären (Datenblatt!) – sonst Zerstörungsgefahr.","Pumpstrom über Shunt darstellen oder Tester-λ/Pumpstrom auslesen.","Zwangstest fett/mager: Pumpstrom kehrt das Vorzeichen, λ folgt.","Reaktionsgeschwindigkeit und Linearität beurteilen."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf – Gasstoß – Schub (Benziner)", cond:"betriebswarm, Leerlauf, Roll", tdiv:1, vdiv:0.0005, off:-2, unit:"A",
@@ -14429,6 +14463,7 @@ equip:"2-Kanal-Oszi, Stromzange (klein), Backprobe.",
 anschluss:"Heizung+: Kl.15/Relais · Heizung−: STG-Endstufe (PWM).",
 messpunkte:"CH1: PWM an Heizung− (gegen Masse) · CH2: Stromzange um Heizleitung.",
 setup:{kanal:"CH1+CH2",kopp:"DC",tk:"10:1 / Zange",vdiv:"5 V/div · Strom n. Zange",tdiv:"5 ms/div (PWM ≥ 100 Hz) · 20–200 ms/div (langsame PWM) · 1 s/div (Anlauf)",trig:"Flanke ↓, ~6 V (Endstufe ein)",zustand:"Kaltstart (Heizung läuft an)"},
+tk11:{stufe:"ok", hinweis:"H− schaltet 0 ↔ ~14 V, der Heizer ist ohmsch (keine nennenswerten Abschaltspitzen): 1:1 bei 5 V/div passt. Strom per Zange (BNC). 10:1 unnötig."},
 vorgang:["Kaltstart: Heizung-PWM beobachten – zuerst oft nur kurze Impulse (Taupunktphase), dann hoher Tastgrad (Rampe), danach sinkend.","Stromzange: Einschaltstrom hoch, dann auf Haltestrom fallend (PTC-Element).","Tastgrad sinkt mit steigender Sondentemperatur.","Spannungsabfall über die Heizleitung unter Strom prüfen (Übergänge!)."],
 gut:[
 W2({ badge:"GUT", title:"Kaltstart: Heizung im Anlauf", cond:"Kaltstart, Rampe", tdiv:0.005, vdiv:5, off:-4, os:16,
@@ -14597,6 +14632,7 @@ equip:"Oszi (CH2 für die Referenzspannung), 10:1-Tastkopf (Nissan-System ~1 V: 
 anschluss:"Meist 4-polig: Referenz und Signal/Masse des Elements, Heizung (+) und (−) (Pico). HELLA-Beispiel: rot = Heizung (+), weiß = Heizung (−), schwarz = Signal (−), gelb = Signal (+); Herstellerangaben beachten. Belegung immer laut Stromlaufplan.",
 messpunkte:"CH1: Signalleitung gegen gute Masse (Batterie-Minus/Motormasse). CH2: Referenzspannung an der Sonde. Heizungsversorgung separat mit dem Multimeter prüfen.",
 setup:{kanal:"CH1 Signal (CH2: Referenz an der Sonde)",kopp:"DC",tk:"10:1 (Nissan-System ~1 V: 1:1)",vdiv:"1 V/div (Nissan-System ~1 V: 0,2 V/div)",tdiv:"1 s/div, Roll",trig:"Auto",zustand:"Motor betriebswarm, Leerlauf (Regelbetrieb)"},
+tk11:{stufe:"ok", hinweis:"5-V-System bis ~5 V, Nissan ~1 V: 1:1 für beide ideal – die Karte empfiehlt es für Nissan ohnehin. 10:1 unnötig. Referenz auf CH2 ebenfalls 1:1."},
 vorgang:["Zündung ein: Referenzspannung an der Sonde prüfen (5-V-System ~5 V, sonst laut Herstellerdaten).","Motor warmfahren, Leerlauf: Signal pendelt zwischen Fett- und Mager-Pegel, typ. ~1-mal pro Sekunde (Pico).","Gasstoß (Anfettung) und Pedal los (Schub = Einspritzung aus, mager): So zeigt sich, welche Richtung fett ist und ob die Sonde reagiert.","Konstante Pegel: zuerst Gemischfehler (Falschluft, Abgasleck, Einspritzung, Lastsensor, Zündung) ausschließen, dann Sonde und Leitungen (Pico)."],
 gut:[
   W2({ badge:"GUT", title:"Leerlauf warm: Regelschwingung", cond:"Motor betriebswarm, Leerlauf, 5-V-System", vdiv:1, off:-3, tdiv:1,
@@ -14755,6 +14791,7 @@ equip:"Oszi, Backprobe.",
 anschluss:"2-polig: Plus (Kl.15) + Steuerleitung (STG Low-Side).",
 messpunkte:"CH1: Steuerleitung gegen Masse.",
 setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"20 V/div",tdiv:"1 ms/div",trig:"Flanke ↓",zustand:"Leerlauf"},
+tk11:{stufe:"einschr", hinweis:"Einspritzzeit, Low-Pegel (Zoom 0,1 V/div) und Strombild per Zange gehen mit 1:1. Die Abschaltspitze (50–80 V) überschreitet den Eingang – Spitzenhöhe nur mit 10:1 bewerten, sonst Zylinder per Strombild vergleichen."},
 vorgang:["Auf die fallende Flanke (Ansteuerbeginn) triggern.","Einspritzzeit (Low-Phase) ablesen (~2–4 ms LL).","Abschaltspitze prüfen: vorhanden und bei allen Zylindern gleich hoch und gleich breit? (Klemmhöhe herstellerabhängig.)","Schließhöcker (kleine Beule beim Nadelschließen) suchen – Lebenszeichen der Mechanik."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf: Einspritzzeit ~4 ms", cond:"Motor warm, Leerlauf", tdiv:0.001, vdiv:20, off:-3, os:8,
@@ -14907,7 +14944,7 @@ W2({ badge:"FEHLER", title:"Spule unterbrochen: Steuerleitung ~0 V", cond:"Leerl
 ],
 ursachen:["Windungsschluss/Unterbrechung der Spule","Stecker-Korrosion/feuchter Stecker (Parallelpfad)","Steuerleitung unterbrochen","Endstufe/Freigabe fehlt"],
 loesungen:["Injektor ersetzen","Stecker reinigen/abdichten","Leitung reparieren","Endstufe/Freigaben prüfen"],
-gegen:"DMM: Spulenwiderstand (~12–16 Ω typ.). Strombild (separate Karte) für Mechanik.",
+gegen:"DMM: Spulenwiderstand (~12–16 Ω typ.). Strombild (CH2 Stromzange, siehe Bilder dieser Karte) für Mechanik.",
 plaus:"Einspritzzeiten aller Zylinder vergleichen; gegen Lambda/Laufruhe.",
 dtc:"P0201–P020x (zylinderindividuell), P0261ff.",
 irrtuemer:["Spannungsbild reicht für Mechanik – nein, eine klemmende Nadel zeigt sich besser im STROMbild.","Fehlende Spitze als 'normal' abtun – sie ist ein Spulendiagnose-Merkmal."],
@@ -14931,6 +14968,7 @@ equip:"Oszi (hohe Abtastrate), Stromzange (Niederstrom, 20-A-Bereich, vorher nul
 anschluss:"2-polig, beide Leitungen geschaltet (Plus = High-Side mit Boost und Takt, Masseseite = Low-Side), vom Endstufenmodul (Boost-Kondensator im STG/Modul).",
 messpunkte:"CH1: Plusleitung (High-Side, Boost sichtbar) oder Masseseite (Low-Side, Löschspitzen) gegen Masse · CH2: Stromzange (kein Shunt).",
 setup:{kanal:"CH1+CH2",kopp:"DC",tk:"10:1 / Zange",vdiv:"20 V/div · Strom n. Zange",tdiv:"200 µs/div",trig:"Flanke ↑ ~30 V (Plus, Boost-Beginn)",zustand:"Leerlauf / Last"},
+tk11:{stufe:"nein", hinweis:"Boost 65–80 V auf Plus- und Masseseite – mit 1:1 nicht messen (Eingang gefährdet). Es bleibt das Strombild per Zange (CH2): Boost-Anstieg, Anzug, Halten/Chopper, Mehrfacheinspritzung sind dort vollständig bewertbar."},
 vorgang:["Sehr kurze Zeitbasis (µs) – DI-Pulse sind kurz.","Boost-Spannung am Öffnungsbeginn prüfen (Hochspannungspuls).","Strom: steiler Anzug, dann Haltephase mit Chopper-Ripple.","Mehrfacheinspritzung (Vor-/Haupt-) im Bild identifizieren."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf: Boost ~65 V, dann Peak & Halten", cond:"Leerlauf", tdiv:0.0002, vdiv:20, off:-3, os:8,
@@ -15037,7 +15075,7 @@ W2({ badge:"FEHLER", title:"Boost fehlt: nur Bordnetz beim Öffnen", cond:"Leerl
              {what:"max", ch:1, t0:0.0009, t1:0.00138, max:3.38, src:"obere Schwelle 3,4 A wird nicht erreicht"},
              {what:"max", ch:1, t0:0.0002, t1:0.0008, min:11.5, max:12.6, src:"Boost erreicht noch ~12 A"} ],
     caption:"Der Boost braucht länger bis ~12 A, und im Halten taktet die Endstufe nicht mehr: Die Plusleitung bleibt dauernd auf Bordnetz, weil der Strom die obere Schwelle nicht mehr erreicht.",
-    why:"Ein Übergangswiderstand in Stecker oder Leitung (hier 2,4 Ω zusätzlich als Beispiel) begrenzt den Strom aus dem Bordnetz auf 13,5 V / ~4 Ω ≈ 3,3 A – zu wenig für den Anzug und knapp für das Halten. Die Regelung bleibt dauernd eingeschaltet, statt zu takten; die Nadel öffnet später und weniger sicher. Ein Zylinder betroffen → Leitung, Stecker oder Injektor; Widerstand messen (Soll Bosch HDEV 5.2: 1,5 Ω, HDEV 6: 1,83 Ω) und Spannungsfall unter Last prüfen. Zange z. B. 100 mV/A." }),
+    why:"Ein Übergangswiderstand in Stecker oder Leitung (hier 2,5 Ω zusätzlich als Beispiel) begrenzt den Strom aus dem Bordnetz auf 13,5 V / ~4 Ω ≈ 3,3 A – zu wenig für den Anzug und knapp für das Halten. Die Regelung bleibt dauernd eingeschaltet, statt zu takten; die Nadel öffnet später und weniger sicher. Ein Zylinder betroffen → Leitung, Stecker oder Injektor; Widerstand messen (Soll Bosch HDEV 5.2: 1,5 Ω, HDEV 6: 1,83 Ω) und Spannungsfall unter Last prüfen. Zange z. B. 100 mV/A." }),
   W2({ badge:"FEHLER", title:"Windungsschluss: Chopper viel zu schnell", cond:"Leerlauf", tdiv:0.0002, vdiv:20, off:-3, os:8,
     ch:[{ m:"injDi", p:{Lf:0.5, Rf:0.8}, lbl:"Plus (High-Side)" },
         { m:"injDi", p:{Lf:0.5, Rf:0.8, sig:"i"}, lbl:"Strom (Zange)", vdiv:5, off:0, unit:"A" }],
@@ -15086,6 +15124,7 @@ equip:"Oszi, Niederstromzange (20-A-Bereich, z. B. 100 mV/A); kein Shunt, Backpr
 anschluss:"2-polig, vom Injektormodul.",
 messpunkte:"CH1: Strom über Niederstromzange (kein Shunt) · CH2 optional: Spannung je Injektorseite gegen Fahrzeugmasse (10:1, passende Spannungsfestigkeit) – nie Masseklemme an einen Injektorpin.",
 setup:{kanal:"CH1 (+CH2 U)",kopp:"DC",tk:"Zange (20-A-Bereich), kein Shunt",vdiv:"5 A/div",tdiv:"500 µs/div (ganze Einspritzfolge) · 100 µs/div (Einzelpuls)",trig:"Flanke ↑",zustand:"Leerlauf"},
+tk11:{stufe:"einschr", hinweis:"Hauptmessung (Strom per Zange, max. ~18 A = 1,8 V bei 100 mV/A) geht komplett mit 1:1. Nur der optionale CH2-Spannungsabgriff am Injektor (50–90 V Boost) entfällt ohne 10:1."},
 vorgang:["Strombild im µs-Bereich darstellen.","Voreinspritzung(en) + Haupteinspritzung identifizieren.","Anzugspeak (typ. ~17–18 A) und Halteniveau (typ. ~12–13 A, Bosch; Delphi ~5,5–8 A – herstellerabhängig) prüfen.","Injektoren vergleichen: gleiche Form, gleiche Zeiten?"],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf: 2 Vor- + 1 Haupteinspritzung", cond:"Leerlauf, Bosch-System", tdiv:5e-4, vdiv:5, off:-3, unit:"A", os:8,
@@ -15189,7 +15228,7 @@ W2({ badge:"FEHLER", title:"Kein Strom: Spule oder Leitung unterbrochen", cond:"
              {what:"max", t0:5e-4, t1:7.6e-4, min:16.8, src:"Anzug nach ~0,25 ms erreicht"},
              {what:"mean", t0:3.42e-3, t1:3.63e-3, min:12, max:13.5, src:"Halten aus dem Bordnetz normal"} ],
     caption:"Alle Pulse steigen zu langsam: Der Anzugsstrom kommt erst nach ~0,25 ms statt ~0,09 ms. Kurze Voreinspritzungen bleiben fast nur Rampe, der Abfall am Ende dauert ebenfalls länger.",
-    why:"Die Anstiegsgeschwindigkeit hängt direkt an der Boost-Spannung (di/dt = U/L), Halten läuft aus dem Bordnetz und bleibt normal. Darum: späteres, unsicheres Öffnen vor allem bei kurzen Voreinspritzungen. Nur gegen ein Referenzbild desselben Motor-/STG-Typs beurteilen: Der Boost-Sollwert ist herstellerabhängig (Pico: typ. 50–90 V; GM-Patent: 30–65 V), ein flacherer Anstieg kann bei einem anderen System normal sein. Langsamer als die Referenz an allen Injektoren → Endstufe/Boost-Kondensator im STG (Pico: Kondensatoren werden durch die Abschaltenergie nachgeladen). Nur ein Injektor auffällig → mit F1/F2 vergleichen, Spule und Leitung laut Herstellerdaten messen." }),
+    why:"Die Anstiegsgeschwindigkeit hängt direkt an der Boost-Spannung (di/dt = U/L), Halten läuft aus dem Bordnetz und bleibt normal. Darum: späteres, unsicheres Öffnen vor allem bei kurzen Voreinspritzungen. Nur gegen ein Referenzbild desselben Motor-/STG-Typs beurteilen: Der Boost-Sollwert ist herstellerabhängig (Pico: typ. 50–90 V; GM-Patent: 30–65 V), ein flacherer Anstieg kann bei einem anderen System normal sein. Langsamer als die Referenz an allen Injektoren → Endstufe/Boost-Kondensator im STG (Pico: Kondensatoren werden durch die Abschaltenergie nachgeladen). Nur ein Injektor auffällig → mit den Nachbarinjektoren vergleichen, Spule und Leitung laut Herstellerdaten messen." }),
   W2({ badge:"FEHLER", title:"Hauptpuls zu kurz: STG korrigiert diesen Zylinder", cond:"Leerlauf, ein Zylinder auffällig", tdiv:5e-4, vdiv:5, off:-3, unit:"A", os:8,
     ch:[{ m:"injCrMag", p:{ seq:[[0, 3.0e-4], [1.225e-3, 3.5e-4], [2.45e-3, 4.0e-4]] }, lbl:"Injektorstrom (Zange)" }],
     ghost:[{ m:"injCrMag", p:{} }],
@@ -15232,7 +15271,8 @@ signalart:"Spannungs-Lade-/Entladeflanken (~110–150 V), Ladung (µC) als Maß;
 equip:"Oszi (hohe Spannung/Abtastrate), Stromzange (20-A-Bereich, berührungslos), Tastkopf 10:1 mit passender Spannungsfestigkeit. Vielfach nur Tester-Diagnose sinnvoll/sicher.",
 anschluss:"2-polig, vom Piezo-Endstufenmodul.",
 messpunkte:"CH1: Ansteuerspannung Inj+ gegen Fahrzeugmasse (10:1, Datenblatt-Belegung!; liegt Inj− nicht auf 0 V: Inj− auf CH2, Differenz per Math) · CH2: Stromzange um eine Injektorleitung (20-A-Bereich, berührungslos).",
-setup:{kanal:"CH1",kopp:"DC",tk:"10:1 (Hochspannung!)",vdiv:"50 V/div",tdiv:"500 µs/div (Folge) · 100 µs/div (eine Einspritzung)",trig:"Flanke ↑ ~50 V (CH1) bzw. ~3 A (Zange)",zustand:"Leerlauf"},
+setup:{kanal:"CH1 (+CH2 Stromzange)",kopp:"DC",tk:"10:1 (Hochspannung!)",vdiv:"50 V/div",tdiv:"500 µs/div (Folge) · 100 µs/div (eine Einspritzung)",trig:"Flanke ↑ ~50 V (CH1) bzw. ~3 A (Zange)",zustand:"Leerlauf"},
+tk11:{stufe:"nein", hinweis:"Ladespannung 110–150 V – mit 1:1 niemals an Inj+/Inj− messen. Mit 1:1 bleibt genau die von der Karte als sicherste Methode empfohlene Messung: nur Stromzange (Lade-/Entladeblöcke ±7 A), plus Tester-Istwerte."},
 vorgang:["Belegung/Modulart sicher klären (Hochspannung!).","Lade-/Entladeflanken je Einspritzung darstellen.","Spitzenspannung + Pulsfolge mit den anderen Injektoren vergleichen.","Im Zweifel auf Tester-Istwerte (Mengenkorrektur, Laufruhe) ausweichen."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf: Laden, Halten, Entladen je Einspritzung", cond:"Leerlauf, Bosch", tdiv:5e-4, vdiv:50, off:0, os:8,
@@ -15381,6 +15421,7 @@ equip:"Oszi, Backprobe; ggf. Tastkopf mit ausreichender Spannungsfestigkeit.",
 anschluss:"Bei Einzelfunkenspulen: Primär-Steueranschluss (Kl.1) gegen Masse. Bei Spulen mit integrierter Endstufe: Ansteuersignal (Logikpegel typ. ~4–5 V) gegen Masse + Primärstrom per Zange; Kl.1 nicht zugänglich.",
 messpunkte:"CH1: Kl.1 der Spule gegen Masse (integrierte Endstufe: Ansteuersignal gegen Masse, CH2 Primärstrom per Zange).",
 setup:{kanal:"CH1",kopp:"DC",tk:"10:1 (max. 400 Vss) – besser 100:1",vdiv:"100 V/div",tdiv:"2 ms/div",trig:"Flanke ↑, ~100 V (Abschaltspitze)",zustand:"Leerlauf"},
+tk11:{stufe:"nein", hinweis:"Kl.1 trägt 250–430 V Spitzen – mit 1:1 nicht antasten. Mit 1:1 gehen: Primärstrom per Zange (Schließzeit, Rampe, Windungsschluss), Kl.15-Versorgung und bei Spulen mit integrierter Endstufe das 5-V-Ansteuersignal (dort ist 1:1 ideal)."},
 vorgang:["Dwell (Stromaufbauphase) erkennen.","Abschaltspitze prüfen: typ. ≥ ~250 V (oft ~250–350 V), bei jeder Zündung gleich hoch; flach bei ~400 V begrenzt = Endstufe klemmt, meist kein Funke (herstellerabhängig).","Brennlinie ablesen (Höhe ~30–50 V, Dauer ~0,8–2 ms).","Ausschwingen am Ende: mindestens 3 Ausschwingungen (zum Zählen zoomen, z. B. 20 V/div) = Spule i. O.; weniger = Isolationsschaden/Windungsschluss."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf: Kl.1-Spannungsbild", cond:"Motor warm, Leerlauf, Endstufe im STG", tdiv:0.002, vdiv:100, off:-3, os:32,
@@ -15581,6 +15622,7 @@ equip:"Oszi + Sekundär-kV-Adapter (kapazitiv), Backprobe.",
 anschluss:"Kapazitiver Abgriff am Zündkabel/Spule (COP-Adapter).",
 messpunkte:"Sekundäradapter am jeweiligen Zylinder.",
 setup:{kanal:"CH1",kopp:"DC",tk:"kV-Adapter",vdiv:"2 kV/div (adapterabhängig; 5–10 kV/div bei Verdacht auf fehlenden Funken)",tdiv:"2 ms/div",trig:"Flanke ↑, ~3 kV (Zündnadel; adapterabhängig)",zustand:"Leerlauf / Last"},
+tk11:{stufe:"ok", hinweis:"Kapazitiver Abgriff bzw. COP-Tastkopf liefert nur mV bis wenige V ans Oszi – 1:1 ist hier Standard. Beim kV-Adapter die Ausgangsspannung laut Datenblatt prüfen (Kein-Funke-Bild ~29 kV darf am Ausgang 20 V nicht überschreiten)."},
 vorgang:["kV-Adapter montieren (Polarität/Adapterfaktor beachten).","Zündnadel-Spitze (Zündspannungsbedarf, kV) ablesen.","Brennspannung + Brenndauer beurteilen.","Last erhöhen: Bedarf steigt – Reserve prüfen."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf: Zündnadel, Brennlinie, Ausschwingen", cond:"Motor warm, Leerlauf", tdiv:0.002, vdiv:2000, off:-3, os:32,
@@ -15742,7 +15784,8 @@ signalart:"PWM-Spannung (Low-Side, 0/Bordnetz); beim Abschalten je nach Ausführ
 equip:"2-Kanal-Oszi, Stromzange, Backprobe.",
 anschluss:"2-polig: Plus (Kl.15) + getaktete Steuerleitung (STG Low-Side).",
 messpunkte:"CH1: Steuerleitung (Spannung) · CH2: Stromzange.",
-setup:{kanal:"CH1+CH2",kopp:"DC",tk:"10:1 / Zange",vdiv:"10 V/div · Strom n. Zange",tdiv:"2 ms/div (Druckwandler/AGR schnell) · 20–50 ms/div (TEV, Ladedruckventil 8–30 Hz)",trig:"Flanke ↓, ~7 V (Low-Side ein)",zustand:"Stellgliedtest / Lastfahrt"},
+setup:{kanal:"CH1+CH2",kopp:"DC",tk:"10:1 / Zange",vdiv:"5 V/div (Klemmspitze ohne Diode: 10 V/div) · Strom n. Zange",tdiv:"2 ms/div (Druckwandler/AGR schnell) · 20–50 ms/div (TEV, Ladedruckventil 8–30 Hz)",trig:"Flanke ↓, ~7 V (Low-Side ein)",zustand:"Stellgliedtest / Lastfahrt"},
+tk11:{stufe:"einschr", hinweis:"Takt, Tastgrad, Low-Pegel (0–15 V) und Strom per Zange gehen mit 1:1. Ventile ohne Freilaufdiode klemmen bei 40–55 V – vor dem Antasten unbekannter Ventile erst Strombild oder Stromlaufplan; Spitze nur mit 10:1."},
 vorgang:["PWM-Frequenz/Tastgrad erfassen.","Strom: getakteter Anstieg/Abfall, plausibler Mittelwert.","Tastgrad ändern (Stellgliedtest/Last): Strommittelwert folgt.","Strom je Puls vorhanden (Zange)? Abschaltbild passend zur Ausführung (kleine Stufe mit Diode, Klemmspitze ohne)?"],
 gut:[
 W2({ badge:"GUT", title:"Druckwandler unter Last: 250 Hz, Tastgrad 50 %", cond:"Last / Stellgliedtest", tdiv:0.002, vdiv:5, off:-4, os:16,
@@ -15924,6 +15967,7 @@ equip:"2-Kanal-Oszi, Stromzange, Backprobe, Stromlaufplan (H-Brücke!).",
 anschluss:"2 Motorleitungen ab STG/Endstufenmodul; Lagegeber separat (Positionssensor-Karte).",
 messpunkte:"CH1: Motorklemme A · CH2: Stromzange um eine Motorleitung.",
 setup:{kanal:"CH1+CH2",kopp:"DC",tk:"10:1 / Zange",vdiv:"10 V/div · Strom n. Zange",tdiv:"50 ms/div",trig:"Auto",zustand:"Stellgliedtest (auf/zu) / Zündung ein"},
+tk11:{stufe:"ok", hinweis:"H-Brücke mit Freilaufdioden: Motorklemmen schalten nur zwischen 0 V und Bordnetz, keine Abschaltspitzen. Lagegeber 0–5 V, Strom per Zange. 1:1 ist hier sogar die bessere Wahl (feinere Auflösung)."},
 vorgang:["Stellgliedtest: Klappe auf/zu fahren.","Strom: kurzer Anlaufpeak, dann niedriger Laufstrom.","Fährt der Test bis an einen Anschlag (herstellerabhängig), steigt der Strom auf den Blockierwert; sonst nach dem Anlauf Haltestrom gegen die Feder.","Richtungswechsel: Polarität an den Klemmen dreht."],
 gut:[
 W2({ badge:"GUT", title:"Stellgliedtest: zu → weit auf → zu", cond:"Stellgliedtest", tdiv:0.05, vdiv:10, off:-4, os:16,
@@ -16020,7 +16064,7 @@ W2({ badge:"FEHLER", title:"Klappe verkokt: mehr Strom, Lage bleibt hängen", co
     expect:[ {what:"max", ch:1, max:0.1, src:"Kreis offen"},
              {what:"max", ch:0, t0:0.06, t1:0.29, max:0.4, src:"Regler auf 100 %, A dauerhaft auf Masse"} ],
     caption:"Solange die Klappe öffnen soll, steuert die Brücke voll an – Klemme A liegt dauerhaft auf Masse statt zu takten –, aber es fließt kein Strom. Die Klappe steht in der Notlaufstellung.",
-    why:"Wicklung, Bürste, Stecker oder eine Motorleitung offen: Die Brücke legt zwar Spannung an, aber ohne Stromkreis kein Moment. Die Lage weicht ab, der Regler fährt auf volle Ansteuerung. Prüfen: Spannung zwischen beiden Motorklemmen am Stecker (nicht Tastkopf-Masse an eine Klemme – gemeinsame Masse beim VDS1022I!), dann Wicklungswiderstand. Unterschied zu „blockiert“: dort fließt der volle Blockierstrom." }),
+    why:"Wicklung, Bürste, Stecker oder eine Motorleitung offen: Die Brücke legt zwar Spannung an, aber ohne Stromkreis kein Moment. Die Lage weicht ab, der Regler fährt auf volle Ansteuerung. Prüfen: Spannung an beiden Motorklemmen je gegen Fahrzeugmasse (CH1/CH2, Differenz per Math oder DMM zwischen den Klemmen; nie Tastkopf-Masse an eine Klemme – gemeinsame Masse beim VDS1022I!), dann Wicklungswiderstand. Unterschied zu „blockiert“: dort fließt der volle Blockierstrom." }),
   W2({ badge:"FEHLER", title:"Lamelle/Bürste defekt: Rippel bricht regelmäßig ein", cond:"Rampe, Zoom", tdiv:0.01, vdiv:10, off:-4, os:16,
     ch:[{ m:"stellmotor", p:{ sched:[[-1,0.1],[-0.035,0.9,0.175]], T:0.12, seg:{ n:3, br:2, a:0.12, bad:0 }, sig:"va" }, lbl:"Klemme A" },
         { m:"stellmotor", p:{ sched:[[-1,0.1],[-0.035,0.9,0.175]], T:0.12, seg:{ n:3, br:2, a:0.12, bad:0 } }, lbl:"Motorstrom", vdiv:0.5, off:-2, unit:"A" }],
@@ -16098,8 +16142,9 @@ aufgabe:"Förderpumpe; das Strombild verrät Kommutator/Anker (Kommutator-Rippel
 signalart:"DC-Motorstrom mit periodischem Kommutator-Ripple; bei EKP-Modul zusätzlich PWM-Ansteuerung/geregelte Spannung. Bei EC-Pumpen (bürstenlos, 3-phasig über Pumpensteuergerät) kein Kommutator-Rippel – Diagnose nach Herstellervorgabe.",
 equip:"Oszi, Stromzange, Backprobe.",
 anschluss:"Pumpe+ (Relais/EKP-Modul) + Masse; bei Regelung Steuerleitung zum EKP-Modul.",
-messpunkte:"CH1: Stromzange um die Pumpen-Plusleitung · CH2 optional: Ansteuerung EKP-Modul.",
+messpunkte:"CH1: Stromzange um die Pumpen-Plusleitung · CH2 optional: Spannung an Pumpe+ gegen Masse (Modulausgang bzw. Relais) oder Ansteuerung EKP-Modul.",
 setup:{kanal:"CH1 (+CH2)",kopp:"DC",tk:"Zange / 10:1",vdiv:"2 A/div",tdiv:"5 ms/div (Ripple) · 200 ms (Anlauf)",trig:"Auto",zustand:"Zündung ein / Motorlauf"},
+tk11:{stufe:"ok", hinweis:"Strom per Zange, Spannung an der Pumpe 0–14 V (auch PWM vom EKP-Modul mit Freilauf) – alles mit 1:1 messbar. Für den Rippel-Zoom (0,2 A/div = 20 mV/div) ist 1:1 sogar nötig für volle Auflösung."},
 vorgang:["Einschaltstrom (Anlaufpeak) und Dauerstrom prüfen.","Zeitbasis verkürzen: Kommutator-Ripple zählen – gleichmäßig?","Stromhöhe gegen Förderdruck/Last plausibilisieren.","EKP-geregelt: Strom folgt der Ansteuerung."],
 gut:[
 W2({ badge:"GUT", title:"Motorlauf: gleichmäßiger Kommutator-Rippel", cond:"Motor läuft, Leerlauf", tdiv:0.005, vdiv:2, off:-3, unit:"A",
@@ -16246,6 +16291,7 @@ equip:"Oszi, Stromzange (großer Bereich), Backprobe; Stromlaufplan GZS.",
 anschluss:"GZS → einzelne Kerzenleitungen; Masse über Motorblock.",
 messpunkte:"CH1: Stromzange um eine Kerzenleitung (jede einzeln prüfbar) · CH2: Spannung am Kerzenanschluss gegen Masse (10:1).",
 setup:{kanal:"CH1 Zange (+CH2 Spannung an der Kerze)",kopp:"DC",tk:"Zange · CH2 10:1",vdiv:"10 A/div · CH2 5 V/div",tdiv:"500 ms/div Roll",trig:"Auto",zustand:"Zündung ein (Vorglühen) / Nachglühen"},
+tk11:{stufe:"ok", hinweis:"Strom nur per Zange (bis ~40 A = 4 V), Spannung am Kerzenanschluss 0–14 V (PWM-Pulse, ohmsche Last ohne nennenswerte Spitzen) – alles mit 1:1 messbar; der 10:1 in messpunkte ist nicht nötig."},
 vorgang:["Zündung ein: Vorglüh-Phase aufzeichnen.","Einschaltstrom je Kerze (typ. ~15–30 A kalt, herstellerabhängig) prüfen – Kerzen untereinander vergleichen.","Abfall auf Halteniveau (PTC) beobachten.","Jede Kerze einzeln messen. Eine Kerze ohne Strom: Spannung am Kerzenanschluss prüfen – Spannung da = Kerze offen, keine Spannung = Ansteuerung/Leitung."],
 gut:[
 W2({ badge:"GUT", title:"Vorglühen: Einschaltstrom, dann PTC-Abfall", cond:"Zündung ein, kalt, Vorglühen", tdiv:0.5, vdiv:10, off:-3, unit:"A",
@@ -16396,6 +16442,7 @@ equip:"Oszi, große Stromzange (bis ~600–1000 A), Backprobe für Spannung.",
 anschluss:"Stromzange um das Batterie-/Anlasser-Hauptkabel; CH2 an Batterie+ (gegen Batterie-Minus).",
 messpunkte:"CH1: Stromzange Hauptkabel · CH2: Batteriespannung (Standard). Je nach Frage CH2 stattdessen an Kl. 30 am Anlasser, als Spannungsfall Gehäuse–Batterie-Minus oder als Bezugssignal Zylinder 1.",
 setup:{kanal:"CH1+CH2",kopp:"DC",tk:"Zange / 10:1",vdiv:"100 A/div · 2 V/div",tdiv:"100 ms/div",trig:"Single beim Start",zustand:"Orgeln (Start), Einspritzung deaktiviert (nicht nur Zündung)"},
+tk11:{stufe:"ok", hinweis:"Strom per Hochstromzange, CH2 Batteriespannung bzw. Kl. 30/Masse-Spannungsfall (max. ~13 V) – alles mit 1:1 messbar; für den Spannungsfall Gehäuse–Minus (1 V/div) ist 1:1 die feinere Wahl."},
 vorgang:["Single-Aufnahme über mehrere Umdrehungen.","Einschaltpeak und Mittelstrom beurteilen.","Strombuckel zählen: gleich hoch = gleichmäßige Kompression.","Ein niedrigerer Buckel = schwächerer Zylinder (relative Kompression).","Batteriespannung darf nicht zu tief einbrechen (~>9,5 V warm)."],
 gut:[
 W2({ badge:"GUT", title:"Durchdrehen: Einschaltspitze, dann Buckel", cond:"warm, Einspritzung aus", tdiv:0.1, unit:"A", vdiv:100, off:-3, os:8,
@@ -16577,6 +16624,7 @@ equip:"Oszi, Backprobe; optional Stromzange (Ladestrom). LIN/BSD: Pegel und Bitl
 anschluss:"CH1: B+ gegen Masse (AC-gekoppelt fürs Ripple); CH2 optional: LIN/BSD-Leitung.",
 messpunkte:"CH1: B+ (AC-Kopplung) · CH2: Reglerleitung (LIN/BSD).",
 setup:{kanal:"CH1 (+CH2)",kopp:"AC (Ripple) / DC (Pegel)",tk:"10:1",vdiv:"100 mV/div (AC) · 5 V/div (DC)",tdiv:"5 ms/div",trig:"Auto",zustand:"Motorlauf, Verbraucher zuschalten"},
+tk11:{stufe:"ok", hinweis:"B+ liegt bei 12–16 V (Smart-LiMa max. ~18 V), Rippel im mV-Bereich, LIN 0–14 V – alles mit 1:1. Für 50–100 mV/div ist 1:1 Pflicht: Mit 10:1 ist 50 mV/div die feinste Stufe des VDS1022I."},
 vorgang:["DC: Ladespannung ~14 V prüfen.","AC-Kopplung: Ripple-Amplitude und Gleichmäßigkeit beurteilen.","Verbraucher (Licht, Gebläse) zuschalten: Spannung bleibt stabil, Ripple steigt moderat.","Smart-LiMa: LIN/BSD-Sollwert-Kommunikation prüfen (Bus-Kapitel)."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf mit Last: kleiner, gleichmäßiger Rippel", cond:"Leerlauf, Last ≈ 30 A", tdiv:0.005, vdiv:0.1, off:0, os:8,
@@ -16730,6 +16778,7 @@ equip:"2-Kanal-Oszi, Stromzange, Backprobe; Stromlaufplan (Modul!).",
 anschluss:"Steuerleitung STG→Lüftermodul (PWM) + Versorgung/Masse des Lüfters.",
 messpunkte:"CH1: PWM-Steuerleitung · CH2: Stromzange um die Lüfter-Versorgung.",
 setup:{kanal:"CH1+CH2",kopp:"DC",tk:"10:1 / Zange",vdiv:"5 V/div · Strom n. Zange",tdiv:"10 ms/div (PWM, je nach Frequenz 5–20 ms/div) · 1 s (Anlauf)",trig:"Flanke ↑, ~6,5 V",zustand:"Klima ein / hohe Kühlmitteltemp / Stellgliedtest"},
+tk11:{stufe:"ok", hinweis:"Steuer-PWM 0–14 V (bei offener Leitung 0–3,6 V) und Strom per Zange – alles mit 1:1 messbar. Das Modul (BLDC) erzeugt keine Abschaltspitzen auf der Steuerleitung; 1:1 ist hier vorzuziehen."},
 vorgang:["PWM-Steuersignal: Frequenz/Tastgrad erfassen.","Strom: je nach Bauart Anlaufpeak (direkt geschaltet) oder stetiger Anstieg (Sanftanlauf-Modul), danach drehzahlabhängiger Mittelstrom (steigt stark mit der Drehzahl).","Tastgrad ändern (Temperatur/Klima/Stellglied): Drehzahl/Strom folgen.","Lüfter mechanisch frei? (Anlaufstrom plausibel)"],
 gut:[
 W2({ badge:"GUT", title:"Lüfter läuft: Steuer-PWM + Strom", cond:"Motor warm, Lüfter an", tdiv:0.01, vdiv:5, off:0, os:8,
@@ -16889,6 +16938,7 @@ equip:"Oszi, Backprobe; optional Stromzange.",
 anschluss:"2-polig: Plus (Kl.15/30) + Steuerleitung (STG/Schalter Low-Side).",
 messpunkte:"CH1: Steuerleitung gegen Masse.",
 setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"10 V/div (mit Diode) · 50 V/div (ohne)",tdiv:"5 ms/div",trig:"Flanke ↓, ~7 V (Endstufe ein)",zustand:"Schalten (Stellgliedtest / Funktion auslösen)"},
+tk11:{stufe:"einschr", hinweis:"Mit 1:1 nur Relais mit Freilaufdiode (≤15 V), Lastseite Kl. 30/87 und Klimakupplung messen. Kl. 85 bei Widerstandsbeschaltung (~100 V) oder ohne Beschaltung (45 V Plateau, am Schalter 300–500 V) nicht mit 1:1 antasten."},
 vorgang:["Ansteuerung auslösen (Stellgliedtest/Funktion).","Anzug: Leitung geht auf ~0 V (Strom fließt, Relais zieht).","Abschalten: Rückkehr auf Bordnetz prüfen – mit Diode nur ~0,7 V darüber, mit Widerstand schmale Nadel (Hella: < 100 V), an Smart-Endstufe ohne Beschaltung Plateau in Klemmhöhe (herstellerabhängig, z. B. ~45 V).","Klima-Magnetkupplung: zusätzlich Einkuppeln/Strom prüfen."],
 gut:[
 W2({ badge:"GUT", title:"Relais mit Freilaufdiode: Anzug und Abfall", cond:"Stellgliedtest", tdiv:0.005, vdiv:10, off:1, os:8,
@@ -16944,7 +16994,7 @@ W2({ badge:"GUT", title:"Relais mit Freilaufdiode: Anzug und Abfall", cond:"Stel
              {what:"min", ch:0, t0:0.0112, t1:0.0128, min:43.5, src:"Plateau ~2 ms (Modell: ½·L·I²)"},
              {what:"max", ch:1, t0:0.0148, t1:0.02, max:0.5, src:"Abfall schneller als mit Diode"} ],
     caption:"Relais ohne Diode an einer Smart-Endstufe: Beim Abschalten steigt Kl. 85 auf ein ~2 ms breites Plateau in Klemmhöhe (hier ~45 V). Normal, wenn der Kreis so ausgelegt ist.",
-    why:"Relais ohne Beschaltung sind Serienteile (Bosch-Mini-Relais: nur 91 Ω, Abfallzeit typ. 2,0 ms). Smart-Low-Side-Endstufen haben eine aktive Klemmung für induktive Lasten (Infineon BTS3125TF: typ. 45 V, min. 40 V) und nehmen die Spulenenergie ½·L·I² selbst auf. Klemmhöhe herstellerabhängig. Ein Fehler ist das nur, wenn laut Teilenummer/Stromlaufplan ein Relais mit Diode vorgeschrieben ist (falsches Ersatzrelais) – dann Relais vergleichen. Ohne Klemmung (Schalter) sind laut Hella 300–500 V möglich – nur mit 10:1 messen (VDS1022i: 400 V). Unterschied zur Widerstandsbeschaltung: dort eine schmale Nadel, hier ein flaches Plateau." }),
+    why:"Relais ohne Beschaltung sind Serienteile (Bosch-Mini-Relais: nur 91 Ω, Abfallzeit typ. 2,0 ms). Smart-Low-Side-Endstufen haben eine aktive Klemmung für induktive Lasten (Infineon BTS3125TF: typ. 45 V, min. 40 V) und nehmen die Spulenenergie ½·L·I² selbst auf. Klemmhöhe herstellerabhängig. Ein Fehler ist das nur, wenn laut Teilenummer/Stromlaufplan ein Relais mit Diode vorgeschrieben ist (falsches Ersatzrelais) – dann Relais vergleichen. Ohne Klemmung (Schalter) sind laut Hella 300–500 V möglich – das kann die Grenze des VDS1022I mit 10:1 (400 V) überschreiten: dann 100:1-Tastkopf oder Strom per Zange. Unterschied zur Widerstandsbeschaltung: dort eine schmale Nadel, hier ein flaches Plateau." }),
   W2({ badge:"GUT", title:"Lastkontakt: Spannungsfall klein", cond:"angezogen, Last 20 A", tdiv:0.005, vdiv:1, off:-11, os:8,
     ch:[{ m:"relaisLs", p:{ sup:"diode", ton:0, toff:1, tofs:0.03, sig:"k30" }, lbl:"Kl. 30 ein" },
         { m:"relaisLs", p:{ sup:"diode", ton:0, toff:1, tofs:0.03, sig:"k87" }, lbl:"Kl. 87 aus" }],
@@ -17039,7 +17089,7 @@ plaus:"Ansteuerung vs. Schaltwirkung (zieht die Last an?).",
 dtc:"Last-/Relaiskreis-Codes je System (Klimakupplung, Pumpenrelais, …).",
 irrtuemer:["Fehlende Abschaltspitze oder Klemmplateau immer als Defekt – mit Freilaufdiode gibt es keine Spitze, an Smart-Endstufen ohne Diode ist ein Plateau in Klemmhöhe normal (gewollt).","Angezogen-Pegel >1 V übersehen → Massefehler bleibt unentdeckt."],
 tipps:["Abschaltverhalten zeigt die Beschaltung: Diode → nur ~0,7 V über Bordnetz; Widerstand → schmale Nadel (Hella: < 100 V); ohne Beschaltung an Smart-Endstufe → Plateau in Klemmhöhe (herstellerabhängig, z. B. ~45 V).","Low-Pegel im angezogenen Zustand sollte nahe 0 V liegen – sonst Masse prüfen."],
-warn:"Bei Relais ohne Beschaltung nur mit 10:1-Tastkopf messen (Spitzen bis 300–500 V möglich, VDS1022I mit 10:1 bis ~400 V); sauber backproben.",
+warn:"Bei Relais ohne Beschaltung an einem Schalter (keine Klemmung) sind Spitzen bis 300–500 V möglich – das übersteigt die Grenze des VDS1022I auch mit 10:1 (~400 V): dort 100:1-Tastkopf oder Spulenstrom per Zange; an Smart-Endstufen (Klemmung ~45 V) reicht 10:1. Sauber backproben.",
 simpel:"Beim Einschalten geht die Steuerleitung auf ~0 V, beim Ausschalten springt sie zurück auf Bordnetz – je nach Relais mit oder ohne Spannungsspitze. Kein 0-V-Anzug = wird nicht angesteuert.",
 profi:"Das Abschaltverhalten zeigt die Beschaltung: Diode → nur ~0,7 V über Bordnetz; Widerstand → schmale Nadel (Hella: < 100 V); ohne Beschaltung an Smart-Endstufe → Plateau in Klemmhöhe (herstellerabhängig, z. B. ~45 V). Ein Defekt ist es erst, wenn die Beschaltung laut Teilenummer vorgeschrieben ist und fehlt. Angezogen-Pegel > ~1 V verrät Massewiderstände.",
 check10:"Anzug auf ~0 V? Beim Abschalten zurück auf Bordnetz (Spitze je nach Beschaltung: Diode keine, Widerstand Nadel, Endstufe Plateau)? Last schaltet? → gut.",
@@ -17057,6 +17107,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf, Backprobe-Nadeln, DC-Niederstromzange mit BN
 anschluss:"2-polig: Versorgung (Zündungsplus) und Steuerleitung zum STG bei Low-Side; getaktete Plusleitung und Masse- bzw. Low-Reference-Leitung zum STG bei High-Side (Saab 2011). Welche Seite getaktet wird und die Pinbelegung stehen im Stromlaufplan.",
 messpunkte:"CH1: Steuerleitung am Ventilstecker gegen Batterie-Minus (Backprobe, 10:1); bei Verdacht auf Leitungsfehler zusätzlich am STG-Pin derselben Leitung. CH2 je nach Frage: Versorgungsklemme (fehlt die Versorgung?), Stromzange um eine Ventilleitung (zieht die Spule?) oder NW-Geber mit dem KW-Geber auf CH1 (folgt die Nockenwelle?). Die beiden OWON-Kanäle haben dieselbe Masse: beide Massekrokodile an Batterie-Minus.",
 setup:{kanal:"CH1 Steuerleitung (CH2: Versorgung, Stromzange oder NW-Geber)",kopp:"DC",tk:"10:1",vdiv:"2 V/div (Bordnetz-PWM)",tdiv:"1 ms/div (PWM) · 5 ms/div (KW/NW)",trig:"Normal, Flanke ↓, ~7 V (Low-Side)",zustand:"Motor warm, Leerlauf, dann Drehzahl ändern bzw. Stellgliedtest"},
+tk11:{stufe:"ok", hinweis:"Low-Side-PWM mit Freilauf im STG (Aus-Pegel Ub + 0,7 V), High-Side −0,8 V, KW/NW-Geber bei Leerlauf, Strom per Zange – alles mit 1:1 messbar; 1:1 ist hier vorzuziehen."},
 vorgang:["Im Stromlaufplan klären: Low-Side (Masse getaktet) oder High-Side (Plus getaktet)? Bei Low-Side ist „ein“ der Low-Anteil, bei High-Side der High-Anteil.","Motor warm, Leerlauf: CH1 an die Steuerleitung (Backprobe). Erwartet: sauberes Rechteck mit Bordnetzpegel und fester Frequenz (Pico-Beispiel ~300 Hz).","Drehzahl ändern oder Verstellung im Stellgliedtest anfordern: Der Tastgrad muss sich sichtbar ändern (Pico AGT-058; Toyota: Einschaltzeit im Leerlauf kurz, beim Frühverstellen deutlich länger).","Stromzange auf CH2: Der mittlere Strom folgt dem Ein-Anteil (Toyota laut MOTOR). Kein Strom trotz Takt = Spule oder Leitung offen.","Folgt die Nockenwelle? CH1 KW-Geber, CH2 NW-Geber, auf die KW-Lücke triggern: Bei Verstellung wandert die NW-Flanke gegenüber der Lücke. Grundstellung bei abgezogenem Ventil gegen Referenz prüfen (Pico; erzeugt DTC, danach löschen).","Ventil stromlos: Spulenwiderstand gegen Herstellerwert (Beispiele 7–12 Ω, 8–13 Ω), Isolation zum Gehäuse unendlich (Saab)."],
 gut:[
   W2({ badge:"GUT", title:"Low-Side-PWM ~300 Hz", cond:"Motor warm (Pico-Beispielbild)", tdiv:0.001, vdiv:2, off:-3.5, os:8,
@@ -17217,6 +17268,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf, Messadapter (VW: VAS 5256) oder Backprobe-Na
 anschluss:"Regelventil am Kompressor, typ. 2-polig (laut Stromlaufplan): Ansteuerleitung vom Klima-Steuergerät und Rückleitung. Ob plus- oder masseseitig geschaltet wird, laut Stromlaufplan (beide Varianten gibt es, Four Seasons) (bei masseseitiger Ansteuerung ist das Bild umgedreht: Ein = 0 V).",
 messpunkte:"CH1: Ansteuerleitung am Ventilstecker gegen Batterie-Minus. CH2 je nach Frage: Zange um eine Ventilleitung (Strom) – oder zweite Ventilklemme gegen Batterie-Minus (Masseseite) – oder Signal des Hochdrucksensors (Karte Kältemitteldrucksensor). Nur EIN Massekrokodil an Batterie-Minus: Die Kanalmassen des OWON sind verbunden.",
 setup:{kanal:"CH1 Ansteuerung (CH2: Zange Ventilstrom)",kopp:"DC",tk:"10:1",vdiv:"2 V/div (Hella-Beispiel: 5 V/div)",tdiv:"0,5 ms/div (VW-Prüfung: 2 ms/div)",trig:"Flanke ↑ 6 V",zustand:"Motor warm, Leerlauf, AC ein, Temperatur ganz kalt („Lo“), Gebläse max., Umluft"},
+tk11:{stufe:"ok", hinweis:"PWM 0–13,5 V mit kleinem negativen Ausschwinger, Ventilstrom per Zange (<1 A), Masseseite 0–2 V, Hochdrucksensor 0–5 V – alles mit 1:1 messbar; 1:1 ist hier vorzuziehen."},
 vorgang:["Motor warm, Leerlauf, AC ein, Temperatur ganz kalt, Gebläse max., Umluft, Fenster zu (Prüfbedingung VW-Bulletin).","CH1 über Messadapter oder Backprobe an die Ansteuerleitung: Rechteck ~400 Hz, Puls auf Bordnetzpegel, Tastgrad hoch (VW: 75–100 %, Hella-Beispiel ~75 %).","Temperatur höher stellen: Pulse werden kürzer. Econ/AC aus: kein Signal (Hella).","Strom mit Zange (CH2) oder Tester-Messwert prüfen (VW: 0,40–0,82 A bei Kühlanforderung).","Gleichzeitig Manometer bzw. Hochdrucksensor: Ansteuerung plausibel, aber Hoch- und Niederdruck bleiben ausgeglichen → Überlastschutz, Ventil oder Kompressor (VW-Bulletin)."],
 gut:[
   W2({ badge:"GUT", title:"Max-Kühlung („Lo“): ~75 % bei ~400 Hz", cond:"Leerlauf, AC ein, Lo, Gebläse max.",
@@ -17354,6 +17406,7 @@ equip:"2-Kanal-Oszi, Niederstromzange (20-A-Bereich, z. B. 100 mV/A), 10:1-Tastk
 anschluss:"Dosierventil 2-polig: Plus- und Masseseite vom STG (Belegung laut Stromlaufplan). Teilweise in einer Baueinheit mit Pumpe, Drucksensor und Heizung (Beispiel Detroit Diesel GHG14: 8-polig).",
 messpunkte:"CH1: Stromzange um eine Ventilleitung (Pico: Niederstromzange an der Ansteuerleitung). CH2 optional: AdBlue-Drucksensor (Signal) – beim Dosieren muss der Druck kurz fallen. Massekrokodil an Fahrzeugmasse, nicht an eine Ventilleitung (beide können geschaltet sein). VDS1022I: Kanalmassen intern verbunden.",
 setup:{kanal:"CH1 Strom (Zange) · CH2 optional Drucksensor",kopp:"DC",tk:"Stromzange 100 mV/A",vdiv:"0,2 A/div (Zange)",tdiv:"100 ms/div (Impulsfolge) · 5 ms/div (ein Impuls) · 10 s/div Roll (Nachlauf)",trig:"Normal, Flanke ↑ auf CH1 (Strom ~0,3 A)",zustand:"Motor warm, SCR betriebswarm (Dosierfreigabe im Tester), Leerlauf"},
+tk11:{stufe:"ok", hinweis:"Reine Zangenmessung (≤1 A = 0,1 V bei 100 mV/A) plus Drucksensor 0–5 V – alles mit 1:1 messbar; für 0,2 A/div (= 20 mV/div) ist 1:1 sogar nötig."},
 vorgang:["Motor und Abgasanlage warm fahren: Dosiert wird erst bei warmem Abgas (DieselNet: über ~185–200 °C). Freigabe im Tester prüfen.","Zange nullen, an die Ventilleitung, 100 ms/div bzw. Roll: regelmäßige Dosierimpulse?","Einen Impuls zoomen (5 ms/div): Anstieg, Knick (Nadel hebt), Halten, Abschalten.","CH2 auf den Drucksensor: fällt der Druck bei jedem Dosieren kurz ab? (Pico: Druckabfall = AdBlue wird gefördert.)","Motor aus und weiter aufzeichnen (Roll, 10 s/div): Nachlauf mit hochfrequent getaktetem Ventil (Pico: typ. ~1–2 min, im Pico-Beispiel erst einige Sekunden nach dem Abstellen).","Werte mit Herstellerdaten oder einem guten Ventil am selben Fahrzeugtyp vergleichen (Widerstand, Strom, Takt)."],
 gut:[
 W2({ badge:"GUT", title:"Dosieren bei warmem SCR: Impulsfolge", cond:"warm, Dosierfreigabe", tdiv:0.1, vdiv:0.2, off:-3, unit:"A", os:24,
@@ -17506,6 +17559,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf, Backprobe-Nadeln, Stromzange mit Spannungsau
 anschluss:"2-polig: Plus zur Spule und Steuerleitung (STG schaltet Masse). Pinbelegung und Herkunft des Plus (STG oder Sicherung) laut Stromlaufplan.",
 messpunkte:"Zoom: CH1 Steuerleitung am Ventilstecker gegen Batterie-Minus, CH2 Stromzange um eine Ventilleitung. Verlauf: CH1 Raildrucksensor-Signal, CH2 Stromzange. Massekrokodil nur an Masse – beim VDS1022I sind beide Kanalmassen verbunden.",
 setup:{kanal:"CH1 Steuerleitung (CH2: Stromzange oder Raildrucksensor)",kopp:"DC",tk:"10:1",vdiv:"5 V/div (Raildruck: 1 V/div)",tdiv:"200 µs/div (Verlauf: 500 ms/div, Roll)",trig:"Flanke ↓ 7 V",zustand:"Motor warm, Leerlauf (dann 3000 /min und Gasstoß)"},
+tk11:{stufe:"ok", hinweis:"Low-Side-PWM mit Freilauf (Aus-Pegel ~15 V), Strom per Zange (≤3 A), Raildrucksensor 0–5 V – alles mit 1:1 messbar; 1:1 ist hier vorzuziehen. Massekrokodil nie an die Steuerleitung."},
 vorgang:["Kreis vorher stromlos prüfen: Spulenwiderstand am abgezogenen Ventil (AK: typ. ~3,6 Ω; Richtwert VW N276 ~1–5 Ω, Herstellerwert maßgebend).","Stecker wieder aufstecken, Backprobe an die Steuerleitung, Zange um eine Ventilleitung (Zange vorher nullen).","Motor warm, Leerlauf: Rechteck ~1 kHz, Ein-Zeit (Leitung auf Masse) kurz, Strom fließt durchgehend als Sägezahn.","Drehzahl auf ~3000 /min: Ein-Zeit und Strom steigen, der Raildruck auch.","Verlauf mit CH1 am Raildrucksensor und CH2 an der Zange (500 ms/div, Roll): Gasstoß – Strom und Druck müssen zusammen steigen und fallen.","Werte mit dem Tester (Raildruck Soll/Ist) gegenprüfen."],
 gut:[
   W2({ badge:"GUT", title:"Leerlauf: ~1 kHz, Ein-Zeit ~23 %", cond:"Leerlauf, warm",
@@ -17663,7 +17717,8 @@ signalart:"PWM, Low-Side: Plus an der Spule, das STG schaltet die Steuerleitung 
 equip:"2-Kanal-Oszi, 10:1-Tastkopf, Backprobe-Nadeln, Stromzange mit Spannungsausgang (kleiner Messbereich, z. B. 100 mV/A), Multimeter (Spulenwiderstand), Diagnosetester (Raildruck Soll/Ist, Tastgrad ZME), Stromlaufplan.",
 anschluss:"2-polig an der Hochdruckpumpe: Plus (vom STG bzw. Zündungsplus) und Steuerleitung (STG schaltet Masse). Pinbelegung laut Stromlaufplan.",
 messpunkte:"Zoom: CH1 Steuerleitung am ZME-Stecker gegen Batterie-Minus, CH2 Stromzange um eine ZME-Leitung. Verlauf: CH1 Raildrucksensor-Signal, CH2 Stromzange. Massekrokodil nur an Masse – beim VDS1022I sind beide Kanalmassen verbunden.",
-setup:{kanal:"CH1 Steuerleitung (CH2: Stromzange oder Raildrucksensor)",kopp:"DC",tk:"10:1",vdiv:"5 V/div (Raildruck: 1 V/div)",tdiv:"2 ms/div (Verlauf: 500 ms/div, Roll)",trig:"Flanke ↓ 7 V",zustand:"Motor warm, konstante Drehzahl im Stand (z. B. ~1600 /min), dann Gasstoß und Schub"},
+setup:{kanal:"CH1 Steuerleitung bzw. Raildrucksensor (Verlauf) · CH2 Stromzange",kopp:"DC",tk:"10:1",vdiv:"5 V/div (Raildruck: 1 V/div)",tdiv:"2 ms/div (Verlauf: 500 ms/div, Roll)",trig:"Flanke ↓ 7 V",zustand:"Motor warm, konstante Drehzahl im Stand (z. B. ~1600 /min), dann Gasstoß und Schub"},
+tk11:{stufe:"ok", hinweis:"Steuerleitung 0 bis ca. 15 V (Low-Side mit Freilauf, keine hohe Abschaltspitze laut Karte), Raildrucksensor 0,5 bis 4,5 V, Zange unter 1 V: alles mit 1:1 messbar. 10:1 ist hier nicht nötig."},
 vorgang:["Typ klären: stromlos offen oder geschlossen, Frequenz und Sollwerte aus den Herstellerdaten.","Spulenwiderstand am abgezogenen Ventil messen und mit dem Herstellerwert vergleichen (Ross-Tech-Richtwerte für VW N290 je nach Seite ~0,8–5 Ω bzw. 1,5–11 Ω – nur Anhalt; Pico-Beispiel 3,3 Ω).","Stecker aufstecken, Backprobe an die Steuerleitung, Zange um eine Leitung (vorher nullen).","Konstante Drehzahl: Takt fester Frequenz, Ein-Zeit (Leitung auf 0 V) ablesen und mit dem Tester-Tastgrad vergleichen (Pico: Tastgrad als negativen Tastgrad messen).","Verlauf mit CH1 am Raildrucksensor und CH2 an der Zange: Gasstoß – Druck steigt, ZME-Strom SINKT (bei stromlos offener ZME); Gas weg – Strom steigt.","Werte mit Tester (Raildruck Soll/Ist) gegenprüfen."],
 gut:[
   W2({ badge:"GUT", title:"~1600 /min: ~180 Hz, Ein-Zeit ~17 %", cond:"~1600 /min, warm",
@@ -17816,6 +17871,7 @@ equip:"2-Kanal-Oszi, DC-Stromzange mit BNC-Spannungsausgang (z. B. 100 mV/A, Ber
 anschluss:"2-polig. Beispiel GM/Saab: Das STG schaltet beide Seiten über eigene Endstufen – Plusseite (High Control) und Masseseite (Low Control); im Ruhezustand sind beide aus (Saab WIS). Andere Hersteller: Belegung und Ansteuerart laut Stromlaufplan.",
 messpunkte:"CH1: Stromzange um eine der beiden Ventilleitungen (Pfeilrichtung beachten, vorher nullen). CH2: Plusseite am Pumpenstecker gegen Batterie-Minus (Backprobe, 10:1); taktet sie nicht, auch die Masseseite messen (welche Seite taktet, ist herstellerabhängig) – oder der NW-Geber als Bezug für die Nockenlage (Tomorrow's Technician). Die OWON-Kanäle haben dieselbe Masse; die Zange ist potenzialfrei.",
 setup:{kanal:"CH1 Strom (Zange) · CH2 Plusseite oder NW-Geber",kopp:"DC",tk:"Stromzange 100 mV/A · 10:1",vdiv:"2 A/div (Zange) · 10 V/div (Plusseite)",tdiv:"10 ms/div (Pulsfolge) · 1 ms/div (ein Puls) · 0,1 ms/div (Takt)",trig:"Normal, Flanke ↑ auf CH1 (Strom ~1 A)",zustand:"Motor warm, Leerlauf (~800 /min)"},
+tk11:{stufe:"ok", hinweis:"Zange (max. ca. 1 V bei 100 mV/A) und Plusseite bzw. NW-Geber (0 bis ca. 15 V) gehen mit 1:1. Masseseite (Low Control) erst grob mit 5 V/div ansehen, bevor man feiner stellt."},
 vorgang:["Stromlaufplan: Wie wird das Ventil angesteuert (eine oder zwei Endstufen, nieder- oder hochohmige Spule)?","Stromzange nullen, um eine Ventilleitung legen, CH1, 2 A/div. Motor warm, Leerlauf: je Förderhub ein Strompuls. Abstand = 120 s ÷ (Drehzahl × Nockenzahl), weil die Nockenwelle mit halber KW-Drehzahl dreht.","Auf einen Puls zoomen (1 ms/div): Anstieg, Anzug mit Takt, Übergang auf Haltestrom, Abschalten. CH2 an die Plusseite: Im Pico-Fallbeispiel (GM) taktet sie. Welche Seite taktet, ist herstellerabhängig (Saab WIS: Masseseite) – ohne Takt an der Plusseite auch die Masseseite messen, bevor man einen Fehler annimmt.","CH2 auf den NW-Geber: Lage des Pulses zur Nocke. Mehr Bedarf → das Ventil schließt früher im Förderhub (Tomorrow's Technician).","Raildruck Soll/Ist im Tester, Druck per Stellgliedtest erhöhen/absenken – Ist muss folgen (Saab WIS). Ein gutes Strombild beweist nur die Ansteuerung, nicht die Pumpenmechanik (VSP).","Bei Fehlercode: Spulenwiderstand mit genullten Messleitungen (Saab: 0,35–0,6 Ω bzw. 9–11 Ω je nach Pumpe), Isolation zum Gehäuse."],
 gut:[
   W2({ badge:"GUT", title:"Leerlauf: ein Strompuls je Nocke", cond:"Leerlauf 800 /min", tdiv:0.01, vdiv:2, off:-3.5, os:16,
@@ -17976,6 +18032,7 @@ equip:"2-Kanal-Oszi, Niederstromzange (20-A-Bereich, z. B. 100 mV/A), 10:1-Tastk
 anschluss:"2-polig je Gasventil, Leitungen vom Gas-Steuergerät (Belegung laut Schaltplan der Gasanlage). Die Steuerleitungen der Benzinventile laufen durch den Kabelbaum der Gasanlage: Im Gasbetrieb trennt das Gas-STG die Benzinventile ab und belastet die Benzin-Endstufen mit einer Nachbildung (Emulation, z. B. Widerstand).",
 messpunkte:"CH1: Stromzange um eine Leitung des Gasventils (vorher nullen, Pfeilrichtung beachten). CH2: Steuerleitung des Gasventils gegen Fahrzeugmasse oder Benzin-Steuersignal am Eingang des Gas-STG. Beide Massekrokodile an denselben Punkt: Beim VDS1022I sind die Kanalmassen intern verbunden.",
 setup:{kanal:"CH1 Strom (Zange) · CH2 Spannung",kopp:"DC",tk:"Stromzange 100 mV/A · 10:1",vdiv:"1 A/div (Zange) · 10–20 V/div (Steuerleitung)",tdiv:"1 ms/div (ein Impuls) · 50 ms/div (Impulsfolge)",trig:"Normal, Flanke ↑ auf CH1 (Strom ~1 A)",zustand:"Motor warm, Gasbetrieb, Leerlauf"},
+tk11:{stufe:"einschr", hinweis:"Strombild per Zange (Hauptmessung) geht mit 1:1. CH2 Steuerleitung und Benzin-Steuersignal zeigen Abschaltspitzen von ca. 40 bis 50 V und mehr (Bilder gut[1], gut[4]) – dort kein 1:1. Ersatz: CH2 nur am Ventil-Plus oder Versorgung."},
 vorgang:["Motor warm laufen lassen, bis die Anlage auf Gas umgeschaltet hat (Anzeige am Umschalter). Vorher sind die Gasventile stromlos.","Zange an Gasventil Zylinder 1, Trigger steigende Flanke ~1 A, 1 ms/div.","Anstieg, Knick (Anker öffnet), Haltestrom und Einblaszeit ablesen.","Alle Gasventile nacheinander messen und vergleichen: gleiche Form, gleiche Peakhöhe, Knick an gleicher Stelle?","CH2 auf das Benzin-Steuersignal: Benzinzeit und Gaszeit vergleichen, mit den Istwerten in der Gas-Software gegenprüfen.","Auffälliges Ventil: Spulenwiderstand messen (Herstellerwert, Beispiel IG7: 2 Ω ±5 % bei 25 °C) und mit den anderen Ventilen vergleichen."],
 gut:[
 W2({ badge:"GUT", title:"Leerlauf Gasbetrieb: Peak & Hold", cond:"Leerlauf, Gasbetrieb", tdiv:0.001, vdiv:1, off:-3, unit:"A", os:8,
@@ -18147,6 +18204,7 @@ equip:"Oszi, DC-Stromzange mit BNC-Ausgang für kleine Ströme (z. B. Pico TA018
 anschluss:"Zange um das Batterie-Minuskabel, Pfeil in Stromrichtung. Passt die Zange nicht ums Kabel (TA018: max. 9 mm), eine mit 10 A abgesicherte Leitung zwischen Minuspol und Massekabel legen und die Zange darum (Pico). Dabei erst die Brücke anklemmen, dann das Kabel lösen („make before break“) – wird der Kreis offen, wachen die Steuergeräte auf (MasterTechnician). Führen mehrere Leitungen vom Minuspol weg (Motor- und Karosseriemasse), alle gemeinsam umfassen – sonst fehlt ein Teilstrom. Sitzt am Minuspol ein Batteriesensor (misst den Batteriestrom selbst, MasterTechnician): Zange hinter dem Sensor um das Massekabel legen, Sensor und Polklemme nicht lösen; eine Brücke nur nach Herstellervorgabe.",
 messpunkte:"CH1: Stromzange am Minuskabel bzw. an der abgesicherten Brücke. CH2 optional: Batteriespannung an den Polen (Masseklemme an Batterie-Minus). Eingrenzen: Zange um einzelne Leitungen (z. B. Generator-B+), Spannungsfall über den Sicherungen mit dem Multimeter (GM).",
 setup:{kanal:"CH1 Zange (CH2: Batteriespannung)",kopp:"DC",tk:"Stromzange 100 mV/A, Kanal auf 1:1 (1X)",vdiv:"5 mV/div (≙ 50 mA/div bei 100 mV/A)",tdiv:"20 s/div, langsame Zeitbasis (Einschlafen: 50–100 s/div)",trig:"Auto",zustand:"Fahrzeug verriegelt und eingeschlafen (Nachlauf abgewartet), Zange vorher genullt"},
+tk11:{stufe:"ok", hinweis:"Zange liefert bei 100 mV/A höchstens ±2 V, CH2 Batteriespannung 12 bis 15 V: alles 1:1-tauglich. 1:1 ist hier sogar Pflicht, weil nur so 5 mV/div (50 mA/div) erreichbar ist."},
 vorgang:["Batterie voll laden und testen – eine schwache Batterie verfälscht die Diagnose (Pico).","Zubehör, Ladegeräte und Diagnosetester abstecken (OBD-Pin 16 ist Dauerplus, Snap-on). Zündung aus, Schlüssel aus der Keyless-Reichweite (Pico).","Türen, Hauben und Klappen schließen bzw. die Schlösser von Hand in Stellung „zu“ drücken, verriegeln, Alarm scharf (Pico, GM).","Zange einschalten, ~10 min temperieren lassen, nullen (Pico). Nullprobe: Zange noch nicht am Kabel, Vavg mit Average ≥ 16 ablesen – das ist die Nulllinie. Dann ums Minuskabel bzw. um die abgesicherte Brücke legen.","Langsame Zeitbasis 50–100 s/div (Scan-/Roll-Darstellung je nach Software-Version): Einschlafen beobachten. Je nach Hersteller dauert das von wenigen Minuten bis ~2 h (Pico, GM, Snap-on).","Eingeschlafen: 20 s/div, Mittelwert ablesen (Vavg, ggf. aus mehreren Einzelaufnahmen) und nach Abzug der Nulllinie mit dem Herstellerwert vergleichen.","Zu hoch: Spannungsfall über den Sicherungen mit dem Multimeter (mV) messen statt Sicherungen zu ziehen – Ziehen kann wecken (Pico, GM). Verdächtigen Kreis im Stromlaufplan verfolgen."],
 gut:[
   W2({ badge:"GUT", title:"Eingeschlafen: Ruhestrom ~19 mA", cond:"verriegelt, ~30 min nach Abstellen, 100 mV/A",
@@ -18287,6 +18345,7 @@ equip:"Oszi VDS1022I (isolierte Version), Tastkopf auf 1:1 für den mV-Bereich, 
 anschluss:"Messleitungen parallel zum geprüften Abschnitt. Polung: Spitze (rot) Richtung Spannungsquelle, Masseklemme (schwarz) Richtung Masse – dann zeigt das Oszi positiv (VW). Plusseite also Spitze auf die batterienahe Seite, Masseseite Masseklemme auf den Minuspol (Hino). Masseseite: Masseklemme direkt auf den Batterie-Minuspol, Spitze an Startergehäuse, Motorblock oder Masse des Verbrauchers. Plusseite: Spitze auf den Batterie-Pluspol, Masseklemme an das lastseitige Ende (z. B. Starterklemme 30) – nur mit dem isolierten VDS1022I und nur, wenn die CH2-Masseklemme nirgends anliegt. Ohne schwebende Masse: beide Kanäle gegen Batterie-Minus, Spannungsfall = CH1 − CH2 (Math).",
 messpunkte:"CH1: Spannungsfall des Abschnitts (Masseseite: Gehäuse bzw. Masse gegen Batterie-Minus). CH2 optional, mit derselben Masse an Batterie-Minus: Batteriespannung am Pol oder Spannung an der Last – der Abstand der Kurven ist der Spannungsfall der Plusseite. Die Massen beider Kanäle sind im Oszi verbunden (OWON-README): nie an zwei verschiedene Potenziale klemmen.",
 setup:{kanal:"CH1 (CH2: Batteriespannung, gleiche Masse)",kopp:"DC",tk:"1:1",vdiv:"50 mV/div (Masseseite Start) · 2 V/div (Zwei-Kanal-Methode)",tdiv:"200 ms/div (Anlassen) · 10 ms/div (Zündmodul) · 1 s/div (Verbraucher)",trig:"Single, Flanke ↑, 50 mV",zustand:"Anlassen; Masseseite: Startergehäuse gegen Batterie-Minus"},
+tk11:{stufe:"ok", hinweis:"Alle Messungen liegen im mV- bis Volt-Bereich, die Zwei-Kanal-Methode bei max. ca. 15 V: 1:1 passt überall und ist für 5 mV/div sogar nötig. Schwebende Plusmessung nur mit einem Massekrokodil."},
 vorgang:["Stromlaufplan: Abschnitt festlegen (Batterie → Sicherung/Schalter → Verbraucher → Masse → Batterie). Absichtliche Widerstände kennen, z. B. Gebläsevorwiderstand (VW).","Kreis unter Last bringen: anlassen (Motorstart ggf. verhindern, Herstellervorgabe), Verbraucher einschalten oder Motor laufen lassen – ohne Strom zeigt jeder Abschnitt ~0 V (VW, Hino). Anlassen nur wenige Sekunden, zwischen den Versuchen Pausen nach Herstellervorgabe (Starter erwärmt sich). Ein unterbundener Motorstart kann je nach Fahrzeug Fehlerspeichereinträge erzeugen – danach Fehlerspeicher prüfen.","Masseseite zuerst: Masseklemme auf den Minuspol (nicht auf die Polklemme), Spitze an das Startergehäuse, anlassen (VW, Hino).","Zu hoch: Spitze Schritt für Schritt Richtung Batterie versetzen (Massekabel am Motorblock bzw. Getriebe, Kabelschuh, Polklemme) – wo der Wert springt, sitzt der Widerstand (VW, Hino).","Plusseite: Pluspol → Starterklemme 30 genauso abschnittsweise (Pol → Polklemme → Kabel → Klemme). Danach den Magnetschalter-Hauptkontakt: Klemme 30 gegen den Motoranschluss des Magnetschalters (SAE nach Fischelli: höchstens 0,3 V).","Leitungen und Klemmen unter Last bewegen – Wackler zeigen sich als Sprünge (Hino: mit Prüflampe als Last).","Reparieren und unter gleicher Last nachmessen."],
 gut:[
   W2({ badge:"GUT", title:"Masseseite beim Anlassen: ~0,09 V", cond:"Startergehäuse gegen Batterie-Minus, 1:1",
@@ -18427,6 +18486,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf, Backprobe-Nadeln, Stromlaufplan (welcher Sen
 anschluss:"Am Sensor typ. 3 Leitungen: 5-V-Referenz, Signal, Sensormasse (GM: Low Reference). Pinbelegung laut Stromlaufplan. Die Referenzleitungen mehrerer Sensoren laufen im Kabelbaum oder im STG zusammen (MOTOR: fünf bis neun Leitungen an einer Referenz möglich).",
 messpunkte:"CH1: 5-V-Referenz am Sensorstecker gegen Batterie-Minus (oder STG-Masse). CH2 je nach Frage: Referenz am Stecker eines zweiten Sensors derselben Gruppe, Signal eines zweiten Sensors oder Sensormasse gegen Batterie-Minus (Masseversatz). Beide Massekrokodile an denselben Punkt: Die Kanalmassen des OWON sind verbunden.",
 setup:{kanal:"CH1 5-V-Referenz (CH2: 2. Sensor oder Sensormasse)",kopp:"DC",tk:"10:1",vdiv:"1 V/div (Sensormasse: 50–200 mV/div)",tdiv:"1 s/div, Roll",trig:"Auto",zustand:"Zündung ein → Start → Leerlauf; danach Kabelbaum bewegen bzw. Sensoren der Gruppe einzeln abstecken"},
+tk11:{stufe:"ok", hinweis:"Referenz 5 V, Bordnetz bis ca. 14 V, Sensormasse im mV-Bereich: alles 1:1-tauglich. Für die Sensormasse (12 mV) ist 1:1 sogar besser, weil 5 mV/div nur ohne Teiler geht."},
 vorgang:["Im Stromlaufplan nachsehen, welche Sensoren an welcher Referenz hängen (GM-Beispiel 2,0 l Benziner: Referenz 3 versorgt DK-Sensoren 1 und 2, KW-Sensor, Pedalwertgeber 2 und Klimadrucksensor).","Zündung ein, CH1 an die Referenz am Sensorstecker: ~5 V, ruhig (GM: 4,8–5,2 V).","Start und Leerlauf: Die Referenz bleibt stehen, auch wenn das Bordnetz beim Anlassen einbricht.","Masse prüfen: Referenz gegen Sensormasse (GM: 4,8–5,2 V), oder CH2 an die Sensormasse gegen Batterie-Minus: nur wenige mV.","Referenz zu niedrig: Sensoren der Gruppe einzeln abstecken (Zündung dabei aus), dann Zündung ein und Referenz ablesen. Springt sie zurück, zieht dieser Sensor sie herunter (Chrysler, GM).","Bleibt sie unten, obwohl alle Sensoren ab sind: Referenzleitung auf Masseschluss prüfen (Chrysler-Beispiel: unter 100 Ω gegen Masse = Schluss), danach STG.","Sporadische Fehler: Kabelbaum und Stecker bewegen. Längere Aussetzer im Roll-Modus; kurze Einbrüche mit Trigger Normal/Single auf fallende Flanke (↓ ~4,5 V) oder Peak Detect fangen. CH1 und CH2 an zwei Sensoren derselben Referenz: Brechen beide gleichzeitig ein, sitzt der Fehler im gemeinsamen Teil."],
 gut:[
 W2({ badge:"GUT", title:"Zündung ein → Start → Leerlauf: Referenz steht", cond:"Motor warm", vdiv:1, off:-3, tdiv:1,
@@ -18518,7 +18578,7 @@ W2({ badge:"FEHLER", title:"Ein Sensor zieht die Referenz herunter", cond:"Motor
     expect:[ {what:"mean", t0:1.5, t1:10, min:3.85, max:3.96, src:"Rechnung: 200 Ω vor ~714 Ω Sensorlast"},
              {what:"mean", ch:1, t0:1.5, t1:10, min:4.95, max:5.05} ],
     caption:"Am Stecker von Sensor A kommen nur ~3,9 V an, am Stecker von Sensor B dieselbe Referenz mit vollen 5 V. Nur Sensor A meldet unplausible Werte.",
-    why:"Ein Übergangswiderstand im Zweig zu Sensor A (Pin, Spleiß, angebrochene Leitung; Beispiel 200 Ω) und der Sensorstrom (NXP: typ. 7 mA) ergeben einen Spannungsfall U = I · R. Das Signal von Sensor A sinkt mit, das STG rechnet mit 5 V und liest zu wenig (GM-Tabelle: Referenz offen/hochohmig → „Signal zu niedrig“, P0107 beim Ladedrucksensor – der Referenzcode P0651 steht dort nur für Masseschluss oder Schluss gegen Spannung). Bei ganz offener Leitung liegt der Stecker typ. auf ~0 V. Unterschied zu „Einbrüche an beiden Steckern“: Hier ist nur ein Zweig betroffen." }),
+    why:"Ein Übergangswiderstand im Zweig zu Sensor A (Pin, Spleiß, angebrochene Leitung; Beispiel 200 Ω) und der Sensorstrom ergeben einen Spannungsfall U = I · R (NXP: typ. 7 mA bei 5 V; als ohmsche Last sinkt der Strom mit der Spannung auf ~5,5 mA, Spannungsfall ~1,1 V → ~3,9 V am Stecker). Das Signal von Sensor A sinkt mit, das STG rechnet mit 5 V und liest zu wenig (GM-Tabelle: Referenz offen/hochohmig → „Signal zu niedrig“, P0107 beim Ladedrucksensor – der Referenzcode P0651 steht dort nur für Masseschluss oder Schluss gegen Spannung). Bei ganz offener Leitung liegt der Stecker typ. auf ~0 V. Unterschied zu „Einbrüche an beiden Steckern“: Hier ist nur ein Zweig betroffen." }),
   W2({ badge:"FEHLER", title:"Referenz auf Bordnetzspannung (Schluss nach Plus)", cond:"Zündung aus → ein bei 1 s, Motor aus", vdiv:2, off:-4, tdiv:1,
     ch:[{ m:"sensorRefRef", p:{ plus:{ tIgn:1, c0:99, c1:99 } }, lbl:"5-V-Referenz" }],
     ghost:[{ m:"sensorRefRef", p:{ ign:[[0, 0], [1, 1]] } }],
@@ -18576,6 +18636,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf (am VDS1022I Pflicht: mit 1:1 nur bis 40 Vss)
 anschluss:"48-V-Plus von der Batterie zu RSG, DC/DC-Wandler und Großverbrauchern; 48-V-Komponenten sollen farblich gekennzeichnet sein (ZVEI, Farbe herstellerabhängig). Gemeinsame Masse mit dem 12-V-Netz, aber über eigene, räumlich getrennte Massebolzen (VDA 320). Viele Systeme schalten das 48-V-Netz im Ruhezustand ab (ZVEI).",
 messpunkte:"CH1: 48-V-Plus an einem Prüfpunkt laut Herstellerunterlagen (z. B. 48-V-Anschluss am DC/DC-Wandler) gegen 12-V-Batterie-Minus. CH2: 12-V-Netz (12-V-Batterie-Plus) – oder 48-V-Masse (Massebolzen bzw. Massekabelschuh) gegen 12-V-Batterie-Minus. Nur EIN Massekrokodil, und zwar an 12-V-Batterie-Minus: Die Kanalmassen des OWON sind verbunden. Gegen 12-V-Batterie-Minus enthält der Massewert auch den Spannungsfall am 12-V-Masseband; genauer ist die Messung direkt über der Verbindung (Massekrokodil dann an 48-V-Batterie-Minus, Spitze am 48-V-Massebolzen bzw. RSG-Gehäuse; weiterhin nur EIN Massekrokodil).",
 setup:{kanal:"CH1 48-V-Netz (CH2: 12-V-Netz oder 48-V-Masse)",kopp:"DC",tk:"10:1",vdiv:"10 V/div (12-V-Netz: 5 V/div · 48-V-Masse: 0,5 V/div)",tdiv:"1 s/div, Roll",trig:"Auto",zustand:"Zündung ein → Start über RSG → Leerlauf; Probefahrt (Boost/Rekuperation) nur mit zweiter Person am Steuer"},
+tk11:{stufe:"nein", hinweis:"48-V-Netz liegt mit 36 bis 58 V weit über den ±20 V des 1:1-Eingangs – CH1 so nicht messbar. Mit 1:1 bleibt: 12-V-Netz (CH2) und Spannungsfall an der 48-V-Masse (±2 V). 48 V über Tester-Istwerte."},
 vorgang:["Herstellervorgaben lesen: Prüfpunkte, Sicherheitshinweise, ggf. Abschaltprozedur. Schmuck und Uhr ablegen.","Tester: Fehlerspeicher und BMS-Istwerte (Spannung, Ladezustand, Temperatur) lesen.","Massekrokodil an 12-V-Batterie-Minus, CH1 an den 48-V-Prüfpunkt, CH2 an 12-V-Plus. Roll-Modus, CH1 10 V/div, CH2 5 V/div.","Zündung ein: Das 48-V-Netz wird zugeschaltet, CH1 springt auf die Batteriespannung im Bereich 36–52 V. CH2: Der DC/DC-Wandler hält das 12-V-Netz (Beispiel ~14 V).","Start über RSG: kurzer Einbruch, der im Normalbereich bleiben soll; das 12-V-Netz bleibt dabei ruhig. Danach lädt der RSG.","Probefahrt mit zweiter Person am Steuer: Boost senkt die 48-V-Spannung, Rekuperation hebt sie – höchstens bis 52–54 V (VDA 320).","Masse prüfen: CH2 an den 48-V-Massebolzen gegen 12-V-Batterie-Minus; beim Start nur kleiner Spannungsfall.","Oszi-Werte mit Tester-Istwerten vergleichen; Sollwerte immer nach Herstellerdaten bewerten."],
 gut:[
 W2({ badge:"GUT", title:"Zündung ein → Start über RSG → Leerlauf", cond:"Werte Beispiel", vdiv:10, off:-3, tdiv:1,
@@ -18706,6 +18767,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf, Hochstromzange mit Spannungsausgang (Messber
 anschluss:"Messung NUR auf der 12-V-Seite: 12-V-Batterie Plus und Minus, Kabel Batterie-Minus ↔ Karosserie für die Zange (Pico). Niedervolt-Ausgang des DC/DC nur, wenn laut Hersteller sicher zugänglich – sonst nicht messen (Pico). HV-Seite und HV-Bauteile: tabu.",
 messpunkte:"CH1: 12-V-Batterie Plus gegen Batterie-Minus (direkt an den Polen). CH2: Hochstromzange um das Kabel Batterie-Minus ↔ Karosserie (Pico), Richtung so, dass Laden positiv ist – oder Spannungsfall im Massepfad (Karosserie-Massepunkt bzw. Masseband des Wandlers gegen Batterie-Minus – nur an vom Hersteller freigegebenen Niedervolt-Punkten). Nur EIN Massekrokodil, an Batterie-Minus: Die Kanalmassen des OWON sind verbunden.",
 setup:{kanal:"CH1 Batteriespannung (CH2: Zange Batteriestrom)",kopp:"DC",tk:"10:1",vdiv:"2 V/div (CH2: Zange 1 mV/A, Tastkopf 1:1 → 20 mV/div = 20 A/div)",tdiv:"2 s/div, Roll",trig:"Auto",zustand:"Ladekabel getrennt, Fahrzeug aus → READY → Lastprobe (Licht, Gebläse, Heckscheibe)"},
+tk11:{stufe:"ok", hinweis:"12-V-Batterie 9 bis 15 V und Zange (1 mV/A, max. 100 mV) liegen sicher im 1:1-Bereich. CH2 ist laut Karte ohnehin 1:1; 10:1 auf CH1 bringt hier nichts."},
 vorgang:["Ladekabel abziehen und abgezogen lassen, Fahrzeug aus (Pico).","CH1 an die Pole der 12-V-Batterie, Zange um das Minuskabel (Laden = positiv), Roll-Modus starten.","Fahrzeug einschalten (READY): Spannung muss auf die Ladespannung springen, Ladestrom hochspringen und langsam abklingen (Pico).","Lastprobe: große Verbraucher zuschalten (smart: Fahrlicht, Radio; zusätzlich z. B. Gebläse, Heckscheibe). smart-Beispiel: Spannung nahe der Batterie darf unter Last nicht unter 13 V fallen.","Tester: DC/DC-Istwerte und Funktionstest nach Hersteller (Beispiele: Mercedes BUCK-Modus, BMW Funktionsprüfung Ausgangsstrom); Fehlerspeicher DC/DC, BMS, Antrieb; Batterie mit Batterietester prüfen."],
 gut:[
   W2({ badge:"GUT", title:"Fahrzeug aus → READY: DC/DC lädt", cond:"READY ~3 s",
@@ -18834,6 +18896,7 @@ equip:"2-Kanal-Oszi, 10:1-Tastkopf, Backprobe-Nadeln, Niederstromzange mit BNC-S
 anschluss:"Leuchte typ.: Lampen-Plus vom STG und Masse (an der Leuchte oder zurück zum STG) – laut Stromlaufplan; Pinbelegung herstellerabhängig. Schaltseite (Plus oder Masse) typabhängig – im Stromlaufplan prüfen. Xenon- und LED-Scheinwerfer mit eigenem Vorschalt-/Steuergerät: nur die 12-V-Versorgung des Geräts messen.",
 messpunkte:"CH1: Lampen-Plus am Leuchtenstecker gegen Batterie-Minus (10:1, Backprobe). CH2: Stromzange um die Plusleitung der Leuchte – oder zweite Spannung: Masse der Leuchte gegen Batterie-Minus (Masseübergang) bzw. Plus am STG-Ausgang (Plus-Übergang). Beide OWON-Kanäle haben dieselbe Masse: nur gegen Fahrzeugmasse messen.",
 setup:{kanal:"CH1 (+CH2 Zange oder 2. Spannung)",kopp:"DC",tk:"10:1",vdiv:"5 V/div (Strom über Zange: 1 A/div)",tdiv:"5 ms/div (PWM) · 50 ms/div (Prüfimpulse)",trig:"Normal, Flanke ↑, 6 V",zustand:"Zündung ein, Motor aus, Licht ein (Rücklicht bzw. Tagfahrlicht gedimmt); für Prüfimpulse: Licht aus"},
+tk11:{stufe:"ok", hinweis:"PWM 0 bis ca. 14 V, Prüfimpulse unter Bordnetz, Zange 100 mV/A auch bei 18 A Einschaltstrom nur 1,8 V: alles 1:1-tauglich, 100 bis 200 Hz unkritisch. Xenon bleibt wie in der Karte tabu."},
 vorgang:["Stromlaufplan: Welche Seite schaltet das STG (Plus oder Masse), wo liegt die Masse der Leuchte? Typabhängig.","CH1 mit 10:1 am Lampen-Plus der Leuchte, Oszi-Masse an Batterie-Minus. Licht einschalten (Funktion oder Stellgliedtest im Tester).","PWM ablesen: Periode per Cursor (Frequenz = 1/Periode), Tastgrad, High-Pegel ≈ Bordnetz. Gedimmte Funktion (Rücklicht, Tagfahrlicht) = kleiner Tastgrad; volle Funktion (Bremslicht) = großer Tastgrad oder Dauer-Ein.","Stromzange (CH2) um die Plusleitung: Der Strom muss zur Lampe passen (P21W ~1,1–2,4 A, Infineon). Spannung allein beweist nicht, dass Strom fließt!","Lampe zu dunkel: Masse der Leuchte gegen Batterie-Minus (CH2) und Plus am STG-Ausgang gegen Plus an der Leuchte vergleichen – jeder Volt Unterschied im Ein ist Spannungsfall.","Licht aus, Zündung ein: mit 50 ms/div und Normal-Trigger nach Prüfimpulsen suchen (nur wenn das STG eine Kaltabfrage macht, herstellerabhängig).","Zum Schluss Fehlerspeicher und Codierung (Lampentyp Glühlampe/LED) im Tester prüfen und Seitenvergleich links/rechts."],
 gut:[
   W2({ badge:"GUT", title:"Rücklicht gedimmt: PWM 100 Hz (Bsp. 20 %)", cond:"Zündung ein, Licht ein, P21W", vdiv:5, off:-2, tdiv:0.005, os:8,
@@ -19020,6 +19083,7 @@ equip:"2-Kanal-Oszi mit Single-Trigger, 10:1-Tastkopf (VDS1022I: 1:1 bis 40 Vss,
 anschluss:"Messpunkt ist die Versorgung des betroffenen Steuergeräts (Kl. 30 bzw. Kl. 15 und Masse am STG-Stecker – Pins laut Stromlaufplan) oder die Batteriepole. Oszi-Masse an Batterie-Minus.",
 messpunkte:"CH1: Kl. 30/Kl. 15 am Steuergerät gegen Batterie-Minus (10:1, Backprobe). CH2: Batterie-Pluspol gegen Batterie-Minus, direkt auf dem Bleipol (nicht auf der Klemme) – zeigt, ob ein Ereignis aus dem ganzen Bordnetz kommt oder nur auf der Leitung zum STG entsteht. Beide Kanäle haben dieselbe Masse.",
 setup:{kanal:"CH1 (+CH2 Batterie)",kopp:"DC",tk:"10:1",vdiv:"2 V/div (Einbruch) · 10 V/div (Spitzen, Load Dump)",tdiv:"0,5 s/div (Start, Verbraucher) · 50 ms/div (Load Dump) · 1 ms/div (Schaltspitzen)",trig:"Single, Flanke ↓, 13,5 V (Einbruch) · Flanke ↑ über ~16 V (Überspannung)",zustand:"Motor im Leerlauf, große Verbraucher schalten (Gebläse, Heckscheibe, Licht); Single-Trigger auf Einbruch bzw. Spitze"},
+tk11:{stufe:"nein", hinweis:"Einbrüche (Start, Verbraucher, Regler bis ca. 18 V) gehen mit 1:1 – aber Load Dump 35 bis 90 V, Spitze −80 V ohne Freilauf und 24-V-Starthilfe nicht. Beim Provozieren kann eine Spitze den 1:1-Eingang überlasten."},
 vorgang:["Zuerst Fehlerspeicher lesen: Unter- oder Überspannungs-Einträge in mehreren Steuergeräten? Umgebungsdaten notieren (herstellerabhängig).","CH1 an die Versorgung des betroffenen STG, CH2 an die Batteriepole, beide 10:1, DC, Oszi-Masse an Batterie-Minus.","Single-Trigger: für Einbrüche Flanke ↓ knapp unter der Ladespannung, für Spitzen Flanke ↑ knapp über ~16 V. Triggerpunkt weit links ins Bild legen, damit der Verlauf vor dem Ereignis sichtbar bleibt.","Ereignisse provozieren: Verbraucher einzeln schalten, Motor starten, Zündung aus und ein, Kabel und Batterieklemmen bewegen (Pico-Fallstudie DAF) – nach jedem Ereignis neu scharf schalten.","Ereignis bewerten: Höhe, Dauer, Richtung. Kommt es auf CH1 und CH2 gleich (ganzes Bordnetz) oder nur auf CH1 (Leitung, Stecker, Masse zum STG)?","Nie die Batterie bei laufendem Motor abklemmen, um einen Load Dump zu „testen“."],
 gut:[
   W2({ badge:"GUT", title:"Großverbraucher ein: kurzer Einbruch", cond:"Leerlauf, Heckscheibe + Gebläse ein", vdiv:2, off:-5, tdiv:0.5, os:4,
@@ -19194,7 +19258,8 @@ signalart:"Differenziell: rezessiv beide ~2,5 V; dominant CAN_H ~3,5 V / CAN_L ~
 equip:"2-Kanal-Oszi (CAN_H + CAN_L gleichzeitig), Backprobe, DMM für 60-Ω-Abschlussmessung, Pinout/Stromlaufplan. Optional Oszi mit CAN-Dekoder.",
 anschluss:"CAN_H und CAN_L am STG- oder Diagnosestecker (Diagnosestecker: Pin 6 = CAN_H, Pin 14 = CAN_L = Diagnose-CAN; bei Gateway-Fahrzeugen nicht der Antriebs-CAN – dann am STG/Stecker im Bus messen). Fahrzeugmasse als Bezug.",
 messpunkte:"CH1: CAN_H gegen Masse · CH2: CAN_L gegen Masse (beide DC, identischer Zeitbezug). Mathekanal CH1−CH2 = Differenzsignal.",
-setup:{kanal:"CH1+CH2 (+Math)",kopp:"DC",tk:"10:1",vdiv:"1 V/div",tdiv:"20 µs/div (Frames) · 2 µs (Bit)",trig:"Flanke CH1 ~3 V",zustand:"Zündung ein / Bus aktiv"},
+setup:{kanal:"CH1+CH2 (+Math)",kopp:"DC",tk:"10:1",vdiv:"1 V/div",tdiv:"20 µs/div (Frames) · 2 µs (Bit)",trig:"Flanke ↑ CH1 ~3 V",zustand:"Zündung ein / Bus aktiv"},
+tk11:{stufe:"ok", hinweis:"Pegel 0 bis 3,5 V, im Fehlerfall bis Bordnetz: alles im 1:1-Bereich. 500 kbit/s (2 µs je Bit) ist mit 1:1 gut darstellbar; nur das Nachschwingen bei 6 MHz erscheint leicht gedämpft."},
 vorgang:["Beide Leitungen gleichzeitig erfassen; gegenläufige Spreizung um 2,5 V kontrollieren.","Rezessivpegel (~2,5 V) und Dominantpegel (3,5 / 1,5 V) prüfen.","Mathekanal CH1−CH2 bilden: dominant ~2 V, rezessiv ~0 V.","Abschluss messen: Bus schlafen lassen bzw. Batterie abklemmen, dann Widerstand CAN_H↔CAN_L → ~60 Ω (2×120 Ω parallel).","Auf Reflexionen/Überschwingen, Dauer-dominant (Buslast) und Pegel-Offsets achten."],
 gut:[
 W2({ badge:"GUT", title:"Frame 500 kbit/s: CAN_H und CAN_L", cond:"Zündung ein, Bus aktiv", tdiv:20e-6, vdiv:1, off:-2.5, os:8,
@@ -19376,7 +19441,8 @@ signalart:"Eindraht gegen Bordnetz: rezessiv ≈ Bordnetz minus ~0,7 V (Diode im
 equip:"1-Kanal-Oszi (Backprobe an der LIN-Leitung), Stromlaufplan (Master + Slaves). Optional Oszi mit LIN-Dekoder.",
 anschluss:"Eine LIN-Leitung vom Master (oft Gateway/Komfort-STG) zu den Slaves; Bordnetz + Masse als Bezug.",
 messpunkte:"CH1: LIN-Leitung gegen Masse.",
-setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"2 V/div",tdiv:"0,5 ms/div (Frame) · 50 µs (Bit)",trig:"Flanke fallend",zustand:"Zündung ein / Funktion auslösen"},
+setup:{kanal:"CH1",kopp:"DC",tk:"10:1",vdiv:"2 V/div",tdiv:"0,5 ms/div (Frame) · 50 µs (Bit)",trig:"Normal, Flanke ↓, 6 V",zustand:"Zündung ein / Funktion auslösen"},
+tk11:{stufe:"ok", hinweis:"Eindraht zwischen ca. 1 V und Bordnetz (max. ca. 14 V), 19,2 kbit/s mit absichtlich flachen Flanken: ideal für 1:1. 10:1 ist hier nicht nötig."},
 vorgang:["Frame aufzeichnen: Sync-Break (langes Low, typ. ~1 V) erkennen → Rahmenstart.","Rezessivpegel prüfen (knapp unter Ubat, ~0,7 V Diode) und Dominant (typ. ~1 V).","Sync-Feld (0x55) und folgende ID/Daten als saubere Bitfolge prüfen.","Slave-Antwort vorhanden? (Master sendet Header, Slave füllt Datenfeld).","Flanken sauber? (zu flache Flanken → Kapazität/Leitungsfehler)."],
 gut:[
 W2({ badge:"GUT", title:"Ein LIN-Rahmen: Header + Slave-Antwort", cond:"Zündung ein, Funktion aktiv, 19,2 kbit/s", tdiv:0.0005, vdiv:2, off:-3,
@@ -19533,6 +19599,7 @@ equip:"2-Kanal-Oszi, Backprobe, Stromlaufplan. Achtung: andere Pegellogik als HS
 anschluss:"CAN_H und CAN_L des Komfort-/LS-CAN am STG-/Gatewaystecker; Masse als Bezug.",
 messpunkte:"CH1: CAN_H gegen Masse · CH2: CAN_L gegen Masse.",
 setup:{kanal:"CH1+CH2",kopp:"DC",tk:"10:1",vdiv:"1 V/div",tdiv:"50 µs/div",trig:"Flanke CH1 ↑ ~2 V",zustand:"Zündung ein / Bus aktiv"},
+tk11:{stufe:"ok", hinweis:"CAN_H 0 bis 4 V, CAN_L 1 bis 5 V, im Schlaf bzw. Fehlerfall bis Bordnetz: alles 1:1-tauglich. 125 kbit/s (8 µs je Bit) mit begrenzten Flanken ist für 1:1 unkritisch."},
 vorgang:["Beide Leitungen erfassen: rezessiv CAN_H ~0 V, CAN_L ~5 V (Bus schläft: CAN_L ≈ Bordnetz, CAN_H ~0 V, keine Rahmen – normal).","Dominant: CAN_H steigt (≥ ~3,6 V, typ. ~4 V), CAN_L sinkt (≤ ~1,4 V, typ. ~1 V) – großer Hub.","Eindrahtbetrieb erkennen: Eine Ader liegt fest auf 0 V oder Bordnetz (oder beide laufen deckungsgleich), die andere schaltet weiter → Fehlerspeicher (Eindraht) lesen. Nichts brücken.","Pegelhub und Symmetrie bewerten."],
 gut:[
 W2({ badge:"GUT", title:"LS-CAN-Rahmen: großer, gegenläufiger Hub", cond:"Zündung ein, Bus aktiv, 125 kbit/s", tdiv:0.00005, vdiv:1, off:-3, os:8,
@@ -19686,6 +19753,7 @@ equip:"2-Kanal-Oszi mit hoher Abtastrate/Bandbreite, Backprobe, DMM (60 Ω). Osz
 anschluss:"CAN_H/CAN_L des FD-Busses am STG-/Diagnosestecker; Masse als Bezug.",
 messpunkte:"CH1: CAN_H · CH2: CAN_L (gegen Masse); Mathekanal CH1−CH2.",
 setup:{kanal:"CH1+CH2 (+Math)",kopp:"DC",tk:"10:1",vdiv:"1 V/div",tdiv:"10 µs/div (Frame) · 1 µs/div (BRS) · 0,5 µs/div (Datenbits)",trig:"Flanke ↑ CH1 ~3 V",zustand:"Zündung ein / Bus aktiv"},
+tk11:{stufe:"einschr", hinweis:"Pegel und 2-µs-Arbitrierung gehen mit 1:1. Datenphase 2 Mbit/s (0,5 µs) nur grob, 5 Mbit/s (200 ns) und die Nachschwing-Bewertung sind mit ≤ 10 MHz und ~100 pF Kabelkapazität nicht belastbar."},
 vorgang:["Wie HS-CAN messen: Pegel/Differenz/60-Ω-Abschluss prüfen.","Innerhalb eines Frames auf Wechsel der Bitbreite achten (Arbitrierung langsam → Datenphase schnell).","Punkte pro Bit prüfen (Fenster/5000 ≪ Bitzeit): zu wenige Punkte → falsche Bitbreiten (Aliasing); zu wenig Bandbreite → verschliffene Flanken. Datenbits bei 0,5–1 µs/div bewerten.","Reflexionen/Überschwingen auf den schnellen Flanken bewerten."],
 gut:[
 W2({ badge:"GUT", title:"FD-Frame: 500 kbit/s → 2 Mbit/s", cond:"Zündung ein, Bus aktiv", tdiv:10e-6, vdiv:1, off:-2, os:8,
@@ -19836,6 +19904,7 @@ equip:"2-Kanal-Oszi (BP und BM gleichzeitig, Mathe CH1−CH2), zwei 10:1-Tastkö
 anschluss:"BP und BM an einem zugänglichen Punkt im Netz laut Stromlaufplan (Pico), meist am STG-Stecker. Tastkopfmassen an Batterie-Minus oder gute Fahrzeugmasse (Pico). Pinbelegung nur laut Herstellerunterlagen. Je nach Fahrzeug zwei Kanäle (A und B) mit eigenem Adernpaar; Bus- oder Sterntopologie mit aktivem Sternkoppler.",
 messpunkte:"CH1: BP gegen Masse · CH2: BM gegen Masse (beide DC, 10:1, gleicher Zeitbezug). Mathekanal CH1−CH2 = Differenz BP − BM. Die gemeinsame Masse der OWON-Kanäle stört nicht, weil beide gegen Fahrzeugmasse messen.",
 setup:{kanal:"CH1 BP + CH2 BM (+Math CH1−CH2)",kopp:"DC",tk:"10:1",vdiv:"0,5 V/div (Pegel) · 1 V/div (Überblick)",tdiv:"5 µs/div (Rahmen) · 0,2 µs/div (Bits) · 0,1 ms/div (Slots)",trig:"Flanke ↑ CH1 (BP) ~2,7 V",zustand:"Zündung ein, Netzwerk wach (Bus aktiv)"},
+tk11:{stufe:"einschr", hinweis:"Ruhe- und Datenpegel (1,8 bis 3,2 V), Spiegelbild und Kurzschlüsse sind mit 1:1 prüfbar. 100-ns-Bits, Flanken, Nachschwingen und Störnadeln sind mit ≤ 10 MHz nur verwaschen – Abschluss per DMM bestätigen."},
 vorgang:["Stromlaufplan: Messpunkt, Kanal (A/B) und Lage der Abschlüsse suchen. Zündung ein – das Netz muss wach sein.","CH1 an BP, CH2 an BM (Backprobe, 10:1), beide Massen an Fahrzeugmasse. 5 µs/div, Trigger ↑ ~2,7 V auf CH1 (Pico-Einstellung).","Ruhe: beide Adern ~2,5 V übereinander. Im Rahmen: BP und BM spiegelbildlich um 2,5 V, Flanken gleichzeitig (Pico-Prüfkriterium).","Mathekanal CH1−CH2: Data_1 positiv, Data_0 negativ, Ruhe ~0 V. Der Betrag muss deutlich über den Empfängerschwellen liegen (höchstens ±0,3 V, TJA1083G).","Zoom 0,2 µs/div: 1 Bit = 100 ns, Byte-Startsequenz 200 ns (Pico). Am VDS1022I liegen nur ~10 Punkte in einem Bit – Bitzeiten nur grob.","Abschluss: Batterie ab (Ruhezeit des Netzes laut Hersteller abwarten), Widerstand BP–BM messen: Pico-Beispiel 40 bzw. 55 Ω (je Ende 80–110 Ω). Deutlich mehr = Abschluss fehlt, ~0 Ω = Kurzschluss BP–BM."],
 gut:[
 W2({ badge:"GUT", title:"Ein Rahmen: BP und BM spiegelbildlich", cond:"Zündung ein, Netz aktiv, 10 Mbit/s", tdiv:5e-6, vdiv:0.5, off:-3, os:16,
@@ -20012,6 +20081,7 @@ equip:"1-Kanal-Oszi, 10:1-Tastkopf (Pico misst mit 1:1 im ±20-V-Bereich), OBD-B
 anschluss:"OBD-Stecker (SAE J1962): Pin 7 = K-Leitung, Pin 15 = L-Leitung (optional), Pin 4 = Fahrzeugmasse, Pin 5 = Signalmasse, Pin 16 = Batterieplus (Wikipedia). Herstellereigene Diagnoseleitungen nur laut Stromlaufplan.",
 messpunkte:"CH1: K-Leitung (Pin 7) gegen Pin 4/5 bzw. Batterie-Minus. Tester gleichzeitig angeschlossen – Breakout-Box zwischen OBD-Stecker und Tester (Pico-Anschlussbild).",
 setup:{kanal:"CH1 (K-Leitung, OBD-Pin 7)",kopp:"DC",tk:"10:1",vdiv:"2 V/div",tdiv:"50 ms/div (Überblick) · 0,2 ms/div (Bits) · 0,5 s/div (5-Baud-Reizung)",trig:"Flanke ↓, ~6 V",zustand:"Zündung ein, Motor aus, Tester verbunden und Diagnose gestartet"},
+tk11:{stufe:"ok", hinweis:"Ruhe auf Batteriespannung (ca. 13 V), Low 0 bis 1 V, 10,4 kBaud: alles 1:1-tauglich – die Karte nennt selbst, dass Pico mit 1:1 im ±20-V-Bereich misst. 10:1 ist nicht nötig."},
 vorgang:["Breakout-Box zwischen OBD-Stecker und Tester, CH1 an Pin 7, Masse an Pin 4/5 oder Batterie-Minus (Pico-Anschlussbild).","Zündung ein, noch ohne Diagnose: Die Leitung ruht high nahe Batteriespannung – ohne Tester ist kein Verkehr normal.","Diagnose starten und die Reizung erfassen (0,5 s/div bzw. 20 ms/div): 5 Baud (Adresse 33h, ~2 s) oder Fast Init (Weckmuster ~50 ms), danach Antwort des STG (Pico).","Laufender Verkehr (50 ms/div, Peak-Detect): Anfrage und Antwort wechseln sich ab; Low-Pegel jedes Senders weit unter, Ruhe weit über den Empfängerschwellen.","Zoom 0,2 ms/div: Bitzeit ~96 µs → 10,4 kBaud per Cursor, am besten am Sync-Byte 55h.","Keine Antwort: Versorgung/Masse des STG, Leitung Pin 7 → STG durchmessen; Zündung aus: Pin 7 gegen Masse und Plus auf Schluss prüfen."],
 gut:[
 W2({ badge:"GUT", title:"Anfrage und Antwort im Wechsel", cond:"Zündung ein, Tester fragt Live-Daten ab", tdiv:0.05, vdiv:2, off:-3, os:32,
@@ -20146,6 +20216,7 @@ equip:"1-Kanal-Oszi mit CAT-bewertetem aktivem Differenztastkopf an CH1 (Pico: T
 anschluss:"CP gegen PE. Im Fahrzeug: Differenztastkopf + an die CP-Leitung am Steckverbinder zwischen Ladedose und Bordlader laut Herstellerunterlagen, − an Karosserie bzw. 12-V-Batterie-Minus (Pico); das ist PE = Fahrzeugmasse. Am Prüfadapter: 10:1-Tastkopf an die CP-Buchse, Masseklemme an die PE-Buchse – nirgends sonst. Pinbelegung der Ladedose nur laut Herstellerunterlagen. Phasen- und N-Kontakte nie berühren oder messen.",
 messpunkte:"CH1: CP gegen PE bzw. Fahrzeugmasse (DC) – im Fahrzeug über Differenztastkopf (Teilung am Oszi einstellen oder umrechnen), am Prüfadapter mit 10:1. CH2 frei lassen: Beide OWON-Kanäle haben dieselbe Masse – eine zweite Masseklemme darf nur an denselben Punkt (PE/Fahrzeugmasse). An der Fahrzeugseite misst man ohne Stecker 0 V, an der Ladeeinrichtung 12 V (Pico).",
 setup:{kanal:"CH1: CP gegen PE",kopp:"DC",tk:"Differenztastkopf CAT-bewertet, z. B. Pico 1:20 (in der App 10:1 einstellen und Werte verdoppeln); normaler 10:1-Tastkopf nur an der Prüfadapter-Buchse",vdiv:"5 V/div",tdiv:"200 µs/div (Pulse) · 2 s/div, Roll (Ablauf beim Stecken)",trig:"Flanke ↑, 0 V",zustand:"Fahrzeug an Ladeeinrichtung gesteckt, Laden läuft (Zustand C), Akku nicht voll"},
+tk11:{stufe:"nein", hinweis:"CP führt ±12 V, elektrisch wäre 1:1 passend – aber die Karte lässt im Fahrzeug nur einen CAT-bewerteten Differenztastkopf zu, am Prüfadapter nur einen 10:1-Tastkopf. Eine 1:1-Leitung ohne CAT-Angabe ist hier nicht vorgesehen."},
 vorgang:["Nur mit HV-/Elektrofachqualifikation, Herstellerunterlagen und PSA (Pico). Pico prüft mit einem Ladeziegel (Mode 2); bei anderen Ladeeinrichtungen Herstellerunterlagen beachten. Laptop im Akkubetrieb (ohne Netzteil).","Im Fahrzeug nur mit CAT-bewertetem Differenztastkopf an einer CAT-bewerteten Verbindung (Pico); ohne diese Ausrüstung nur am Prüfadapter (CP-/PE-Buchse) messen.","Akku darf nicht voll sein – sonst fordert das Fahrzeug keinen Strom an (Pico). Oszi an CP gegen PE (Bezug: PE bzw. Karosserie/12-V-Minus), 5 V/div, Roll-Modus 2 s/div.","Ladekabel stecken: Die Fahrzeugseite springt von 0 V auf ~9 V, kurz darauf startet das Rechteck +9/−12 V, später fällt die Plus-Spitze auf ~6 V (Pico: Wechsel B→C ist immer da; Dauer herstellerabhängig, Beispiel ~6 s).","Zoom 200 µs/div: Periode 1 ms (1 kHz). Plus-Spitze = Zustand, Minus-Spitze muss ~−12 V sein (Diode). Pulsbreite messen → Tastgrad → freigegebener Strom (16 A ≙ 26,7 %, 32 A ≙ 53,3 %).","Freigegebenen Strom mit der Einstellung der Ladeeinrichtung vergleichen; was wirklich fließt, zeigt nur die Stromzange am Ladeeingang (Pico).","Lädt es nicht: Ladezustand prüfen, PP–PE-Widerstand (Kabelcodierung) und Kabel/Stecker samt Temperaturschalter – nur spannungsfrei (Pico)."],
 gut:[
 W2({ badge:"GUT", title:"Laden (Zustand C), 16 A: +6 / −12 V", cond:"Laden läuft, Ladeeinrichtung 16 A, CP gegen PE", tdiv:0.0002, vdiv:5, off:0,
@@ -20295,6 +20366,7 @@ equip:"1-Kanal-Oszi, 10:1-Tastkopf, OBD-Breakout-Box bzw. Backprobe-Nadeln, Stro
 anschluss:"SW-CAN-Leitung am Diagnosestecker (GM/Saab: Pin 1, Saab WIS; Pico-Forum) oder am Steuergerätestecker laut Stromlaufplan. Bezug: Batterie-Minus bzw. gute Fahrzeugmasse; Massepins laut Plan.",
 messpunkte:"CH1: SW-CAN gegen Batterie-Minus (DC, 10:1). Optional CH2: Masse eines verdächtigen Steuergeräts gegen Batterie-Minus (Masseversatz) – beide OWON-Kanäle haben dieselbe Masse, also beide Klemmen an Batterie-Minus.",
 setup:{kanal:"CH1: SW-CAN gegen Masse",kopp:"DC",tk:"10:1",vdiv:"1 V/div (Normal) · 2 V/div (Weckrahmen)",tdiv:"500 µs/div (Rahmen) · 20 µs/div (Bits) · 0,5 s/div (Busruhe)",trig:"Flanke ↑, 2 V",zustand:"Zündung ein, Bus aktiv (Normalbetrieb 33,33 kbit/s)"},
+tk11:{stufe:"ok", hinweis:"Ruhe 0 V, dominant ca. 5 V, Weckrahmen 10 bis 12,5 V, Fehlerfall Bordnetz: alles innerhalb ±20 V. 33 kbit/s mit geformten Flanken (8 bis 10 µs) ist für 1:1 unkritisch."},
 vorgang:["Stromlaufplan: SW-CAN-Leitung, Teilnehmer und Verteiler (Trennkamm) suchen. Zündung ein.","CH1 an Pin 1 bzw. SW-CAN, 1 V/div, 500 µs/div, Trigger ↑ 2 V: Rahmen mit 0 V ↔ ~5 V.","Pegel bewerten: rezessiv ≤ 0,2 V, dominant 4,4–5,1 V (onsemi). Weckrahmen (herstellerabhängig, beim Aufwecken des Netzes) mit ~10–12 V – dafür 2 V/div.","Zoom 20 µs/div: 1 Bit = 30 µs (33,33 kbit/s). Anstieg weich als halbe Sinuswelle (~8–10 µs, onsemi), Abfall erst geformt, dann RC-Kurve.","Kommunikationsfehler: Teilnehmer nacheinander abtrennen (Stecker oder Trennkamm am Verteiler), bis das Bild sauber ist (Praxisfall Buick: Funkempfänger verfälschte den Bus).","Busruhe: Zündung aus, Fahrzeug verriegeln – nach der Nachlaufzeit (herstellerabhängig) muss die Leitung auf 0 V bleiben."],
 gut:[
 W2({ badge:"GUT", title:"Ein Rahmen, 33,3 kbit/s: 0 V ↔ ~4,7 V", cond:"Zündung ein, Bus aktiv", tdiv:0.0005, vdiv:1, off:-3, os:8,

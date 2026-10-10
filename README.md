@@ -58,7 +58,10 @@ Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
     Pumpe, Glühkerzen, Starter, Generator, Lüfter, Relais, CAN/CAN-FD/LIN/CAN-LS) und 18 neue Karten:
     Ruhestrom, Spannungsfall, 5-V-Referenz, 48-V-Bordnetz, DC/DC-Wandler (EV, nur 12-V-Seite), Transienten,
     Lampen-PWM, CR-Druckregelventil und Zumesseinheit, Benzin-Mengensteuerventil, VVT, Klima-Regelventil,
-    LPG-Ventil, AdBlue-Dosierventil, FlexRay, K-Leitung, Single-Wire-CAN, Control Pilot (AC-Laden).
+    LPG-Ventil, AdBlue-Dosierventil, FlexRay, K-Leitung, Single-Wire-CAN, Control Pilot (AC-Laden);
+  - V13.1: unabhängige Gesamtkontrolle aller 72 Karten (30 Korrekturen) und je Karte die Einstufung
+    „mit 1:1-Tastkopf: voll messbar / eingeschränkt / nicht messbar“ (VDS1022I: 1:1 bis 40 Vss, 10:1 bis 400 V).
+    Im Live-Modus schaltet „nur 1:1-Tastköpfe vorhanden“ das Auto-Setup auf 1:1.
   Achsen in echten Einheiten, Sollbild gestrichelt in jedem Fehlerbild, Quellen je Karte.
   Jedes Bild ist maschinell nachgemessen (`expect`) und von unabhängigen Prüfern abgenommen.
 - **Fahrzeugspezifische Signalbilder:** je Karte umschaltbare Varianten
@@ -83,7 +86,7 @@ node tools/validate.js
 Im Browser: `index.html?validate` öffnen und die Konsole prüfen.
 
 Nach Änderungen an gecachten Dateien die Cache-Version in `service-worker.js`
-(Konstante `CACHE_NAME`, Schema `kfz-oszi-pwa-signed-…-vN`, aktuell **…-v13**)
+(Konstante `CACHE_NAME`, Schema `kfz-oszi-pwa-signed-…-vN`, aktuell **…-v13.1**)
 erhöhen **und** den Footer „Stand vN" in `index.html` anpassen — sonst
 erscheint bei installierten Clients kein „Update verfügbar"-Banner.
 

@@ -166,11 +166,18 @@ vorgang:["…","…"],
 gut:[ W2({ … }), … ],
 schlecht:[ W2({ … }), … ],
 ursachen:["…"], loesungen:["…"], gegen:"…", plaus:"…", dtc:"…", irrtuemer:["…"], tipps:["…"],
-warn:"…", simpel:"…", profi:"…", check10:"…", wannschlecht:"…", wannok:"…", next:"…"
+warn:"…", simpel:"…", profi:"…", check10:"…", wannschlecht:"…", wannok:"…", next:"…",
+tk11:{stufe:"ok|einschr|nein", hinweis:"…"}
 };
 ```
 
 - **Erste Zeile** im Objekt: genau `id:"<id>", kat:"…", sig:"…", diff:N, sys:"…",` (eine Zeile, beginnt mit `id:`).
+- **`tk11` (Messbarkeit mit 1:1-Tastkopf, seit V13.1, Pflicht für neue Karten):** VDS1022I verträgt mit 1:1 max. 40 Vss
+  (≈ ±20 V inkl. Gleichanteil), mit 10:1 400 Vss. `stufe` = `ok` (alle Messungen der Karte innerhalb ±20 V), `einschr`
+  (Hauptmessung geht, einzelne Messpunkte/Bilder nicht – im `hinweis` nennen, welche und die Alternative, z. B. Strom per
+  Zange) oder `nein` (Hauptmessung nicht möglich oder Eingang gefährdet – Grund und was trotzdem geht). `hinweis` ≤ 240
+  Zeichen, Werkstattsprache, ohne `"`. Die Validierung warnt, wenn das Feld fehlt. Tipp: 5-V-Sensoren, Busse und
+  Millivolt-Signale sind mit 1:1 sogar besser (mehr Auflösung) – das darf im Hinweis stehen.
 - **Alle 28 Felder sind Pflicht**, mit diesen Typen (wie bei jeder bestehenden Karte):
   - Text: `name aufgabe signalart equip anschluss messpunkte gegen plaus dtc warn simpel profi check10 wannschlecht wannok next`
   - Liste von Texten: `vorgang ursachen loesungen irrtuemer tipps`

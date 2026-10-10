@@ -11,7 +11,11 @@ Eine neue Sitzung beginnt mit: „Lies docs/STATUS.md und mach weiter.“
 | V12 | 16 neue Sensorkarten, komplett mit Text, 210 Bilder. Kartenschema-Prüfung (28 Felder) in `validateKompendium`. Atlas-Gruppen „Fahrwerk, Komfort & Assistenz“ und „Füllstand & Medien“. Live-Demo erkennt Abläufe. |
 | V13 (Schritt 2) | 2a: 18 Aktor-, Zündungs- und Buskarten auf W2 umgebaut (238 Bilder), 132 geprüfte Textkorrekturen. 2b: 18 neue Karten (213 Bilder) für Bordnetz (Ruhestrom, Spannungsfall, 5-V-Referenz, 48 V, DC/DC, Transienten, Lampen-PWM), Ventile (CR-DRV, ZME, Benzin-MSV, VVT, Klima, LPG, AdBlue) und Bus (FlexRay, K-Leitung, SW-CAN, Control Pilot). Kartenkategorien `einspr` und `elektrik`. Live-Demo: Abläufe über zwei Fenster, Tabellenmodelle in Schleife, Triggerpegel in A bei Stromkarten. |
 
+| V13.1 | Unabhängige Gesamtkontrolle (4 Prüfer je 18 Karten + Herstellerdaten VDS1022I): 1 Blocker (Relais: 500-V-Spitzen über der 400-V-Grenze), 29 Kleinbefunde korrigiert (setup.vdiv passend zum Normalbild, Triggerangaben, Kanalangaben, Massehinweise, Zahlen in Bildtexten). Neues Kartenfeld `tk11` {stufe ok|einschr|nein, hinweis}: Messbarkeit mit 1:1-Tastkopf (54 ok, 12 eingeschränkt, 6 nicht: inj-di, inj-piezo, zuend-prim, bordnetz-48v, transienten, cp-laden). Live-Modus: Haken „nur 1:1-Tastköpfe vorhanden“ (Auto-Setup stellt dann nie 10:1 ein). |
+
 Stand der App: 72 Karten, alle mit W2-Bildern (954 Bilder), keine alten Bilder mehr. 131 Signalmodelle.
+Gerätegrenzen (OWON-Quellen, geprüft): 1:1 max. 40 Vss (≈ ±20 V), 10:1 max. 400 Vss, 5 mV–5 V/div, 1 MΩ, 25 MHz, 100 MS/s, 5000 Punkte;
+mitgelieferte Tastköpfe haben einen 1X/10X-Schalter.
 Katalog: 18 oszirelevante Signale noch offen.
 
 ## Bekannte Grenzen und offene Kleinigkeiten
@@ -51,6 +55,8 @@ Katalog: 18 oszirelevante Signale noch offen.
 ## Regeln
 
 - Nichts erfinden: jede Zahl belegt (QUELLEN je Karte) oder per `expect` nachgemessen; sonst „typ./herstellerabhängig“.
+- Jede neue Karte braucht `tk11` (Messbarkeit mit 1:1-Tastkopf, Grenze ±20 V am Eingang); `setup.vdiv`/`tdiv`
+  (erstgelesene Werte) müssen zum Normalbild gut[0] passen, `setup.trig` braucht Pfeil und Pegel.
 - Nie an Airbag-, PSI5- oder Pyrotechnik-Kreisen messen. Hochvolt nur Niedervolt-Seite, mit Qualifikationshinweis.
 - Signatur nicht verändern. Keine Tokens/Secrets. Nicht nach main pushen ohne ausdrückliche Erlaubnis.
 - Commits: Autor Roy Sperlich, deutschsprachige Meldungen.
