@@ -21,6 +21,11 @@ Katalog: 11 oszirelevante Signale noch offen (davon 7 Hochvolt – ausgeschlosse
 
 ## Bekannte Grenzen und offene Kleinigkeiten
 
+- Live mit Gerät: Roy meldete „Signale laufen kurz an und bleiben stehen“. Ursache (per Lib-Quelle belegt,
+  per Simulation mit nachgebildetem vds1022-Modul bestätigt): `set_trigger` der vds1022-Lib hat den Standard
+  `sweep=ONCE`; die Bridge übergab keinen Sweep → Einzelschuss, `fetch_iter` wartet danach auf einen neuen
+  Trigger. Fix in `bridge.py`: `sweep=AUTO` (mit Rückfall für alte Lib ohne Parameter). **Hardwaretest am
+  VDS1022I steht noch aus (Roy).** Falls es damit nicht behoben ist: Bridge-Log ansehen.
 - Live-Demo (Mock): Signale mit sehr kurzen Pulsen bei langer Zeitbasis (Keyless, PDC, Ruhestrom-Pulse,
   K-Leitung bei 50 ms/div) werden zu grob abgetastet, die Übereinstimmung ist dort niedrig. Ruhestrom
   (20 s/div) liegt außerhalb der Live-Zeitbasis. Kein Kartenfehler.

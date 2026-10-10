@@ -19,6 +19,9 @@ Kommandos vom Client (JSON):
   {"cmd":"timebase","secdiv":0.001}
   {"cmd":"trigger","ch":1,"edge":"rise","level":1.4}
   {"cmd":"run"} / {"cmd":"stop"} / {"cmd":"single"}
+  Das Geraet laeuft immer im Sweep AUTO (frei bzw. getriggert); run/stop/single
+  entscheidet nur die Bridge, welche Frames weitergehen. single = naechstes
+  vollstaendiges Bild. Die Anzeige triggert in der App per Software.
 
 Voraussetzungen:
   pip install websockets numpy
@@ -60,7 +63,7 @@ NS = {}
 try:
     import vds1022 as _v
     VDS = _v.VDS1022
-    for k in ("CH1", "CH2", "EDGE", "RISE", "FALL", "DC", "AC"):
+    for k in ("CH1", "CH2", "EDGE", "RISE", "FALL", "DC", "AC", "AUTO", "NORMAL", "ONCE"):
         if hasattr(_v, k):
             NS[k] = getattr(_v, k)
 except Exception as e:  # Modul fehlt oder USB-Backend defekt
@@ -187,15 +190,22 @@ def apply_settings(dev):
     except Exception as e:
         log.warning("set_sampling: %s", e)
     t = SET["trigger"]
+    # Sweep IMMER "AUTO": der Standard der vds1022-Lib ist sweep=ONCE (Einzelschuss).
+    # Damit nimmt das Geraet nach jedem Befehl genau EIN Bild auf und wartet dann
+    # auf einen neuen Trigger -> die Kurve laeuft kurz an und bleibt stehen.
+    # Mit AUTO laeuft das Geraet frei (bei Trigger-Ereignis getriggert, sonst frei).
+    # Run/Stop/Single uebernimmt die Bridge selbst (RUNNING/SINGLE), die Anzeige
+    # triggert in der App per Software - so kann kein Befehl im Trigger-Wartezustand
+    # haengen bleiben (in NORMAL/ONCE blockiert fetch_iter bis zum Trigger).
+    args = (NS.get("CH%d" % int(t["ch"]), int(t["ch"])), NS.get("EDGE", "edge"),
+            NS.get("RISE" if t["edge"] == "rise" else "FALL"))
+    kw = {"position": 1 / 2, "level": "%gv" % float(t["level"])}
     try:
-        edge = NS.get("RISE" if t["edge"] == "rise" else "FALL")
-        dev.set_trigger(
-            NS.get("CH%d" % int(t["ch"]), int(t["ch"])),
-            NS.get("EDGE", "edge"),
-            edge,
-            position=1 / 2,
-            level="%gv" % float(t["level"]),
-        )
+        try:
+            dev.set_trigger(*args, sweep=NS.get("AUTO", 0), **kw)
+        except TypeError:  # alte Lib ohne sweep-Parameter
+            dev.set_trigger(*args, **kw)
+            log.warning("set_trigger ohne sweep-Parameter (alte vds1022-Lib) - bei stehender Kurve Lib aktualisieren")
     except Exception as e:
         log.warning("set_trigger: %s", e)
 

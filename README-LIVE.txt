@@ -28,6 +28,16 @@ PROTOKOLL (bridge.py):
   RTT > 100 ms, erzwingbar mit --binary on. Kommandos: channel,
   timebase, trigger, run/stop/single. Reconnect-sicher: Gerät ab-/
   anstecken wird als Status gemeldet, Server läuft weiter.
+  Das Gerät läuft immer im Sweep AUTO (ab V13.2): Der Standard der
+  vds1022-Lib ist ONCE (Einzelschuss) - damit nahm das Gerät nach jedem
+  Befehl nur ein Bild auf und die Kurve blieb stehen. Run/Stop/Single
+  entscheidet die Bridge (Single = nächstes vollständiges Bild), die
+  Anzeige triggert in der App per Software (Trigger-Pegel/Flanke).
+
+STÖRUNG "Kurve läuft kurz an und bleibt stehen":
+  bridge.py aktualisieren (Sweep AUTO, s. o.). Bleibt es dabei: Log der
+  Bridge prüfen (Warnung "set_trigger ohne sweep-Parameter" = alte Lib,
+  dann vds1022 aus dem Repo neu installieren).
 
 TESTS:
   node tests/live-logic.test.js
