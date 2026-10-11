@@ -1,6 +1,6 @@
 # Projektstatus und Übergabe
 
-Stand: Oktober 2026, Feature-Branch `claude/kfz-oszi-kompendium-vwhkd3` (main = V13, Stand 09.10.2026; Branch = V13.2; nach main nur mit ausdrücklicher Erlaubnis).
+Stand: Oktober 2026, Feature-Branch `claude/kfz-oszi-kompendium-vwhkd3` (main = V13.2, Stand 11.10.2026, per Fast-Forward auf 472c8e2; nach main nur mit ausdrücklicher Erlaubnis von Roy).
 Eine neue Sitzung beginnt mit: „Lies docs/STATUS.md und mach weiter.“
 
 ## Erledigt
@@ -38,6 +38,10 @@ Katalog: 11 oszirelevante Signale noch offen (davon 7 Hochvolt – ausgeschlosse
   multiplizierte bei 10:1 sonst doppelt), `probeUi` zur Info. **Hardwaretest offen.**
   Wunsch Roy umgesetzt: vertikale Positionsschieber neben dem Schirm (CH1 links, CH2 rechts, ±4 div,
   Doppelklick = Mitte), 0-V-Marken in Kanalfarbe am linken Rand; Zahlenfeld und Schieber synchron.
+  **Hardwaretest aller Live-Änderungen (Sweep, eine Aufnahme je Fenster, Messbereich, Schieber): Roy, Samstag
+  18.10.2026.** Bis dahin gilt: simuliert geprüft, am Gerät offen.
+- Schritt 3b (Buskarten ethernet-t1, j1850, can-xl, pp-laden) in Arbeit; Vorarbeit der Autoren liegt im
+  Scratchpad der Sitzung (Lauf wurde durch die Nutzungsgrenze bzw. Stopp unterbrochen).
 - Live-Demo (Mock): Signale mit sehr kurzen Pulsen bei langer Zeitbasis (Keyless, PDC, Ruhestrom-Pulse,
   K-Leitung bei 50 ms/div) werden zu grob abgetastet, die Übereinstimmung ist dort niedrig. Ruhestrom
   (20 s/div) liegt außerhalb der Live-Zeitbasis. Kein Kartenfehler.
