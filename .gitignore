@@ -1,2 +1,7 @@
 node_modules/
 *.log
+__pycache__/
+*.pyc
+*.zip
+# Deploy-Ausgabe (wird aus den Public-Dateien erzeugt, siehe build-dist.sh)
+dist/

@@ -19,9 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build public dist/ (Whitelist – ohne Backend/Doku/Prompt)
+        run: bash build-dist.sh
       - name: Deploy static site to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy . --project-name=kfz-oszi-kompendium
+          command: pages deploy dist --project-name=kfz-oszi-kompendium
