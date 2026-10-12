@@ -68,6 +68,9 @@ Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
   - V13.3: 4 neue Buskarten: Automotive Ethernet (10BASE-T1S; 100BASE-T1 nur als Abgrenzung), SAE J1850
     (VPW/PWM), CAN XL (Arbitrierung messbar, Datenphase als Band), Proximity Pilot (AC-Laden). Live-Modus:
     Sweep AUTO, eine Geräte-Aufnahme je Fenster, Messbereich V/div × 10, Positionsschieber am Schirm.
+  - V13.4: die 27 Erklärbilder der Theoriekapitel (Grundlagen, Bussysteme, 5-V-Referenz, Masse, Komplex)
+    und die 18 Bilder der Fehlermuster-Datenbank ebenfalls aus Signalmodellen (W2), mit Quellen und
+    nachgemessenen Werten; die alte Bild-Engine ist entfernt. Werkzeuge: FIGPATCH/FDBPATCH.
   Achsen in echten Einheiten, Sollbild gestrichelt in jedem Fehlerbild, Quellen je Karte.
   Jedes Bild ist maschinell nachgemessen (`expect`) und von unabhängigen Prüfern abgenommen.
 - **Fahrzeugspezifische Signalbilder:** je Karte umschaltbare Varianten
@@ -92,7 +95,7 @@ node tools/validate.js
 Im Browser: `index.html?validate` öffnen und die Konsole prüfen.
 
 Nach Änderungen an gecachten Dateien die Cache-Version in `service-worker.js`
-(Konstante `CACHE_NAME`, Schema `kfz-oszi-pwa-signed-…-vN`, aktuell **…-v13.3**)
+(Konstante `CACHE_NAME`, Schema `kfz-oszi-pwa-signed-…-vN`, aktuell **…-v13.4**)
 erhöhen **und** den Footer „Stand vN" in `index.html` anpassen — sonst
 erscheint bei installierten Clients kein „Update verfügbar"-Banner.
 

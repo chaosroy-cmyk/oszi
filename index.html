@@ -743,7 +743,7 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
 <div id="svg-can-f4"></div>
 <ul>
 <li><b>Kurzschluss CAN-H ↔ CAN-L:</b> beide Leitungen kleben aufeinander (~2,5 V), keine Differenz, Bus tot, meist Vielzahl „Kommunikation"-DTCs in allen Steuergeräten.</li>
-<li><b>Kurzschluss gegen Masse:</b> betroffene Leitung liegt auf 0 V, die andere versucht weiter zu arbeiten; Differenz verzerrt; Bus meist tot (High-Speed-CAN ist nicht eindrahtfähig).</li>
+<li><b>Kurzschluss gegen Masse:</b> CAN_H gegen Masse – beide Adern liegen nahe 0 V (CAN_L folgt über den 60-Ω-Abschluss), Bus tot. CAN_L gegen Masse – CAN_H schaltet mit größerem Hub weiter (0 ↔ ~3 V), Bus meist gestört bis tot (TI TCAN10xx Bus-Failure, Fälle 4/5; High-Speed-CAN ist nicht eindrahtfähig).</li>
 <li><b>Kurzschluss gegen Plus:</b> Leitung klebt auf ~12 V.</li>
 <li><b>Unterbrechung:</b> hinter der Bruchstelle keine Signale; vor der Bruchstelle ggf. Reflexionen/Treppen; 60-Ω-Messung wird je nach Messort 120 Ω.</li>
 <li><b>Terminierung fehlt:</b> Überschwinger/Klingeln auf den Flanken (Reflexionen am offenen Ende), Amplitude wirkt zu hoch, sporadische Fehler bei langen Leitungen.</li>
@@ -1359,7 +1359,7 @@ Perfekt geometrische Signale sind im Fahrzeug selten realistisch.
 </div>
 <button class="up" id="upbtn" title="Nach oben">▲</button>
 <footer>
-<p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-PWA · Stand v13.3 (82 Messkarten · 1087 quellenbelegte Signalbilder · 1:1-Tastkopf-Hinweise · referenzgeprüft · Live-Modus · Auto-Setup · Auto-Deploy) · Alle Signalbilder schematisch.</p>
+<p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-PWA · Stand v13.4 (82 Messkarten · 1087 quellenbelegte Signalbilder · 45 Erklär- und Fehlermusterbilder · 1:1-Tastkopf-Hinweise · referenzgeprüft · Live-Modus · Auto-Setup · Auto-Deploy) · Alle Signalbilder schematisch.</p>
 <p>Richtwerte können je nach Hersteller, System, Motorsteuergerät und Messgerät abweichen. Herstellerdaten und Stromlaufplan haben Vorrang.</p>
 <p>Sicherheit zuerst: keine Messungen an Airbag-/PSI5-Zündkreisen, HV-Systemen nur mit Qualifikation.</p>
 <div class="owner-signature">
@@ -1378,288 +1378,7 @@ Perfekt geometrische Signale sind im Fahrzeug selten realistisch.
    ===================================================== */
 "use strict";
 
-/* ---------- 1) WAVE-ENGINE ---------- */
-var PX = {x0:60, x1:584, y0:18, y1:258, w:600, h:330};
-
-function genF(f, n){
-  n = n || 900; var pts = [];
-  for (var i=0; i<=n; i++){ var t=i/n; pts.push([t, f(t)]); }
-  return pts;
-}
-
-/* Generatoren: liefern f(t) -> Wert in "Signal-Einheiten" (V, A, kV) */
-var G = {
-  flat: function(o){ var v=o.v||0; return function(){ return v; }; },
-
-  /* induktiv (KW-Sensor): Sinuszähne, optional fehlender Zahn, Amplitudenverlauf */
-  ind: function(o){
-    var teeth=o.teeth||18, amp=o.amp||3, missAt=o.miss, grow=o.grow||0;
-    return function(t){
-      var ph=t*teeth, k=Math.floor(ph);
-      if(missAt!==undefined){
-        if(k===missAt||k===missAt+1) {
-          /* Lücke: 2 Zähne fehlen (z.B. 60-2-Geberrad) */
-          return 0;
-        }
-      }
-      var a=amp*(1+grow*t);
-      if(missAt!==undefined && (k===missAt-1||k===missAt+2)) a*=1.3;
-      return a*Math.sin(ph*2*Math.PI);
-    };
-  },
-
-  /* Rechteck / Hall / PWM */
-  sq: function(o){
-    var cyc=o.cyc||8, duty=(o.duty!==undefined?o.duty:0.5), hi=(o.hi!==undefined?o.hi:5), lo=o.lo||0, missAt=o.miss;
-    return function(t){
-      var ph=t*cyc, k=Math.floor(ph), fr=ph-k;
-      if(missAt!==undefined && k===missAt) return lo;
-      return fr<duty?hi:lo;
-    };
-  },
-
-  /* analog über Stützpunkte [[t,v],...] linear interpoliert */
-  ana: function(o){
-    var p=o.pts;
-    return function(t){
-      if(t<=p[0][0]) return p[0][1];
-      for(var i=1;i<p.length;i++){
-        if(t<=p[i][0]){
-          var a=p[i-1], b=p[i], f=(t-a[0])/(b[0]-a[0]||1e-9);
-          return a[1]+(b[1]-a[1])*f;
-        }
-      }
-      return p[p.length-1][1];
-    };
-  },
-
-  sin: function(o){
-    var f=o.f||3, amp=o.amp||1, off=o.off||0;
-    return function(t){ return off+amp*Math.sin(t*f*2*Math.PI); };
-  },
-
-  /* Lambda-Sprungsonde: weiches Pendeln 0,1–0,9 V */
-  lam: function(o){
-    var f=o.f||1.2, lo=(o.lo!==undefined?o.lo:0.1), hi=(o.hi!==undefined?o.hi:0.9), tr=o.traege||6;
-    return function(t){
-      var s=Math.sin(t*f*2*Math.PI+ (o.phase||0));
-      var q=Math.tanh(s*tr);
-      return lo+(hi-lo)*(q+1)/2;
-    };
-  },
-
-  /* Injektor-Spannungsbild (Saugrohr): Ubat -> ~0,8 V -> Abschaltspitze -> Schließhöcker */
-  injU: function(o){
-    var vb=o.vb||13.8, on=o.on||0.30, off=o.off||0.55, pk=o.pk||64;
-    return function(t){
-      if(t<on) return vb;
-      if(t<off) return 0.8;
-      var d=t-off;
-      var spike=(pk-vb)*Math.exp(-d*60);
-      var buck=-2.2*Math.exp(-Math.pow((d-0.12)/0.03,2));
-      return vb+spike+buck;
-    };
-  },
-
-  /* Zündspule primär: Dwell ~1–3 V, Abschaltspitze ~340 V, Brennlinie, Ausschwingen */
-  prim: function(o){
-    var vb=o.vb||13.8, dw0=o.dw0||0.25, dw1=o.dw1||0.50, pk=o.pk||340, burn=o.burn||38, bEnd=o.bEnd||0.78, noSpark=o.noSpark;
-    return function(t){
-      if(t<dw0) return vb;
-      if(t<dw1){ var f=(t-dw0)/(dw1-dw0); return 1.2+1.4*f; }   /* Dwell: Sättigungsanstieg */
-      var d=t-dw1;
-      if(noSpark){ return vb + (pk-vb)*Math.exp(-d*40)*Math.cos(d*90); }
-      if(d<0.015) return pk*Math.exp(-d*120)+burn;
-      if(t<bEnd) return burn + 3*Math.sin(d*180);
-      var e=t-bEnd;
-      return vb + (burn-vb)*Math.exp(-e*25)*Math.cos(e*120);
-    };
-  },
-
-  /* Sekundär (kV) */
-  sek: function(o){
-    var fire=o.fire||0.30, pk=o.pk||12, burn=o.burn||1.4, bEnd=o.bEnd||0.70;
-    return function(t){
-      if(t<fire) return 0;
-      var d=t-fire;
-      if(d<0.012) return pk*Math.exp(-d*140)+burn;
-      if(t<bEnd) return burn+0.15*Math.sin(d*200);
-      var e=t-bEnd;
-      return (burn)*Math.exp(-e*20)*Math.cos(e*100);
-    };
-  },
-
-  /* Peak&Hold Injektorstrom */
-  ph: function(o){
-    var on=o.on||0.18, peak=o.peak||18, hold=o.hold||12, tPk=o.tPk||0.32, off=o.off||0.74, buck=(o.buck!==undefined?o.buck:true);
-    return function(t){
-      if(t<on||t>off) return 0;
-      if(t<tPk){
-        var f=(t-on)/(tPk-on);
-        var i=peak*(1-Math.exp(-f*3.2));
-        if(buck && f>0.55 && f<0.75) i-=peak*0.06*Math.sin((f-0.55)*Math.PI/0.2);
-        return i;
-      }
-      var rip=0.5*Math.sin((t-tPk)*300);
-      return hold+rip;
-    };
-  },
-
-  /* einfache Stromrampe (Spule, ohne P&H) */
-  icoil: function(o){
-    var on=o.on||0.2, off=o.off||0.7, imax=o.imax||7, tau=o.tau||0.18, knick=o.knick;
-    return function(t){
-      if(t<on||t>off) return 0;
-      var d=t-on;
-      var i=imax*(1-Math.exp(-d/tau));
-      if(knick!==undefined && d>knick && d<knick+0.06) i-=imax*0.10*Math.sin((d-knick)*Math.PI/0.06);
-      return i;
-    };
-  },
-
-  /* Bus: Bitstring -> Pegel */
-  bus: function(o){
-    var bits=o.bits, hi=o.hi, lo=o.lo, idle=(o.idle!==undefined?o.idle:lo);
-    return function(t){
-      var n=bits.length, k=Math.floor(t*n);
-      if(k>=n)k=n-1;
-      var b=bits[k];
-      if(b==="i") return idle;
-      return b==="1"?hi:lo;
-    };
-  },
-
-  /* FlexRay-artige Bursts um 2,5 V */
-  fr: function(o){
-    return function(t){
-      var inB=(t>0.1&&t<0.4)||(t>0.55&&t<0.85);
-      if(!inB) return 2.5;
-      return (Math.floor(t*80)%2)?3.5:1.5;
-    };
-  },
-
-  /* Generator-Ripple */
-  rip: function(o){
-    var off=o.off||14.0, amp=o.amp||0.15, f=o.f||9, diode=o.diode;
-    return function(t){
-      var v=off+amp*Math.abs(Math.sin(t*f*Math.PI));
-      if(diode){ var ph=(t*f)%6; if(ph<1) v-=o.drop||1.2; }
-      return v;
-    };
-  },
-
-  /* Starterstrom */
-  st: function(o){
-    var pk=o.pk||600, base=o.base||140, buckle=o.buckle||60, cyl=o.cyl||4, weakAt=o.weakAt;
-    return function(t){
-      if(t<0.05) return 0;
-      if(t<0.10) return pk*Math.exp(-(t-0.05)*30)+base;
-      var ph=(t-0.10)*cyl*2.2, k=Math.floor(ph);
-      var b=buckle;
-      if(weakAt!==undefined && (k%cyl)===weakAt) b=buckle*0.35;
-      return base+b*Math.max(0,Math.sin(ph*Math.PI));
-    };
-  },
-
-  /* Klopf-Burst */
-  kn: function(o){
-    var at=o.at||0.5, amp=o.amp||1.5;
-    return function(t){
-      var d=t-at;
-      if(d<0) return 0.05*Math.sin(t*200);
-      return amp*Math.exp(-d*18)*Math.sin(d*420)+0.05*Math.sin(t*200);
-    };
-  }
-};
-
-/* Transforms auf Punktlisten */
-function tNoise(pts,a){ return pts.map(function(p,i){ var s=Math.sin(i*12.9898+p[0]*78.233)*43758.5453; var frac=s-Math.floor(s); return [p[0], p[1]+a*(frac*2-1)]; }); }
-function tDrop(pts,t0,t1,v){ return pts.map(function(p){ return (p[0]>=t0&&p[0]<=t1)?[p[0],v]:p; }); }
-function tScale(pts,s){ return pts.map(function(p){ return [p[0],p[1]*s]; }); }
-function tOff(pts,o){ return pts.map(function(p){ return [p[0],p[1]+o]; }); }
-function tClip(pts,lo,hi){ return pts.map(function(p){ return [p[0],Math.max(lo,Math.min(hi,p[1]))]; }); }
-
-var CHCOL = {1:"#ffd24a",2:"#4fd2ff",3:"#ff7ad9",4:"#7dff9b"};
-
-/* W(spec): baut <figure class="sig g/b"> mit SVG-Scope */
-function W(spec){
-  var yr=spec.yr, ymin=yr[0], ymax=yr[1];
-  function X(t){ return PX.x0 + t*(PX.x1-PX.x0); }
-  function Y(v){ var f=(v-ymin)/(ymax-ymin); return PX.y1 - f*(PX.y1-PX.y0); }
-
-  var s='<svg viewBox="0 0 '+PX.w+' '+PX.h+'" xmlns="http://www.w3.org/2000/svg" role="img">';
-  s+='<rect x="0" y="0" width="'+PX.w+'" height="'+PX.h+'" rx="8" fill="#0b0f14"/>';
-  s+='<rect x="'+PX.x0+'" y="'+PX.y0+'" width="'+(PX.x1-PX.x0)+'" height="'+(PX.y1-PX.y0)+'" fill="#070a0e" stroke="#1d2733"/>';
-  /* Raster 10x8 */
-  var i;
-  for(i=1;i<10;i++){ var gx=PX.x0+i*(PX.x1-PX.x0)/10; s+='<line x1="'+gx+'" y1="'+PX.y0+'" x2="'+gx+'" y2="'+PX.y1+'" stroke="#16202b" stroke-width="1"/>'; }
-  for(i=1;i<8;i++){ var gy=PX.y0+i*(PX.y1-PX.y0)/8; s+='<line x1="'+PX.x0+'" y1="'+gy+'" x2="'+PX.x1+'" y2="'+gy+'" stroke="#16202b" stroke-width="1"/>'; }
-  /* Mittellinien */
-  s+='<line x1="'+PX.x0+'" y1="'+((PX.y0+PX.y1)/2)+'" x2="'+PX.x1+'" y2="'+((PX.y0+PX.y1)/2)+'" stroke="#1f2c3a" stroke-width="1"/>';
-  s+='<line x1="'+((PX.x0+PX.x1)/2)+'" y1="'+PX.y0+'" x2="'+((PX.x0+PX.x1)/2)+'" y2="'+PX.y1+'" stroke="#1f2c3a" stroke-width="1"/>';
-
-  /* Null-Linie wenn im Bereich */
-  if(ymin<0&&ymax>0){ s+='<line x1="'+PX.x0+'" y1="'+Y(0)+'" x2="'+PX.x1+'" y2="'+Y(0)+'" stroke="#2a3a4d" stroke-dasharray="4 3"/>'; }
-
-  /* Traces */
-  (spec.tr||[]).forEach(function(tr){
-    var f=G[tr.g](tr.o||{});
-    var pts=genF(f, tr.n||900);
-    (tr.tf||[]).forEach(function(tf){ pts=tf(pts); });
-    var d="";
-    pts.forEach(function(p,idx){ d+=(idx?"L":"M")+X(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1)+" "; });
-    var col=tr.col||CHCOL[tr.ch||1];
-    s+='<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="1.8" stroke-linejoin="round"/>';
-  });
-
-  /* Trigger-Marke */
-  if(spec.trig){
-    var tx=X(spec.trig.t!==undefined?spec.trig.t:0.5);
-    s+='<path d="M'+tx+' '+(PX.y0-6)+' l-5 -7 h10 z" fill="#9aa7b5"/>';
-    s+='<line x1="'+tx+'" y1="'+PX.y0+'" x2="'+tx+'" y2="'+PX.y1+'" stroke="#9aa7b5" stroke-dasharray="2 4" stroke-width="1"/>';
-  }
-
-  /* Markierungen */
-  (spec.marks||[]).forEach(function(m){
-    var mx=X(m.t), my=Y(m.v);
-    s+='<circle cx="'+mx+'" cy="'+my+'" r="4" fill="none" stroke="#ff6b6b" stroke-width="1.6"/>';
-    var lx=Math.min(Math.max(mx+8,PX.x0+4),PX.x1-150);
-    var ly=Math.max(my-8,PX.y0+12);
-    s+='<text x="'+lx+'" y="'+ly+'" fill="#ff9d9d" font-size="11" font-family="ui-monospace,monospace">'+m.txt+'</text>';
-  });
-
-  /* Achsen-Labels */
-  var axc="#8aa0b8";
-  s+='<text x="'+PX.x0+'" y="'+(PX.y1+18)+'" fill="'+axc+'" font-size="11" font-family="ui-monospace,monospace">0</text>';
-  s+='<text x="'+(PX.x1-60)+'" y="'+(PX.y1+18)+'" fill="'+axc+'" font-size="11" font-family="ui-monospace,monospace">Zeit →</text>';
-  s+='<text x="6" y="'+(PX.y0+10)+'" fill="'+axc+'" font-size="11" font-family="ui-monospace,monospace">'+(spec.ymaxLbl||ymax)+'</text>';
-  s+='<text x="6" y="'+PX.y1+'" fill="'+axc+'" font-size="11" font-family="ui-monospace,monospace">'+(spec.yminLbl||ymin)+'</text>';
-  s+='<text x="6" y="'+((PX.y0+PX.y1)/2+4)+'" fill="'+axc+'" font-size="10" font-family="ui-monospace,monospace">'+(spec.yunit||"V")+'</text>';
-
-  /* Statuszeile: V/div, t/div, Kanäle */
-  var leg="";
-  (spec.tr||[]).forEach(function(tr,ix){
-    var col=tr.col||CHCOL[tr.ch||1];
-    leg+='<tspan fill="'+col+'">CH'+(tr.ch||1)+(tr.mp?(" "+tr.mp):"")+'</tspan>'+(ix<spec.tr.length-1?'<tspan fill="#5b6b7d">  ·  </tspan>':'');
-  });
-  s+='<text x="'+PX.x0+'" y="'+(PX.h-12)+'" font-size="11" font-family="ui-monospace,monospace">'+leg+'</text>';
-  s+='<text x="'+(PX.x1)+'" y="'+(PX.h-12)+'" text-anchor="end" fill="#8aa0b8" font-size="11" font-family="ui-monospace,monospace">'+(spec.vdiv||"")+(spec.vdiv&&spec.tdiv?"  ·  ":"")+(spec.tdiv||"")+'</text>';
-
-  /* SCHEMATISCH-Stempel + Badge */
-  s+='<text x="'+(PX.x1-6)+'" y="'+(PX.y0+14)+'" text-anchor="end" fill="#5b6b7d" font-size="10" font-family="ui-monospace,monospace" letter-spacing="2">SCHEMATISCH</text>';
-  if(spec.badge){
-    var bcol=spec.badge==="GUT"?"#3ecf8e":"#ff6b6b";
-    s+='<rect x="'+(PX.x0+4)+'" y="'+(PX.y0+4)+'" width="64" height="20" rx="4" fill="'+bcol+'22" stroke="'+bcol+'"/>';
-    s+='<text x="'+(PX.x0+36)+'" y="'+(PX.y0+18)+'" text-anchor="middle" fill="'+bcol+'" font-size="11" font-weight="700" font-family="ui-monospace,monospace">'+spec.badge+'</text>';
-  }
-  s+='</svg>';
-
-  var cls = spec.badge==="FEHLER"?"sig b":(spec.badge==="GUT"?"sig g":"sig");
-  var cap = spec.caption?('<figcaption><b>'+(spec.badge?spec.badge+": ":"")+'</b>'+spec.caption+(spec.why?('<br><span class="why">Warum: '+spec.why+'</span>'):'')+'</figcaption>'):'';
-  var out=new String('<figure class="'+cls+'">'+s+cap+'</figure>');
-  out.spec=spec; /* fuer Live-Overlay: Generator-Spezifikation mitfuehren */
-  return out;
-}
+/* ---------- 1) WAVE-ENGINE: seit V13.4 entfernt – alle Bilder (Karten, Erklärbilder, Fehlermuster) kommen aus der Engine W2 ---------- */
 
 /* ===== SIGNALBILD-ENGINE W2 (V11) — START =====
    Signalbilder aus Signalmodellen in ECHTER Zeit (Sekunden).
@@ -1830,7 +1549,7 @@ var SIG = (function(){
       /* Platz bis zum Vermerk „TYPISCH · SCHEMATISCH“ (rechts, ~170 px): Zustandstext notfalls kürzen, damit nichts überlappt */
       var plain=''; chs.forEach(function(c,k){ var sc=smp.sc[k]; plain+=(k?'  ·  ':'')+'CH'+(k+1)+(c.lbl?' '+c.lbl:'')+' '+fmtV(sc.vdiv,sc.unit)+'/div'; });
       plain+='  ·  '+fmtT(spec.tdiv)+'/div  ·  ';
-      var avail=(g.x1-170)-g.x0, pxc=6.4, room=Math.floor(avail/pxc)-plain.length, cond=String(spec.cond);
+      var avail=(g.x1-170)-g.x0, pxc=7.0, room=Math.floor(avail/pxc)-plain.length, cond=String(spec.cond);
       if(cond.length>room) cond=(room>6)?(cond.slice(0,room-1).replace(/[\s,;·–-]+$/,'')+'…'):'';
       if(cond) st+='<tspan fill="#5b6b7d">  ·  </tspan><tspan fill="#8aa0b8">'+esc(cond)+'</tspan>';
     }
@@ -9884,6 +9603,358 @@ QUELLEN["pp-laden"] = [
   "Pico Technology – Guided Test: Charger-vehicle communications (Type 1): https://www.picoauto.com/library/automotive-guided-tests/charger-vehicle-communications-type-1/ – belegt: Lädt es nicht bei nicht vollem Akku → PP-Widerstandsprüfung; Sicherheitshinweise (HV-Qualifikation, PSA, Herzschrittmacher, EVSE-Kabel vor Inspektion von jeder Spannungsquelle trennen)."
 ];
 /* --- @gruppe:canxl-pp.js ENDE --- */
+/* --- @gruppe:fig-grund.js START --- */
+/* figAliasSampled: zeigt, was ein Oszi im Sample-Modus aus einem schnellen Signal macht, wenn die Zeitbasis zu lang ist.
+   Das wahre Signal (Modell m mit Parametern p) wird mit fs Punkten je Sekunde abgetastet (VDS1022I: 5000 Punkte je Bild,
+   fs = 5000 / (10 · t/div)) und zwischen den Punkten linear verbunden – genau so zeichnet das Gerät die Punkte.
+   Liegt die Signalfrequenz über fs/2, entsteht das Alias-Muster (Physik: f_alias = |f − k·fs|). Rein und deterministisch.
+   p: m (Modellname, Standard generatorRipple), p (dessen Parameter), fs (Abtastrate in S/s, Standard 1000 = 500 ms/div) */
+SIG.M.figAliasSampled = function (p) {
+  var inner = SIG.M[p.m || 'generatorRipple'](p.p || { rpm: 2001, iL: 80, noise: 0 }), fs = p.fs || 1000;
+  return function (t) {
+    var x = t * fs, k = Math.floor(x), r = x - k, v0 = inner(k / fs), v1 = inner((k + 1) / fs);
+    return v0 + (v1 - v0) * r;
+  };
+};
+/* figBattStart: Batteriespannung an den Polen über Start und Lauf. Bis zum Loslassen des Schlüssels (toff) rechnet
+   starterCrank (sig 'u': U0 − Ri·I mit Einschaltspitze, Verdichtungsbuckeln, Freilauf nach dem Anspringen bei fire).
+   Danach hebt der Generator die Spannung mit Verzögerung 1. Ordnung (tau) auf den Reglersollwert vset (Modellwert 14,3 V wie
+   Karte generator-ripple; Infineon TLE8881-3: Registerstandard 14,3 V, Werks-NVM für Default-Betrieb 14,5 V; Wikipedia: 14,4 V üblich).
+   Der Anstieg ist schematisch (Regler mit Load-Response-Begrenzung können langsamer sein). Ablauf: f.event = true.
+   p: wie starterCrank (T, fire, toff, U0, Ri, …) plus vset, tau */
+SIG.M.figBattStart = function (p) {
+  var q = {}, k, toff = p.toff != null ? p.toff : 1.1, vset = p.vset != null ? p.vset : 14.3, tau = p.tau || 0.3,
+      U0 = p.U0 != null ? p.U0 : 12.5;
+  for (k in p) q[k] = p[k];
+  q.sig = 'u'; if (q.T == null) q.T = 2; if (q.fire == null) q.fire = 0.7; q.toff = toff;
+  var u = SIG.M.starterCrank(q);
+  var f = function (t) {
+    var v = u(t);
+    if (t > toff) v += (vset - U0) * (1 - Math.exp(-(t - toff) / tau));
+    return v;
+  };
+  f.event = true;
+  return f;
+};
+QUELLEN["svg-acdc"] = [
+  "Pico Technology – Alternator AC ripple/diode test: https://www.picoauto.com/library/automotive-guided-tests/alternator-ac-ripple-diode-test/ – belegt: Rippel an der Generator-Klemme B+ messen (an der Batterie gedämpft); gesunder Rippel = durchgehende Pulsfolge; über 500 mV Spitze-Spitze kritisch.",
+  "Infineon TLE8881-3 Alternator Control IC, Datenblatt: https://www.infineon.com/assets/row/public/documents/10/49/infineon-tle8881-3tn-datasheet-en.pdf – belegt: Sollwertbereich 10,6–16 V, Regelgenauigkeit ±0,2 V; Tabelle 84 „Default writable register content“: VSET = 14,3 V ohne NVM-Änderung; Werks-NVM für den Default-Betrieb ohne LIN (NVM-VSET = 101B) 14,5 V; Messtabellen bei VBA = 14,5 V. Die 14,3 V im Bild sind der Modellwert der Karte generator-ripple (per expect nachgemessen), innerhalb der üblichen 14,3–14,5 V.",
+  "Wikipedia – Lichtmaschine: https://de.wikipedia.org/wiki/Lichtmaschine – belegt: Ladespannung im 12-V-Bordnetz üblicherweise 14,4 V; Gleichrichtung mit 6 Dioden (B6).",
+  "Patent US6806727B2, Alternator testing method using ripple detection: https://patents.google.com/patent/US6806727B2/en – belegt: Rippelfrequenz = Motordrehzahl × Riemenübersetzung × Rippel je Läuferumdrehung.",
+  "Patent US7646123 (Generatorantrieb): https://patents.google.com/patent/US7646123 – belegt: Riemenübersetzung üblicherweise etwa 2- bis 3-fach (im Modell 2,5, Beispiel).",
+  "OWON – Datenblatt/Bedienungsanleitung VDS-Serie (VDS1022I): https://f00.psgsm.net/product/875042/OWON_VDS1022I_user_manual.pdf – belegt: Eingangskopplung DC, AC, GND; AC-Kopplung untere Grenzfrequenz ≥ 5 Hz (−3 dB) – langsame Signale werden bei AC verbogen; 5 mV/div–5 V/div; max. 40 Vss mit 1X.",
+  "Physik/Rechnung (ohne Quelle): DC-Kopplung zeigt Gleichanteil + Wechselanteil, AC-Kopplung (Kondensator in Reihe) nur den Wechselanteil um 0 V; Rippel 6 Höcker je elektrischer Periode (B6): 6 Polpaare × 800 /min × 2,5 / 60 = 200 Hz → 1200 Hz. Amplitude des Rippels (≈ 125 mV Spitze-Spitze, Last 30 A) ist ein Modellwert und wird per expect nachgemessen; bei 5 V/div entspricht er ≈ 0,025 Kästchen (≈ 1 Bildpunkt) und ist nicht erkennbar."
+];
+QUELLEN["svg-trig"] = [
+  "Pico Technology – Knowledge base „Trigger“: https://www.picoauto.com/library/picoscope-automotive-training/knowledge-base/trigger – belegt: Trigger überwacht ein Signal und startet die Aufzeichnung, sobald die Bedingung erfüllt ist; Flankentrigger: Signal muss eine Schwelle in einer Richtung (steigend/fallend) durchlaufen; Pre-Trigger in Prozent der Zeitbasis legt den 0-s-Punkt fest; ein festes Signalmerkmal am 0-s-Punkt lässt das Bild an derselben Stelle erscheinen und stabil stehen; Betriebsarten Auto / Repeat / Single.",
+  "Pico Technology – Guided Test „Crankshaft Hall effect“: https://www.picoauto.com/library/automotive-guided-tests/crankshaft-hall-effect – belegt: Hall-KW-Geber liefert ein Rechteck zwischen 0 und 5 V, Frequenz proportional zur Drehzahl; Geberrad typ. 36 oder 60 Zähne mit Lücke.",
+  "OWON – Datenblatt VDS-Serie (VDS1022I): https://f00.psgsm.net/product/875042/OWON_VDS1022I_user_manual.pdf – belegt: Triggerbetrieb Auto, Normal und Single; Flankentrigger.",
+  "Physik/Geometrie (ohne Quelle): 60-2-Rad bei 800 /min → Zahnfrequenz 800 Hz, Periode 1,25 ms; Triggerpegel in Signalmitte (2,5 V bei 0/5 V); Pre-Trigger = Zeit links der Triggermarke. Pegel werden per expect nachgemessen."
+];
+QUELLEN["svg-alias"] = [
+  "Pico Technology – Knowledge base „A guide to PicoScope memory depth & data integrity“: https://www.picotech.com/library/knowledge-bases/oscilloscopes/a-guide-to-picoscope-memory-depth-data-integrity – belegt: Aliasing entsteht, wenn zu langsam abgetastet wird, und erscheint oft als Welle niedrigerer Frequenz; Abtastrate mindestens 2–3× über der höchsten interessierenden Frequenz; bei langer Aufzeichnung muss ein Gerät mit kleinem Speicher die Abtastrate senken.",
+  "Pico Technology – Knowledge base „Sampling“: https://www.picoauto.com/library/picoscope-automotive-training/knowledge-base/sampling – belegt: bleibt die Zahl der Abtastpunkte je Bild fest, sinkt mit längerer Zeitbasis die Abtastrate.",
+  "Tektronix – Primer „XYZs of Oscilloscopes“, Kapitel Evaluating Oscilloscopes: https://www.tek.com.cn/document/online/primer/xyzs-scopes/ch3/evaluating-oscilloscopes – belegt: Nyquist: mindestens 2× die höchste Signalfrequenz; praktisch mindestens 2,5× mit sin(x)/x-Interpolation (Sinus), mindestens 10× mit linearer Interpolation (Rechteck, Pulse, Flanken).",
+  "OWON – Datenblatt VDS-Serie (VDS1022I): https://f00.psgsm.net/product/875042/OWON_VDS1022I_user_manual.pdf – belegt: 25 MHz, 100 MSa/s, Speichertiefe 5K, 5 ns/div–100 s/div, Erfassung Sample / Peak Detect / Average.",
+  "OWON-VDS1022 (inoffizielle Software, GitHub florentbr): https://github.com/florentbr/OWON-VDS1022 – belegt (Quelltext vds1022.py, keine Herstellerangabe): SAMPLES = 5000 nutzbare Punkte je Bild; Abtastrate = SAMPLES / Bilddauer (2,5 S/s … 100 MS/s); ab 100 ms/div Roll-Betrieb.",
+  "Patent US6806727B2: https://patents.google.com/patent/US6806727B2/en – belegt: Rippelfrequenz = Motordrehzahl × Riemenübersetzung × Rippel je Läuferumdrehung (hier 2000 /min × 2,5 × 36 / 60 ≈ 3000 Hz).",
+  "Physik/Rechnung (ohne Quelle): 5000 Punkte ÷ 5 s (500 ms/div) = 1000 Punkte je Sekunde; bei 1 ms/div (10 ms Fenster) 5000 ÷ 0,010 s = 500 kS/s; Rippel ≈ 3000 Hz liegt weit über der halben Abtastrate (500 Hz): jeder Punkt trifft fast dieselbe Stelle der Welle, f_alias = |3001,5 − 3 × 1000| = 1,5 Hz. Das Bild ist eine Erklärung (so rechnet das Modell die Abtastung nach), kein Messbild; Drehzahl 2001 /min ist ein Beispiel (bei exakt 2000 /min wäre f_alias = 0 Hz, eine waagerechte Linie) – mit der Drehzahl wandert das Scheinmuster."
+];
+QUELLEN["svg-versatz"] = [
+  "Pico Technology – Application note „Cam and crank correlation“: https://www.picoauto.com/library/application-notes/cam-and-crank-correlation – belegt: KW- und NW-Signal gemeinsam aufzeichnen, Lage der NW-Flanke zur KW-Lücke in Grad KW mit einer Referenz vergleichen (Beispiel dort ≈ 41° KW; hier 42° = 7 Zähne, Beispielwert).",
+  "Pico Technology – Guided Test AGT-151 „Crankshaft position vs camshaft position“: https://www.picoauto.com/library/automotive-guided-tests/system-tests/camshaft-position-vs-crankshaft-position/AGT-151-crankshaft-position-vs-camshaft-position/ – belegt: Kanal A KW, Kanal B NW, Abstand der Bezugsmarken in Grad oder Zähnen; Ursachen für Versatz: Riemen/Kette falsch montiert, gelängt, Geberrad falsch montiert.",
+  "Pico Technology – Guided Test „Crankshaft Hall effect“: https://www.picoauto.com/library/automotive-guided-tests/crankshaft-hall-effect – belegt: Rechteck 0/5 V, Frequenz ∝ Drehzahl, Geberrad 60 Zähne mit Lücke.",
+  "Pico Technology – Knowledge base „Timebase“: https://www.picoauto.com/library/picoscope-automotive-training/knowledge-base/timebase – belegt: 800 /min → 1 Umdrehung 75 ms.",
+  "Physik/Geometrie (ohne Quelle): 60-2-Rad: 1 Zahn = 6° KW; bei 800 /min 1 Umdrehung = 75 ms → 1° KW = 0,2083 ms, 42° = 8,75 ms; 2 Kanäle teilen eine Zeitachse, deshalb ist Δt zwischen den Kanälen direkt per Cursor ablesbar. Zahnzahl und Lage sind Beispielwerte, per expect nachgemessen."
+];
+QUELLEN["svg-kwnw"] = [
+  "Pico Technology – Guided Test AGT-151 „Crankshaft position vs camshaft position“: https://www.picoauto.com/library/automotive-guided-tests/system-tests/camshaft-position-vs-crankshaft-position/AGT-151-crankshaft-position-vs-camshaft-position/ – belegt: KW (CH A) und NW (CH B) gemeinsam im Leerlauf aufnehmen; Abstand der Bezugsmarken in Grad bzw. Zähnen mit Herstellerdaten oder Gutbild vergleichen (keine Toleranzangabe bei Pico; „≥ 1–2 Zähne“ ist der Richtwert des Kapiteltexts); NW-Hall 0/5 V im Beispielbild.",
+  "Pico Technology – Guided Test AGT-429 „Crankshaft position (floating, running)“: https://www.picoauto.com/library/automotive-guided-tests/crankshaft-inductive-floating-running/ – belegt: induktiv: Null in Zahn-/Lückenmitte, Maximum an den Flanken; Lücke = Haupt-Bezugsmarke, die Zähne direkt vor/nach der Lücke erzeugen größere Ausschläge.",
+  "Bosch Motorsport – Datenblatt Inductive Speed Sensor IS-C: https://www.bosch-motorsport.com/media/downloads/inductive_speed_sensor_is-c.pdf – belegt: Referenzrad 60-2; ca. 3,3 V bei 800 /min und 0,5 mm Luftspalt, bei 1,0 mm ≈ 0,43–0,47×; Nennluftspalt 0,8 ± 0,3 mm (Modell: 3,3 V · exp(−0,3/0,63) ≈ 2,0 V Scheitel).",
+  "Robert Bosch GmbH – Patent US 5 469 823: https://patents.google.com/patent/US5469823A/en – belegt: 60-2-Geberrad, NW-Segmentscheibe; STG zählt KW-Pulse zwischen NW-Flanken.",
+  "Pico Technology – Knowledge base „Timebase“: https://www.picoauto.com/library/picoscope-automotive-training/knowledge-base/timebase – belegt: 20 ms/div = 200 ms Fenster; 800 /min → 1 Umdrehung 75 ms, Arbeitsspiel 150 ms.",
+  "Physik/Geometrie (ohne Quelle): 1 Zahn = 6° KW; NW-Flanke 7 Zähne = 42° KW nach der Lücke ist ein Beispielwert (motorspezifisch); NW dreht halb so schnell: ein NW-Fenster je 2 KW-Umdrehungen. Amplituden und Lagen per expect nachgemessen."
+];
+QUELLEN["svg-relkomp"] = [
+  "Pico Technology – Guided Test AGT-004 Relative compression (gasoline): https://www.picoauto.com/library/automotive-guided-tests/charging-starting/starting/AGT-004-relative-compression-gasoline/ – belegt: Strom eines DC-Starters ∝ Last; Verdichtung erhöht die Last; jeder wiederkehrende niedrige Peak = Zylinder mit niedriger Kompression; Einspritzung deaktivieren, Hochstromzange, ca. 5 s durchdrehen.",
+  "Pico Technology – Tech Tips „Fundamental scope tests“: https://www.techtips.ie/PicoScope/fundamental-scope-tests.pdf – belegt: Zeitbasis 200 ms/div; Strom zum Durchdrehen meist 80–200 A; nach Anfangsreibung gleichmäßiges Sägezahnmuster.",
+  "Patent US4062232A: https://patents.google.com/patent/US4062232A/en – belegt: Strommaxima zeitgleich mit den Verdichtungstakten, bei symmetrischen Motoren gleichmäßig; Zylinder mit schlechter Kompression = Buckel geringerer Höhe; Bewertung dort über die integrierten Buckel (Fläche unter dem Strom je Verdichtung): Verhältnis kleinster/größter ≤ 0,85 = unbefriedigend.",
+  "Pico Technology – Toyota GT86 Engine non-start: https://www.picoauto.com/library/?p=1802 – belegt: Durchdrehzahl im Beispiel 237 /min (Anlassdrehzahl ist motor- und starterabhängig; Modell hier ≈ 174 /min).",
+  "Saab WIS – Bosch-Starter DW 12 V: https://saabwisonline.com/900/1994/3-electrical-system/starting-system/technical-data/starter-motor-v6-engine – belegt: Kennlinie 12 V/80 A/3300 1/min, 9 V/295 A/1650 1/min (Motorkennlinie des Modells).",
+  "Physik/Rechnung (ohne Quelle): 4-Takt-4-Zylinder: 2 Verdichtungen je Kurbelumdrehung → 2 Buckel = 1 Umdrehung; Anlassdrehzahl n = Buckelfrequenz × 60 / 2 (hier ≈ 174 /min, Modellwert, per expect nachgemessen); Strombuckelhöhen (≈ 90–245 A) sind Modellwerte innerhalb der Pico-Angabe."
+];
+QUELLEN["svg-battstart"] = [
+  "Pico Technology – „Practical Pico: Non-invasive engine condition testing Q&A follow-up“: https://www.picoauto.com/library/application-notes/practical-pico-non-invasive-engine-condition-testing-qa-follow-up – belegt (gesunde Batterie beim Anlassen): kurzzeitig 8,841 V, DC-Mittelwert 10,51 V; entscheidend ist, ob die Spannung während des Anlassens weiter fällt.",
+  "Discover Battery – Load testing your battery: https://discoverbattery.com/support/learning-center/battery-101/load-testing-your-battery – belegt: Belastungstest mit ½ CCA für 15 s, Spannung soll über 9,6 V bleiben.",
+  "Saab WIS – Bosch-Starter DW 12 V: https://saabwisonline.com/900/1994/3-electrical-system/starting-system/technical-data/starter-motor-v6-engine – belegt: Leerlauf 12 V/80 A, Last 9 V/295 A (Starterkennlinie des Modells; Freilaufstrom ≈ 75–80 A).",
+  "Infineon TLE8881-3 Alternator Control IC, Datenblatt: https://www.infineon.com/assets/row/public/documents/10/49/infineon-tle8881-3tn-datasheet-en.pdf – belegt: Sollwertbereich 10,6–16 V; Tabelle 84: Registerstandard VSET = 14,3 V ohne NVM-Änderung; Werks-NVM für Default-Betrieb ohne LIN 14,5 V (NVM-VSET = 101B). Load Response Control begrenzt den Anstieg der Erregung (Standard 5 s, 1–15 s einstellbar) – der Anstieg auf ~14 V nach dem Start kann deshalb langsamer sein als im Bild. Die 14,3 V im Bild sind der Modellwert (Karte generator-ripple), innerhalb der üblichen 14,3–14,5 V.",
+  "Wikipedia – Lichtmaschine: https://de.wikipedia.org/wiki/Lichtmaschine – belegt: Ladespannung im 12-V-Bordnetz üblicherweise 14,4 V.",
+  "ZVEI – Leitfaden 48-Volt-Bordnetz (2015): https://www.zvei.org/fileadmin/user_upload/Presse_und_Medien/Publikationen/2015/dezember/48-Volt-Bordnetz_-_Schluesseltechnologie_auf_dem_Weg_zur_Elektromobilitaet/ZVEI-Leitfaden-48-Volt-Bordnetz-2015.pdf – belegt: 12-V-Bordnetz bei laufendem Generator ≈ 14 V.",
+  "Physik/Rechnung (ohne Quelle): Polspannung U = U0 − Ri·I (Modell: U0 12,5 V, Ri 6 mΩ = gesunde, warme Batterie, Beispiel): Einschaltspitze ≈ 500 A → ≈ 9,5 V, Durchdrehen ≈ 165 A → > 11 V (Mittel ≈ 11,5 V); nach dem Anspringen Freilauf (≈ 75 A) und nach dem Loslassen Generator → ≈ 14,2 V nach 0,9 s mit Zeitkonstante 0,3 s (schematisch). Grenzen des Kapitels „Batterietest beim Start“: Einschaltspitze ~9,5–10,5 V, Durchdrehen > 10,5 V, Fehler unter ~9,5 V warm / ~8,5 V kalt. Alle Werte per expect nachgemessen."
+];
+QUELLEN["svg-5v-gut"] = [
+  "Saab WIS 9-4X 2011 (GM) – DTC P0641/P0651/P0697/P06A3: https://saabwisonline.com/9-4x/2011/2-engine/engine-management-and-fuel-system-v6/fault-diagnosis-diagnostic-trouble-codes/dtc-p0641-p0651-p0697-or-p06a3-ecm-lfw – belegt: Prüfwert 5-V-Referenz 4,8–5,2 V gegen Masse.",
+  "Saab WIS 9-5 2010 Diesel (GM) – DTC P0697: https://saabwisonline.com/9-5-9650/2010/2-engine/engine-management-and-fuel-system-4-cyl-diesel/fault-diagnosis-diagnostic-trouble-codes/dtc-p0697 – belegt: Fehler ab > 5,5 V oder < 4,5 V länger als 0,5 s; Folge Notlauf; Prüfwert dort 4,6–5,4 V (modellabhängig).",
+  "Texas Instruments – SBOA628: https://www.ti.com/lit/pdf/sboa628 – belegt: ratiometrische Sensoren: Ausgang ∝ Versorgung – eine saubere Referenz ist Basis aller Signale der Gruppe; Sensorversorgung im Kfz typ. 5 V.",
+  "Physik (ohne Quelle): geregelte Spannung ohne Last-/Störanteil = waagerechte Linie; Zündung aus → 0 V. Pegel per expect nachgemessen."
+];
+QUELLEN["svg-5v-einbruch"] = [
+  "MOTOR Magazine, Mai 2016 (5-V-Referenzkreise): https://legacy-www.motor.com/?p=6069 – belegt: Teilkurzschluss zieht die Referenz auf 1–4 V; Messung: Referenz 5,15 V, über 47 Ω gegen Masse 2,8 V bei 59 mA (Strombegrenzung).",
+  "Chrysler (Jeep JK 2010) – P0652: https://s3.amazonaws.com/jeepwranglerjk2010/7c033448.html – belegt: Sensoren einzeln abstecken (Zündung aus), Referenz messen: steigt sie über 4,5 V, ist dieser Sensor schuld.",
+  "Saab WIS 9-4X 2011 (GM): https://saabwisonline.com/9-4x/2011/2-engine/engine-management-and-fuel-system-v6/fault-diagnosis-diagnostic-trouble-codes/dtc-p0641-p0651-p0697-or-p06a3-ecm-lfw – belegt: eine Referenz versorgt mehrere Sensoren; Sollwert 4,8–5,2 V.",
+  "Physik/Rechnung (ohne Quelle): Regler mit Strombegrenzung U = min(U0, (I_Grenz − I_Last) · R): 64 mA Grenze, 5 mA übrige Sensoren, 47 Ω → 2,77 V (MOTOR-Messung 2,8 V); Zeitpunkte des An-/Absteckens sind Beispiel."
+];
+QUELLEN["svg-5v-ripple"] = [
+  "Pico Technology – Forum „Skoda Octavia 2,0 TDI P0641“: https://www.picoauto.com/support/viewtopic.php?p=69421 – belegt (Praxisbeispiel): 5-V-Versorgung mehrerer Sensoren mit dem Oszi überwacht; Störungen und danach starkes Rauschen auf der Versorgung; STG-Massen, Stecker und Pins prüfen.",
+  "Saab WIS 9-5 2010 Diesel (GM) – DTC P0697: https://saabwisonline.com/9-5-9650/2010/2-engine/engine-management-and-fuel-system-4-cyl-diesel/fault-diagnosis-diagnostic-trouble-codes/dtc-p0697 – belegt: Code erst ab > 5,5 V / < 4,5 V länger als 0,5 s – Welligkeit innerhalb dieser Grenzen verfälscht Sensoren, ohne einen Referenz-Code zu setzen.",
+  "Texas Instruments – SBOA628: https://www.ti.com/lit/pdf/sboa628 – belegt: ratiometrisches Signal = K · Versorgung – jede Welligkeit der Referenz erscheint anteilig auf allen Sensorsignalen.",
+  "Physik (ohne Quelle): Störspannung auf der Referenz (Masseversatz, Einstreuung, Regler) erscheint als breites Band; Breite hier ±0,3 V als Beispiel, per expect nachgemessen – reale Werte reichen von Millivolt bis zum Takten des Reglers."
+];
+QUELLEN["svg-5v-ks"] = [
+  "MOTOR Magazine, Mai 2016: https://legacy-www.motor.com/?p=6069 – belegt: voller Masseschluss: 64 mA Strombegrenzung, nur 23 mV an den Sensoren; Fallbeispiel Subaru: Kabelbaum scheuerte am Halter.",
+  "MOTOR Magazine, März 2018 (Marinucci): https://legacy-www.motor.com/?p=14999 – belegt: Referenz bei 0 V oder fast 0 V = deutlicher Hinweis auf Schluss; Sensorstecker einzeln abziehen, bis die Referenz wieder 5,00 V zeigt.",
+  "Chrysler (Jeep JK 2010) – P0652: https://s3.amazonaws.com/jeepwranglerjk2010/7c033448.html – belegt: Referenz gegen Masse unter 100 Ω = Schluss; Sensoren einzeln abstecken.",
+  "Physik/Rechnung (ohne Quelle): Strombegrenzung U = (I_Grenz − I_Last) · R_Fehler: 0,36 Ω → ≈ 21 mV; Zeitpunkt des Schlusses (hier bei 4 s, z. B. Scheuerstelle beim Rütteltest) ist Beispiel."
+];
+QUELLEN["svg-masse-gut"] = [
+  "Hino Motors – Tech Tip 07-006 „Voltage Drop Test“: https://static.nhtsa.gov/odi/tsbs/2007/MC-10118105-9999.pdf – belegt: es muss Strom fließen (anlassen); Masseseite unter 0,2 V; 200 A × 0,01 Ω = 2,0 V Verlust.",
+  "Vince Fischelli – „Electrical Troubleshooting“ (Veejer): https://automotivetechinfo.com/wp-content/uploads/1988/10/Electrical-Troubleshooting.pdf – belegt: Masseverbindung über 0,1 V fehlerhaft; Motormassekabel beim Anlassen höchstens 0,2 V.",
+  "Volkswagen of America – Technical Tip 97-20-01TT „Voltage Drop Testing“: https://static.nhtsa.gov/odi/tsbs/2020/MC-10174460-0001.pdf – belegt: Masseseite: schwarz an Batterie-Minus, rot an Startergehäuse, Starter muss durchdrehen; nicht über 0,5 V.",
+  "Pico Technology – PicoScope guide to oscilloscope diagnostics (Relative Kompression): https://www.picoauto.com/download/documents/manuals/picoscope-guide-to-oscilloscope-diagnostics.pdf – belegt: Durchdrehstrom meist 100–300 A.",
+  "Pico Technology – Toyota GT86 Engine non-start: https://www.picoauto.com/library/?p=1802 – belegt: Durchdrehzahl 237 /min.",
+  "Physik/Rechnung (ohne Quelle): U = I · R; Beispiel 170 A · 0,5 mΩ ≈ 0,085 V; Einschaltspitze (stehender Starter, keine Gegenspannung) höher; 4-Zyl.: 2 Verdichtungen je Umdrehung → bei ≈ 240 /min ein Buckel alle 125 ms. Werte per expect nachgemessen."
+];
+QUELLEN["svg-masse-schlecht"] = [
+  "Volkswagen of America – Technical Tip 97-20-01TT: https://static.nhtsa.gov/odi/tsbs/2020/MC-10174460-0001.pdf – belegt: Masseseite über 0,5 V → Messspitze an den Massekabelanschluss am Motorblock/Getriebe versetzen; weiter über 0,5 V → Massekabel ersetzen oder Verbindung reinigen.",
+  "Hino Motors – Tech Tip 07-006: https://static.nhtsa.gov/odi/tsbs/2007/MC-10118105-9999.pdf – belegt: 200 A × 0,01 Ω = 2,0 V; jede Verbindung über 0,2 V instand setzen; Leitungen und Stecker bewegen.",
+  "Vince Fischelli – „Electrical Troubleshooting“: https://automotivetechinfo.com/wp-content/uploads/1988/10/Electrical-Troubleshooting.pdf – belegt: Widerstände um 0,01 Ω sind mit dem Ohmmeter nicht messbar – nur der Spannungsfall unter Last zeigt sie; zuerst die Batteriemassen prüfen.",
+  "Physik/Rechnung (ohne Quelle): U = I · R; Beispiel ≈ 10 mΩ Übergangswiderstand (20× Sollwert): mehr Widerstand → weniger Strom (≈ 135 A statt 170 A) und langsameres Durchdrehen; 135 A · 10,5 mΩ ≈ 1,4 V. Werte per expect nachgemessen."
+];
+/* --- @gruppe:fig-grund.js ENDE --- */
+/* --- @gruppe:fig-bus.js START --- */
+/* keine neuen Modelle nötig – alle Bilder nutzen SIG.M.canHsBus, canFdBus, canLsBus, linBus, flexrayBus, sentSignal */
+QUELLEN["svg-can-gut"] = [
+  "Texas Instruments – SLOA101B Introduction to the Controller Area Network (CAN): https://www.ti.com/lit/an/sloa101b/sloa101b.pdf – belegt: rezessiv beide Adern passiv auf ≈ 2,5 V vorgespannt, dominant CANH ≈ 3,5 V und CANL ≈ 1,5 V, typ. 2 V Differenz; ISO 11898 High-Speed bis 1 Mbit/s; 120 Ω an beiden Leitungsenden.",
+  "Texas Instruments – TCAN1042-Q1 Datenblatt (SLLSES9D): https://www.ti.com/lit/ds/symlink/tcan1042-q1.pdf – belegt: dominant CAN_H 2,75–4,5 V, CAN_L 0,5–2,25 V (RL 50–65 Ω); rezessiv 2–3 V (typ. 0,5·VCC) über Eingangswiderstände 15–40 kΩ; Differenz dominant 1,5–3 V.",
+  "Pico Technology – Guided Test AGT-126 CAN bus physical layer: https://www.picoauto.com/library/automotive-guided-tests/communication/can-bus/AGT-126-can-bus-physical-layer/ – belegt (heute geprüft): CH A an DLC-Pin 6 (CAN_H), CH B an Pin 14 (CAN_L), Masse an Fahrzeugmasse; High-Speed bis 1 Mbit/s, Antriebs-CAN typ. 500 kbit/s; 2 × 120 Ω parallel ≈ 60 Ω; die Spannungsdifferenz der beiden Adern stellt den logischen Zustand dar.",
+  "Pico Technology – AGT-126 Beispielbild (PicoScope 7): https://www.picoauto.com/library/wp-content/uploads/automotive-guided-tests/webdata/images/AGT-126-example-waveform-01.png – belegt (abgelesen): 50 µs/div, Trigger ↑ 3 V auf CAN_H; rezessiv beide ~2,5 V, dominant CAN_H ~3,6 V / CAN_L ~1,4 V spiegelbildlich.",
+  "Texas Instruments – SLLA486B Isolated CAN Bus Design, Abschnitt 14: https://ti.com/document-viewer/lit/html/SLLA486B/GUID-A8215A18-C6A8-445A-808A-9234A5BE22BB – belegt: das ACK-Bit hat eine größere Differenzspannung, weil mehrere Knoten gleichzeitig dominant treiben.",
+  "Physik (ohne Quelle): Bitzeit = 1/Bitrate → 500 kbit/s = 2 µs je Bit, ein Kästchen bei 20 µs/div = 10 Bit. Rahmeninhalt (ID 0x1A0, 3 Datenbytes) ist ein Beispiel; Pegel werden per expect aus dem Modell nachgemessen."
+];
+QUELLEN["svg-can-diff"] = [
+  "Texas Instruments – SLOA101B: https://www.ti.com/lit/an/sloa101b/sloa101b.pdf – belegt: dominant typ. 2 V Differenz (3,5 V − 1,5 V), rezessiv ≈ 0 V; Gleichtaktstörungen heben sich in der Differenz auf (verdrilltes Adernpaar).",
+  "Texas Instruments – TCAN1042-Q1 Datenblatt: https://www.ti.com/lit/ds/symlink/tcan1042-q1.pdf – belegt: Empfängerschwellen: dominant ab 0,9 V Differenz, rezessiv unter 0,5 V; Differenz rezessiv −120…12 mV.",
+  "Pico Technology – AGT-126: https://www.picoauto.com/library/automotive-guided-tests/communication/can-bus/AGT-126-can-bus-physical-layer/ – belegt: die Spannungsdifferenz zwischen CAN_L und CAN_H stellt den logischen Zustand des Busses dar.",
+  "OWON VDS1022I – Elektor-Produktseite: https://www.elektor.com/products/owon-vds1022i-2-kanal-usb-oszilloskop-25-mhz – belegt: Mathe-Funktionen +, −, ×, ÷ (CH1 − CH2 = Differenzkanal); gemeinsame Masse beider Kanäle laut README florentbr/OWON-VDS1022 (https://github.com/florentbr/OWON-VDS1022).",
+  "Physik (ohne Quelle): Differenz = CAN_H − CAN_L; dieselben Modellrahmen wie svg-can-gut, Werte per expect nachgemessen."
+];
+QUELLEN["svg-can-f1"] = [
+  "Texas Instruments – TCAN10xx Behavior During Bus Failures: https://e2e.ti.com/cfs-file/__key/communityserver-discussions-components-files/908/TCAN10xx-Bus-Failure-Behaviors.pdf – belegt (Fall 5, CAN_H gegen Masse): Differenzsignal stark verkleinert, keine Kommunikation; (Fall 4, CAN_L gegen Masse): CAN_H schaltet mit größerem Hub weiter, Kommunikation evtl. eingeschränkt möglich.",
+  "Texas Instruments – TCAN1042-Q1 Datenblatt: https://www.ti.com/lit/ds/symlink/tcan1042-q1.pdf – belegt: rezessive Vorspannung nur über hochohmige Eingangswiderstände (15–40 kΩ) → über den 60-Ω-Abschluss folgt CAN_L der kurzgeschlossenen Ader; Standby: beide Adern −0,1…0,1 V (Verwechslung mit schlafendem Bus).",
+  "Pico Technology – AGT-126: https://www.picoauto.com/library/automotive-guided-tests/communication/can-bus/AGT-126-can-bus-physical-layer/ – belegt: typische Fehler sind Kurzschlüsse von CAN_H/CAN_L gegen B−, B+ oder untereinander sowie Unterbrechungen; Widerstandsmessung nur mit abgetrennten Steuergeräten.",
+  "Physik/Modell (ohne Quelle): CAN_H hart auf 0 V; CAN_L hängt über 60 Ω an CAN_H und nur über ~20 kΩ an der 2,5-V-Vorspannung → ≈ 0 V (Spannungsteiler). Nachgemessen per expect (beide ≤ 0,15 V)."
+];
+QUELLEN["svg-can-f2"] = [
+  "Texas Instruments – TCAN1042-Q1 Datenblatt: https://www.ti.com/lit/ds/symlink/tcan1042-q1.pdf – belegt: rezessiv = kein Treiber aktiv, beide Adern über die Eingangswiderstände auf typ. 0,5·VCC ≈ 2,5 V; im Standby dagegen beide ≈ 0 V.",
+  "Texas Instruments – SLOA101B: https://www.ti.com/lit/an/sloa101b/sloa101b.pdf – belegt: rezessiv beide ≈ 2,5 V, dominant 3,5/1,5 V.",
+  "Pico Technology – AGT-126: https://www.picoauto.com/library/automotive-guided-tests/communication/can-bus/AGT-126-can-bus-physical-layer/ – belegt: Steuergerätefehler (Versorgung, Masse, Transceiver, Software) als Fehlergruppe; Zündung ein weckt den Bus; Antriebs-CAN typ. 500 kbit/s.",
+  "Pico-Forum (Zusatz, Anwenderversuch): https://www.picoauto.com/support/viewtopic.php?p=100063 – belegt: CAN_H mit CAN_L kurzgeschlossen → flache Linie bei ~2,5 V (sieht aus wie ein ruhender Bus → Unterschied nur per Widerstandsmessung).",
+  "Physik/Modell (ohne Quelle): Sollbild = Rahmenfolge des Modells (Szenario „Buslast“, Beispiel); Fehlerbild = dieselben Transceiver ohne Sender → 2,5 V mit Rauschen. Nachgemessen per expect (Mittel 2,5 V, Vpp ≤ 0,15 V)."
+];
+QUELLEN["svg-can-f3"] = [
+  "Texas Instruments – SLLA270 CAN Physical Layer Requirements: https://www.ti.com/lit/slla270 – belegt: 120-Ω-Leitung an beiden Enden mit 120 Ω abgeschlossen; fehlender oder falscher Abschluss erzeugt Reflexionen; Empfängerschwelle rezessiv 0,5 V.",
+  "Texas Instruments – SLLA581A Signal Improvement Capability: https://www.ti.com/lit/wp/slla581/slla581.pdf – belegt: Treiber-Differenzausgangsimpedanz dominant ~50 Ω, beim Wechsel dominant → rezessiv ~60 kΩ (fallende Flanke passiv) → Reflexionen und Nachschwingen vor allem auf der fallenden Flanke.",
+  "Texas Instruments – TCAN1042-Q1 Datenblatt: https://www.ti.com/lit/ds/symlink/tcan1042-q1.pdf – belegt: Differenz dominant 1,5–3 V an 50–65 Ω, bis 5 V bei 2240 Ω (höherer Lastwiderstand → größerer Hub).",
+  "Pico Technology – AGT-126: https://www.picoauto.com/library/automotive-guided-tests/communication/can-bus/AGT-126-can-bus-physical-layer/ – belegt: 120 Ω je Busende, gesamt ≈ 60 Ω; Widerstand nur bei abgetrennten Steuergeräten messen.",
+  "OWON VDS1022I – Elektor-Produktseite: https://www.elektor.com/products/owon-vds1022i-2-kanal-usb-oszilloskop-25-mhz – belegt: 25 MHz Bandbreite, 100 MS/s (Spezifikationstabelle) – ein 6-MHz-Nachschwingen ist damit sichtbar, aber gedämpft.",
+  "Physik/Modell (ohne Quelle): Treiber als Quelle mit ~50 Ω (SLLA581) und 2 V an 60 Ω → an 120 Ω ≈ 2,6 V Differenz, je Ader ~3,8/1,2 V (Modell, Datenblatt-Trend). Nachschwingen 6 MHz, τ 200 ns, Amplitude 0,3 sind Beispielwerte (leitungs- und topologieabhängig). Pegel per expect nachgemessen."
+];
+QUELLEN["svg-can-f4"] = [
+  "Texas Instruments – TCAN10xx Behavior During Bus Failures: https://e2e.ti.com/cfs-file/__key/communityserver-discussions-components-files/908/TCAN10xx-Bus-Failure-Behaviors.pdf – belegt (Fall 7, CAN_L mit CAN_H verbunden): Differenzsignal stark verkleinert, keine Kommunikation.",
+  "Pico-Forum (Zusatz, Anwenderversuch VW Golf, Hillsautoelectrical/liviu2004): https://www.picoauto.com/support/viewtopic.php?p=100063 – belegt: CAN_H und CAN_L miteinander kurzgeschlossen → beide flache Linie bei ~2,5 V.",
+  "Pico-Forum (Zusatz; Steve Smith, Pico): https://picoauto.com/support/viewtopic.php?p=97828 – belegt: Verhalten bei CAN_H/CAN_L-Kurzschluss ist herstellerabhängig; Eingrenzen durch Abtrennen entbehrlicher Steuergeräte.",
+  "Texas Instruments – TCAN1042-Q1 Datenblatt: https://www.ti.com/lit/ds/symlink/tcan1042-q1.pdf – belegt: dominant wird erst ab 0,9 V Differenz erkannt – eine hochohmige Brücke, die den Hub darunter drückt, macht den Bus unsicher.",
+  "Pico Technology – AGT-126: https://www.picoauto.com/library/automotive-guided-tests/communication/can-bus/AGT-126-can-bus-physical-layer/ – belegt: Kurzschluss CAN_H/CAN_L untereinander als typischer Fehler; Sollwert 60 Ω zwischen den Adern.",
+  "Physik/Modell (ohne Quelle): Verbundene Adern können keine Differenz aufbauen; Treiber strombegrenzt → Pegel bleibt an der 2,5-V-Vorspannung (Modell: kleiner Rest-Einbruch ~40 mV bei Sendeversuchen, Beispiel). Nachgemessen per expect."
+];
+QUELLEN["svg-canls"] = [
+  "NXP – TJA1055 fehlertoleranter CAN-Transceiver, Datenblatt Rev. 5: https://www.nxp.com/docs/en/data-sheet/TJA1055.pdf – belegt (heute als PDF-Text geprüft): bis 125 kBd; rezessiv CAN_H ≤ 0,2 V, CAN_L ≥ VCC − 0,2 V; dominant CAN_H ≥ VCC − 1,4 V (= 3,6 V), CAN_L ≤ 1,4 V; automatische Umschaltung auf Eindrahtbetrieb bei Busfehlern, Masseversatz bis 1,5 V; TXD-Dominant-Timeout.",
+  "Pico Technology – AGT-126: https://www.picoauto.com/library/automotive-guided-tests/communication/can-bus/AGT-126-can-bus-physical-layer/ – belegt (heute geprüft): Low-Speed-CAN feste Bitrate bis 125 kbit/s; bei Unterbrechung einer Ader können die Controller auf Eindrahtbetrieb umschalten.",
+  "MVW Autotechniek – CAN-bus (Schulungsseite, Zusatz): https://www.mvwautotechniek.nl/can-bus/ – belegt: Komfort-/Low-Speed-CAN: CAN-High rezessiv 0 V, dominant ~4 V; CAN-Low rezessiv 5 V, dominant ~1 V (Messpraxis).",
+  "Bosch – CAN Specification 2.0: http://esd.cs.ucr.edu/webres/can20.pdf – belegt: Rahmenaufbau (SOF, 11-bit-ID, DLC, Daten, CRC, ACK, EOF), Bitstopfen nach 5 gleichen Bits (Kopie zeitweise nicht erreichbar).",
+  "Wikipedia – CAN bus (Zweitquelle, heute geprüft): https://en.wikipedia.org/wiki/CAN_bus – belegt: Base frame format SOF 1, ID 11, RTR/IDE/r0, DLC 4, Daten 0–8 Byte, CRC 15, ACK, EOF 7 Bit; Stopfbit nach 5 gleichen Bits.",
+  "Physik/Modell (ohne Quelle): 125 kbit/s → 8 µs je Bit. Dominantpegel im Modell CAN_H ~3,9 V / CAN_L ~1,1 V (lastabhängig, innerhalb der Datenblattgrenzen); Rahmeninhalt Beispiel. Per expect nachgemessen."
+];
+QUELLEN["svg-canfd"] = [
+  "CAN in Automation (CiA) – CAN FD – the basic idea: https://can-cia.org/can-knowledge/can-fd-the-basic-idea – belegt (heute geprüft): Umschaltung der Bitrate am Abtastpunkt des BRS-Bits; Arbitrierungsphase topologieabhängig auf 1 Mbit/s begrenzt; Datenphase nur durch den Transceiver begrenzt; Nutzdaten bis 64 Byte; CRC 17/21 Bit.",
+  "Kvaser – CAN FD Protocol Tutorial: https://kvaser.com/?p=39004 – belegt: Rückschaltung auf die Nennbitrate am Abtastpunkt des CRC-Delimiters; Datenbitrate typ. 2- bis 8-mal so hoch, bis 8 Mbit/s; Beispiel 500 kbit/s / 4 Mbit/s.",
+  "Texas Instruments – TCAN1042-Q1 Datenblatt: https://www.ti.com/lit/ds/symlink/tcan1042-q1.pdf – belegt: Pegel wie HS-CAN (dominant CAN_H 2,75–4,5 V, CAN_L 0,5–2,25 V; rezessiv 2–3 V); classic CAN und CAN FD bis 2 Mbit/s, G-Varianten 5 Mbit/s.",
+  "Texas Instruments – SLOA101B: https://www.ti.com/lit/an/sloa101b/sloa101b.pdf – belegt: dominant ≈ 3,5/1,5 V, rezessiv ≈ 2,5 V.",
+  "OWON VDS1022I – Elektor-Produktseite: https://www.elektor.com/products/owon-vds1022i-2-kanal-usb-oszilloskop-25-mhz – belegt: 25 MHz, 100 MS/s (Spezifikationstabelle), Speichertiefe 5K.",
+  "Physik (ohne Quelle): Bitzeit = 1/Bitrate: 500 kbit/s → 2 µs, 2 Mbit/s → 0,5 µs. Bei 100 MS/s 10 ns Punktabstand → 50 Punkte je 0,5-µs-Bit; 10 µs/div ergibt 100 µs / 5000 Punkte = 20 ns Raster. Datenbitrate 2 Mbit/s ist der Modellstandard (herstellerabhängig)."
+];
+QUELLEN["svg-lin-gut"] = [
+  "LIN Consortium – LIN Specification Package 2.2A: https://www.lin-cia.org/fileadmin/microsites/lin-cia.org/resources/documents/LIN_2.2A.pdf – belegt: Bitrate 1–20 kbit/s; Break mind. 13 Bit dominant + Delimiter mind. 1 Bit; Sync = 0x55; Byte = Startbit dominant, 8 Datenbits LSB zuerst, Stoppbit rezessiv; PID = 6 ID-Bits + 2 Paritätsbits; Antwort = 1–8 Datenbytes + Checksumme; Master-Pull-up 1 kΩ + Diode.",
+  "Pico Technology – Guided Test AGT-124 LIN bus physical layer: https://www.picoauto.com/library/automotive-guided-tests/communication/lin-bus/AGT-124-lin-bus-physical-layer/ – belegt (heute geprüft): Eindraht, max. 20 kBaud, typ. 9,6 und 19,2 kBaud; Pegel schaltet zwischen Batteriespannung und Masse; Break 11 × bzw. bei neueren Fahrzeugen 13 × Bitzeit; Header = Break + Sync (typ. 0x55) + geschützter Identifier; Antwort = Datenfeld + Checksumme; Messung mit 1:1-Leitung.",
+  "Pico Technology – AGT-124 Beispielbild: https://www.picoauto.com/library/wp-content/uploads/automotive-guided-tests/webdata/images/AGT-124-example-waveform-01.png – belegt (abgelesen): rezessiv ~12,4 V, dominant ~1 V (nicht ganz 0 V).",
+  "Texas Instruments – TLIN1029-Q1 Datenblatt: https://www.ti.com/lit/ds/symlink/tlin1029-q1.pdf – belegt: rezessiv ≥ 0,85 × VSUP, dominant ≤ 0,2 × VSUP.",
+  "Physik (ohne Quelle): Bitzeit = 1/19 200 s ≈ 52,1 µs; Break 13 Bit ≈ 0,68 ms; Rezessivpegel ≈ Bordnetz minus Serielldiode (~0,7 V, Modell 12,5 V → ~11,8 V). Rahmeninhalt (ID 0x21, 2 Datenbytes) ist ein Beispiel; per expect nachgemessen."
+];
+QUELLEN["svg-lin-f1"] = [
+  "NXP – TJA1021 LIN-Transceiver Datenblatt: https://www.nxp.com/docs/en/data-sheet/TJA1021.pdf – belegt: Strombegrenzung 40–100 mA, kurzschlussfest gegen Batterie und Masse; TXD-Dominant-Timeout 27–55–90 ms – ein hängender Sender wird danach abgeschaltet, ein Kurzschluss bleibt.",
+  "Texas Instruments – TLIN1029-Q1 Datenblatt: https://www.ti.com/lit/ds/symlink/tlin1029-q1.pdf – belegt: Dominant-State-Timeout 20–45–80 ms; dominant ≤ 0,2 × VSUP.",
+  "LIN Consortium – LIN 2.2A: https://www.lin-cia.org/fileadmin/microsites/lin-cia.org/resources/documents/LIN_2.2A.pdf – belegt: Wired-AND-Bus, jeder Teilnehmer kann die Leitung nur nach Masse ziehen (dominant); rezessiv nur über den Pull-up.",
+  "Physik (ohne Quelle): Leitung gegen Masse → dauerhaft ~0 V, kein Treiber kann rezessiv werden. Sollbild = Modellrahmen wie svg-lin-gut. Per expect nachgemessen (max ≤ 0,2 V)."
+];
+QUELLEN["svg-lin-f2"] = [
+  "LIN Consortium – LIN 2.2A: https://www.lin-cia.org/fileadmin/microsites/lin-cia.org/resources/documents/LIN_2.2A.pdf – belegt: nur der Master sendet Header (Break, Sync, PID); Slaves antworten nur darauf; Master-Pull-up 1 kΩ + Diode, Slave-Pull-up 30 kΩ.",
+  "Pico Technology – AGT-124: https://www.picoauto.com/library/automotive-guided-tests/communication/lin-bus/AGT-124-lin-bus-physical-layer/ – belegt (heute geprüft): Header kommt immer vom Master; Weckanforderung = dominanter Impuls > 150 µs; Pegel zwischen Batteriespannung und Masse.",
+  "NXP – TJA1021 Datenblatt: https://www.nxp.com/docs/en/data-sheet/TJA1021.pdf – belegt: Commander mit externem 1 kΩ + Diode nach VBAT, Responder-Widerstand 20–47 kΩ intern; im Sleep nur schwacher Pull-up.",
+  "Physik (ohne Quelle): Rezessivpegel ≈ Bordnetz − Diode (~0,7 V) bleibt, solange ein Pull-up da ist; bei Plus-Schluss dagegen volle Bordnetzspannung ohne Diodenabfall. Sollbild = Modellrahmen wie svg-lin-gut. Per expect nachgemessen (min ≥ 11,5 V, Vpp ≤ 0,3 V)."
+];
+QUELLEN["svg-flexray"] = [
+  "Pico Technology – A deep dive into FlexRay: https://www.picoauto.com/library/product-news/a-deep-dive-into-flexray-architecture-voltage-levels-and-packet-structure – belegt (heute geprüft): 10 Mbit/s, Bitzeit 100 ns; Idle BP = BM = 2,5 V (Differenz 0), Idle Low Power beide 0 V; Data_1 BP 3,5 V / BM 1,5 V, Data_0 BP 1,5 V / BM 3,5 V (idealisiert); Abschluss je Ende 80–110 Ω, gemessen gesamt 40 bzw. 55 Ω; BSS 2 Bit = 200 ns; Oszi mit mind. 20 MHz empfohlen.",
+  "Pico Technology – Guided Test AGT-125 FlexRay bus physical layer: https://www.picoauto.com/library/automotive-guided-tests/flexray – belegt: Prüfziel Spiegelbild beider Adern und gleichzeitige Flanken; Beispielbild (abgelesen): 5 µs/div, 10:1, Trigger ↑ 2,7 V, ein Rahmen ~25 µs, Ruhe ~2,5 V, im Rahmen ~3,1 V / ~1,8 V.",
+  "Pico Technology – Guided Test AGT-938 FlexRay serial decoding: https://www.picoauto.com/library/automotive-guided-tests/communication/flexray-bus/AGT-938-flexray-serial-decoding/ – belegt: Rahmen in festen Zeitschlitzen (Seitentext); Paketliste mit Slot-Startzeiten, Paket ID 007 mit 16 Byte Nutzdaten, 25 µs nur aus dem Beispielbild abgelesen (daher im Span-Label als Beispiel gekennzeichnet); FlexRay für sicherheitskritische/Drive-by-Wire-Systeme.",
+  "NXP – TJA1083G Datenblatt (Spiegel): https://docs.ampnuts.ru/nxp.com.datasheet/TJA1083G.pdf – belegt: ISO 17458-4, 2,5–10 Mbit/s; Idle 0,4–0,6·VCC; Differenz Data_1 0,6–2 V, Data_0 −2…−0,6 V an 40–55 Ω; Empfängerschwellen ±150…300 mV.",
+  "OWON VDS1022I – Elektor-Produktseite: https://www.elektor.com/products/owon-vds1022i-2-kanal-usb-oszilloskop-25-mhz – belegt: 25 MHz, 100 MS/s (Spezifikationstabelle), 5K Speicher → 10 Punkte je 100-ns-Bit; Anstiegszeit ≈ 0,35/25 MHz ≈ 14 ns (Faustformel, Physik).",
+  "Physik/Modell (ohne Quelle): Rahmen 7 TSS + 1 FSS + 24 Byte × 10 Bit + 2 FES = 250 Bit × 100 ns = 25 µs; Hub im Modell ±0,65 V je Ader (Pico-Bild abgelesen, im Datenblattbereich). Per expect nachgemessen."
+];
+QUELLEN["svg-sent"] = [
+  "Allegro MicroSystems – AN296108 SENT mit A1341/A1343: https://www.allegromicro.com/-/media/files/application-notes/an296108-sent-communications-a1341-a1343.pdf – belegt (heute als PDF-Text geprüft): Sync/Kalibrierung 56 Ticks; Status-Nibble; Daten-Nibbles; CRC-Nibble; Pause-Puls optional, mind. 12 Ticks; Nibble 12–27 Ticks = 5 Ticks Low + 7…22 Ticks High (Tabelle 1); Standard-Tick 3 µs.",
+  "Allegro MicroSystems – AN296244 SENT mit A17700: https://www.allegromicro.com/-/media/files/application-notes/an296244-using-sent-output-protocol-with-a17700.pdf – belegt: SAE J2716; Low-Phase typ. 5 Ticks; 4-Bit-Wert = Ticks − 12; Tick = Sync-Dauer/56 (Kalibrierung); CRC-4 über die Daten-Nibbles.",
+  "Pico Technology – Guided Test AGT-404 SENT fast: https://www.picoauto.com/library/automotive-guided-tests/communication/sent/AGT-404-sent-fast-extended-testing/ – belegt: Tick = Zeit zwischen den fallenden Flanken des Sync ÷ 56 (Beispiel 168 µs / 56 = 3 µs); Nibble zwischen fallenden Flanken gemessen; Messung gegen Karosserie/Batterie-Minus, Zündung ein weckt den Sensor.",
+  "Texas Instruments – SPRAB22 SENT-Decoder: https://www.ti.com/lit/pdf/sprab22 – belegt: Pulsdauer von fallender zu fallender Flanke, Signal nominal zwischen 5 V und Masse, Flanken für EMV geformt; Sendertakt ±20 % → Kalibrierpuls 56 Ticks.",
+  "Wikipedia – SENT (protocol): https://en.wikipedia.org/wiki/SENT_(protocol) – belegt: drei Leitungen (5 V, Signal, Masse); Low < 0,5 V, High > 4,1 V; Tick 3–90 µs; Sync 56 Ticks; Nibble 12–27 Ticks = Wert 0–15.",
+  "Physik (ohne Quelle): 56 × 3 µs = 168 µs; 25 Ticks = 75 µs → Wert 25 − 12 = 13; 100 µs/div → 1 ms / 5000 Punkte = 0,2 µs Raster (15 Punkte je Tick). Nibble-Werte des Rahmens sind Beispiele; Pegel und Flankenzeiten per expect nachgemessen."
+];
+QUELLEN["svg-frame"] = [
+  "Bosch – CAN Specification 2.0 (1991): http://esd.cs.ucr.edu/webres/can20.pdf – belegt: Datenrahmen = SOF (1 dominantes Bit), Arbitrierungsfeld (11-bit-Identifier + RTR), Steuerfeld (IDE, r0, DLC 4 Bit), Datenfeld 0–8 Byte, CRC-Feld (15 Bit + Delimiter), ACK-Slot (von Empfängern dominant überschrieben) + ACK-Delimiter, EOF 7 rezessive Bits; Bitstopfen nach 5 gleichen Bits. (Kopie zeitweise nicht erreichbar, HTTP 503.)",
+  "Wikipedia – CAN bus, Abschnitt Base frame format (Zweitquelle, heute geprüft): https://en.wikipedia.org/wiki/CAN_bus – belegt: SOF 1 Bit, Identifier 11 Bit, RTR 1, IDE 1, r0 1, DLC 4 Bit, Daten 0–64 Bit, CRC 15 Bit + Delimiter, ACK-Slot + Delimiter, EOF 7 rezessive Bits; Stopfbit entgegengesetzter Polarität nach 5 gleichen Bits (CRC-Delimiter, ACK und EOF ungestopft).",
+  "Texas Instruments – SLOA101B: https://www.ti.com/lit/an/sloa101b/sloa101b.pdf – belegt: dominant typ. 2 V Differenz, rezessiv ≈ 0 V; High-Speed-CAN bis 1 Mbit/s.",
+  "Texas Instruments – SLLA486B, Abschnitt 14: https://ti.com/document-viewer/lit/html/SLLA486B/GUID-A8215A18-C6A8-445A-808A-9234A5BE22BB – belegt: ACK-Bit mit größerer Differenzspannung, weil mehrere Knoten gleichzeitig treiben.",
+  "Pico Technology – AGT-126: https://www.picoauto.com/library/automotive-guided-tests/communication/can-bus/AGT-126-can-bus-physical-layer/ – belegt: Antriebs-CAN typ. 500 kbit/s.",
+  "Physik (ohne Quelle): 500 kbit/s → 1 Bit = 2 µs; ID 0x2AB (010 1010 1011) wechselt bitweise → Periode 2 Bit = 4 µs = 250 kHz (per expect geprüft); Feldgrenzen aus dem Bitstrom des Modells berechnet (1 Stopfbit im Steuerfeld); Rahmeninhalt (ID, 2 Datenbytes 0x5A 0xA5) ist ein frei gewähltes Beispiel."
+];
+/* --- @gruppe:fig-bus.js ENDE --- */
+/* --- @gruppe:fdb.js START --- */
+/* keine neuen Modelle nötig – alle Bilder nutzen bestehende SIG.M.* der Karten kw-hall, kw-ind, kwnw-sync,
+   sensor-ref, ntc, stellmotor, pwm-ventil und inj-saug */
+QUELLEN["unterbrechung"] = [
+  "Pico Technology – Guided Test „Crankshaft Hall effect“: https://www.picoauto.com/library/automotive-guided-tests/crankshaft-hall-effect – belegt (heute geprüft): Rechteck 0 ↔ 5 V, Frequenz folgt der KW-Drehzahl; Ausgang schaltet je nach Sensorschaltung Low→High oder High→Low; Sensor braucht Versorgung und Masse; Fehlerursachen „short or open circuits or high circuit resistances“, interne Sensorfehler, Luftspalt, Geberradschaden; DTC P0335–P0339.",
+  "Allegro MicroSystems – Datenblatt A16311 (Hall-Sensor-IC): https://allegromicro.com/-/media/files/datasheets/a16311-datasheet.pdf – belegt: Open-Drain-/Open-Collector-Ausgang (Pull-up extern; Messbedingung RPU = 1 kΩ, VPU = 5 V – der Begriff „Open Collector“ steht nicht im Datenblatt, funktional Open-Drain mit Zener-Klemmung); Low (VOUT(SAT)) max. 250 mV bei 5 mA; Stromaufnahme typ. 7 mA.",
+  "Bosch Motorsport – Datenblatt Speed Sensor Hall-Effect HA-M: https://www.bosch-motorsport.com/media/catalog_content/downloads_catalog/pdf_catalog/data_sheet_69827851_speed_sensor_hall-effect_ha-m.pdf – belegt: „Output circuit Open collector for 1 kOhm“ – Pull-up-Logik am Hall-Geber.",
+  "Pico Technology – Guided Test AGT-429 „Crankshaft position (floating, running)“: https://www.picoauto.com/library/automotive-guided-tests/crankshaft-inductive-floating-running/ – belegt: der induktive Geber erzeugt seine Spannung selbst (keine Versorgung) – bei Unterbrechung bleibt dort die Nulllinie, nicht ein Ruhepegel.",
+  "Physik (ohne Quelle): Open Collector: offene Signalleitung, offene Sensormasse oder offene Versorgung lassen nur den Pull-up im STG wirken → Dauer-High (Pull-up-Pegel, hier 5 V). Selbst erzeugende Signale (induktiv, Piezo) oder Sensoren mit aktivem Spannungsausgang ohne Pull-up fallen bei Unterbrechung auf ~0 V. Zeitpunkt des Abrisses (45 ms) ist ein Beispiel; Pegel per expect nachgemessen."
+];
+QUELLEN["ks-masse"] = [
+  "Pico Technology – Guided Test „Crankshaft Hall effect“: https://www.picoauto.com/library/automotive-guided-tests/crankshaft-hall-effect – belegt (heute geprüft): Rechteck 0 ↔ 5 V erwartet; Kurzschluss/Unterbrechung/hoher Widerstand und interne Sensorfehler als Ursachen; ohne gültiges KW-Signal startet der Motor nicht (Pico AGT-017: „cranking but not starting“).",
+  "Pico Technology – AGT 017 „Crankshaft position (non-floating, cranking)“: https://www.picoauto.com/library/automotive-guided-tests/sensors/crankshaft-position/AGT-017-crankshaft-position-non-floating-cranking/ – belegt: Prüfung beim Anlassen; Symptom „cranking but not starting“.",
+  "Pico Technology – Case study Toyota GT86 „Engine non-start“: https://www.picoauto.com/library/case-studies/engine-non-start – belegt: Startdrehzahl ~237 /min normal, Drehzahl sinkt in der Verdichtung (Sollbild beim Anlassen ~240 ± 60 /min, Beispiel).",
+  "HELLA TECH WORLD – Camshaft position sensor: https://www.hella.com/techworld/us/technical/sensors-and-actuators/camshaft-position-sensor/ – belegt: Versorgung bei Zündung ein Richtwert ca. 5 V (Herstellerangaben beachten).",
+  "Physik (ohne Quelle): niederohmige Verbindung der Signalleitung nach Masse zieht den Pegel unabhängig vom Sensor auf ~0 V; der Pull-up (1 kΩ, Beispiel) kann dagegen nicht hochziehen. Versorgung (CH2) bleibt dabei stehen. Pegel per expect nachgemessen."
+];
+QUELLEN["ks-plus"] = [
+  "Pico Technology – Guided Test „Crankshaft Hall effect“: https://www.picoauto.com/library/automotive-guided-tests/crankshaft-hall-effect – belegt (heute geprüft): Sollsignal 0 ↔ 5 V; Kurzschluss als Fehlerursache; ohne Signal kein Start.",
+  "Pico Technology – AGT-029 „Throttle position potentiometer“: https://www.picoauto.com/library/automotive-guided-tests/sensors/throttle-position/AGT-029-throttle-position-potentiometer/ – belegt: 5-V-Sensoren arbeiten typ. ~0,5–4,5 V; Spannung über diesem Bereich = Kurzschluss gegen die 5-V-Referenz (Variante „klebt auf 5 V“).",
+  "Pico Technology – Case study Toyota GT86 „Engine non-start“: https://www.picoauto.com/library/case-studies/engine-non-start – belegt: Startdrehzahl ~237 /min (Sollbild Anlassen, Beispiel ~240 /min).",
+  "Physik (ohne Quelle): ein Open-Collector-Ausgang kann nur nach Masse ziehen; hat die Leitung Kontakt zu einer Plusleitung, steht Bordnetzspannung an (hier Beispiel 12,4 V) – über Pull-up-/Referenzpegel (5 V). Bei Schluss zur 5-V-Referenz klebt das Signal genau bei 5 V. Pegel per expect nachgemessen."
+];
+QUELLEN["schlechte-masse"] = [
+  "Allegro MicroSystems – Datenblatt A16311: https://allegromicro.com/-/media/files/datasheets/a16311-datasheet.pdf – belegt: Stromaufnahme typ. 7 mA; Low max. 250 mV bei 5 mA; Pull-up 1 kΩ / 5 V als Messbedingung.",
+  "Bosch Motorsport – Datenblatt Speed Sensor Hall-Effect HA-M: https://www.bosch-motorsport.com/media/catalog_content/downloads_catalog/pdf_catalog/data_sheet_69827851_speed_sensor_hall-effect_ha-m.pdf – belegt: Low bis 0,52 V zulässig → Soll-Low typ. < 0,5 V, herstellerabhängig.",
+  "Pico Technology – Guided Test „Crankshaft Hall effect“: https://www.picoauto.com/library/automotive-guided-tests/crankshaft-hall-effect – belegt (heute geprüft): „high circuit resistances“ als Fehlerursache; Sensor braucht Masse.",
+  "Physik (ohne Quelle): Spannungsfall U = I · R über einen Übergangswiderstand im Massepfad (Beispiel 100 Ω, Sensorstrom ~7 mA + Ausgangsstrom aus dem 1-kΩ-Pull-up) hebt den Low-Pegel an (~1,2 V, per expect nachgemessen); High bleibt am Pull-up. Nur gegen gute Masse (Batterie-Minus) sichtbar."
+];
+QUELLEN["wackelkontakt"] = [
+  "Pico Technology – Guided Test „Crankshaft Hall effect“: https://www.picoauto.com/library/automotive-guided-tests/crankshaft-hall-effect – belegt (heute geprüft): Fehlerursachen Unterbrechung/hoher Widerstand, „excessive crank or flywheel movement or vibration“; Symptome Motor geht aus, MIL.",
+  "Allegro MicroSystems – Datenblatt A16311: https://allegromicro.com/-/media/files/datasheets/a16311-datasheet.pdf – belegt: Pull-up 1 kΩ / 5 V, Low ≤ 250 mV.",
+  "Physik (ohne Quelle): kurze Unterbrechung von Versorgung, Masse oder Signal → Ausgang sperrt, Pull-up zieht hoch (Schein-Lücke); Dauer und Lage der Aussetzer (Beispiel ~6 ms und ~10 ms) sind zufällig und nicht winkelfest – Unterschied zum Geberradschaden. Die 60-2-Lücke erscheint am Hall-Geber ebenfalls als High-Plateau (2 fehlende Zähne + halber Zahn = 15° KW ≈ 3 ms bei 800 /min), aber winkelfest jede Umdrehung (75 ms bei 800 /min) und genauso im Sollbild; Lage/Dauer per expect nachgemessen."
+];
+QUELLEN["rauschen"] = [
+  "Pico Technology Forum, Steve Smith (Pico) / martinr 2022: https://www.picoauto.com/support/viewtopic.php?p=102838 – belegt: Fallbeispiel Zündspitzen auf der KW-Messleitung; nach Umlegen der Leitungen Start wieder möglich.",
+  "Pico Technology – Guided Test „Crankshaft Hall effect“: https://www.picoauto.com/library/automotive-guided-tests/crankshaft-hall-effect – belegt (heute geprüft): Rechteck 0 ↔ 5 V als Sollbild.",
+  "Physik (ohne Quelle): 4-Zyl./4-Takt: eine Zündung je 180° KW = ½ Umdrehung → Störnadeln im Abstand ½ Umdrehung (37,5 ms bei 800 /min) zeigen auf die Zündanlage. Nadelhöhe (~2,8 V), Frequenz (10 kHz) und Abklingzeit sind Beispielwerte des Modells; Abstand und Höhe per expect nachgemessen."
+];
+QUELLEN["schwache-amplitude"] = [
+  "Bosch Motorsport – Datenblatt Inductive Speed Sensor IS-C: https://www.bosch-motorsport.com/media/downloads/inductive_speed_sensor_is-c.pdf – belegt: Spannung proportional zur Flussänderung; Kennlinie Ua = f(Drehzahl, Luftspalt): 0,5 mm → 1,0 mm Luftspalt etwa 0,43–0,47× der Spannung; ~0,8–0,9 V bei 200 /min, ca. 3,3 V bei 800 /min (0,5 mm, 10 kΩ).",
+  "Pico Technology – Guided Test AGT-429 „Crankshaft position (floating, running)“: https://www.picoauto.com/library/automotive-guided-tests/crankshaft-inductive-floating-running/ – belegt: Spannung steigt mit der Drehzahl; Zähne an der Lücke erzeugen größere Ausschläge; Fehler: zu großer Luftspalt, Schmutz, Geberrad/Sensor beschädigt, Kurzschluss/Unterbrechung/hoher Widerstand.",
+  "Pico Technology – Guided Test AGT-017: https://www.picoauto.com/library/automotive-guided-tests/sensors/crankshaft-position/AGT-017-crankshaft-position-non-floating-cranking/ – belegt: Prüfung beim Anlassen, dort ist die Spannung am kleinsten (Startprobleme als Symptom).",
+  "Physik (ohne Quelle): 60-2-Rad → Zahnfrequenz in Hz = Drehzahl in 1/min; Luftspalt im Modell exp(−Δs/0,63 mm) nach der Bosch-Kennlinie; Leerlaufpegel (~5 V Scheitel, Sollbild ~11 Vss) herstellerabhängig, Beispiel; Fehlerbild ~5 Vss per expect nachgemessen."
+];
+QUELLEN["phasenversatz"] = [
+  "Pico Technology – AGT 151 „Crankshaft position vs camshaft position“: https://www.picoauto.com/library/automotive-guided-tests/system-tests/camshaft-position-vs-crankshaft-position/AGT-151-crankshaft-position-vs-camshaft-position/ – belegt (heute geprüft): KW und NW im Leerlauf gemeinsam aufnehmen, Abstand der Bezugsmarken in Grad oder Zähnen mit Herstellerdaten/Gutbild vergleichen; Ursachen: Steuerriemen/-kette falsch montiert, verschlissen, gelängt; Spanner/Umlenkrollen; VVT-Mechanik; Phasenrad/Schwungrad falsch montiert; Symptome: startet nicht, geht aus, Notlauf, MIL.",
+  "Pico Technology – Application note „Cam and crank correlation“: https://www.picoauto.com/library/application-notes/cam-and-crank-correlation – belegt: Vergleich mit der Referenzkurve eines baugleichen Fahrzeugs (Waveform Library) bzw. einem Gutbild; 41,34° ≈ 6 Zähne; VVT-Steller abklemmen → NW in Ruhe-/Spätstellung; danach DTC löschen.",
+  "Nissan TechNews / Automotive Tech Info – „Understanding Camshaft Control Systems, Part 2“: https://automotivetechinfo.com/2015/11/camshaft-control-systems-2-timing-chains-and-sprockets/ – belegt: gelängte Kette → NW spät, NW-Pulse im Zweikanalbild nach rechts verschoben.",
+  "Physik/Geometrie (ohne Quelle): 1 Teilung am 60-2-Rad = 6° KW; 1 NW-Umdrehung = 720° KW = 150 ms bei 800 /min. Soll-Lage 42° KW (7 Zähne) und Versatz 12° KW (2 Zähne) sind Beispielwerte des Modells; Sollwerte liefern nur Referenzbild/Herstellerdaten. Lage per expect nachgemessen."
+];
+QUELLEN["versorgung-fehlt"] = [
+  "Saab WIS 9-5 (2011), 2,0 l Benziner (GM) – DTC P0641–P0699 (ECM): https://saabwisonline.com/9-5-9650/2011/2-engine/engine-management-and-fuel-system-2-0-l-petrol/fault-diagnosis-diagnostic-trouble-codes/dtc-p0641-p0643-p0651-p0653-or-p0697-p0699-ecm – belegt: jeder 5-V-Referenzkreis versorgt mehrere Sensoren; Unterbrechung, Masseschluss oder Schluss gegen Spannung an einem Kreis beeinflusst alle Bauteile dieses Kreises; Prüfwert 4,8–5,2 V.",
+  "Saab WIS 9-5 (2011), Diesel (GM) – DTC P0107/P0108: https://saabwisonline.com/9-5-9650/2011/2-engine/engine-management-and-fuel-system-4-cyl-diesel/fault-diagnosis-diagnostic-trouble-codes/dtc-p0107-or-p0108 – belegt: 5-V-Referenz offen/hochohmig → Signal zu niedrig (P0107).",
+  "Texas Instruments – Application Note SBOA628: https://www.ti.com/lit/pdf/sboa628 – belegt: ratiometrischer Sensor: Ausgang proportional zur Versorgung (U = K · U_Versorgung) – ohne Versorgung kein Signal.",
+  "Pico Technology – Guided Test „Crankshaft Hall effect“: https://www.picoauto.com/library/automotive-guided-tests/crankshaft-hall-effect – belegt: Hall-Sensoren brauchen Versorgung und Masse (dort bleibt bei fehlender Versorgung nur der Pull-up: Dauer-High, siehe Muster Unterbrechung).",
+  "Physik (ohne Quelle): fällt die gemeinsame Referenz weg, sinken alle daran hängenden ratiometrischen Signale gleichzeitig auf ~0 V (Signal = K · Referenz, hier K = 0,3 → 1,5 V als Beispiel). Zeitpunkt (4 s) ist ein Beispiel; Pegel per expect nachgemessen."
+];
+QUELLEN["sensor-intern"] = [
+  "Pico Technology – Guided Test „Crankshaft Hall effect“: https://www.picoauto.com/library/automotive-guided-tests/crankshaft-hall-effect – belegt (heute geprüft): „Internal sensor circuit failures“ als Fehlerursache; Sensor braucht Versorgung und Masse; Sollbild 0 ↔ 5 V.",
+  "HELLA TECH WORLD – Crankshaft sensor: https://www.hella.com/techworld/en/technical/sensors-and-actuators/crankshaft-sensor/ – belegt: Hall-Geber: Rechteck und Versorgungsspannung prüfen; kein Ohmmeter an Hall-Gebern.",
+  "HELLA TECH WORLD – Camshaft position sensor: https://www.hella.com/techworld/us/technical/sensors-and-actuators/camshaft-position-sensor/ – belegt: Versorgung ca. 5 V bei Zündung ein; Leitungsdurchgang ~0 Ω, Isolation > 30 MΩ (Ausschluss der Verdrahtung).",
+  "Physik (ohne Quelle): Open Collector: toter Ausgang, offene Signalleitung und offene Sensormasse ergeben am STG dasselbe Dauer-High (nur Pull-up). Erst wenn Versorgung (CH2), Masse und Signalleitung am Stecker als gut nachgewiesen sind, bleibt der Sensor. Pegel per expect nachgemessen."
+];
+QUELLEN["korrosion"] = [
+  "Pico Technology – Guided Test AGT 015 „Engine coolant temperature (5 V)“: https://www.picoauto.com/library/automotive-guided-tests/sensors/coolant-temperature/AGT-015-engine-coolant-temperature-5-v/ – belegt (heute geprüft): Temperatursensorkreise sind „highly resistance sensitive“; schlechte oder korrodierte Verbindungen verfälschen das Signal; Fehler: hoher Widerstand, Unterbrechung, Kurzschluss.",
+  "Bosch Motorsport – Datenblatt NTC M12 (0 280 130 026): https://www.bosch-motorsport.com/content/downloads/Raceparts/Resources/pdf/Data%20Sheet_70101387_Temperature_Sensor_NTC_M12.pdf – belegt: 2500 Ω bei 20 °C, 243 Ω bei 90 °C; Pull-up im STG.",
+  "HELLA TechWorld – Checking the coolant temperature sensor: https://www.hella.com/techworld/en/technical/sensors-and-actuators/test-coolant-temperature-sensor/ – belegt: Fehlerspeicher „unplausible Signalsprünge“; Ursachen Kontaktfehler, Korrosion.",
+  "Physik (ohne Quelle): Spannungsteiler U = 5 V · R/(R + 1 kΩ); ein Übergangswiderstand in Reihe (Beispiel 150 Ω, schwankend ±60 Ω) hebt die Spannung von ~0,98 V auf ~1,4 V; kurz hochohmige Kontakte (Beispiel +0,6…1,5 kΩ) erzeugen Sprünge nach oben. Alle Widerstände sind Beispielwerte; Pegel per expect nachgemessen."
+];
+QUELLEN["mechanik-trotz-signal"] = [
+  "Pico Technology – Guided Test AGT-076 Throttle servomotors: https://www.picoauto.com/library/automotive-guided-tests/actuators/throttle-servomotor/AGT-076-throttle-servomotors/ – belegt (heute geprüft): Kanal A Lagegeber (TPS), Kanal B Schaltleitung des Drosselklappenmotors (Seitentext ohne Zahlenwerte; ~0 ↔ ~14 V und ~2 kHz nur aus dem Beispielbild abgelesen – PWM-Frequenz herstellerabhängig, typ. einige 100 Hz bis einige kHz).",
+  "Saab WIS – 9-5 (2011), DTC P2111/P2119: https://saabwisonline.com/9-5-9650/2011/2-engine/engine-management-and-fuel-system-1-6-l-petrol/fault-diagnosis-diagnostic-trouble-codes/dtc-p1551-p2101-p2111-p2118-p2119-or-p2176-llu – belegt: DTC, wenn die Lage länger als 0,3 s nicht zur erwarteten passt; reduzierte Motorleistung.",
+  "HELLA – Technische Information Drosselklappenstutzen: https://www.hella.com/tibi/ti/de/electronics/ti_d_electronics_drosselklappenstutzen.pdf – belegt: Ausfallursachen Ölkohleablagerungen, mechanische Blockierung; Folgen Notlauf.",
+  "Infineon – Datenblatt TLE7209-2R H-Brücke: https://static.chipdip.ru/lib/328/DOC028328865.pdf – belegt: Low-Side-PWM mit Freilauf „high“, Flanken für 0,5–2 kHz optimiert (eigentlicher Beleg für die 2 kHz des Modells); bei Fehlern Endstufen hochohmig (tristate).",
+  "Physik (ohne Quelle): bei stehendem Motor keine Gegen-EMK → Strom = Tastgrad × Ub/R (hier Beispiel 60 % → ~2,5 A, gleiches Modell wie im Muster „Aktuator blockiert“); Lageregler fährt bei bleibender Abweichung bis an seine Tastgradgrenze (Beispiel 60 %). Abschaltung nach 0,3 s Regelabweichung nach Saab P2111; der Klemmenpegel der abgeschalteten Endstufe (Bsp. 4 V) ist eine Modellannahme (herstellerabhängig). Lagegeber-Kennlinie 0,5 V (zu) … 4,5 V (auf) und Motordaten (3 Ω) sind Beispiele; Lage und Pegel per expect nachgemessen."
+];
+QUELLEN["stg-falsch"] = [
+  "Pico Technology – Guided Test AGT-030 Carbon canister purge valve solenoid: https://www.picoauto.com/library/automotive-guided-tests/actuators/carbon-canister-purge-valve/AGT-030-carbon-canister-purge-valve-solenoid/ – belegt (heute geprüft): Plus (Zündung) auf einer Seite, STG steuert die Masseseite per PWM (Switched Earth); Fehlerursachen u. a. „ECM control failures (software or hardware, including the driver circuit)“.",
+  "Saab WIS – 9-5 (2010), DTC P0244–P0246: https://saabwisonline.com/9-5-9650/2010/2-engine/engine-management-and-fuel-system-4-cyl-petrol/fault-diagnosis-diagnostic-trouble-codes/dtc-p0244-p0246-ldk-with-turbocharger – belegt: Ansteuerung ~0 % im Leerlauf (gewollt); P0246 = Steuerkreis Spannung zu hoch.",
+  "Dieselschrauber-Forum (Sekundärquelle, zitiert Pierburg SI 0065): https://community.dieselschrauber.org/en/viewtopic.php?p=71144 – belegt nur als Sekundärangabe: Druckwandler 250–300 Hz (Sollbild 250 Hz, Beispiel).",
+  "Physik (ohne Quelle): Low-Side: ohne Strom fällt an der Spule nichts ab, die Steuerleitung liegt über die intakte Spule auf Bordnetz (13,5 V, Beispiel); Strom 0 A. Spule 25 Ω / 60 mH Beispiel. Pegel per expect nachgemessen."
+];
+QUELLEN["aktor-blockiert"] = [
+  "Infineon – Datenblatt TLE7209-2R H-Brücke: https://static.chipdip.ru/lib/328/DOC028328865.pdf – belegt: Chopper-Strombegrenzung typ. 6,6 A; bei Fehlern Endstufen hochohmig (tristate); Kurzschlussabschaltung.",
+  "Saab WIS – 9-5 (2011), DTC P2111: https://saabwisonline.com/9-5-9650/2011/2-engine/engine-management-and-fuel-system-1-6-l-petrol/fault-diagnosis-diagnostic-trouble-codes/dtc-p1551-p2101-p2111-p2118-p2119-or-p2176-llu – belegt: Lage ≠ Soll länger als 0,3 s → DTC, reduzierte Motorleistung (Abschaltzeit herstellerabhängig).",
+  "HELLA – Technische Information Drosselklappenstutzen: https://www.hella.com/tibi/ti/de/electronics/ti_d_electronics_drosselklappenstutzen.pdf – belegt: mechanische Blockierung, Ölkohle als Ausfallursache.",
+  "Pico Technology – Guided Test AGT-076 Throttle servomotors: https://www.picoauto.com/library/automotive-guided-tests/actuators/throttle-servomotor/AGT-076-throttle-servomotors/ – belegt: Messung an Motor-Schaltleitung und TPS (Strom per Zange ergänzend).",
+  "Physik (ohne Quelle): DC-Motor U = R·i + ke·ω; steht der Rotor, fehlt die Gegen-EMK und der Strom bleibt auf dem Blockierwert ≈ Tastgrad × Ub/R (Beispiel 60 % × 13,5 V / ~3,2 Ω inkl. Endstufe ≈ 2,5 A; bei 100 % wären es ~4,3 A) – im Sollbild fällt er mit der Drehzahl. Gleiches Modell, gleiche Tastgradgrenze (60 %) und gleiche Abschaltzeit (0,3 s, Saab P2111) wie im Muster „Mechanik fest“; Tastgradgrenze und Motordaten sind Beispiele. Ströme per expect nachgemessen."
+];
+QUELLEN["windungsschluss"] = [
+  "MOTOR Magazine – Fuel Injector Waveforms Sliced Extra Thin (01/2005): https://www.motor.com/wp-content/uploads/FuelInjectorWaveformsSlicedExtraThin_January2005-2.pdf – belegt: Abschaltspitze bis zur Klemmung (Beispiel 65 V); Low-Pegel spiegelt den Strom; Stromknick beim Öffnen der Nadel.",
+  "Hella – Technische Information Einspritzventile: https://www.hella.com/tibi/ti/de/electronics/ti_d_electronics_einspritzventile1.pdf – belegt: „Kurzschluss in der Spule“ als Ursache; Spulenwiderstand ~15 Ω (Audi).",
+  "Bosch Motorsport – Injection Valve EV 14: https://www.lingenfelter.com/images/Injection_Valve_EV_14_Datasheet_51_en_2775993867.pdf – belegt: Spulenwiderstand 12 Ω.",
+  "Pico Technology – Guided Tests AGT 382/388 MPI injector: https://www.picoauto.com/library/automotive-guided-tests/actuators/injector-(gasoline)/AGT-388-mpi-injector-voltage-and-current/ – belegt: Spule speichert Energie, beim Abschalten Spannungsspitze; Strom per Niederstromzange.",
+  "Physik (ohne Quelle): kurzgeschlossene Windungen senken R (mehr Strom) und wirken wie eine belastete Sekundärwicklung: beim Einschalten springt der Strom, beim Abschalten nimmt sie die Feldenergie auf → Spitze bleibt unter der Klemmung. Werte (8 Ω statt 14 Ω, Spitze ~37 V, Strom ~1,6 A) sind Modellbeispiele, per expect nachgemessen; Spitzen über ±20 V nur mit 10:1 am VDS1022I."
+];
+QUELLEN["fehlende-induktionsspitze"] = [
+  "Infineon – Datenblatt BTS3125TF HITFET (Spiegel): https://cdn.components.ru/media/PDF/8105824.pdf – belegt: beim Abschalten induktiver Lasten klemmt die Endstufe auf VOUT(CLAMP) min. 40 V, typ. 45 V (Sollbild: Klemmspitze ~45 V, Beispiel).",
+  "Pico Technology – Guided Test AGT-030 Carbon canister purge valve solenoid: https://www.picoauto.com/library/automotive-guided-tests/actuators/carbon-canister-purge-valve/AGT-030-carbon-canister-purge-valve-solenoid/ – belegt (heute geprüft): Switched-Earth-PWM; Fehler: Unterbrechung („open circuits“) in Spule oder Verdrahtung.",
+  "NXP – Datenblatt MC33810: https://cdn.eicom.ru/media/PDF/329327.pdf – belegt: Low-Side-Endstufe mit Diagnose im Aus-Zustand (Pull-down 75 µA, Fehlerschwelle 2,5 V) → bei offener Last liegt die Leitung im Aus-Teil nahe 0 V.",
+  "Texas Instruments – Datenblatt DRV81004-Q1 (SLVSH58B, 2025): https://www.ti.com/lit/ds/symlink/drv81004-q1.pdf – belegt: „Open Load detection in OFF state“ über einen Diagnosestrom IOL typ. 75 µA parallel zum Schalter (Pull-down), Schwelle VDS_OL 3,0–3,6 V (typ. 3,3 V): offene Last → VDS < VDS_OL → Leitung nahe 0 V. Beide belegten Endstufen (NXP, TI) ziehen nach unten; der Diagnosepegel ~3 V im Bild ist eine Modellannahme ohne Beleg (Pull-up-Variante), herstellerabhängig.",
+  "Patent JP2674842B2 (Toyota): https://patents.google.com/patent/JP2674842B2/en – belegt: Ladedruck-Regelventile üblich 20 Hz (Sollbild 20 Hz, 70 %).",
+  "Physik (ohne Quelle): die Abschaltspitze entsteht nur, wenn vorher Strom in der Spule floss (½·L·I²). Ist Spule oder Plusleitung offen, taktet die Endstufe weiter, aber im Aus-Teil erreicht die Leitung kein Bordnetz – nur den Diagnosepegel der Endstufe (im Bild Modellannahme ~3 V ohne Beleg; bei den belegten Pull-down-Endstufen NXP/TI ~0 V – dann ist auch der Takt nicht mehr sichtbar); Strom 0 A ist in jedem Fall das sichere Kriterium. Pegel per expect nachgemessen."
+];
+QUELLEN["pwm-extrem"] = [
+  "Saab WIS – 9-5 (2010), DTC P0244–P0246 (Ladedruck-Regelventil): https://saabwisonline.com/9-5-9650/2010/2-engine/engine-management-and-fuel-system-4-cyl-petrol/fault-diagnosis-diagnostic-trouble-codes/dtc-p0244-p0246-ldk-with-turbocharger – belegt: Ansteuerung ~0 % im Leerlauf, kurz 90–100 % bei Volllast, 65–85 % bei erreichtem Ladedruck (Extremwerte können gewollt sein); P0245/P0246 Steuerkreis zu niedrig/zu hoch.",
+  "Pico Technology – AGT-055 CRD pressure regulating valve: https://www.picoauto.com/library/automotive-guided-tests/actuators/pressure-regulator/AGT-055-crd-bosch-pressure-regulating-valve/ – belegt: je größer der Tastgrad, desto größer der mittlere Strom.",
+  "Dieselschrauber-Forum (Sekundärquelle, zitiert Pierburg SI 0065): https://community.dieselschrauber.org/en/viewtopic.php?p=71144 – belegt nur als Sekundärangabe: Druckwandler Tastgrad 20–95 %, 250–300 Hz.",
+  "Physik (ohne Quelle): 100 % Tastgrad = Endstufe dauernd durchgeschaltet → Steuerleitung dauernd ≈ 0 V, Strom = Ub/R (13,5 V / 25 Ω ≈ 0,54 A, Beispiel) – am Ventil nicht von einem Masseschluss zu unterscheiden; 0 % sieht aus wie „keine Ansteuerung“ (Dauer-Bordnetz). Übergang 50 % → 100 % im Bild ist ein Beispiel; Werte per expect nachgemessen."
+];
+QUELLEN["plausibel-falsch"] = [
+  "Bosch Motorsport – Datenblatt NTC M12 (0 280 130 026): https://www.bosch-motorsport.com/content/downloads/Raceparts/Resources/pdf/Data%20Sheet_70101387_Temperature_Sensor_NTC_M12.pdf – belegt: 2500 Ω bei 20 °C, 1707 Ω bei 30 °C (→ mit 1 kΩ Pull-up 3,57 V bzw. 3,15 V).",
+  "Pico Technology – Guided Test AGT 015 „Engine coolant temperature (5 V)“: https://www.picoauto.com/library/automotive-guided-tests/sensors/coolant-temperature/AGT-015-engine-coolant-temperature-5-v/ – belegt (heute geprüft): Tester-Wert kann vom STG geschätzt sein und einen defekten Sensor verdecken; Kreis sehr widerstandsempfindlich; interner Sensorfehler als Ursache.",
+  "Saab WIS (GM), 9-5 (2010), DTC P0117/P0118: https://saabwisonline.com/9-5-9650/2010/2-engine/engine-management-and-fuel-system-4-cyl-diesel/fault-diagnosis-diagnostic-trouble-codes/dtc-p0117-or-p0118 – belegt: nach Kaltstart soll die Temperatur stetig steigen; Kaltvergleich KMT/IAT nach Standzeit (Saab/GM: innerhalb 3 °C).",
+  "Physik (ohne Quelle): Spannungsteiler U = 5 V · R/(R + 1 kΩ); ein Nebenschluss parallel zum NTC (Beispiel 5 kΩ: 2500 ∥ 5000 = 1667 Ω → 3,13 V ≙ ~30 °C) oder eine gedriftete Kennlinie verschiebt den Pegel, ohne die Form zu ändern. Nach einer Nacht haben KMT und IAT dieselbe Temperatur – nur der Quervergleich deckt den Fehler auf. Pegel per expect nachgemessen."
+];
+/* --- @gruppe:fdb.js ENDE --- */
 /* ===== SIGNALMODELLE (Karten) — ENDE ===== */
 
 /* ---------- 2) MESSKARTEN ---------- */
@@ -23056,11 +23127,16 @@ var FEHLERDB=[
 {
 id:"unterbrechung", titel:"Unterbrechung / Leitungsbruch",
 kennzeichen:"Signal komplett weg (Nulllinie oder offener Pegel), oft sporadisch beim Rütteln/Erwärmen.",
-bild:W({yr:[-1,6],yunit:"V",vdiv:"2 V/div",tdiv:"5 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"sq",o:{cyc:7,duty:0.5,hi:5,lo:0.2},tf:[function(p){return tDrop(p,0.5,1.0,0);}],mp:"Signal"}],
-   marks:[{t:0.7,v:0,txt:"Abriss"}],
-   caption:"Signal bricht ab und bleibt weg.",
-   why:"Stromkreis offen: kein Pegelwechsel mehr. Bei sensorgespeisten Leitungen Nulllinie, bei Pull-up-Leitungen 'klebt' der Ruhepegel."}),
+bild:W2({ badge:"FEHLER", title:"Unterbrechung: Signal reißt ab, Pull-up-Pegel bleibt", cond:"Leerlauf ~800 /min, Rütteltest (Bsp. KW-Hall)", vdiv:1, off:-3, tdiv:0.010,
+  ch:[{ m:"kwHallGeber", p:{ rpm:800, ph0:287.4, drops:[[0.0453, 0.2]] }, lbl:"Hall-Signal" }],
+  ghost:[{ m:"kwHallGeber", p:{ rpm:800, ph0:287.4 } }],
+  notes:[ {t:0.0453, v:5, txt:"Abriss: ab hier nur noch Pull-up ≈ 5 V", dx:14, dy:-30},
+          {t:0.082, v:0.12, txt:"Sollbild (grau): Pulse 0 ↔ 5 V laufen weiter", dx:-10, dy:40, anchor:"end"} ],
+  expect:[ {what:"freq", t0:0, t1:0.044, v:800, tolRel:0.03, src:"60-2: Zahnfrequenz Hz = Drehzahl 1/min"},
+           {what:"min", t0:0.046, t1:0.1, min:4.8, src:"offener Kreis: nur Pull-up (5 V)"},
+           {what:"min", t0:0, t1:0.044, max:0.25, src:"A16311: Low ≤ 0,25 V"} ],
+  caption:"Mitten im Lauf hört das Rechteck auf und die Leitung bleibt auf ~5 V stehen – nichts kommt mehr. Beim Rütteln am Kabelbaum oder beim Erwärmen reproduzierbar.",
+  why:"Stromkreis offen (Kabelbruch an Biegestellen, Steckerkrimp, Scheuerstelle): Es gibt keinen Pegelwechsel mehr. Welcher Pegel stehen bleibt, verrät die Schaltung: Bei Open-Collector-Ausgängen mit Pull-up im STG (Hall, viele Digitalsensoren) „klebt“ die Leitung auf dem Pull-up-Pegel (hier 5 V) – egal ob Signal-, Masse- oder Versorgungsleitung offen ist. Selbst erzeugende Signale (induktiver Geber, Piezo) und Sensoren mit aktivem Spannungsausgang fallen dagegen auf die Nulllinie. Unterschied zum Wackelkontakt: dort kommt das Signal von selbst wieder. Unterschied zum Masseschluss: dort Dauer-Low. Eingrenzen: Spannung beidseitig der verdächtigen Stelle unter Aufnahme, Durchgang stromlos abgesteckt." }),
 elektrisch:["Kabelbruch (Biegestellen, Steckerkrimp)","Steckkontakt offen/korrodiert","Sicherung/Versorgung weg"],
 mechanisch:["Scheuerstelle durchgescheuert","Vibrationsbruch nahe Steckern"],
 software:["Selten; ggf. Endstufe abgeschaltet (Schutz)"],
@@ -23073,10 +23149,16 @@ verwechslung:"Sensor intern defekt vs. Leitung: am Stecker einspeisen/überbrüc
 {
 id:"ks-masse", titel:"Kurzschluss nach Masse",
 kennzeichen:"Signal klebt nahe 0 V, reagiert nicht auf Betätigung.",
-bild:W({yr:[-1,6],yunit:"V",vdiv:"2 V/div",tdiv:"5 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"flat",o:{v:0.1},mp:"Signal"}],
-   caption:"Dauer-Low nahe 0 V.",
-   why:"Signalleitung hat niederohmige Verbindung nach Masse → Pegel wird auf ~0 V gezogen, unabhängig vom Sensor."}),
+bild:W2({ badge:"FEHLER", title:"Kurzschluss nach Masse: Signal klebt bei ~0 V", cond:"Startversuch", vdiv:2, off:-3, tdiv:0.020,
+  ch:[{ m:"kwHallGeber", p:{ out:"low" }, lbl:"Hall-Signal" },
+      { m:"kwHallVers", p:{ v:5 }, lbl:"Versorgung", vdiv:2, off:0 }],
+  ghost:[{ m:"kwHallGeber", p:{ rpm:240, dRpm:60, kMod:2, ph0:330 } }],
+  notes:[ {t:0.1, v:0.03, txt:"Dauer-Low ~0 V, keine Reaktion", dx:10, dy:-40},
+          {t:0.15, v:5, ch:1, txt:"Versorgung 5 V steht", dx:-10, dy:-14, anchor:"end"} ],
+  expect:[ {what:"max", ch:0, max:0.2, src:"Masseschluss"},
+           {what:"mean", ch:1, v:5, tol:0.1, src:"Hella: Versorgung ca. 5 V"} ],
+  caption:"Motor dreht, springt nicht an: Das Signal liegt dauernd bei ~0 V, obwohl die Versorgung (CH2) da ist. Das graue Sollbild zeigt die Pulse, die beim Anlassen kommen müssten.",
+  why:"Die Signalleitung hat eine niederohmige Verbindung nach Masse (Scheuerstelle gegen Block/Karosserie, Wasser im Stecker, Quetschung) oder der Ausgangstransistor im Sensor ist durchlegiert. Der Pull-up im STG kann gegen den Schluss nicht hochziehen – der Pegel bleibt unten, unabhängig davon, was der Sensor tut. Eingrenzen: Sensor abstecken. Steigt die Leitung am STG-Pin auf Pull-up-Pegel → Sensor; bleibt sie bei 0 V → Leitung oder STG (Isolation Signal → Masse abgesteckt messen). Verwechslung: Ein NTC zeigt warm nur ~1 V – das ist kein Masseschluss; der Kurzschluss liegt bei ~0 V und reagiert auf nichts." }),
 elektrisch:["Scheuerstelle gegen Masse/Block","Wasser/Korrosion im Stecker","Sensor intern nach Masse durchlegiert"],
 mechanisch:["Quetschung gegen Karosserie"],
 software:["—"],
@@ -23089,10 +23171,14 @@ verwechslung:"Echt 'kalt/heiß'-Wert (NTC) vs. KS: Plausibilität gegen Referenz
 {
 id:"ks-plus", titel:"Kurzschluss nach Plus",
 kennzeichen:"Signal klebt nahe Versorgung (5 V/Bordnetz), keine Reaktion.",
-bild:W({yr:[-1,6],yunit:"V",vdiv:"2 V/div",tdiv:"5 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"flat",o:{v:5},mp:"Signal"}],
-   caption:"Dauer-High nahe Referenz.",
-   why:"Signalleitung mit Versorgung verbunden → Pegel auf 5 V/Bordnetz gezogen. Bei Open-Collector-Leitungen sieht das wie 'klebt oben' aus."}),
+bild:W2({ badge:"FEHLER", title:"Kurzschluss nach Plus: Signal klebt über der Versorgung", cond:"Startversuch (Bsp. KW-Hall, Pull-up 5 V)", vdiv:2, off:-3, tdiv:0.020,
+  ch:[{ m:"kwHallGeber", p:{ out:"plus" }, lbl:"Hall-Signal" }],
+  ghost:[{ m:"kwHallGeber", p:{ rpm:240, dRpm:60, kMod:2, ph0:330 } }],
+  meas:[ {t:"level", v:5, t0:0, t1:0.2, lx:0.004, txt:"5 V = Pull-up/Referenz: höher geht nur mit Fremdspannung", dy:-10} ],
+  notes:[ {t:0.1, v:12.4, txt:"Dauer-High ≈ 12,4 V = Bordnetz (Beispiel), keine Reaktion", dx:10, dy:30} ],
+  expect:[ {what:"min", ch:0, min:11, src:"Modell: Bordnetz 12,4 V (Beispiel)"} ],
+  caption:"Kein Rechteck: Das Signal steht dauernd auf Bordnetzspannung – deutlich über Versorgung und Pull-up (5 V). Bei Schluss zur 5-V-Referenz klebt es stattdessen genau bei 5 V.",
+  why:"Die Signalleitung hat Kontakt zu einer Plusleitung (Scheuerstelle an benachbarten Adern, Wasserbrücke im Stecker, falsch gesteckter Pin) oder der Sensor ist intern nach Plus durchlegiert. Ein Open-Collector-Ausgang kann nur nach Masse ziehen, gegen das Bordnetz kommt er nicht an. Verwechslung mit „Unterbrechung“: dort steht nur der Pull-up-Pegel (~5 V) an, hier mehr. Bei 5-V-Sensoren (Poti, Drucksensor) klebt der Schluss zur Referenz bei 5 V – oberhalb des Arbeitsbereichs ~0,5–4,5 V (Pico). Verwechslung mit normalem Open-Collector-High: das muss schaltbar bleiben. Eingrenzen: Sensor abstecken – bleibt die Spannung am STG-Pin → Leitung/Stecker; Isolation Signal → Plus abgesteckt messen." }),
 elektrisch:["Scheuerstelle gegen 5-V-/Plusleitung","Stecker-Brücke (Wasser)","Sensor intern nach Plus"],
 mechanisch:["Quetschung benachbarter Adern"],
 software:["—"],
@@ -23105,11 +23191,15 @@ verwechslung:"Open-Collector 'High' (normal, Pull-up) vs. echter KS-Plus: muss s
 {
 id:"schlechte-masse", titel:"Schlechte Masse / Übergangswiderstand",
 kennzeichen:"Low-Pegel zu hoch, Offset im Signal, Fehler unter Last/Wärme schlimmer.",
-bild:W({yr:[-1,6],yunit:"V",vdiv:"2 V/div",tdiv:"5 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"sq",o:{cyc:7,duty:0.5,hi:5,lo:1.7},mp:"Signal"}],
-   marks:[{t:0.4,v:1.7,txt:"Low angehoben"}],
-   caption:"Low erreicht statt ~0 V nur ~1,7 V.",
-   why:"Massebezug über Übergangswiderstand → die ganze Signalreferenz 'schwimmt' nach oben. Schaltschwellen werden unsicher; unter Last steigt der Spannungsfall weiter."}),
+bild:W2({ badge:"FEHLER", title:"Schlechte Masse: Low-Pegel angehoben (Masseversatz)", cond:"Leerlauf 800 /min, gegen Batterie-Minus", vdiv:1, off:-3, tdiv:0.010,
+  ch:[{ m:"kwHallGeber", p:{ rpm:800, ph0:287.4, rg:100 }, lbl:"Hall-Signal" }],
+  ghost:[{ m:"kwHallGeber", p:{ rpm:800, ph0:287.4 } }],
+  meas:[ {t:"level", v:1.2, t0:0, t1:0.1, lx:0.0, txt:"Low ≈ 1,2 V statt typ. < 0,5 V (Bsp. 100 Ω im Massepfad)", dy:28} ],
+  notes:[ {t:0.0505, v:5, txt:"High normal ≈ 5 V", dx:10, dy:-26} ],
+  expect:[ {what:"min", min:1.12, max:1.28, src:"Modell: 100 Ω Masse-Übergang, 1 kΩ Pull-up, 7 mA"},
+           {what:"max", min:4.9, max:5.1, src:"Pull-up 5 V"} ],
+  caption:"Das Rechteck ist da, aber der Low-Pegel kommt nicht mehr auf ~0 V herunter – er bleibt bei ~1,2 V hängen. High ist normal. Unter Last und warm wird es schlimmer.",
+  why:"Der Massebezug läuft über einen Übergangswiderstand (korrodierter Massepunkt, lockere Schraube, zu dünner Pfad). Der Sensorstrom erzeugt daran einen Spannungsfall U = I · R, und die ganze Signalreferenz „schwimmt“ nach oben – hier Beispiel 100 Ω: Low ≈ 1,2 V statt < 0,5 V (herstellerabhängig). Schaltschwellen werden unsicher; fließt mehr Strom (Last, weitere Verbraucher auf derselben Masse), steigt der Versatz weiter. Wichtig: Nur gegen gute Masse (Batterie-Minus/STG-Masse) sichtbar – gegen den Sensormassepin gemessen sieht das Signal gut aus. Unterschied zum Nebenschluss: dort ist High zu niedrig, Low normal. Prüfen: Spannungsfall über den Massepfad unter Last (Sollwert < ~0,1 V, herstellerabhängig); Sensormasse gegen saubere Masse vergleichen." }),
 elektrisch:["Korrodierter/lockerer Massepunkt","Zu langer/dünner Massepfad","Mehrere Verbraucher auf gemeinsamer schwacher Masse"],
 mechanisch:["Rost unter Masseösen","Lockere Schraubverbindung"],
 software:["—"],
@@ -23122,11 +23212,21 @@ verwechslung:"Sensor-Offset vs. Masseoffset: an sauberer Masse messen entscheide
 {
 id:"wackelkontakt", titel:"Wackelkontakt / intermittierend",
 kennzeichen:"Sporadische Aussetzer/Sprünge, reproduzierbar durch Rütteln, Federn, Temperatur.",
-bild:W({yr:[-1,6],yunit:"V",vdiv:"2 V/div",tdiv:"10 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"sq",o:{cyc:9,duty:0.5,hi:5,lo:0.2},tf:[function(p){return tDrop(p,0.4,0.46,0);},function(p){return tDrop(p,0.72,0.78,0);}],mp:"Signal"}],
-   marks:[{t:0.43,v:0,txt:"kurze Aussetzer"}],
-   caption:"Einzelne kurze Aussetzer im sonst guten Signal.",
-   why:"Kontakt öffnet kurz (Vibration/Wärmedehnung). Im Mittel 'meist gut' – deshalb oft ohne klaren DTC, aber spürbares Ruckeln/Notlauf."}),
+bild:W2({ badge:"FEHLER", title:"Wackelkontakt: sporadische Aussetzer beim Rütteln", cond:"Leerlauf ~800 /min, Rütteltest (Bsp. KW-Hall)", vdiv:1, off:-3, tdiv:0.010,
+  ch:[{ m:"kwHallGeber", p:{ rpm:800, ph0:287.4, drops:[[0.0262, 0.0320], [0.0618, 0.0722]] }, lbl:"Hall-Signal" }],
+  ghost:[{ m:"kwHallGeber", p:{ rpm:800, ph0:287.4 } }],
+  meas:[ {t:"span", t0:0.0262, t1:0.0320, v:-0.6, pre:"Aussetzer:"},
+         {t:"span", t0:0.0618, t1:0.0722, v:-0.6, pre:"Aussetzer:"} ],
+  notes:[ {t:0.0135, v:5, txt:"60-2-Lücke ≈ 3 ms: normal, winkelfest, auch im Sollbild", dx:-30, dy:-30} ],
+  expect:[ {what:"max", min:4.9, max:5.1, src:"Pull-up 5 V"}, {what:"min", max:0.25, src:"A16311: Low ≤ 0,25 V"},
+           {what:"min", t0:0.0122, t1:0.0150, min:4.8, src:"60-2-Lücke: High-Plateau ~3 ms (12,0–15,1 ms)"},
+           {what:"min", t0:0.0872, t1:0.0900, min:4.8, src:"Lücke eine Umdrehung (75 ms) später"},
+           {what:"vpp", t0:0.0152, t1:0.0260, min:4.5, src:"Zähne zwischen Lücke und Aussetzer laufen"},
+           {what:"min", t0:0.0264, t1:0.0318, min:4.8, src:"Aussetzer 5,8 ms: nur Pull-up"},
+           {what:"min", t0:0.0620, t1:0.0718, min:4.8, src:"Aussetzer 10,4 ms: nur Pull-up"},
+           {what:"freq", t0:0.075, t1:0.086, v:800, tolRel:0.03, src:"zwischen den Aussetzern normal"} ],
+  caption:"Im sonst sauberen Rechteck fehlen zweimal Pulse (5,8 ms und 10,4 ms): Der Pegel bleibt auf Pull-up hängen, dann läuft das Signal weiter. Nicht verwechseln mit der 60-2-Lücke (~3 ms), die bei 12 ms und 87 ms – eine Umdrehung = 75 ms – ganz normal auch im Sollbild steht.",
+  why:"Ein Kontakt öffnet kurz (aufgeweitete Steckerbuchse, kalte Lötstelle, Krimp, Korrosion, Vibration oder Wärmedehnung). Für die Dauer der Unterbrechung wirkt nur der Pull-up – das STG sieht eine Schein-Lücke und verliert die Synchronisation: Ruckeln, kurzer Aussetzer, Notlauf, oft ohne klaren DTC, weil es „meistens gut“ ist. Unterschied zur echten Lücke und zum Geberradschaden: Die sitzen jede Umdrehung an derselben Stelle (winkelfest, hier alle 75 ms) und sind immer gleich lang; der Wackler ist unterschiedlich lang (hier 5,8 und 10,4 ms) und wandert. Unterschied zur Unterbrechung: Das Signal kommt von selbst zurück. Strategie: lange Aufnahme (Roll/Single), gezielt rütteln, Heißluft/Kältespray – wandert der Fehlerort beim Bewegen, ist es der Kontakt." }),
 elektrisch:["Aufgeweitete Steckerkontakte","Kalte Lötstelle/Krimp","Korrosion an Übergängen"],
 mechanisch:["Bewegliche Leitungsführung (Türen, Motorlager, Radlauf)"],
 software:["—"],
@@ -23139,10 +23239,15 @@ verwechslung:"Sensor-/Geberradfehler vs. Kontakt: Fehlerort wandert beim Bewegen
 {
 id:"rauschen", titel:"Rauschen / Einstreuung (EMV)",
 kennzeichen:"Saubere Signale mit überlagerten Störspitzen, oft synchron zur Zündung/zu Verbrauchern.",
-bild:W({yr:[-1,6],yunit:"V",vdiv:"2 V/div",tdiv:"5 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"sq",o:{cyc:7,duty:0.5,hi:5,lo:0.2},tf:[function(p){return tNoise(p,0.7);}],mp:"Signal"}],
-   caption:"Nutzsignal mit aufgesetzten Störimpulsen.",
-   why:"Eingekoppelte Störungen (Zündung, Endstufen, schlechte Schirmung/Masse). Das STG kann Störspitzen als echte Flanken fehlinterpretieren → Phantomfehler."}),
+bild:W2({ badge:"FEHLER", title:"Einstreuung: Störnadeln synchron zur Zündung", cond:"Leerlauf ~800 /min, 4-Zyl. (Bsp. KW-Hall)", vdiv:1, off:-3, tdiv:0.010, os:64,
+  ch:[{ m:"kwHallGeber", p:{ rpm:800, ph0:287.4, spk:{ t0:0.0054375, T:0.0375, a:2.8, f0:10000, tau:0.00005 } }, lbl:"Hall-Signal" }],
+  ghost:[{ m:"kwHallGeber", p:{ rpm:800, ph0:287.4 } }],
+  meas:[ {t:"span", t0:0.0054375, t1:0.0429375, v:-0.6, pre:"Abstand", post:"= ½ Umdrehung (Zündabstand)"} ],
+  notes:[ {t:0.0804375, v:2.9, txt:"Nadel im Low bis über die Schaltschwelle", dx:-16, dy:100, anchor:"end"} ],
+  expect:[ {what:"max", t0:0.0052, t1:0.0057, min:2.6, src:"Nadel im Low-Abschnitt (Modell, Beispielhöhe)"},
+           {what:"freq", v:800, tolRel:0.02, src:"Nutzsignal unverändert 800 Hz"} ],
+  caption:"Das Nutzsignal ist komplett da, aber auf dem Rechteck sitzen kurze Nadeln – immer im gleichen Abstand von einer halben Kurbelwellenumdrehung. Das ist der Zündabstand beim 4-Zylinder.",
+  why:"Störungen koppeln kapazitiv oder induktiv in die Signalleitung ein: Leitung neben Zünd-/Leistungskabeln, Schirm nicht aufgelegt oder gebrochen, schlechte Masse als Antenne. Zündsynchron (hier ½ Umdrehung bei 4 Zyl.) → Zündanlage/Zündkabel verdächtig; andere Takte zeigen auf Endstufen, Lüfter, Pumpen. Reicht eine Nadel über die Schaltschwelle des STG, zählt es Scheinzähne → Phantomfehler, Aussetzer. Unterschied zum Wackelkontakt: Es fehlen keine Pulse, es kommen Spitzen hinzu. Unterschied zu echtem Sensorzappeln: Einstreuung ist synchron zur Störquelle und verschwindet, wenn man die Quelle abschaltet oder die Leitung umlegt. Nadelhöhe und Dauer sind Beispielwerte. Prüfen: Schirmauflage STG-seitig, Leitungsführung ändern, Masse verbessern, erneut messen." }),
 elektrisch:["Schirm unterbrochen/nicht aufgelegt","Leitung neben Zünd-/Leistungskabeln","Schlechte Masse als Antenne"],
 mechanisch:["Beschädigte Schirmgeflechte"],
 software:["—"],
@@ -23155,11 +23260,15 @@ verwechslung:"Echtes Sensorzappeln vs. Einstreuung: differenznah messen reduzier
 {
 id:"schwache-amplitude", titel:"Schwache Amplitude (induktiv)",
 kennzeichen:"Sinussignal zu klein, v. a. bei niedriger Drehzahl – Signalverlust beim Start.",
-bild:W({yr:[-6,6],yunit:"V",vdiv:"2 V/div",tdiv:"10 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"ind",o:{teeth:16,amp:0.9,miss:7},mp:"Induktiv"}],
-   marks:[{t:0.25,v:0.9,txt:"zu klein"}],
-   caption:"Induktivsignal mit zu geringer Amplitude.",
-   why:"Flussänderung zu klein: zu großer Luftspalt, Späne, Windungsschluss. Amplitude ∝ Drehzahl → das STG verliert das Signal zuerst beim langsamen Drehen (Start, Heißstart)."}),
+bild:W2({ badge:"FEHLER", title:"Induktivgeber: Amplitude zu klein (Luftspalt)", cond:"Leerlauf ~800 /min · Leitung gegen Leitung · AC", vdiv:2, tdiv:0.010,
+  ch:[{ m:"kwInd", p:{ rpm:800, ph0:0.82333, dgap:0.5 }, lbl:"KW induktiv" }],
+  ghost:[{ m:"kwInd", p:{ rpm:800, ph0:0.82333 } }],
+  notes:[ {t:0.05, v:2.5, txt:"Vpp ≈ 5 V statt ~11 V (grau): nur halbe Höhe", dx:-10, dy:-64, anchor:"end"},
+          {t:0.016, v:-2.4, txt:"Lücke und Frequenz (800 Hz) stimmen", dx:12, dy:100} ],
+  expect:[ {what:"freq", v:800, tolRel:0.02, src:"60-2: Hz = 1/min"},
+           {what:"vpp", min:4.6, max:5.6, src:"Bosch IS-C: 0,5 → 1,0 mm Luftspalt ≈ 0,45× Ua"} ],
+  caption:"Gleiche Frequenz, Lücke vorhanden – aber das Sinusband ist nur etwa halb so hoch wie das Sollbild (grau). Beim Anlassen, wo die Spannung ohnehin klein ist, verliert das STG das Signal zuerst: Startprobleme, Heißstartprobleme.",
+  why:"Ein Induktivgeber erzeugt seine Spannung selbst aus der Flussänderung am Geberrad: U ~ dΦ/dt. Mehr Luftspalt (Sensor nicht plan, falscher Sensor, Späne am Magnetkopf, Geberrad verschlissen) → weniger Fluss → weniger Spannung; Bosch IS-C: 0,5 → 1,0 mm halbiert die Spannung etwa. Auch Windungsschluss oder ein Übergangswiderstand dämpfen. Da die Amplitude mit der Drehzahl steigt, immer drehzahlbezogen bewerten: Niedrige Start-Amplitude ist normal, bei höherer Drehzahl muss sie deutlich steigen. Unterschied zum Taumeln: hier überall gleich klein, nicht periodisch schwankend. Prüfen: Luftspalt/Anlagefläche, Magnetkopf reinigen, Spulenwiderstand und Isolation; tritt es nur warm auf, Sensor mit Heißluft anblasen und die Amplitude live beobachten. Pegel herstellerabhängig (Beispiel)." }),
 elektrisch:["Windungsschluss (R zu niedrig)","Schlechte Verbindung dämpft Signal"],
 mechanisch:["Luftspalt zu groß / Sensor nicht plan","Späne am Magnetkopf","Geberrad verschlissen"],
 software:["—"],
@@ -23172,11 +23281,17 @@ verwechslung:"Niedrige Start-Amplitude (normal!) vs. Defekt: bei höherer Drehza
 {
 id:"phasenversatz", titel:"Phasenversatz / Synchronfehler",
 kennzeichen:"Zwei eigentlich korrelierte Signale stehen falsch zueinander (z. B. NW zu KW verschoben).",
-bild:W({yr:[-6,7],yunit:"V",vdiv:"2 V/div",tdiv:"20 ms/div",badge:"FEHLER",trig:{t:0.3},
-   tr:[{ch:1,g:"ind",o:{teeth:20,amp:2.4,miss:9},mp:"KW"},{ch:2,g:"sq",o:{cyc:1,duty:0.34,hi:6.4,lo:5.2},tf:[function(p){return p.map(function(q){return [Math.min(1,q[0]+0.09),q[1]];});}],mp:"NW"}],
-   marks:[{t:0.39,v:6.4,txt:"verschoben"}],
-   caption:"Referenzsignal gegenüber Sollage verschoben.",
-   why:"Mechanische Lageänderung (Kettenlängung, Riemen übersprungen, Versteller hängt) oder Geberrad verdreht. Elektrisch sauber, aber zeitlich falsch zugeordnet."}),
+bild:W2({ badge:"FEHLER", title:"Phasenversatz: NW gegenüber KW verschoben", cond:"Leerlauf, VVT in Ruhelage", tdiv:0.020, vdiv:5, off:2, trig:{t:0.0175, v:2.5, ch:1},
+  ch:[{ m:"kwnwSyncKw", p:{ rpm:800, ph0:-30 }, lbl:"KW induktiv" },
+      { m:"kwnwSyncNw", p:{ rpm:800, ph0:-30, shift:12 }, lbl:"NW-Hall", vdiv:2, off:-3.5 }],
+  ghost:[{ m:"kwnwSyncNw", p:{ rpm:800, ph0:-30 }, ch:1 }],
+  meas:[ {t:"span", t0:0.00625, t1:0.0175, v:6.4, ch:1, pre:"Lücke → NW-Flanke:", post:"= 54° KW (Soll 42°, Beispiel)"} ],
+  notes:[ {t:0.130, v:5, txt:"alle NW-Flanken nach rechts (grau = Soll)", dx:12, dy:-30, ch:1} ],
+  expect:[ {what:"freq", ch:1, v:26.67, tolRel:0.02, src:"4 Segmente je 720° KW"},
+           {what:"vpp", ch:0, t0:0.0041, t1:0.0059, max:1.0, src:"KW-Lücke bis 6,25 ms"}, {what:"vpp", ch:0, t0:0.0063, t1:0.0075, min:5, src:"Zahn 0 nach der Lücke"},
+           {what:"max", ch:1, t0:0.01680, t1:0.01740, max:0.5, src:"NW vor der Flanke Low"}, {what:"min", ch:1, t0:0.01760, t1:0.01820, min:4.5, src:"NW nach der Flanke High"} ],
+  caption:"Beide Signale sind elektrisch sauber, aber die NW-Flanke steht 2 Zähne (12° KW) später hinter der KW-Lücke als im Sollbild (grau) – und das bei jeder Umdrehung gleich.",
+  why:"Kette oder Riemen koppeln die NW starr 1:2 an die KW, 1 Zahn am 60-2-Rad = 6° KW. Wandert die NW-Flanke gegenüber der Lücke, hat sich die Mechanik verändert: Kette gelängt, Riemen übersprungen, Versteller hängt, Geberrad verdreht oder locker, falsch indiziertes Schwungrad (Pico AGT-151, Nissan: gelängte Kette → NW spät, Pulse nach rechts). Bewertung in Zähnen, nicht in Millisekunden – der Winkel gilt bei jeder Drehzahl. Soll-Lage ist motorspezifisch: nur gegen Referenzbild oder Herstellerdaten, VVT in Grundstellung (Ventil abstecken, danach DTC löschen). Unterschied zur gewollten VVT-Verstellung: kontrollierte Wanderung mit Rückkehr im Leerlauf. Nächster Schritt: Steuerzeiten mechanisch prüfen (Absteckwerkzeug). Lage 42°/54° KW sind Beispielwerte." }),
 elektrisch:["Selten; falsche Sensorzuordnung nach Reparatur"],
 mechanisch:["Steuerkette gelängt / Riemen übersprungen","Versteller hängt in Verstellposition","Geberrad locker/verdreht"],
 software:["Versteller-Grundstellung nicht erreicht (Adaption)"],
@@ -23189,10 +23304,18 @@ verwechslung:"VVT-Verstellung (gewollt) vs. Defekt: kontrollierte Wanderung mit 
 {
 id:"versorgung-fehlt", titel:"Versorgung fehlt (5 V / Bordnetz)",
 kennzeichen:"Mehrere Sensoren gleichzeitig unplausibel; betroffene Gruppe hängt an gemeinsamer Referenz.",
-bild:W({yr:[-1,6],yunit:"V",vdiv:"1 V/div",tdiv:"5 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"flat",o:{v:0.05},mp:"5-V-Referenz"}],
-   caption:"Referenzspannung auf ~0 V (statt 5 V).",
-   why:"Fehlt die gemeinsame 5-V-/Versorgungsspannung, liefern ALLE daran hängenden Sensoren gleichzeitig Unsinn. Ein Gruppendefekt zeigt fast immer zur Versorgung, nicht zum Einzelsensor."}),
+bild:W2({ badge:"FEHLER", title:"Versorgung fehlt: Referenz weg, ganze Sensorgruppe tot", cond:"Zündung ein, Motor aus", vdiv:1, off:-3, tdiv:1,
+  ch:[{ m:"sensorRefRef", p:{ drops:[[4, 10]] }, lbl:"Referenz A" },
+      { m:"sensorRefSig", p:{ ref:{ drops:[[4, 10]] }, k:0.3, seed:61 }, lbl:"Signal B" }],
+  ghost:[{ m:"sensorRefRef", p:{} }, { m:"sensorRefSig", p:{ k:0.3 }, ch:1 }],
+  notes:[ {t:4, v:5, txt:"Referenz bricht auf ~0 V weg", dx:-10, dy:-30, anchor:"end"},
+          {t:6.5, v:0.02, ch:1, txt:"Signal eines anderen Sensors derselben Gruppe fällt mit", dx:10, dy:-40} ],
+  expect:[ {what:"mean", ch:0, t0:0, t1:3.9, min:4.95, max:5.05, src:"GM: Referenz 4,8–5,2 V"},
+           {what:"max", ch:0, t0:4.1, t1:10, max:0.1, src:"Versorgung fehlt"},
+           {what:"mean", ch:1, t0:0, t1:3.9, min:1.47, max:1.53, src:"30 % der Referenz (Beispiel)"},
+           {what:"max", ch:1, t0:4.1, t1:10, max:0.1, src:"ratiometrisch: ohne Referenz kein Signal"} ],
+  caption:"Bis 4 s steht die Referenz bei 5 V und Sensor B liefert ~1,5 V. Dann fällt die Referenz auf ~0 V – und im selben Moment auch das Signal von Sensor B, obwohl an ihm nichts passiert ist. Mehrere Sensoren gleichzeitig unplausibel = Versorgung, nicht Einzelsensor.",
+  why:"Ratiometrische 5-V-Sensoren liefern Signal = Anteil × Referenz (TI). Fehlt die gemeinsame Referenz (Leitung vor dem Verteilpunkt offen, Stecker am STG, Regler im STG, Sicherung bei Bordnetz-versorgten Sensoren), liefern ALLE daran hängenden Sensoren gleichzeitig Unsinn – GM/Saab: ein Fehler an einem Referenzkreis beeinflusst alle Bauteile dieses Kreises. Bei Hall-Sensoren mit Pull-up sieht fehlende Versorgung anders aus: Dauer-High (siehe Unterbrechung). Abgrenzung zum Schluss: Zieht ein defekter Sensor die Referenz herunter, steht sie meist bei 1–4 V und kommt zurück, sobald man diesen Sensor absteckt; bei offener Versorgung bleibt sie 0 V, egal welcher Sensor ab ist. Strategie: Referenz direkt am Stecker messen, Gruppe im Stromlaufplan nachsehen, Versorgung zum STG zurückverfolgen." }),
 elektrisch:["5-V-Ausgang im STG überlastet (ein Sensor zieht Referenz runter)","Versorgungsleitung unterbrochen/kurzgeschlossen","Stecker/Sicherung"],
 mechanisch:["Scheuerstelle an der Referenzleitung"],
 software:["—"],
@@ -23205,10 +23328,15 @@ verwechslung:"Einzelsensordefekt vs. Referenzfehler: betrifft es mehrere Sensore
 {
 id:"sensor-intern", titel:"Sensor intern defekt",
 kennzeichen:"Leitungen/Versorgung/Masse i. O., Signal trotzdem falsch/tot – Defekt im Sensor selbst.",
-bild:W({yr:[0,5.5],yunit:"V",vdiv:"1 V/div",tdiv:"500 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"ana",o:{pts:[[0,2.4],[0.5,2.4],[1,2.4]]},mp:"Signal"}],
-   caption:"Signal eingefroren trotz intakter Verdrahtung.",
-   why:"Element/Elektronik im Sensor defekt (Bruch, Drift, Kurzschluss). Die äußere Beschaltung ist nachweislich in Ordnung – der Fehler sitzt im Bauteil."}),
+bild:W2({ badge:"FEHLER", title:"Sensor intern defekt: Versorgung da, Signal tot", cond:"Startversuch", vdiv:2, off:-3, tdiv:0.020,
+  ch:[{ m:"kwHallGeber", p:{ out:"high" }, lbl:"Hall-Signal" },
+      { m:"kwHallVers", p:{ v:5 }, lbl:"Versorgung", vdiv:2, off:0 }],
+  ghost:[{ m:"kwHallGeber", p:{ rpm:240, dRpm:60, kMod:2, ph0:330 } }],
+  notes:[ {t:0.1, v:5, txt:"Signal tot: Dauer-High (nur Pull-up), kein einziger Puls", dx:10, dy:-36},
+          {t:0.15, v:5, ch:1, txt:"Versorgung 5 V da", dx:-10, dy:-14, anchor:"end"} ],
+  expect:[ {what:"min", ch:0, min:4.8, src:"nur Pull-up"}, {what:"mean", ch:1, v:5, tol:0.1, src:"Hella: Versorgung ca. 5 V"} ],
+  caption:"Motor dreht, aber vom Sensor kommt kein einziger Puls – die Leitung liegt starr auf Pull-up-Pegel. Versorgung (CH2) ist da, Masse und Signalleitung wurden am Stecker als gut gemessen. Dann sitzt der Fehler im Bauteil.",
+  why:"Element oder Elektronik im Sensor ist defekt (Bruch, Drift, interner Kurzschluss, Hall-IC tot). Das Bild allein beweist das nicht: Offene Signalleitung, offene Sensormasse und toter Ausgang ergeben am STG dasselbe Dauer-High (nur Pull-up). Darum erst die äußere Beschaltung freimessen: (1) Versorgung am Stecker bei Zündung ein (CH2, ~5 V oder Bordnetz, typabhängig), (2) Massepin gegen Batterie-Minus nahe 0 V, (3) Signal direkt am Sensorstecker – zeigt es dort ebenfalls nur Pull-up, ist die Leitung zum STG in Ordnung. Dann provozieren: drehen, Heißluft, Referenz/Handpumpe, Vergleich mit Gut-Sensor. Erst nach diesem Ausschluss den Sensor verurteilen – nie vorschnell tauschen. Bei induktiven Gebern vorher Spulenwiderstand prüfen; an Hall-Gebern kein Ohmmeter (Hella)." }),
 elektrisch:["Interne Unterbrechung/Kurzschluss","Elektronikfehler (aktive Sensoren)"],
 mechanisch:["Membran/Element gerissen","Verschleiß (Poti-Bahn)"],
 software:["—"],
@@ -23221,10 +23349,17 @@ verwechslung:"Verdrahtung vs. Sensor: erst Beschaltung freimessen, dann Sensor v
 {
 id:"korrosion", titel:"Korrosion / Übergangswiderstand im Stecker",
 kennzeichen:"Signal verrauscht/gedämpft/sprunghaft, oft feuchtigkeitsabhängig.",
-bild:W({yr:[0,5.5],yunit:"V",vdiv:"1 V/div",tdiv:"500 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"ana",o:{pts:[[0,1.4],[0.3,1.4],[1,1.4]]},tf:[function(p){return tNoise(p,0.18);}],mp:"Signal"}],
-   caption:"Verrauschtes/zitterndes Signal durch schlechten Kontakt.",
-   why:"Korrosion erhöht den Übergangswiderstand und macht ihn instabil → Spannungsabfälle und Rauschen, besonders bei Feuchtigkeit/Temperaturwechsel."}),
+bild:W2({ badge:"FEHLER", title:"Korrosion im Stecker: Pegel zu hoch und unruhig", cond:"Motor warm ~90 °C, Leerlauf, Stecker korrodiert", tdiv:10, vdiv:0.5, off:-4,
+  ch:[{ m:"ntcKmt", p:{ T:100, T0:90, tStart:null, ser:150, serVar:60, drops:[[31.0, 31.4, 800], [58.5, 58.8, 1500], [77.0, 77.5, 600]] }, lbl:"KMT" }],
+  ghost:[{ m:"ntcKmt", p:{ T:100, T0:90, tStart:null } }],
+  meas:[ {t:"level", v:0.977, t0:0, t1:100, lx:4, dy:22, txt:"Soll ≈ 0,98 V (~90 °C, grau)"} ],
+  notes:[ {t:15, v:1.41, txt:"Pegel zu hoch und zitternd (Bsp. ~150 Ω Übergang)", dx:10, dy:-40},
+          {t:58.6, v:3.1, txt:"Sprünge: Kontakt wird kurz hochohmig", dx:10, dy:-10} ],
+  expect:[ {what:"mean", t0:0, t1:30, min:1.2, max:1.6, src:"(243 + 150 ± 60) Ω an 1 kΩ, 5 V"},
+           {what:"max", t0:58, t1:59.5, min:2.5, src:"Modell: +1,5 kΩ → ~3,2 V"},
+           {what:"min", t0:0, t1:100, min:1.1, src:"Pegel nie am Sollwert"} ],
+  caption:"Der Motor ist warm, das Signal müsste ruhig bei ~1 V liegen. Stattdessen liegt es zu hoch, zittert und springt immer wieder kurz nach oben – je nach Feuchte und Temperatur mal mehr, mal weniger.",
+  why:"Grünspan, Oxid oder Wasser im Stecker erhöhen den Übergangswiderstand und machen ihn instabil. In einem Spannungsteiler (NTC an 1-kΩ-Pull-up) liegt dieser Widerstand in Reihe: Beispiel +150 Ω heben ~0,98 V auf ~1,4 V (Tester: ~73 °C statt 90 °C); wird der Kontakt kurz hochohmig, springt die Spannung Richtung Pull-up-Pegel. Pico: Temperaturkreise sind „highly resistance sensitive“ – schon wenige hundert Ohm verfälschen das Signal. Warm fällt es am stärksten auf, weil der NTC dann selbst nur ~243 Ω hat. Unterschied zum Wackelkontakt: dort ist die Grundlinie richtig und nur die Nadeln sind falsch; hier stimmt auch der Pegel dazwischen nicht. Unterschied zum Sensordrift: Drift ist glatt, Korrosion zappelt und ist feuchtigkeitsabhängig. Prüfen: Stecker öffnen, Pins sichten; Spannungsfall genau über die Steckverbindung unter Strom; Kontaktkraft." }),
 elektrisch:["Grünspan/Oxidschicht auf Pins","Wasser im Stecker","Aufgeweitete Buchsen"],
 mechanisch:["Defekte Steckerdichtung","Vibrationsverschleiß"],
 software:["—"],
@@ -23237,12 +23372,22 @@ verwechslung:"Sensor-/Leitungsfehler vs. Stecker: Spannungsfall genau über die 
 {
 id:"mechanik-trotz-signal", titel:"Mechanik defekt trotz gutem Signal",
 kennzeichen:"Signal elektrisch einwandfrei, Wirkung bleibt aus (Klappe/Steller bewegt sich nicht).",
-bild:W({yr:[0,5.5],yunit:"V",vdiv:"1 V/div",tdiv:"500 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"sq",o:{cyc:1,duty:0.4,hi:4.6,lo:0.3},mp:"Ansteuerung ok"},
-       {ch:2,g:"flat",o:{v:0.9},mp:"Lage bewegt sich nicht"}],
-   marks:[{t:0.5,v:0.9,txt:"keine Bewegung"}],
-   caption:"Ansteuerung vorhanden, Lagerückmeldung bleibt konstant.",
-   why:"'Will, aber kann nicht': elektrisch korrekt angesteuert, doch die Mechanik (fest, verkokt, blockiert) folgt nicht. Nur die Kombination Ansteuerung + Wirkung deckt das auf."}),
+bild:W2({ badge:"FEHLER", title:"Mechanik fest: Ansteuerung läuft, Lage bewegt sich nicht", cond:"Stellgliedtest, Klappe fest", tdiv:0.05, vdiv:10, off:-4, os:16,
+  ch:[{ m:"stellmotor", p:{ sched:[[0,0.04],[0.05,0.9,0,0.6]], fault:"block", tblock:0, toff:0.3, sig:"va" }, lbl:"Klemme A" },
+      { m:"stellmotor", p:{ sched:[[0,0.04],[0.05,0.9,0,0.6]], fault:"block", tblock:0, toff:0.3, sig:"tps" }, lbl:"Lagegeber", vdiv:1, off:-1.5 }],
+  ghost:[{ m:"stellmotor", p:{ sched:[[0,0.04],[0.05,0.9,0,0.6]], sig:"tps" }, ch:1 }],
+  notes:[ {t:0.25, v:0.66, ch:1, txt:"Lage bleibt ≈ 0,66 V (zu) – Soll (grau) ≈ 4,1 V", dx:10, dy:-30},
+          {t:0.2, v:13.5, txt:"Klemme A taktet 0 ↔ 13,5 V (Bsp. 60 %): Ansteuerung ist da", dx:-10, dy:-44, anchor:"end"},
+          {t:0.42, v:4, txt:"nach 0,3 s Abweichung: Endstufe aus (Pegel Bsp. 4 V)", dx:-10, dy:-30, anchor:"end"} ],
+  expect:[ {what:"mean", ch:1, t0:0.1, t1:0.5, min:0.6, max:0.72, src:"Beispielgeber 0,5 V + 4 V × 4 %: keine Bewegung"},
+           {what:"vpp", ch:1, t0:0.1, t1:0.5, max:0.1, src:"Lage flach"},
+           {what:"max", ch:0, t0:0.1, t1:0.34, min:13, src:"PWM erreicht Bordnetz"},
+           {what:"min", ch:0, t0:0.1, t1:0.34, max:1.0, src:"PWM zieht nach Masse"},
+           {what:"duty", ch:0, t0:0.1, t1:0.34, v:0.4, tol:0.05, src:"High-Anteil 40 % = Tastgradgrenze 60 % (Beispiel)"},
+           {what:"mean", ch:0, t0:0.37, t1:0.5, min:3.8, max:4.2, src:"Endstufe aus: Diagnosepegel (Modellannahme 4 V)"},
+           {what:"vpp", ch:0, t0:0.37, t1:0.5, max:0.5, src:"kein Takt mehr"} ],
+  caption:"Das STG befiehlt „auf“: Klemme A taktet mit vollem Hub zwischen Masse und Bordnetz, der Motor bekommt Strom. Die Lagerückmeldung rührt sich trotzdem nicht – sie bleibt beim Zu-Wert, während sie im Sollbild (grau) auf ~4 V laufen müsste. Nach 0,3 s gibt das STG auf: Endstufe aus, DTC, Notlauf.",
+  why:"„Will, aber kann nicht“: Elektrisch ist alles korrekt (PWM da, Strom fließt), nur die Mechanik folgt nicht – Klappe oder Gestänge fest (Verkokung, Eis, Fremdkörper), Getriebeschaden, bei pneumatischen Stellern undichte Dose. Nur die Kombination aus Ansteuerung UND Wirkung deckt das auf; ein Kanal allein sieht „gut“ aus. Der Regler fährt bei bleibender Abweichung an seine Tastgradgrenze (hier Beispiel 60 %), der Strom steht auf Blockierniveau × Tastgrad (hier ~2,5 A – dasselbe Szenario mit Stromzange zeigt das Muster „Aktuator blockiert“); nach 0,3 s Abweichung setzt das STG einen DTC, schaltet die Endstufe ab und geht in den Notlauf (Saab: Lage ≠ Soll länger als 0,3 s). Der Pegel der abgeschalteten Klemme (hier Bsp. 4 V) ist herstellerabhängig. Abgrenzung: Fließt KEIN Strom, ist Motor/Leitung offen; ist die Lage falsch, aber beweglich, eher Geber. Prüfen: Steller stromlos von Hand bewegen, Sichtkontrolle, Lagegeber/Drucksensor als Wirkung. Geber-Kennlinie 0,5–4,5 V, Motordaten und Tastgradgrenze sind Beispiele." }),
 elektrisch:["— (Ansteuerung ist ok)"],
 mechanisch:["Klappe/Gestänge fest (Verkokung)","Steller blockiert/Getriebeschaden","Unterdruckdose/Pneumatik undicht"],
 software:["—"],
@@ -23255,10 +23400,16 @@ verwechslung:"Geber-/Ansteuerfehler vs. Mechanik: Strom da + keine Bewegung = Me
 {
 id:"stg-falsch", titel:"STG steuert falsch / keine Freigabe",
 kennzeichen:"Aktuator wird nicht (oder falsch) angesteuert, obwohl Last/Leitung i. O. – Ansteuerung fehlt.",
-bild:W({yr:[-1,16],yunit:"V",vdiv:"5 V/div",tdiv:"5 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"flat",o:{v:13.5},mp:"Steuerleitung"}],
-   caption:"Keine Ansteuerung (Leitung bleibt auf Bordnetz).",
-   why:"Endstufe/Freigabe fehlt: fehlende Einschaltbedingungen (andere Sensoren, Sicherheitslogik), defekte Endstufe oder fehlende Versorgung/Masse des STG selbst."}),
+bild:W2({ badge:"FEHLER", title:"Keine Ansteuerung: Steuerleitung bleibt auf Bordnetz", cond:"Stellgliedtest, Magnetventil", tdiv:0.002, vdiv:5, off:-4, os:16,
+  ch:[{ m:"pwmVentil", p:{ ph:0.75, fault:"nodrive" }, lbl:"Ventil −" },
+      { m:"pwmVentil", p:{ ph:0.75, fault:"nodrive", sig:"i" }, lbl:"Strom", vdiv:0.2, off:0, unit:"A" }],
+  ghost:[{ m:"pwmVentil", p:{ ph:0.75 } }, { m:"pwmVentil", p:{ ph:0.75, sig:"i" }, ch:1 }],
+  notes:[ {t:0.0125, v:13.5, txt:"dauernd ≈ 13,5 V: Endstufe schaltet nie nach Masse", dx:12, dy:-20},
+          {t:0.0035, v:0, ch:1, txt:"0 A (Soll grau: Sägezahn)", dx:12, dy:-14} ],
+  expect:[ {what:"min", ch:0, min:13.2, src:"Bordnetz über die stromlose Spule"},
+           {what:"max", ch:1, max:0.02, src:"kein Strom"} ],
+  caption:"Versorgung und Spule sind in Ordnung – die Steuerleitung liegt über die intakte Spule auf Bordnetz. Aber das STG zieht sie nie nach Masse: kein Takt, kein Strom, keine Wirkung. Das Sollbild (grau) zeigt die 250-Hz-PWM, die hier laufen müsste.",
+  why:"Die Endstufe schaltet nicht: Freigabebedingung nicht erfüllt (ein anderer Sensor sperrt, Sicherheitslogik, Notlauf), falsche Codierung/Variante, Endstufe defekt oder Versorgung/Masse des STG selbst mangelhaft. Am Ventil gemessen sieht auch eine offene Leitung zum STG so aus. Eingrenzen: am STG-Pin messen – Impulse dort, aber nicht am Ventil → Leitung; auch dort Dauer-Bordnetz → STG (Logik oder Endstufe). Erzwungener Stellgliedtest umgeht die Fahrlogik: Kommt dann nichts, eher Endstufe/Versorgung; kommt etwas, fehlt im Normalbetrieb eine Freigabe → Tester: Bedingungen, Sperr-DTC, Istwerte der beteiligten Sensoren. Achtung: Manche Ventile haben gewollt 0 % (Saab: Ladedruckventil ~0 % im Leerlauf) – Sollwert im Tester prüfen. Takt 250 Hz, Spule 25 Ω sind Beispiele." }),
 elektrisch:["Endstufe defekt","STG-Versorgung/Masse mangelhaft"],
 mechanisch:["—"],
 software:["Freigabebedingung nicht erfüllt (anderer Sensor sperrt)","Falsche Codierung/Variante","Notlauf aktiv"],
@@ -23271,11 +23422,17 @@ verwechslung:"Endstufe vs. Logik: erzwungener Stellgliedtest steuert trotz Fahrl
 {
 id:"aktor-blockiert", titel:"Aktuator blockiert / Überstrom",
 kennzeichen:"Dauerhaft hoher Strom ohne Bewegung; Schutzabschaltung greift.",
-bild:W({yr:[-2,14],yunit:"A",yminLbl:"0",ymaxLbl:"14",vdiv:"2 A/div",tdiv:"100 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"flat",o:{v:9.5},tf:[function(p){return tNoise(p,0.2);}],mp:"Strom"}],
-   marks:[{t:0.5,v:9.5,txt:"Blockierstrom"}],
-   caption:"Hoher, konstanter Blockierstrom.",
-   why:"Rotor/Steller steht (blockiert) → keine Gegen-EMK → Strom bleibt auf Blockierniveau. Endstufe/Thermoschutz schaltet ab; Bauteil wird heiß."}),
+bild:W2({ badge:"FEHLER", title:"Aktuator blockiert: Dauer-Blockierstrom, dann Schutzabschaltung", cond:"Stellgliedtest E-Gas, Zange 100 mV/A", tdiv:0.05, vdiv:0.5, off:-3.5, unit:"A", os:16,
+  ch:[{ m:"stellmotor", p:{ sched:[[0,0.04],[0.05,0.9,0,0.6]], fault:"block", tblock:0, toff:0.3 }, lbl:"Motorstrom (Zange)" }],
+  ghost:[{ m:"stellmotor", p:{ sched:[[0,0.04],[0.05,0.9,0,0.6]] } }],
+  notes:[ {t:0.2, v:2.5, txt:"Dauer-Blockierstrom ≈ 2,5 A (Bsp. 60 % × 13,5 V / ~3,2 Ω)", dx:-10, dy:-40, anchor:"end"},
+          {t:0.42, v:0, txt:"nach 0,3 s: Schutzabschaltung → 0 A, obwohl noch „auf“ befohlen", dx:-10, dy:-62, anchor:"end"},
+          {t:0.09, v:1.2, txt:"Soll (grau): Anlaufpeak, dann Strom fällt beim Fahren", dx:12, dy:78} ],
+  expect:[ {what:"mean", t0:0.1, t1:0.34, min:2.3, max:2.8, src:"≈ 60 % × 13,5 V / 3,2 Ω, keine Gegen-EMK"},
+           {what:"min", t0:0.1, t1:0.34, min:1.8, src:"Strom fällt nie ab (Ripple der 2-kHz-PWM)"},
+           {what:"max", t0:0.37, t1:0.5, max:0.1, src:"Endstufe aus, mitten im Öffnungsbefehl"} ],
+  caption:"Nach dem Befehl springt der Strom auf den Blockierwert (~2,5 A bei 60 % Tastgrad) und bleibt dort stehen – es fehlt der Abfall, den ein laufender Motor zeigt (grau). Nach 0,3 s Regelabweichung schaltet das STG die Endstufe ab: 0 A, Notlauf, DTC. Das Bauteil wird dabei heiß.",
+  why:"Rotor oder Steller steht (festsitzende Klappe, Getriebe, Fremdkörper, Lagerschaden): Ohne Drehung gibt es keine Gegen-EMK, der Strom wird nur vom Wicklungswiderstand begrenzt (≈ Tastgrad × Ub/R, hier 60 % × 13,5 V / ~3,2 Ω ≈ 2,5 A; bei 100 % ~4,3 A) und bleibt auf Blockierniveau. Die Lageüberwachung schaltet ab (Saab: Abweichung > 0,3 s → DTC; TLE7209: bei Fehlern Endstufen hochohmig). Entscheidend ist der DAUER-Hochstrom: Der kurze Anlaufpeak zu Beginn ist normal (auch im Sollbild) – nur wenn er nicht abfällt, blockiert die Mechanik. Bei Motoren mit sehr kleinem Widerstand (Drosselmotoren oft 1–2 Ω) begrenzt die Endstufe den Strom (Chopper, typ. 6,6 A) – dann flaches Dach statt Spitze. Unterschied zu „offen“: dort 0 A von Anfang an. Dasselbe Szenario an Klemme A und Lagegeber zeigt das Muster „Mechanik fest“. Prüfen: Steller stromlos von Hand bewegen, Mechanik sichten; Tastgradgrenze, Abschaltzeit, Motordaten und Ströme sind Beispiele (herstellerabhängig)." }),
 elektrisch:["— (Strom fließt ja)"],
 mechanisch:["Festsitzende Klappe/Getriebe","Fremdkörper/Schwergang","Lagerschaden"],
 software:["—"],
@@ -23288,11 +23445,17 @@ verwechslung:"Normaler Anlaufpeak vs. Dauerblockierstrom: nur der DAUERhochstrom
 {
 id:"windungsschluss", titel:"Windungsschluss in der Spule",
 kennzeichen:"Abschaltspitze fehlt/zu klein, Widerstand zu niedrig, Bauteil wird warm.",
-bild:W({yr:[-5,90],yunit:"V",yminLbl:"0",ymaxLbl:"90",vdiv:"20 V/div",tdiv:"1 ms/div",badge:"FEHLER",trig:{t:0.3},
-   tr:[{ch:1,g:"injU",o:{vb:13.8,on:0.30,off:0.62,pk:16},mp:"Spule"}],
-   marks:[{t:0.62,v:16,txt:"Spitze fehlt"}],
-   caption:"Fehlende/zu kleine Induktions-Abschaltspitze.",
-   why:"Kurzgeschlossene Windungen senken Induktivität und Widerstand → die Abschaltspitze (∝ Induktivität) bleibt klein, der Strom (und die Erwärmung) steigt."}),
+bild:W2({ badge:"FEHLER", title:"Windungsschluss: Abschaltspitze klein, Strom hoch und steil", cond:"Leerlauf, Injektor, 10:1", tdiv:0.001, vdiv:20, off:-3, os:8,
+  ch:[{ m:"injSaug", p:{ R:8, L1:0.004, L2:0.00525, Rp:15 }, lbl:"Steuerleitung" },
+      { m:"injSaug", p:{ R:8, L1:0.004, L2:0.00525, Rp:15, sig:"i" }, lbl:"Strom", vdiv:0.5, off:-1, unit:"A" }],
+  ghost:[{ m:"injSaug", p:{} }, { m:"injSaug", p:{ sig:"i" }, ch:1 }],
+  notes:[ {t:0.00502, v:37, txt:"Spitze nur ~37 V statt ~65 V (grau), kein Plateau", dx:14, dy:-12},
+          {t:0.0042, v:1.59, ch:1, txt:"~1,6 A statt ~0,94 A, steiler Anstieg", dx:-10, dy:-16, anchor:"end"},
+          {t:0.00101, v:0.59, ch:1, txt:"Sprung beim Einschalten", dx:14, dy:40} ],
+  expect:[ {what:"max", ch:1, min:1.5, max:1.7, src:"13,5 V / ~8,4 Ω (Beispiel)"},
+           {what:"max", ch:0, t0:0.0049, t1:0.0053, min:33, max:42, src:"Modell: Spitze unter der Klemmung (65 V)"} ],
+  caption:"Die Steuerleitung sieht auf den ersten Blick normal aus – aber die Abschaltspitze erreicht die Klemmung nicht mehr (kleine, runde Spitze statt Plateau), und der Strom ist deutlich höher und steigt steiler als im Sollbild (grau). Die Spule wird warm, der Widerstand ist zu niedrig.",
+  why:"Kurzgeschlossene Windungen (Isolationsdurchschlag durch Überhitzung, Alterung, Scheuerstelle an der Wicklung) senken Widerstand und Induktivität (L wächst mit dem Quadrat der Windungszahl): mehr Strom, schnellerer Anstieg, weniger gespeicherte Energie ½·L·I². Die kurzgeschlossene Windung wirkt wie eine belastete Sekundärwicklung: Beim Abschalten nimmt sie die Feldenergie auf, die Spannung erreicht die Klemmung nicht; beim Einschalten springt der Strom an. Gilt gleichermaßen für Einspritzventile, Magnetventile, Relais- und Zündspulen (primär). Verwechslung: Eine fehlende Spitze durch Freilaufdiode ist gewollt – Beschaltung und Spulenwiderstand beachten; bei offener Spule fließt gar kein Strom. Prüfen: Spitze und Strom mit Gut-Bauteil/Nachbarzylinder vergleichen, Spulenwiderstand kalt (zu niedrig?), Erwärmung. Werte (8 statt 14 Ω, ~37 V, ~1,6 A) sind Modellbeispiele. Spitzen über ±20 V am VDS1022I nur mit 10:1." }),
 elektrisch:["Isolationsdurchschlag zwischen Windungen","Überhitzung/Alterung"],
 mechanisch:["Vibrations-/Scheuerschaden an der Wicklung"],
 software:["—"],
@@ -23305,11 +23468,18 @@ verwechslung:"Fehlende Spitze durch Diode (gewollt) vs. Windungsschluss: Beschal
 {
 id:"fehlende-induktionsspitze", titel:"Fehlende Induktionsspitze (Injektor/Spule)",
 kennzeichen:"Ansteuerung da, aber keine Abschaltspitze – Spule bekommt keinen Strom oder ist offen.",
-bild:W({yr:[-5,90],yunit:"V",yminLbl:"0",ymaxLbl:"90",vdiv:"20 V/div",tdiv:"1 ms/div",badge:"FEHLER",trig:{t:0.3},
-   tr:[{ch:1,g:"ana",o:{pts:[[0,13.8],[0.3,13.8],[0.31,0.8],[0.62,0.8],[0.63,1.0],[1,1.0]]},mp:"Steuerleitung"}],
-   marks:[{t:0.62,v:1.0,txt:"keine Spitze"}],
-   caption:"Low-Phase vorhanden, aber keine Abschaltspitze danach.",
-   why:"Wird die Steuerleitung gezogen, aber es fließt kein Spulenstrom (Spule offen/keine Plusversorgung), entsteht beim Abschalten keine Induktionsspitze."}),
+bild:W2({ badge:"FEHLER", title:"Spule offen: Ansteuerung taktet, keine Abschaltspitze", cond:"Volllast, 20 Hz, ohne Diode", tdiv:0.01, vdiv:10, off:-3, os:16,
+  ch:[{ m:"pwmVentil", p:{ f:20, duty:0.7, R:30, L:0.07, ph:0.9, diode:false, fault:"open" }, lbl:"Ventil −" },
+      { m:"pwmVentil", p:{ f:20, duty:0.7, R:30, L:0.07, ph:0.9, diode:false, fault:"open", sig:"i" }, lbl:"Strom", vdiv:0.2, off:1, unit:"A" }],
+  ghost:[{ m:"pwmVentil", p:{ f:20, duty:0.7, R:30, L:0.07, ph:0.9, diode:false } }, { m:"pwmVentil", p:{ f:20, duty:0.7, R:30, L:0.07, ph:0.9, diode:false, sig:"i" }, ch:1 }],
+  notes:[ {t:0.0402, v:45, txt:"Soll (grau): Abschaltspitze ≈ 45 V, Aus-Pegel = Bordnetz", dx:12, dy:6},
+          {t:0.047, v:3, txt:"Takt da, nur Diagnosepegel (Bsp. ~3 V, je nach Endstufe ~0 V), keine Spitze", dx:-10, dy:-30, anchor:"end"},
+          {t:0.03, v:0, ch:1, txt:"0 A", dx:10, dy:-14} ],
+  expect:[ {what:"max", ch:0, max:3.3, src:"kein Bordnetz, keine Spitze"},
+           {what:"max", ch:1, max:0.02, src:"Kreis offen: kein Strom"},
+           {what:"min", ch:0, t0:0.0405, t1:0.0495, min:2.7, src:"Modell: Diagnosepegel im Aus-Teil (Modellannahme 3 V, Pull-up-Variante)"} ],
+  caption:"Das STG taktet weiter (Ein-Teil ≈ 0 V), aber nach jedem Abschalten fehlt die Spitze – und auch das Bordnetz im Aus-Teil: Die Leitung erreicht nur einen kleinen Diagnosepegel. Strom 0 A. Die Spule bekommt keinen Strom oder ist offen. Restpegel herstellerabhängig (bei Pull-down-Endstufen ~0 V).",
+  why:"Die Abschaltspitze ist die in der Spule gespeicherte Energie ½·L·I²: Floss vorher kein Strom, gibt es nichts abzuschalten. Ursachen: Spule/Heizung unterbrochen (Vibrationsbruch der Wicklung), Plusversorgung der Spule fehlt, Steckkontakt offen. Ohne Strompfad vom Bordnetz über die Spule kann die Steuerleitung im Aus-Teil nicht auf Ub steigen – übrig bleibt der Diagnosepegel der Endstufe. Der ist herstellerabhängig: Die belegten Endstufen (NXP MC33810, TI DRV81004) ziehen mit ~75 µA nach unten → Leitung dauernd ~0 V, der Takt ist dann gar nicht mehr zu sehen; die ~3 V hier sind eine Modellannahme für eine Endstufe mit schwachem Pull-up. Sicheres Kriterium ist deshalb nicht der Restpegel, sondern: keine Spitze, kein Bordnetz im Aus-Teil, Strom 0 A. Unterschied zu „keine Ansteuerung“: dort Dauer-Bordnetz ohne Takt. Unterschied zum Windungsschluss: dort fließt zu viel Strom. Prüfen: Plus am Ventilstecker, Strom mit Zange (0 A?), Spulenwiderstand (unendlich?). Sollbild ohne Freilaufdiode: Klemmspitze ~45 V (Infineon-Beispiel) – über ±20 V nur mit 10:1." }),
 elektrisch:["Spule/Heizung unterbrochen","Plusversorgung der Spule fehlt","Steckkontakt offen"],
 mechanisch:["Vibrationsbruch an der Wicklung"],
 software:["—"],
@@ -23322,10 +23492,18 @@ verwechslung:"Keine Ansteuerung (STG) vs. offene Spule: Low-Phase da, aber kein 
 {
 id:"pwm-extrem", titel:"PWM 0 % / 100 % (Endanschlag der Ansteuerung)",
 kennzeichen:"Getaktetes Stellglied steht dauerhaft an einem Extrem (immer aus oder immer voll).",
-bild:W({yr:[-1,16],yunit:"V",vdiv:"5 V/div",tdiv:"2 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"flat",o:{v:0.3},mp:"PWM = 100%? / 0%?"}],
-   caption:"Kein Taktverhältnis sichtbar (Dauer-Low oder Dauer-High).",
-   why:"Tastgrad am Anschlag: entweder Regelung am Limit (echter Bedarf), Sensor-/Regelfehler oder Endstufe/Leitung defekt. Kontext (Wirkung, Solldaten) entscheidet, ob gewollt oder Fehler."}),
+bild:W2({ badge:"FEHLER", title:"PWM am Anschlag: 100 % = Dauer-Masse, Strom = Ub/R", cond:"Regelung am Limit, 250 Hz", tdiv:0.002, vdiv:5, off:-4, os:16,
+  ch:[{ m:"pwmVentil", p:{ ph:0.75, sched:[[0,0.5],[0.006,0.5],[0.012,1.0,1]] }, lbl:"Ventil −" },
+      { m:"pwmVentil", p:{ ph:0.75, sched:[[0,0.5],[0.006,0.5],[0.012,1.0,1]], sig:"i" }, lbl:"Strom", vdiv:0.2, off:0, unit:"A" }],
+  ghost:[{ m:"pwmVentil", p:{ ph:0.75 } }, { m:"pwmVentil", p:{ ph:0.75, sig:"i" }, ch:1 }],
+  notes:[ {t:0.0165, v:0.1, txt:"100 %: dauernd Masse, kein Takt mehr", dx:10, dy:-30},
+          {t:0.0195, v:0.54, ch:1, txt:"Strom = Ub/R ≈ 0,54 A, kein Sägezahn", dx:-10, dy:-22, anchor:"end"},
+          {t:0.003, v:14.3, txt:"vorher 50 % (= Sollbild grau)", dx:8, dy:-20} ],
+  expect:[ {what:"duty", ch:0, t0:0, t1:0.006, v:0.5, tol:0.03, src:"High-Anteil 50 % vor dem Anschlag"},
+           {what:"max", ch:0, t0:0.0135, t1:0.02, max:0.5, src:"100 %: Endstufe dauernd ein"},
+           {what:"mean", ch:1, t0:0.018, t1:0.02, min:0.5, max:0.58, src:"13,5 V / 25 Ω (Beispiel)"} ],
+  caption:"Zuerst normale 50-%-PWM, dann fährt der Tastgrad auf 100 %: Die Steuerleitung bleibt dauernd auf Masse, der Sägezahn im Strom verschwindet und der Strom steht auf Ub/R. Am Ventil sieht das genauso aus wie ein Masseschluss – und 0 % genauso wie „keine Ansteuerung“.",
+  why:"Ein getaktetes Stellglied hat seinen Arbeitsbereich zwischen den Extremen (Pierburg-Druckwandler laut Sekundärquelle 20–95 %). Steht es dauerhaft bei 0 % (Dauer-Bordnetz) oder 100 % (Dauer-Masse), gibt es drei Erklärungen: (1) echter Bedarf – die Regelung ist am Limit, weil die Wirkung ausbleibt (Steller fest, Leck, Lader) oder der Sollwert extrem ist (Saab: Ladedruckventil ~0 % im Leerlauf, 90–100 % kurz bei Volllast – gewollt); (2) Sensor-/Regelfehler, der die Regelung ans Limit treibt; (3) Endstufe durchlegiert oder Leitung mit Schluss nach Masse/Plus (Saab P0245/P0246). Das Oszi allein entscheidet das nicht: Tester-Sollwert und Regelabweichung lesen, Wirkung messen (Druck, Menge, Drehzahl), Leitung auf Schluss prüfen (STG-Stecker ab: taktet es dann noch oder bleibt Dauer-Masse?). Takt, Spule und Übergang 50 → 100 % sind Beispiele." }),
 elektrisch:["Endstufe durchlegiert (Dauer-Strom)","Leitung KS nach Masse/Plus"],
 mechanisch:["Steller fest → Regelung fährt ans Limit"],
 software:["Regelung am Anschlag wegen Sensorfehler","Bewusster Ruhezustand 0 %/100 %"],
@@ -23338,11 +23516,17 @@ verwechslung:"Gewollter Ruhezustand (0/100 %) vs. Defekt: Sollwert + Wirkung im 
 {
 id:"plausibel-falsch", titel:"Plausibel, aber falsch (gedriftet)",
 kennzeichen:"Signalform sieht 'gut' aus, der Wert ist aber falsch – nur per Quervergleich erkennbar.",
-bild:W({yr:[0,5.5],yunit:"V",vdiv:"1 V/div",tdiv:"500 ms/div",badge:"FEHLER",
-   tr:[{ch:1,g:"ana",o:{pts:[[0,2.1],[0.2,2.1],[0.26,3.0],[0.32,2.2],[0.55,2.1],[0.6,3.0],[0.66,2.2],[1,2.1]]},mp:"Signal (gedriftet)"}],
-   marks:[{t:0.26,v:3.0,txt:"Form ok, Wert zu niedrig"}],
-   caption:"Schöne Signalform, aber falscher Absolutwert.",
-   why:"Drift/Alterung verschiebt den Messwert, ohne die Form zu zerstören. Das Oszi-Bild allein genügt nicht – erst der Vergleich mit Referenz/Sollwert/zweitem Sensor deckt es auf."}),
+bild:W2({ badge:"FEHLER", title:"Plausibel, aber falsch: Form gut, Wert daneben (Quervergleich)", cond:"Standzeit über Nacht, Zündung ein", tdiv:10, vdiv:0.5, off:-5,
+  ch:[{ m:"ntcKmt", p:{ T:100, T0:20, tStart:8, par:5000 }, lbl:"KMT" },
+      { m:"ntcKmt", p:{ T:100, mode:"ev", ev:[[0, 20, 1]], tauS:0, seed:7 }, lbl:"IAT" }],
+  ghost:[{ m:"ntcKmt", p:{ T:100, T0:20, tStart:8 } }],
+  notes:[ {t:4, v:3.125, txt:"KMT ≈ 3,1 V statt ≈ 3,6 V: STG rechnet ~30 °C statt ~20 °C", dx:6, dy:48},
+          {t:60, v:3.571, txt:"IAT ≈ 3,57 V (~20 °C) = Vergleichswert, Soll-KMT grau", ch:1, dx:10, dy:-26} ],
+  expect:[ {what:"mean", ch:0, t0:0.5, t1:7.5, v:3.125, tol:0.03, src:"2500 Ω ∥ 5 kΩ an 1 kΩ (Beispiel)"},
+           {what:"mean", ch:1, t0:0.5, t1:7.5, v:3.571, tol:0.02, src:"Bosch 20 °C: 2500 Ω an 1 kΩ, 5 V"},
+           {what:"mean", ch:0, t0:95, t1:100, max:3.0, src:"fällt nach dem Start wie das Soll"} ],
+  caption:"Die KMT-Kurve sieht tadellos aus: ruhig bei Zündung ein, nach dem Start glatt fallend. Trotzdem ist der Wert falsch – nach der Nacht müsste sie auf dem IAT-Wert liegen (grau), liegt aber ~0,45 V darunter. Das STG rechnet mit ~30 °C statt ~20 °C.",
+  why:"Drift, Alterung, Nebenschluss im Stecker oder eine falsche Kennlinie (Nachbauteil) verschieben den Messwert, ohne die Form zu zerstören – im Beispiel ein 5-kΩ-Nebenschluss parallel zum NTC. Das Oszi-Bild allein genügt nicht: „Bild gut = Sensor gut“ ist der Klassiker. Erst der Quervergleich deckt es auf: zweiter Sensor mit gleicher Kennlinie (hier IAT nach Standzeit, Saab/GM: innerhalb 3 °C), Referenzmessung (IR-Thermometer, Handpumpe, Manometer), physikalische Plausibilität (Zündung-ein-Drücke, LMM ↔ MAP) oder Soll-Ist im Tester – wobei Pico warnt, dass der Tester-Wert geschätzt sein kann. Unterschied zur Korrosion: dort zappelt der Pegel und ist feuchtigkeitsabhängig; Drift ist glatt und reproduzierbar. Prüfen: Sensor direkt gegen Tabelle messen, Stecker trocken/sauber; bleibt der Versatz, Bauteil ersetzen. Werte (3,57 V, 3,13 V) folgen aus Bosch-Kennlinie und 1-kΩ-Pull-up (Beispiel)." }),
 elektrisch:["Alterungsdrift","leichter Übergangswiderstand (kleiner Offset)"],
 mechanisch:["Verschmutzung (LMM), teilverstopfte Druckbohrung","gealtertes Element"],
 software:["Falsche Kennlinie (Nachbauteil)"],
@@ -23423,178 +23607,349 @@ var GLOSSAR=[
 ];
 
 /* ---------- 5) STATISCHE KONZEPT-SVGs ---------- */
-function fig(id,spec){ var el=document.getElementById(id); if(el){ el.innerHTML=(spec&&spec.w2)?String(spec):W(spec); } }  /* W2-Bild (Objekt) oder altes W-Spec */
+function fig(id,img){ var el=document.getElementById(id); if(el){ el.innerHTML=String(img); } }  /* W2-Bild einsetzen */
 
 function renderStatics(){
   /* === Grundlagen === */
-  fig("svg-acdc",{yr:[-2,14],yunit:"V",vdiv:"2 V/div",tdiv:"5 ms/div",
-    tr:[{ch:1,g:"sin",o:{f:5,amp:1.3,off:10},mp:"Signal mit DC-Anteil"}],
-    marks:[{t:0.5,v:10,txt:"DC-Lage ~10 V"}],
-    caption:"AC- vs. DC-Kopplung.",
-    why:"DC zeigt die ganze Spannung (Lage 10 V + Welligkeit). AC-Kopplung blendet die 10 V aus und zentriert das Bild auf die kleine Welligkeit – ideal, um Ripple/Störungen auf hoher Gleichspannung sichtbar zu machen."});
+  fig("svg-acdc",W2({ badge:"GUT", title:"AC- vs. DC-Kopplung: Rippel auf 14 V", cond:"Leerlauf, Last ≈ 30 A, an B+", tdiv:0.002, vdiv:5, off:-1, os:8,
+    ch:[{ m:"generatorRipple", p:{ rpm:800, iL:30, mode:"dc" }, lbl:"B+ DC" },
+        { m:"generatorRipple", p:{ rpm:800, iL:30, mode:"ac" }, lbl:"B+ AC", vdiv:0.05, off:-2 }],
+    meas:[ {t:"level", ch:0, v:14.3, t0:0, t1:0.02, lx:0.0005, dy:18, txt:"DC, 5 V/div: Lage ≈ 14,3 V – der Rippel ist nur ein Strich"},
+           {t:"vpp", ch:1, x:0.965, pre:"AC:"} ],
+    notes:[ {t:0.0055, v:0.036, ch:1, txt:"AC, 50 mV/div: Gleichanteil weg, nur der Rippel", dx:10, dy:-40} ],
+    expect:[ {what:"mean", ch:0, v:14.3, tol:0.05, src:"Modell vset 14,3 V (Infineon: Registerstandard 14,3 V, Werks-NVM 14,5 V; Wikipedia: 14,4 V üblich)"},
+             {what:"vpp", ch:0, min:0.1, max:0.145, src:"Modell: Rippel auch im DC-Kanal vorhanden"},
+             {what:"vpp", ch:1, min:0.1, max:0.145, src:"Modell; Pico: kritisch erst > 500 mV"},
+             {what:"mean", ch:1, min:-0.01, max:0.01, src:"AC-Kopplung: Mittelwert 0"},
+             {what:"freq", ch:1, v:1200, tolRel:0.03, src:"6 Polpaare × 800 /min × 2,5 / 60 × 6"} ],
+    caption:"Dasselbe Signal an B+ zweimal: CH1 mit DC-Kopplung zeigt die ganze Ladespannung (Lage ≈ 14,3 V, Reglersollwert typ. 14,3–14,5 V), der Rippel ist bei 5 V/div nur ein Strich. CH2 mit AC-Kopplung blendet die 14 V aus – bei 50 mV/div wird der Rippel (hier ≈ 125 mVss, 1200 Hz) zum Bild.",
+    why:"DC-Kopplung zeigt Gleich- und Wechselanteil zusammen; der Messbereich muss die 14 V fassen, Millivolt gehen darin unter. AC-Kopplung schaltet einen Kondensator in Reihe: Der Gleichanteil fällt weg, der Wechselanteil liegt um 0 V und darf hoch verstärkt werden – ideal für Generator-Rippel, Rauschen auf Versorgungen, Klopfsensor. Pico: gesunder Rippel ist eine gleichmäßige Pulsfolge, kritisch erst über 500 mVss. Falle: Die AC-Kopplung des VDS1022I lässt erst ab ≈ 5 Hz durch – langsame Signale (PWM mit niedriger Frequenz, Druckverläufe) kippen weg, Offsetfehler bleiben unsichtbar. Im Zweifel DC." }));
 
-  fig("svg-trig",{yr:[-1,6],yunit:"V",vdiv:"2 V/div",tdiv:"5 ms/div",trig:{t:0.3},
-    tr:[{ch:1,g:"sq",o:{cyc:6,duty:0.5,hi:5,lo:0.2},mp:"Signal"}],
-    marks:[{t:0.3,v:2.5,txt:"Triggerpegel/-flanke"}],
-    caption:"Trigger stabilisiert das Bild.",
-    why:"Der Trigger löst immer beim gleichen Ereignis aus (hier steigende Flanke bei ~2,5 V) → die Kurve 'steht'. Ohne sauberen Trigger läuft das Bild durch und ist nicht ablesbar."});
+  fig("svg-trig",W2({ badge:"GUT", title:"Trigger: Flanke ↑ bei 2,5 V – das Bild steht", cond:"KW-Hall-Geber, Leerlauf 800 /min, Normal-Trigger", tdiv:0.002, vdiv:1, off:-3, os:8,
+    ch:[{ m:"kwHallGeber", p:{ rpm:800, ph0:3 }, lbl:"KW-Hall" }],
+    trig:{ t:0.01, v:2.5, ch:0 },
+    meas:[ {t:"span", t0:0, t1:0.01, v:-0.6, pre:"Pre-Trigger:", post:"(Zeit vor dem Ereignis)"},
+           {t:"level", v:2.5, t0:0.0105, t1:0.02, lx:0.0107, dy:-9, txt:"Triggerpegel 2,5 V"} ],
+    notes:[ {t:0.01, v:2.5, txt:"Trigger: Flanke ↑ durch 2,5 V – hier startet jede Aufzeichnung", dx:14, dy:-130} ],
+    expect:[ {what:"freq", v:800, tolRel:0.02, src:"60-2-Rad: Zahnfrequenz in Hz = Drehzahl in 1/min"},
+             {what:"max", min:4.9, max:5.1, src:"Pico: Hall-Rechteck 0/5 V"},
+             {what:"min", max:0.3, src:"Pico: Hall-Rechteck 0/5 V"},
+             {what:"max", t0:0.0097, t1:0.00999, max:0.5, src:"vor der Triggerflanke Low"},
+             {what:"min", t0:0.01001, t1:0.0103, min:4.5, src:"nach der Triggerflanke High"} ],
+    caption:"Der Trigger löst immer am selben Ereignis aus: steigende Flanke durch 2,5 V (Signalmitte). Links davon der Pre-Trigger (hier 10 ms = 50 %), rechts die Zeit danach. Jede neue Aufzeichnung beginnt an derselben Flanke – die Kurve „steht“.",
+    why:"Ohne Trigger startet jede Aufzeichnung irgendwo im Signal, die Kurve läuft durch und ist nicht ablesbar. Mit Flankentrigger wartet das Oszi, bis das Signal den Pegel in der gewählten Richtung durchläuft (Pico), und legt dieses Ereignis an die Triggermarke – gleiche Stelle, gleiches Bild. Pegel in die Signalmitte legen (hier 2,5 V bei 0/5 V), Flanke passend zum Ereignis. Pre-Trigger zeigt die Vorgeschichte – wichtig bei Aussetzern. Auto zeichnet auch ohne Ereignis (zum Suchen), Normal nur mit Ereignis (stehendes Bild), Single genau einmal (Startvorgang, sporadischer Fehler)." }));
 
-  fig("svg-alias",{yr:[-3,3],yunit:"V",vdiv:"1 V/div",tdiv:"zu lang!",
-    tr:[{ch:1,g:"sin",o:{f:34,amp:2,off:0},mp:"schnelles Signal"}],
-    caption:"Aliasing durch zu lange Zeitbasis.",
-    why:"Ist die Zeitbasis/Abtastrate zu niedrig für ein schnelles Signal, entsteht ein falsches, scheinbar langsames Muster. Gegenmittel: schnellere Zeitbasis und höhere Abtastrate wählen."});
+  fig("svg-alias",W2({ title:"Aliasing (Erklärung): Zeitbasis zu lang für den Rippel", cond:"Erklärbild: ≈ 2000 /min (Modell 2001), 80 A, Sample", tdiv:0.5, vdiv:0.1, off:0, os:128,
+    ch:[{ m:"figAliasSampled", p:{ m:"generatorRipple", p:{ rpm:2001, iL:80, noise:0 }, fs:1000 }, lbl:"B+ AC" }],
+    ghost:[{ m:"generatorRipple", p:{ rpm:2001, iL:80, noise:0 } }],
+    meas:[ {t:"span", t0:0.861, t1:1.528, v:-0.3, pre:"Scheinperiode", post:"→ 1,5 Hz statt 3000 Hz"} ],
+    notes:[ {t:0.25, v:0.14, txt:"grau: wahres Signal (3000 Hz, als Band)", dx:10, dy:-44},
+            {t:3.527, v:0.095, txt:"gelb: 1000 Punkte/s treffen fast immer dieselbe Stelle", dx:10, dy:-44} ],
+    expect:[ {what:"freq", v:1.5, tolRel:0.1, src:"f_alias = |3001,5 − 3 × 1000| Hz"},
+             {what:"vpp", min:0.2, max:0.32, src:"Modell: Rippel 2000 /min, 80 A (≈ 0,24–0,31 Vss)"} ],
+    caption:"Erklärbild, kein Messbild: Bei 500 ms/div verteilt der VDS1022I seine 5000 Punkte auf 5 s – nur 1000 Punkte je Sekunde. Der Generator-Rippel bei 2000 /min liegt bei ≈ 3000 Hz; die Punkte treffen die Welle fast immer an derselben Stelle, und das Oszi zeichnet eine langsame Welle (hier ≈ 1,5 Hz), die es gar nicht gibt. Grau: das wahre Signal.",
+    why:"Pico: Aliasing entsteht, wenn zu langsam abgetastet wird, und erscheint als Welle niedrigerer Frequenz. Faustregel: Abtastrate mindestens 2–3× über der höchsten Signalfrequenz für Sinus (Pico; Tektronix 2,5× mit sin(x)/x-Interpolation), für Rechteck, Flanken und Spikes mindestens 10× (Tektronix, lineare Interpolation – so auch im Kapitel). Bei fester Punktzahl je Bild sinkt die Abtastrate mit jeder längeren Zeitbasis (5000 Punkte ÷ 5 s = 1 kS/s – weit entfernt von den 100 MS/s des Geräts). Verdacht: Das Bild ändert sich sprunghaft beim Verstellen der Zeitbasis oder wandert mit der Drehzahl (hier 2001 /min; bei exakt 2000 /min wäre die Scheinwelle eine waagerechte Linie). Gegenmittel: Zeitbasis schneller (Rippel bei 1 ms/div = 5000 ÷ 10 ms = 500 kS/s, über 150 Punkte je Periode), Peak-Detect einschalten – dann zeichnet das Gerät Min/Max je Punkt und zeigt das graue Band statt der Scheinwelle." }));
 
-  fig("svg-versatz",{yr:[-1,6],yunit:"V",vdiv:"2 V/div",tdiv:"5 ms/div",
-    tr:[{ch:1,g:"sq",o:{cyc:5,duty:0.45,hi:5,lo:0.2},mp:"CH1"},
-        {ch:2,g:"ana",o:{pts:(function(){var a=[];for(var i=0;i<=40;i++){var t=i/40;var ph=(t*5+0.18)%1;a.push([t, ph<0.45?4.6:0.2]);}return a;})()},mp:"CH2 versetzt"}],
-    caption:"Zeitversatz zwischen zwei Kanälen.",
-    why:"Zwei Kanäle zeigen die zeitliche Beziehung zweier Signale. Ein definierter Versatz (Phasenlage) ist die Grundlage für Sync-/Korrelationsmessungen (z. B. KW↔NW)."});
+  fig("svg-versatz",W2({ badge:"GUT", title:"Zeitversatz zweier Kanäle: Δt per Cursor", cond:"800 /min, Trigger CH2 ↑", tdiv:0.002, vdiv:2, off:0, os:8,
+    ch:[{ m:"kwnwSyncKw", p:{ typ:"hall", rpm:800, ph0:-24 }, lbl:"KW-Hall" },
+        { m:"kwnwSyncNw", p:{ rpm:800, ph0:-24 }, lbl:"NW-Hall", vdiv:2, off:-3.5 }],
+    trig:{ t:0.01375, v:2.5, ch:1 },
+    meas:[ {t:"span", t0:0.005, t1:0.01375, v:-0.9, pre:"Cursor Δt =", post:"= 42° KW = 7 Zähne"} ],
+    notes:[ {t:0.0037, v:5, txt:"Lücke: 2 Zähne fehlen = langes High", dx:-6, dy:-16},
+            {t:0.01375, v:5, ch:1, txt:"NW-Flanke ↑ (Trigger)", dx:12, dy:30} ],
+    expect:[ {what:"freq", ch:0, v:800, tolRel:0.02, src:"60-2: Hz = 1/min"},
+             {what:"min", ch:0, t0:0.002, t1:0.0049, min:4.5, src:"Lücke High bis 5 ms"},
+             {what:"max", ch:0, t0:0.0051, t1:0.0056, max:0.5, src:"Zahn 0 Low ab 5 ms (0,625 ms)"},
+             {what:"max", ch:1, t0:0.0133, t1:0.01370, max:0.5, src:"NW vor der Flanke Low"},
+             {what:"min", ch:1, t0:0.01380, t1:0.0142, min:4.5, src:"NW nach der Flanke High"} ],
+    caption:"Zwei Kanäle, eine Zeitachse: Cursor 1 auf das Ende der KW-Lücke, Cursor 2 auf die NW-Flanke – Δt = 8,75 ms. Bei 800 /min (75 ms je Umdrehung) sind das 42° KW, also 7 Zähne (Beispielwert dieses Motors).",
+    why:"Beide Kanäle werden gleichzeitig mit derselben Zeitbasis aufgezeichnet, deshalb ist der zeitliche Versatz zweier Ereignisse direkt ablesbar: Δt ÷ Umdrehungszeit × 360° = Winkel. So prüft man Phasenlagen (KW↔NW, Zünd- zu Einspritzsignal, Eingang zu Ausgang eines Steuergeräts). Pico: Lage der NW-Flanke zur KW-Lücke mit einer Referenz desselben Motors vergleichen; verschoben → Kette/Riemen gelängt oder falsch montiert. Auf CH2 triggern, damit die NW-Flanke bei jeder Aufnahme an derselben Stelle steht." }));
 
   /* === Bussysteme === */
   var canBits="0110100110110100";
-  fig("svg-can-gut",{yr:[0,5],yunit:"V",vdiv:"1 V/div",tdiv:"50 µs/div",
-    tr:[{ch:1,g:"bus",o:{bits:canBits,hi:3.5,lo:2.5,idle:2.5},mp:"CAN_H"},
-        {ch:2,g:"bus",o:{bits:canBits,hi:1.5,lo:2.5,idle:2.5},mp:"CAN_L"}],
-    marks:[{t:0.07,v:3.5,txt:"dominant"},{t:0.20,v:2.5,txt:"rezessiv 2,5 V"}],
-    caption:"CAN High-Speed: CAN_H und CAN_L gegenläufig um 2,5 V.",
-    why:"Rezessiv liegen beide auf ~2,5 V. Dominant spreizt CAN_H auf ~3,5 V und CAN_L auf ~1,5 V. Die gegenläufige Spreizung um die gemeinsame Ruhelage ist das Markenzeichen eines gesunden HS-CAN."});
+  fig("svg-can-gut",W2({ badge:"GUT", title:"HS-CAN 500 kbit/s: CAN_H und CAN_L", cond:"Zündung ein, Bus aktiv", tdiv:20e-6, vdiv:1, off:-2.5, os:8,
+  ch:[{ m:"canHsBus", p:{}, lbl:"CAN_H" }, { m:"canHsBus", p:{ sig:"l" }, lbl:"CAN_L" }],
+  trig:{ t:12e-6, v:3, ch:0 },
+  meas:[ {t:"level", v:2.5, t0:160e-6, t1:200e-6, lx:120e-6, txt:"rezessiv: beide ≈ 2,5 V", anchor:"start", dy:-14} ],
+  notes:[ {t:31e-6, v:3.5, txt:"dominant: CAN_H ~3,5 V", dx:10, dy:-22},
+          {t:31e-6, v:1.5, ch:1, txt:"dominant: CAN_L ~1,5 V (Spiegelbild)", dx:10, dy:30} ],
+  expect:[ {what:"max", ch:0, t0:13e-6, t1:137e-6, v:3.5, tol:0.08, src:"TI SLOA101B ≈ 3,5 V (Pico-Bild ~3,6 V)"},
+           {what:"min", ch:1, t0:13e-6, t1:137e-6, v:1.5, tol:0.08, src:"TI SLOA101B ≈ 1,5 V (Pico-Bild ~1,4 V)"},
+           {what:"mean", ch:0, t0:162e-6, t1:198e-6, v:2.5, tol:0.03, src:"rezessiv ≈ 2,5 V (TI)"},
+           {what:"mean", ch:1, t0:162e-6, t1:198e-6, v:2.5, tol:0.03, src:"rezessiv ≈ 2,5 V (TI)"} ],
+  caption:"Ein Frame bei 500 kbit/s: Rezessiv liegen beide Adern auf ~2,5 V. Dominant springt CAN_H auf ~3,5 V und CAN_L spiegelbildlich auf ~1,5 V. Diese gegenläufige Spreizung um die gemeinsame Ruhelage ist das Kennzeichen eines gesunden HS-CAN.",
+  why:"Rezessiv treibt kein Teilnehmer; die Eingangswiderstände der Transceiver halten beide Adern auf halber 5-V-Versorgung (TI TCAN1042: typ. 0,5·VCC). Dominant treibt ein Sender CAN_H hoch und CAN_L herunter – TI SLOA101B nennt ≈ 3,5/1,5 V (Datenblattbereich 2,75–4,5 V bzw. 0,5–2,25 V, im Pico-Beispielbild ~3,6/1,4 V). 500 kbit/s → 1 Bit = 2 µs, ein Kästchen = 10 Bit. Das etwas höhere ACK-Bit kurz vor dem Rahmenende ist normal: alle Empfänger treiben gleichzeitig (TI SLLA486B). Am VDS1022I: CH1 CAN_H, CH2 CAN_L, beide DC, 1:1 reicht (Pegel unter 5 V)." }));
 
-  fig("svg-can-diff",{yr:[-1,3],yunit:"V",vdiv:"1 V/div",tdiv:"50 µs/div",
-    tr:[{ch:1,g:"bus",o:{bits:canBits,hi:2.0,lo:0,idle:0},mp:"CAN_H − CAN_L"}],
-    marks:[{t:0.07,v:2.0,txt:"dominant ~2 V"},{t:0.20,v:0,txt:"rezessiv ~0 V"}],
-    caption:"Differenzsignal CAN_H − CAN_L.",
-    why:"Die Nutzinformation steckt in der Differenz: dominant ~2 V, rezessiv ~0 V. Gleichtaktstörungen wirken auf beide Leitungen gleich und heben sich in der Differenz auf → hohe Störsicherheit."});
+  fig("svg-can-diff",W2({ badge:"GUT", title:"Differenz CAN_H − CAN_L (Math CH1−CH2)", cond:"Zündung ein, Bus aktiv", tdiv:20e-6, vdiv:0.5, off:-3, os:8,
+  ch:[{ m:"canHsBus", p:{ sig:"d" }, lbl:"Math CH1−CH2" }],
+  meas:[ {t:"level", v:0.9, lx:150e-6, txt:"0,9 V: ab hier gilt „dominant“", dy:-6} ],
+  notes:[ {t:31e-6, v:2.0, txt:"dominant ~2 V", dx:10, dy:-24},
+          {t:170e-6, v:0, txt:"rezessiv ~0 V", dx:-8, dy:30, anchor:"end"} ],
+  expect:[ {what:"max", ch:0, t0:13e-6, t1:137e-6, v:2.0, tol:0.1, src:"TI SLOA101B: typ. 2 V Differenz"},
+           {what:"mean", ch:0, t0:162e-6, t1:198e-6, v:0, tol:0.03, src:"rezessiv ≈ 0 V"} ],
+  caption:"Die Nutzinformation steckt in der Differenz CAN_H − CAN_L: dominant ~2 V, rezessiv ~0 V. Am VDS1022I als Mathekanal CH1 − CH2 darstellbar.",
+  why:"Der Empfänger wertet nur die Differenz aus (Pico AGT-126; TI SLOA101B: typ. 2 V dominant). Eine Störung – Zündimpuls, Masseversatz – trifft beide verdrillten Adern gleich und fällt bei der Differenzbildung heraus; deshalb ist CAN so störsicher. Die Schwellen der Transceiver liegen dazwischen: dominant ab 0,9 V, rezessiv unter 0,5 V (TI TCAN1042). Am VDS1022I: CH1 an CAN_H, CH2 an CAN_L, beide Massen an Fahrzeugmasse, dann Math „−“ (die Kanäle haben eine gemeinsame Masse)." }));
 
-  fig("svg-can-f1",{yr:[0,5],yunit:"V",vdiv:"1 V/div",tdiv:"50 µs/div",badge:"FEHLER",
-    tr:[{ch:1,g:"flat",o:{v:0.1},mp:"CAN_H"},
-        {ch:2,g:"bus",o:{bits:canBits,hi:1.5,lo:2.5,idle:2.5},mp:"CAN_L"}],
-    marks:[{t:0.5,v:0.1,txt:"CAN_H auf Masse"}],
-    caption:"CAN_H Kurzschluss nach Masse.",
-    why:"Eine Leitung liegt fest auf ~0 V, die andere arbeitet noch. Die Differenz ist gestört → Buskommunikation bricht zusammen. Typisch: Scheuerstelle/Wasser. Erst die betroffene Leitung lokalisieren."});
+  fig("svg-can-f1",W2({ badge:"FEHLER", title:"CAN_H Kurzschluss nach Masse", cond:"Zündung ein, Bus sollte aktiv sein", tdiv:20e-6, vdiv:1, off:-2, os:8,
+  ch:[{ m:"canHsBus", p:{ fault:"hgnd" }, lbl:"CAN_H" }, { m:"canHsBus", p:{ sig:"l", fault:"hgnd" }, lbl:"CAN_L" }],
+  ghost:[{ m:"canHsBus", p:{} }, { m:"canHsBus", p:{ sig:"l" }, ch:1 }],
+  notes:[ {t:60e-6, v:0, txt:"CAN_H fest auf 0 V", dx:10, dy:-30},
+          {t:120e-6, v:0.02, ch:1, txt:"CAN_L über den 60-Ω-Abschluss mitgezogen (Blau deckt Gelb)", dx:-10, dy:50, anchor:"end"},
+          {t:175e-6, v:2.5, txt:"Sollbild (grau): 2,5 V, Frames 3,5/1,5 V", dx:-6, dy:-40, anchor:"end"} ],
+  expect:[ {what:"max", ch:0, max:0.1, src:"Kurzschluss gegen Masse"},
+           {what:"max", ch:1, max:0.15, src:"über 60 Ω mitgezogen (TI: Differenz stark verkleinert)"} ],
+  caption:"CAN_H klebt auf Masse – und zieht über den 60-Ω-Abschluss auch CAN_L auf ~0 V – beide Kurven decken sich (Blau über Gelb). Keine Spreizung, keine Differenz, Bus tot. Das graue Sollbild zeigt, was bei aktivem Bus zu sehen wäre.",
+  why:"Die rezessive 2,5-V-Vorspannung kommt nur über hochohmige Eingangswiderstände (TI TCAN1042: 15–40 kΩ); hängt CAN_H hart an Masse, folgt CAN_L über die 60 Ω Abschluss nach ~0 V. Laut TI ist das Differenzsignal dann stark verkleinert – keine Kommunikation. Verwechslungsgefahr 1: ein schlafender Bus (Standby) zeigt ebenfalls beide ~0 V – darum bei Zündung ein messen. Verwechslungsgefahr 2: bei CAN_L gegen Masse schaltet CAN_H weiter (0 ↔ ~3 V), der Bus läuft oft eingeschränkt. Typisch: Scheuerstelle, Wasser im Stecker. Prüfen: Batterie ab, Widerstand CAN_H gegen Masse; Bus an Steckern abschnittsweise trennen, bis der Schluss verschwindet." }));
 
-  fig("svg-can-f2",{yr:[0,5],yunit:"V",vdiv:"1 V/div",tdiv:"50 µs/div",badge:"FEHLER",
-    tr:[{ch:1,g:"flat",o:{v:2.5},mp:"CAN_H"},{ch:2,g:"flat",o:{v:2.5},mp:"CAN_L"}],
-    marks:[{t:0.5,v:2.5,txt:"beide rezessiv – keine Daten"}],
-    caption:"Keine Kommunikation (beide Leitungen ruhen).",
-    why:"Beide Leitungen verharren rezessiv auf ~2,5 V → kein Teilnehmer sendet. Ursachen: STG schläft/ohne Versorgung, Busfehler, Weckleitung fehlt. Versorgung/Wecklogik und Abschluss prüfen."});
+  fig("svg-can-f2",W2({ badge:"FEHLER", title:"Keine Kommunikation: beide Adern rezessiv", cond:"Zündung ein, Bus sollte aktiv sein", tdiv:200e-6, vdiv:1, off:-2.5, os:8,
+  ch:[{ m:"canHsBus", p:{ frames:[] }, lbl:"CAN_H" }, { m:"canHsBus", p:{ sig:"l", frames:[], seed:9 }, lbl:"CAN_L" }],
+  ghost:[{ m:"canHsBus", p:{ scn:"last" } }, { m:"canHsBus", p:{ sig:"l", scn:"last" }, ch:1 }],
+  notes:[ {t:1900e-6, v:2.5, txt:"beide starr auf ~2,5 V – kein Teilnehmer sendet", dx:-10, dy:60, anchor:"end"},
+          {t:400e-6, v:3.5, txt:"Sollbild (grau): hier müssten Frames laufen", dx:10, dy:-26} ],
+  expect:[ {what:"vpp", ch:0, max:0.15, src:"keine Rahmen"},
+           {what:"vpp", ch:1, max:0.15, src:"keine Rahmen"},
+           {what:"mean", ch:0, v:2.5, tol:0.05, src:"rezessive Vorspannung (TI TCAN1042: 0,5·VCC)"},
+           {what:"mean", ch:1, v:2.5, tol:0.05, src:"rezessive Vorspannung"} ],
+  caption:"Zündung ein, aber über 2 ms kein einziger Frame: beide Adern ruhen rezessiv auf ~2,5 V. Die Transceiver sind versorgt (sonst 0 V), aber niemand sendet.",
+  why:"Rezessiv heißt: kein Treiber aktiv, nur die Eingangswiderstände halten beide Adern auf ~2,5 V (TI TCAN1042). Bei Zündung ein müssen auf einem Antriebs-CAN ständig Frames laufen – fehlen sie, sendet kein Teilnehmer: Steuergeräte ohne Versorgung, Masse oder Wecksignal, Netz schläft, Gateway trennt (Pico AGT-126: Versorgung/Masse/Software als Fehlergruppe). Abgrenzung: Standby → beide ~0 V; Teilnehmer hängt dominant → 3,5/1,5 V dauerhaft; CAN_H/CAN_L kurzgeschlossen → sieht genauso aus (flache ~2,5 V), aber Widerstand CAN_H–CAN_L ≈ 0 Ω statt 60 Ω. Prüfen: Kl. 15/30 und Masse der Teilnehmer, Weckleitung, dann am anderen Busende messen." }));
 
-  fig("svg-can-f3",{yr:[0,5],yunit:"V",vdiv:"1 V/div",tdiv:"50 µs/div",badge:"FEHLER",
-    tr:[{ch:1,g:"ana",o:{pts:(function(){var a=[],lv=[3.5,2.5,3.5,3.5,2.5,3.5,2.5,2.5];for(var i=0;i<lv.length;i++){var t0=i/lv.length;a.push([t0,lv[i]]);a.push([t0+0.02, lv[i]+ (i%2?0.9:-0.9)]);a.push([t0+0.05, lv[i]]);}a.push([1,2.5]);return a;})()},mp:"CAN_H"}],
-    marks:[{t:0.27,v:3.4,txt:"Überschwingen/Reflexion"}],
-    caption:"Fehlender Abschluss (≠60 Ω) → Reflexionen.",
-    why:"Ohne korrekten 120-Ω-Abschluss an beiden Enden (zusammen 60 Ω) werden Signale am Leitungsende reflektiert → Überschwingen/Klingeln auf den Flanken, Bitfehler. 60 Ω zwischen CAN_H/CAN_L (STG-los) gegenmessen."});
+  fig("svg-can-f3",W2({ badge:"FEHLER", title:"Ein Abschluss fehlt: Reflexionen (120 Ω statt 60 Ω)", cond:"Zündung ein, Bus aktiv (Zoom)", tdiv:1e-6, vdiv:0.5, off:-5, os:16,
+  ch:[{ m:"canHsBus", p:{ ofs:16e-6, rterm:120, tauF:60e-9, ringA:0.3, ringF:6e6, ringTau:200e-9, ringR:0.06 }, lbl:"CAN_H" },
+      { m:"canHsBus", p:{ sig:"l", ofs:16e-6, rterm:120, tauF:60e-9, ringA:0.3, ringF:6e6, ringTau:200e-9, ringR:0.06 }, lbl:"CAN_L" }],
+  ghost:[{ m:"canHsBus", p:{ ofs:16e-6 } }, { m:"canHsBus", p:{ sig:"l", ofs:16e-6 }, ch:1 }],
+  meas:[ {t:"level", v:3.5, t0:5.5e-6, t1:8.5e-6, lx:8.6e-6, txt:"Soll ≈ 3,5 V", dy:4} ],
+  notes:[ {t:7e-6, v:3.79, txt:"Hub größer: ~3,8 / ~1,2 V", dx:10, dy:-26},
+          {t:2.1e-6, v:2.88, txt:"Nachschwingen beim Wechsel dominant → rezessiv", dx:14, dy:-44} ],
+  expect:[ {what:"max", ch:0, t0:6.2e-6, t1:7.9e-6, v:3.79, tol:0.08, src:"Modell: 50-Ω-Treiber an 120 Ω"},
+           {what:"min", ch:1, t0:6.2e-6, t1:7.9e-6, v:1.21, tol:0.08, src:"Modell: Spiegelbild"},
+           {what:"max", ch:0, t0:2.05e-6, t1:2.3e-6, min:2.75, src:"Nachschwinger über dem Rezessivpegel (Beispiel)"} ],
+  caption:"Ein 120-Ω-Abschluss fehlt: Die Pegel wirken fast normal, aber der Hub ist etwas größer (im Modell ~3,8/1,2 V statt 3,5/1,5 V, Höhe treiber- und lastabhängig) und bei jedem Wechsel dominant → rezessiv klingelt es. Bestätigen mit Zündung aus: ~120 Ω statt ~60 Ω zwischen CAN_H und CAN_L.",
+  why:"Die Treiber haben ~50 Ω Ausgangsimpedanz (TI SLLA581); an 120 Ω fällt mehr Spannung ab als an 60 Ω (TCAN1042: Differenz bis 5 V bei hochohmiger Last). Am offenen Leitungsende wird reflektiert (TI SLLA270) – vor allem auf der Flanke dominant → rezessiv, die nicht getrieben wird, sondern passiv über den Abschluss abfällt. Bei 500 kbit/s klingt das bis zum Abtastpunkt (80 % = 1,6 µs) meist ab, der Bus läuft noch mit sporadischen Fehlern; bei CAN FD wird es kritisch. Frequenz und Höhe des Klingelns sind ein Beispiel (Leitungslänge, Topologie). Der VDS1022I (25 MHz) zeigt ein 6-MHz-Nachschwingen gedämpft, aber erkennbar. Abhilfe: beide 120-Ω-Abschlüsse (oft im Steuergerät) und ihre Stecker prüfen." }));
 
-  fig("svg-can-f4",{yr:[0,5],yunit:"V",vdiv:"1 V/div",tdiv:"50 µs/div",badge:"FEHLER",
-    tr:[{ch:1,g:"bus",o:{bits:canBits,hi:2.7,lo:2.5,idle:2.5},mp:"CAN_H"},
-        {ch:2,g:"bus",o:{bits:canBits,hi:2.3,lo:2.5,idle:2.5},mp:"CAN_L"}],
-    marks:[{t:0.07,v:2.7,txt:"Spreizung zu klein"}],
-    caption:"CAN_H/CAN_L-Kurzschluss → Differenz zu klein.",
-    why:"Berühren sich beide Leitungen (oder hochohmige Brücke), nähern sich die Pegel an, die dominante Spreizung schrumpft → die Differenz reicht nicht mehr sicher für 'dominant'. Bus instabil/tot."});
+  fig("svg-can-f4",W2({ badge:"FEHLER", title:"CAN_H und CAN_L kurzgeschlossen: keine Spreizung", cond:"Zündung ein, Bus sollte aktiv sein", tdiv:20e-6, vdiv:1, off:-2, os:8,
+  ch:[{ m:"canHsBus", p:{ fault:"hl" }, lbl:"CAN_H" }, { m:"canHsBus", p:{ sig:"l", fault:"hl", seed:9 }, lbl:"CAN_L" }],
+  ghost:[{ m:"canHsBus", p:{} }, { m:"canHsBus", p:{ sig:"l" }, ch:1 }],
+  notes:[ {t:150e-6, v:2.5, txt:"beide übereinander auf ~2,5 V – keine Differenz (Blau deckt Gelb)", dx:-10, dy:70, anchor:"end"},
+          {t:31e-6, v:3.5, txt:"Sollbild (grau): 3,5 / 1,5 V", dx:10, dy:-24} ],
+  expect:[ {what:"vpp", ch:0, max:0.15, src:"keine Spreizung (TI: Differenz stark verkleinert)"},
+           {what:"mean", ch:1, v:2.47, tol:0.06, src:"Ruhelage ~2,5 V (Pico-Forum: flache Linie ~2,5 V)"} ],
+  caption:"CAN_H und CAN_L berühren sich: Beide Adern liegen übereinander auf ~2,5 V, nichts spreizt mehr, keine Differenz – Bus tot. Sieht aus wie ein ruhender Bus, aber der Widerstand CAN_H–CAN_L ist ≈ 0 Ω statt 60 Ω.",
+  why:"Sind beide Adern verbunden, kann kein strombegrenzter Treiber eine Differenz aufbauen – laut TI ist keine Kommunikation möglich; im Pico-Forum zeigte ein Versuch am Fahrzeug eine flache Linie bei ~2,5 V (Verhalten herstellerabhängig). Eine hochohmige Brücke (Feuchtigkeit, Korrosion) schließt nicht ganz kurz: Dann schrumpft die Spreizung, die Differenz fällt unter die 0,9-V-Schwelle (TI TCAN1042) und der Bus wird instabil – sporadische Kommunikationsfehler in vielen Steuergeräten. Abgrenzung: Bus ruht (keine Sender) sieht gleich aus → Zündung aus, Widerstand CAN_H–CAN_L messen (Pico: Soll ~60 Ω). Kurzschluss gegen Masse: beide ~0 V statt 2,5 V." }));
 
-  fig("svg-canls",{yr:[-1,6],yunit:"V",vdiv:"1 V/div",tdiv:"50 µs/div",
-    tr:[{ch:1,g:"bus",o:{bits:canBits,hi:0.2,lo:5,idle:5},mp:"CAN_H (LS)"},
-        {ch:2,g:"bus",o:{bits:canBits,hi:4.8,lo:0,idle:0},mp:"CAN_L (LS)"}],
-    caption:"CAN Low-Speed (fehlertolerant) – größerer Pegelhub.",
-    why:"Der fehlertolerante LS-CAN nutzt einen größeren Spannungshub und kann bei Leitungsdefekt eindrahtig weiterlaufen (Notbetrieb). Andere Pegellogik als HS-CAN – nie die beiden verwechseln (Stromlaufplan!)."});
+  fig("svg-canls",W2({ badge:"GUT", title:"CAN Low-Speed 125 kbit/s: großer, gegenläufiger Hub", cond:"Zündung ein, Komfort-CAN aktiv", tdiv:50e-6, vdiv:1, off:-3, os:8,
+  ch:[{ m:"canLsBus", p:{ sig:"h" }, lbl:"CAN_H" }, { m:"canLsBus", p:{ sig:"l" }, lbl:"CAN_L" }],
+  trig:{ t:16.3e-6, v:2, ch:0 },
+  notes:[ {t:132e-6, v:3.9, txt:"dominant: CAN_H ≥ 3,6 V, CAN_L ≤ 1,4 V", dx:10, dy:-46},
+          {t:8e-6, v:4.95, txt:"rezessiv: CAN_L ≈ 5 V", dx:8, dy:-22},
+          {t:8e-6, v:0.05, txt:"rezessiv: CAN_H ≈ 0 V", dx:8, dy:30} ],
+  expect:[ {what:"max", ch:0, t0:16e-6, t1:470e-6, v:3.9, tol:0.1, src:"Modell innerhalb TJA1055: CAN_H dominant ≥ VCC − 1,4 V"},
+           {what:"min", ch:1, t0:16e-6, t1:470e-6, v:1.1, tol:0.1, src:"Modell innerhalb TJA1055: CAN_L dominant ≤ 1,4 V"},
+           {what:"mean", ch:0, t0:0, t1:14e-6, v:0.05, tol:0.05, src:"TJA1055: CAN_H rezessiv ≤ 0,2 V"},
+           {what:"mean", ch:1, t0:0, t1:14e-6, v:4.95, tol:0.05, src:"TJA1055: CAN_L rezessiv ≥ VCC − 0,2 V"} ],
+  caption:"Andere Pegellogik als HS-CAN: Rezessiv liegt CAN_L oben (~5 V) und CAN_H unten (~0 V); dominant ziehen sich beide zusammen (CAN_H ~4 V, CAN_L ~1 V). Bitzeit 8 µs bei 125 kbit/s.",
+  why:"Beim fehlertoleranten LS-CAN (ISO 11898-3) hängt CAN_L über den Abschlusswiderstand an der 5-V-Versorgung und CAN_H an Masse – deshalb der große Hub (NXP TJA1055: rezessiv CAN_H ≤ 0,2 V, CAN_L ≥ 4,8 V; dominant CAN_H ≥ 3,6 V, CAN_L ≤ 1,4 V, Werte lastabhängig). Bei Bruch oder Kurzschluss einer Ader schaltet der Transceiver auf Eindrahtbetrieb um – das Fahrzeug funktioniert scheinbar weiter, oft nur mit sporadischen DTCs. Deshalb beide Adern einzeln prüfen und nie mit HS-CAN verwechseln (Stromlaufplan!). Keine 60-Ω-Regel: die Terminierung sitzt verteilt in den Steuergeräten." }));
 
-  fig("svg-canfd",{yr:[0,5],yunit:"V",vdiv:"1 V/div",tdiv:"variabel",
-    tr:[{ch:1,g:"bus",o:{bits:"0110"+"10101011010101"+"0110",hi:3.5,lo:2.5,idle:2.5},mp:"CAN_FD"}],
-    marks:[{t:0.5,v:3.5,txt:"Datenphase schneller"}],
-    caption:"CAN-FD: höhere Bitrate in der Datenphase.",
-    why:"CAN-FD schaltet in der Datenphase auf eine höhere Bitrate (kürzere Bits) und größere Nutzdaten. Pegel wie HS-CAN, aber die Bits werden mittendrin deutlich dichter – hohe Abtastrate nötig."});
+  fig("svg-canfd",W2({ badge:"GUT", title:"CAN FD: Datenphase mit höherer Bitrate", cond:"Zündung ein, Bus aktiv", tdiv:10e-6, vdiv:1, off:-2, os:8,
+  ch:[{ m:"canFdBus", p:{}, lbl:"CAN_H" }, { m:"canFdBus", p:{ sig:"l" }, lbl:"CAN_L" }],
+  trig:{ t:6e-6, v:3, ch:0 },
+  meas:[ {t:"span", t0:36.02e-6, t1:38.02e-6, v:4.3, pre:"1 Bit =", post:"(500 kbit/s)"},
+         {t:"span", t0:48.22e-6, t1:48.73e-6, v:0.3, pre:"1 Bit =", txt:"0,5 µs", post:"(2 Mbit/s)"} ],
+  notes:[ {t:39.7e-6, v:2.5, txt:"BRS: ab hier Datenphase – Bits viermal kürzer", dx:-6, dy:60, anchor:"end"} ],
+  expect:[ {what:"max", ch:0, t0:7e-6, t1:88e-6, v:3.5, tol:0.1, src:"Pegel wie HS-CAN (TI SLOA101B ≈ 3,5 V)"},
+           {what:"min", ch:1, t0:7e-6, t1:88e-6, v:1.5, tol:0.1, src:"Pegel wie HS-CAN"},
+           {what:"mean", ch:0, t0:93e-6, t1:100e-6, v:2.5, tol:0.03, src:"rezessiv 2,5 V"} ],
+  caption:"CAN FD: gleiche Pegel und gleiche Leitungen wie HS-CAN, aber mitten im Frame werden die Bits kürzer. Kopf (Arbitrierung) mit 500 kbit/s = 2 µs je Bit, Datenphase hier mit 2 Mbit/s = 0,5 µs je Bit, Rahmenende wieder langsam.",
+  why:"CAN FD schaltet am Abtastpunkt des BRS-Bits auf die Datenbitrate um (CiA) und am CRC-Delimiter zurück (Kvaser); Arbitrierung und ACK laufen immer mit der Nennbitrate, die Datenphase ist nur durch den Transceiver begrenzt (CiA; TCAN1042: 2 bzw. 5 Mbit/s). Welche Datenbitrate das Fahrzeug nutzt, ist herstellerabhängig (Kvaser: typ. 2- bis 8-fach). Pegel wie HS-CAN (TI SLOA101B), Nutzdaten bis 64 Byte (CiA). Am VDS1022I: bei 10 µs/div liegen 5000 Punkte in 100 µs (20 ns Raster), ein 0,5-µs-Bit hat ~25 Punkte – gut; 5 Mbit/s (0,2 µs) und die Flankenbewertung sind mit 25 MHz nur noch grob. Das dichte Bitmuster ist normal, kein Fehler." }));
 
-  fig("svg-lin-gut",{yr:[-1,14],yunit:"V",vdiv:"2 V/div",tdiv:"0,5 ms/div",
-    tr:[{ch:1,g:"bus",o:{bits:"i0000000000000i"+"10101010i"+"110100i"+"10110010i",hi:12,lo:0.3,idle:12},mp:"LIN"}],
-    marks:[{t:0.10,v:0.3,txt:"Sync-Break"},{t:0.30,v:12,txt:"rezessiv ~Ubat"}],
-    caption:"LIN-Bus: Eindraht, 0 ↔ Bordnetz.",
-    why:"LIN ist ein langsamer Eindraht-Bus (Master/Slave). Rezessiv liegt er nahe Bordnetz (~12 V), dominant nahe 0 V. Jede Nachricht beginnt mit Sync-Break/Sync-Feld – daran erkennt man den Rahmenstart."});
+  fig("svg-lin-gut",W2({ badge:"GUT", title:"LIN 19,2 kbit/s: Eindraht, Rezessiv ≈ Bordnetz", cond:"Zündung ein, Funktion aktiv", tdiv:0.5e-3, vdiv:2, off:-3,
+  ch:[{ m:"linBus", p:{}, lbl:"LIN" }],
+  trig:{ t:0.6e-3, v:6, ch:0 },
+  meas:[ {t:"span", t0:0.0006, t1:0.0012771, v:-1.2, pre:"Sync-Break", post:"= 13 Bit"} ],
+  notes:[ {t:0.0016, v:0.9, txt:"Header (Master): Sync 0x55 + Identifier", dx:4, dy:34},
+          {t:0.0034, v:11.8, txt:"Antwort (Slave): Daten + Checksumme", dx:30, dy:-50} ],
+  expect:[ {what:"mean", t0:0.00062, t1:0.00125, min:0.8, max:1.1, src:"Pico: dominant ~1 V; TI TLIN1029: ≤ 0,2·VSUP"},
+           {what:"mean", t0:0.0042, t1:0.005, v:11.8, tol:0.1, src:"Ubat 12,5 V − Diode ~0,7 V (LIN 2.2A Pull-up-Pfad)"},
+           {what:"min", t0:0.0025, t1:0.0041, min:0.9, max:1.15, src:"Slave-Dominant im Modell ~1,0 V"} ],
+  caption:"LIN ist ein Eindraht-Bus: Rezessiv liegt die Leitung nahe Bordnetz (~Ubat − 0,7 V), dominant bei ~1 V. Jeder Rahmen beginnt mit dem langen Sync-Break des Masters (≥ 13 Bit ≈ 0,68 ms), dann Sync 0x55 und Identifier – daran erkennt man den Rahmenstart. Danach folgt die Antwort.",
+  why:"Der Master zieht die Leitung über 1 kΩ + Diode auf Bordnetz, deshalb rezessiv ≈ Ubat − 0,7 V (LIN 2.2A); dominant zieht ein Transceiver nach Masse (Pico-Bild ~1 V, TI: ≤ 0,2·VSUP). Bitzeit = 1/19 200 s ≈ 52 µs, Break ≥ 13 Bit ≈ 0,68 ms – der auffällig lange Low-Block (Pico: 11 ×, bei neueren Fahrzeugen 13 ×). Header (Break, Sync, PID) kommt immer vom Master; das Datenfeld liefert je nach ID ein Slave (LIN 2.2A, Pico AGT-124). Am VDS1022I mit 1:1 messbar (Pegel ≤ 20 V); Trigger ↓ ~6 V auf den Break." }));
 
-  fig("svg-lin-f1",{yr:[-1,14],yunit:"V",vdiv:"2 V/div",tdiv:"0,5 ms/div",badge:"FEHLER",
-    tr:[{ch:1,g:"flat",o:{v:0.3},mp:"LIN"}],
-    marks:[{t:0.5,v:0.3,txt:"dauernd dominant (0 V)"}],
-    caption:"LIN klemmt dominant (Kurzschluss nach Masse).",
-    why:"Die Leitung liegt fest auf ~0 V → kein Teilnehmer kann mehr rezessiv senden → Bus tot. Typisch: Leitung gegen Masse oder ein Slave zieht dauerhaft. Slaves einzeln abklemmen grenzt ein."});
+  fig("svg-lin-f1",W2({ badge:"FEHLER", title:"LIN klemmt dominant: dauerhaft ~0 V", cond:"Zündung ein, Funktion sollte aktiv sein", tdiv:0.5e-3, vdiv:2, off:-3,
+  ch:[{ m:"linBus", p:{ fault:"gnd" }, lbl:"LIN" }],
+  ghost:[{ m:"linBus", p:{} }],
+  notes:[ {t:0.0045, v:0, txt:"0 V: kein Break, keine Bits, kein Rezessivpegel", dx:-8, dy:-40, anchor:"end"},
+          {t:0.0034, v:11.8, txt:"Sollbild (grau): Rahmen", dx:30, dy:-40} ],
+  expect:[ {what:"max", max:0.2, src:"Kurzschluss gegen Masse"} ],
+  caption:"Die Leitung klebt dauerhaft dominant bei ~0 V – weder Break noch Bits, kein Rezessivpegel. Niemand kann mehr senden: Bus tot.",
+  why:"LIN ist ein Wired-AND-Bus: jeder darf nur nach Masse ziehen (LIN 2.2A). Liegt die Leitung gegen Masse oder zieht ein Teilnehmer dauerhaft, kann kein Treiber rezessiv werden. Die Transceiver sind strombegrenzt und kurzschlussfest (NXP TJA1021: 40–100 mA) – Schaden gibt es selten, Kommunikation aber keine. Abgrenzung: Ein hängender Sender wird vom TXD-Dominant-Timeout nach typ. 20–90 ms abgeschaltet (TJA1021, TLIN1029), danach springt die Leitung auf Bordnetz; ein Kurzschluss bleibt bei 0 V. Eingrenzen: Slaves nacheinander abstecken – springt der Pegel auf Ubat, war der zuletzt abgesteckte der Täter (oder sein Leitungsast); bleibt 0 V, liegt es an der Leitung. Bestätigen: Zündung aus, Widerstand LIN gegen Masse." }));
 
-  fig("svg-lin-f2",{yr:[-1,14],yunit:"V",vdiv:"2 V/div",tdiv:"0,5 ms/div",badge:"FEHLER",
-    tr:[{ch:1,g:"flat",o:{v:12},mp:"LIN"}],
-    marks:[{t:0.5,v:12,txt:"dauernd rezessiv – keine Daten"}],
-    caption:"LIN ohne Kommunikation (nur Ruhepegel).",
-    why:"Die Leitung verharrt rezessiv (~Ubat), niemand zieht sie dominant → Master sendet nicht oder Versorgung/Masse des Master fehlt. Master-Versorgung und Weckbedingungen prüfen."});
+  fig("svg-lin-f2",W2({ badge:"FEHLER", title:"LIN ohne Kommunikation: nur Ruhepegel", cond:"Zündung ein, Funktion sollte aktiv sein", tdiv:0.5e-3, vdiv:2, off:-3,
+  ch:[{ m:"linBus", p:{ frames:[] }, lbl:"LIN" }],
+  ghost:[{ m:"linBus", p:{} }],
+  notes:[ {t:0.0045, v:11.8, txt:"nur Rezessivpegel ≈ Ubat − 0,7 V, kein Break", dx:-8, dy:40, anchor:"end"},
+          {t:0.0009, v:0.9, txt:"Sollbild (grau): Break + Rahmen", dx:10, dy:-30} ],
+  expect:[ {what:"min", min:11.5, src:"keine dominanten Bits"},
+           {what:"vpp", max:0.3, src:"nur Rauschen auf dem Pull-up-Pegel"} ],
+  caption:"Die Leitung liegt ruhig auf dem Rezessivpegel (~Ubat − 0,7 V), aber es kommt kein Break: Der Master pollt nicht. Die ganze LIN-Peripherie ist stumm.",
+  why:"Der Rezessivpegel beweist nur, dass ein Pull-up da ist (Master 1 kΩ + Diode oder Slave ~30 kΩ, LIN 2.2A); Rahmen gibt es erst, wenn der Master Header sendet. Ursachen: Master ohne Versorgung, Masse oder Weckbedingung, Master defekt, Leitung zwischen Master und Messpunkt unterbrochen – oder der Bus schläft regulär (dann Funktion betätigen: Weckimpuls > 150 µs, Pico). Abgrenzung zum Plus-Schluss: Dort liegt die volle Bordspannung ohne den ~0,7-V-Diodenabfall an, und der Pegel bleibt auch, wenn alle Teilnehmer abgesteckt sind. Abgrenzung zu „Slave antwortet nicht“: Dort kommen Breaks und Header, nur das Datenfeld bleibt leer. Prüfen: Versorgung und Masse des Masters, Wecksignal, Leitung bis zum Master." }));
 
-  fig("svg-flexray",{yr:[0,5],yunit:"V",vdiv:"1 V/div",tdiv:"schnell",
-    tr:[{ch:1,g:"fr",o:{},mp:"FlexRay BP/BM"}],
-    marks:[{t:0.25,v:3.7,txt:"deterministische Bursts"}],
-    caption:"FlexRay: schneller, zeitgesteuerter Zweidraht-Bus.",
-    why:"FlexRay überträgt zeitdeterministisch (feste Zeitfenster) mit bis zu 10 Mbit/s für sicherheitskritische Systeme. Sehr hohe Abtastrate und passende Tastköpfe nötig – primär Tester-/Spezialgerät-Domäne."});
+  fig("svg-flexray",W2({ badge:"GUT", title:"FlexRay 10 Mbit/s: BP und BM spiegelbildlich", cond:"Zündung ein, Netz aktiv", tdiv:5e-6, vdiv:0.5, off:-5, os:16,
+  ch:[{ m:"flexrayBus", p:{}, lbl:"BP" }, { m:"flexrayBus", p:{ sig:"m" }, lbl:"BM" }],
+  trig:{ t:5.72e-6, v:2.7, ch:0 },
+  meas:[ {t:"span", t0:5e-6, t1:30e-6, v:1.45, pre:"Rahmen im Zeitschlitz (Beispiel, 16 Byte Nutzdaten):"},
+         {t:"level", v:2.5, t0:31e-6, t1:50e-6, lx:33e-6, txt:"Ruhe (Idle): BP = BM ≈ 2,5 V", dy:-16} ],
+  notes:[ {t:20e-6, v:3.15, txt:"BP oben / BM unten, gleichzeitig – 100-ns-Bits als dichtes Band", dx:10, dy:-28} ],
+  expect:[ {what:"max", ch:0, t0:5e-6, t1:30e-6, v:3.15, tol:0.06, src:"Pico AGT-125 Bild ~3,1 V"},
+           {what:"min", ch:0, t0:5e-6, t1:30e-6, v:1.85, tol:0.06, src:"Pico AGT-125 Bild ~1,8 V"},
+           {what:"max", ch:1, t0:5e-6, t1:30e-6, v:3.15, tol:0.06, src:"Spiegelbild"},
+           {what:"mean", ch:0, t0:32e-6, t1:50e-6, v:2.5, tol:0.03, src:"Pico: Idle 2,5 V"},
+           {what:"mean", ch:1, t0:32e-6, t1:50e-6, v:2.5, tol:0.03, src:"Pico: Idle 2,5 V"} ],
+  caption:"Ein FlexRay-Rahmen (~25 µs) in seinem festen Zeitschlitz: BP und BM springen gleichzeitig spiegelbildlich um 2,5 V (hier ~3,1/1,8 V wie im Pico-Beispielbild; nominal 3,5/1,5 V), davor und danach ruhen beide auf 2,5 V. 1 Bit = 100 ns. Bei 5 µs/div erscheinen die 100-ns-Bits nur als dichtes Band – am VDS1022I ist das normal.",
+  why:"FlexRay ist zeitgesteuert: jeder Teilnehmer sendet in festen Slots (Pico AGT-938: Paketliste mit Slot-Startzeiten), mit 10 Mbit/s → 1 Bit = 100 ns (Pico). Pegel: Idle beide 2,5 V; Data_1 BP oben/BM unten, Data_0 umgekehrt – Pico nennt idealisiert 3,5/1,5 V, im Pico-Beispielbild sind es ~3,1/1,8 V, das Datenblatt TJA1083G erlaubt 0,6–2 V Differenz. Rahmen: 7 Bit Startsequenz + 1 Bit + 24 Byte × 10 Bit + 2 Bit Ende = 250 Bit = 25 µs. Gerätegrenze ehrlich: Der VDS1022I (25 MHz, 100 MS/s) legt nur ~10 Punkte in ein Bit und verwäscht Flanken (~14 ns Anstiegszeit) – prüfbar sind Ruhepegel, Spiegelbild, Zyklus, Kurzschlüsse und der Abschluss per DMM (Pico: 40–55 Ω gesamt); Bitfehler, Reflexionen und Inhalte bleiben Tester- und Spezialgerät-Domäne (Pico empfiehlt ≥ 20 MHz)." }));
 
-  fig("svg-sent",{yr:[-1,6],yunit:"V",vdiv:"1 V/div",tdiv:"µs",
-    tr:[{ch:1,g:"ana",o:{pts:(function(){var a=[],gaps=[3,5,4,6,3,5,4],x=0.02;a.push([0,5]);for(var i=0;i<gaps.length;i++){a.push([x,5]);a.push([x+0.005,0.3]);a.push([x+0.012,0.3]);a.push([x+0.017,5]);x+=gaps[i]/45;}a.push([1,5]);return a;})()},mp:"SENT"}],
-    marks:[{t:0.3,v:0.3,txt:"Pulsabstände = Daten"}],
-    caption:"SENT: digitales Sensorprotokoll (Pulsabstände).",
-    why:"SENT (SAE J2716) kodiert Messwerte in den Abständen fallender Flanken – einseitig vom Sensor zum STG. Kein klassisches Analogsignal: ausgewertet werden Zeitabstände, nicht Spannungshöhen."});
+  fig("svg-sent",W2({ badge:"GUT", title:"SENT: Zeit zwischen fallenden Flanken = Daten", cond:"Zündung ein, Tick 3 µs, Beispiel Drucksensor", tdiv:100e-6, vdiv:1, off:-3,
+  ch:[{ m:"sentSignal", p:{}, lbl:"SENT" }],
+  trig:{ t:51.4e-6, v:2.5, ch:0 },
+  meas:[ {t:"span", t0:51.4e-6, t1:219.4e-6, v:5.6, pre:"Sync 56 Ticks ="},
+         {t:"span", t0:255.4e-6, t1:330.4e-6, v:-0.5, pre:"Nibble 25 Ticks =", post:"→ Wert 13"} ],
+  notes:[ {t:490e-6, v:0.08, txt:"gemessen wird fallend → fallend (12–27 Ticks)", dx:8, dy:34} ],
+  expect:[ {what:"max", min:4.1, max:5.3, src:"High > 4,1 V (Wikipedia SENT)"},
+           {what:"min", max:0.5, src:"Low < 0,5 V (Wikipedia)"},
+           {what:"min", t0:254e-6, t1:262e-6, max:0.5, src:"Low-Segment ab 254 µs (2,5-V-Durchgang ~255,3 µs) → 5 Ticks Low (Allegro)"},
+           {what:"max", t0:300e-6, t1:328e-6, min:4.1, src:"High-Phase vor der nächsten fallenden Flanke"},
+           {what:"min", t0:329.5e-6, t1:340e-6, max:0.5, src:"nächstes Low-Segment ab 329 µs (2,5-V-Durchgang ~330,3 µs) → 25 Ticks = 75 µs"} ],
+  caption:"SENT (SAE J2716) ist kein Analogsignal: 0/5-V-Pulse, die Information steckt in der Zeit zwischen zwei fallenden Flanken. Erst der Sync-Puls (56 Ticks = 168 µs bei 3 µs), dann Status, Daten-Nibbles (12–27 Ticks = Wert 0–15), CRC und Pause-Puls. Der Sensor sendet von selbst, dauernd.",
+  why:"Jeder Puls beginnt mit ~5 Ticks Low, dann High; gezählt wird von fallender zu fallender Flanke: 12 Ticks = 0 … 27 Ticks = 15, Wert = Ticks − 12 (Allegro AN296108/AN296244). Hier 25 Ticks = 75 µs → Wert 13. Den Tick bestimmt das Steuergerät aus dem Sync: 168 µs / 56 = 3 µs (Pico AGT-404) – so werden Taktabweichungen des Sensors ausgeglichen. Pegel: High > 4,1 V, Low < 0,5 V (Wikipedia). Am VDS1022I mit 1:1 bei 100 µs/div: 0,2 µs Punktabstand, 15 Punkte je Tick – Ticks lassen sich mit dem Cursor auszählen; dekodieren (bar, g/s) kann nur Tester oder Decoder. Nibble-Werte des Rahmens sind Beispiele." }));
 
-  fig("svg-frame",{yr:[-1,3],yunit:"V",vdiv:"1 V/div",tdiv:"50 µs/div",
-    tr:[{ch:1,g:"bus",o:{bits:"0"+"10110010101"+"01101"+"11010110"+"0000",hi:2.0,lo:0,idle:0},mp:"Frame (Diff.)"}],
-    marks:[{t:0.02,v:2.0,txt:"SOF"},{t:0.30,v:2.0,txt:"ID"},{t:0.62,v:2.0,txt:"Daten"},{t:0.84,v:2.0,txt:"CRC"}],
-    caption:"Anatomie eines Datenpakets (Frame).",
-    why:"Ein Frame ist strukturiert: Start (SOF), Kennung/ID, Nutzdaten, Prüfsumme (CRC), Ende (EOF). Wer die Struktur kennt, unterscheidet Nutzpegel von Störungen und erkennt, ob überhaupt gültige Pakete laufen."});
+  fig("svg-frame",W2({ title:"Anatomie eines Rahmens (Beispiel CAN, Differenzsignal)", cond:"schematisch: ID 0x2AB, 500 kbit/s", tdiv:20e-6, vdiv:0.5, off:-3, os:8,
+  ch:[{ m:"canHsBus", p:{ sig:"d", frames:[{ t:10e-6, id:0x2AB, data:[0x5A, 0xA5] }] }, lbl:"Math CH1−CH2" }],
+  meas:[ {t:"span", t0:10e-6, t1:12e-6, v:-0.25, pre:"SOF = 1 Bit ="},
+         {t:"span", t0:12e-6, t1:34e-6, v:2.6, pre:"Identifier 11 Bit ="},
+         {t:"span", t0:50e-6, t1:82e-6, v:-0.25, pre:"Daten 2 Byte ="},
+         {t:"span", t0:82e-6, t1:112e-6, v:2.6, pre:"CRC 15 Bit ="} ],
+  notes:[ {t:39e-6, v:2.0, txt:"Steuerbits (DLC = 2) + 1 Stopfbit", dx:6, dy:-30},
+          {t:115e-6, v:2.36, txt:"ACK (Empfänger)", dx:10, dy:-40},
+          {t:124e-6, v:0, txt:"EOF: 7 Bit rezessiv", dx:6, dy:36} ],
+  expect:[ {what:"max", ch:0, t0:10.5e-6, t1:11.5e-6, v:2.0, tol:0.1, src:"SOF dominant ≈ 2 V (TI SLOA101B)"},
+           {what:"freq", ch:0, t0:14e-6, t1:34e-6, v:250e3, tolRel:0.02, src:"ID 0x2AB wechselt bitweise: 2 Bit = 4 µs"},
+           {what:"max", ch:0, t0:114.4e-6, t1:115.6e-6, min:2.2, src:"ACK höher: mehrere Treiber (TI SLLA486B)"},
+           {what:"mean", ch:0, t0:0, t1:9e-6, v:0, tol:0.03, src:"Bus frei: rezessiv ≈ 0 V"},
+           {what:"mean", ch:0, t0:117e-6, t1:131e-6, v:0, tol:0.03, src:"EOF rezessiv ≈ 0 V"} ],
+  caption:"Ein Datenpaket hat eine feste Struktur – hier ein CAN-Frame als Differenzsignal: Start (SOF, 1 dominantes Bit = 2 µs bei 500 kbit/s), Identifier (11 Bit), Steuerbits, Datenfeld (hier 2 Byte), Prüfsumme (CRC, 15 Bit), ACK der Empfänger und 7 rezessive Bits Ende (EOF). Beispielrahmen mit frei gewähltem Inhalt.",
+  why:"Rahmenaufbau nach Bosch CAN 2.0: SOF, 11-bit-Identifier (Priorität), RTR/IDE/r0 und DLC (Datenlänge), 0–8 Datenbytes, CRC-15 mit Delimiter, ACK-Slot (jeder fehlerfreie Empfänger überschreibt ihn dominant – deshalb oft etwas höher, TI SLLA486B), ACK-Delimiter, EOF. Nach 5 gleichen Bits fügt der Sender ein Stopfbit ein – hier eines im Steuerfeld. Bitzeit = 1/Bitrate = 2 µs; dominant ≈ 2 V, rezessiv ≈ 0 V Differenz (TI SLOA101B). Wer die Struktur kennt, unterscheidet Nutzpegel von Störungen und erkennt, ob überhaupt gültige Pakete laufen: Pakete = Gruppen aus zwei festen Pegeln mit Pausen; der VDS1022I zeigt diese Physik und Bitlängen per Cursor, Inhalte dekodiert er nicht." }));
 
   /* === Komplexe Messungen === */
-  fig("svg-kwnw",{yr:[-6,7],yunit:"V",vdiv:"2 V/div",tdiv:"20 ms/div",trig:{t:0.30},
-    tr:[{ch:1,g:"ind",o:{teeth:20,amp:2.6,miss:9},mp:"KW"},{ch:2,g:"sq",o:{cyc:1.0,duty:0.34,hi:6.4,lo:5.2},mp:"NW"}],
-    marks:[{t:0.475,v:0,txt:"Lücke"},{t:0.30,v:6.4,txt:"NW-Flanke"}],
-    caption:"Mehrkanal: KW + NW gleichzeitig.",
-    why:"Erst die gleichzeitige Aufnahme korrelierter Signale (auf eines getriggert) macht Phasenlagen und Synchronfehler sichtbar – die Stärke des Mehrkanal-Oszis gegenüber dem Multimeter."});
+  fig("svg-kwnw",W2({ badge:"GUT", title:"Mehrkanal: KW (induktiv) + NW (Hall) gleichzeitig", cond:"800 /min warm, Trigger CH2 ↑", tdiv:0.02, vdiv:2, off:2, os:8,
+    ch:[{ m:"kwInd", p:{ rpm:800, a800:3.3, dgap:0.3, ph0:1.6667 }, lbl:"KW ind." },
+        { m:"kwIndNw", p:{ rpm:800, ph0:1.6667, edgeAt:0.116667 }, lbl:"NW-Hall", vdiv:2, off:-3.5 }],
+    trig:{ t:0.03375, v:2.5, ch:1 },
+    meas:[ {t:"span", t0:0.025, t1:0.03375, v:5.4, ch:1, pre:"Lücke → NW-Flanke:", post:"= 42° KW"} ],
+    notes:[ {t:0.0238, v:0, txt:"Lücke: 2 Zähne fehlen, Nachbarn überhöht", dx:-8, dy:85},
+            {t:0.1, v:0, txt:"nächste Lücke nach 75 ms = 1 Umdrehung", dx:10, dy:85} ],
+    expect:[ {what:"freq", ch:0, v:800, tolRel:0.03, src:"60-2: Zahnfrequenz in Hz = Drehzahl in 1/min"},
+             {what:"vpp", ch:0, t0:0.0234, t1:0.0243, max:0.15, src:"Lücke: fast 0 V"},
+             {what:"max", ch:0, t0:0.025, t1:0.0262, min:2.6, max:3.0, src:"Zahn nach der Lücke überhöht ≈ 1,35× (Pico AGT-429)"},
+             {what:"max", ch:0, t0:0.05, t1:0.09, min:1.85, max:2.25, src:"Bosch IS-C: 3,3 V · exp(−0,3/0,63) ≈ 2,0 V bei 0,8 mm"},
+             {what:"max", ch:1, t0:0.0330, t1:0.0336, max:0.5, src:"NW vor der Flanke Low"},
+             {what:"min", ch:1, t0:0.0339, t1:0.0345, min:4.5, src:"NW nach der Flanke High"},
+             {what:"min", ch:1, t0:0.035, t1:0.105, min:4.5, src:"NW-Fenster = 1 KW-Umdrehung (75 ms) High"} ],
+    caption:"Auf die NW-Flanke getriggert: Die KW-Lücke (2 fehlende Zähne, Nachbarzähne überhöht) kehrt alle 75 ms wieder, die NW-Flanke steht 42° KW dahinter (Beispiel). Diese Lage ist die „Signatur“ des Motors – bei jeder Aufnahme gleich.",
+    why:"Erst die gleichzeitige Aufnahme korrelierter Signale (auf eines getriggert) macht Phasenlagen und Synchronfehler sichtbar – die Stärke des Zweikanal-Oszis gegenüber dem Multimeter. Induktiv: Null in Zahn-/Lückenmitte, Maximum an den Flanken; an der Lücke fehlen die Nachbarflanken, deshalb schlagen die Zähne davor/danach weiter aus (Pico). Scheitel hier ≈ 2 V (Bosch IS-C: 3,3 V bei 800 /min und 0,5 mm Luftspalt, bei Nennluftspalt 0,8 mm weniger). NW dreht halb so schnell: ein High-Fenster je zwei KW-Umdrehungen. Pico AGT-151: Abstand Lücke → NW-Flanke in Grad oder Zähnen mit Herstellerdaten oder einem Gutbild desselben Motors vergleichen (Pico nennt keine Toleranz). Richtwert des Kapitels: ≥ 1–2 Zähne daneben → Kette/Riemen gelängt oder übersprungen, Versteller hängt, falsch montiert (systemabhängig)." }));
 
-  fig("svg-relkomp",{yr:[-30,380],yunit:"A",yminLbl:"0",ymaxLbl:"380",vdiv:"100 A/div",tdiv:"100 ms/div",
-    tr:[{ch:1,g:"st",o:{pk:290,base:55,buckle:95,cyl:4},mp:"Starterstrom"}],
-    marks:[{t:0.5,v:150,txt:"gleichmäßige Kompressionsbuckel"}],
-    caption:"Relative Kompression aus dem Starterstrom.",
-    why:"Jeder Verdichtungstakt moduliert den Anlasserstrom (Buckel). Gleich hohe Buckel = gleichmäßige Kompression; ein niedriger Buckel verrät den schwachen Zylinder – schnelle elektrische Kompressionsprüfung."});
+  fig("svg-relkomp",W2({ badge:"GUT", title:"Relative Kompression: gleich hohe Strombuckel", cond:"Durchdrehen warm, Einspritzung aus", tdiv:0.2, unit:"A", vdiv:50, off:-4, os:4,
+    ch:[{ m:"starterCrank", p:{ T:2, tsh:0.6 }, lbl:"Starterstrom", unit:"A" }],
+    meas:[ {t:"span", t0:0.0891, t1:0.4345, v:330, pre:"2 Buckel = 1 Umdrehung =", post:"→ ≈ 174 /min"} ],
+    notes:[ {t:0.7745, v:244, txt:"jeder Buckel = eine Verdichtung; alle gleich hoch = gleiche Kompression", dx:-60, dy:-50},
+            {t:1.46, v:95, txt:"4 Buckel = 1 Arbeitsspiel (4 Zyl.)", dx:-150, dy:50} ],
+    expect:[ {what:"freq", v:5.79, tolRel:0.03, src:"Buckelfrequenz; n = f × 60 / 2 (4 Zyl.)"},
+             {what:"max", min:235, max:255, src:"Modell"},
+             {what:"min", min:84, max:100, src:"Modell"},
+             {what:"mean", min:145, max:170, src:"Pico: meist 80–200 A"} ],
+    caption:"Eingeschwungenes Durchdrehen (nach der Einschaltspitze), 200 ms/div: ein gleichmäßiges Sägezahnmuster, hier ≈ 90–245 A. Jeder Buckel ist ein Zylinder in Verdichtung; zwei Buckel = eine Kurbelumdrehung (≈ 0,35 s → ≈ 174 /min). Gleich hohe Buckel = gleichmäßige Kompression.",
+    why:"Pico: Der Strom eines DC-Starters ist proportional zur Last, und jede Verdichtung erhöht die Last – vor jedem oberen Totpunkt sinkt die Drehzahl, die Gegenspannung des Ankers fällt, der Strom steigt. 4-Zyl.-Viertakter: 2 Verdichtungen je Umdrehung. Ein periodisch niedrigerer Buckel = Zylinder mit Minderkompression (Patent US4062232 wertet die integrierten Buckel aus: Verhältnis kleinster/größter ≤ 0,85 unbefriedigend); Zuordnung über Zündfolge mit Bezugssignal von Zylinder 1 (Pico). Grenze: relativ – sind alle Zylinder gleich schlecht, sieht das Bild gut aus. Stromhöhen sind Modellwerte (Bosch-Starter 1,4 kW) innerhalb der Pico-Angabe 80–200 A; die Anlassdrehzahl ist motor- und starterabhängig (hier ≈ 174 /min im Modell, Pico-Beispiel 237 /min, Masse-Bild ≈ 240 /min)." }));
 
-  fig("svg-battstart",{yr:[0,15],yunit:"V",vdiv:"2 V/div",tdiv:"100 ms/div",
-    tr:[{ch:1,g:"ana",o:{pts:[[0,12.4],[0.06,12.4],[0.08,9.8],[0.12,10.6],[0.18,10.2],[0.24,10.7],[0.30,10.2],[0.36,10.7],[0.42,10.2],[0.48,10.7],[0.54,10.3],[0.62,12.0],[0.8,13.8],[1,13.9]]},mp:"Batteriespannung"}],
-    marks:[{t:0.08,v:9.8,txt:"Einbruch beim Einrücken"},{t:0.8,v:13.8,txt:"Generator lädt"}],
-    caption:"Batteriespannung während Start + Lauf.",
-    why:"Beim Einrücken bricht die Spannung kurz ein (hoher Anlasserstrom), während des Orgelns liegt sie auf einem stabilen Niveau (warm nicht unter ~9,5 V), nach dem Start hebt der Generator auf ~14 V. Tiefe Einbrüche = Batterie/Übergangswiderstände."});
+  fig("svg-battstart",W2({ badge:"GUT", title:"Batteriespannung: Einrücken, Orgeln, Start, Generator", cond:"Batteriepole warm, Start bei 0,7 s", tdiv:0.2, vdiv:2, off:-4, os:8,
+    ch:[{ m:"figBattStart", p:{ T:2, fire:0.7, toff:1.1, Ri:0.006 }, lbl:"Batterie" }],
+    trig:{ t:0.08, v:12.0, ch:0 },
+    meas:[ {t:"level", v:11.0, t0:0.15, t1:0.75, lx:0.2, dy:22, txt:"Orgeln: bleibt über ≈ 11 V (Kapitel: > 10,5 V)"} ],
+    notes:[ {t:0.0895, v:9.47, txt:"Einrücken: Einschaltspitze ≈ 500 A → ≈ 9,5 V", dx:12, dy:70},
+            {t:1.7, v:14.05, txt:"Generator lädt: → ≈ 14,2 V", dx:-200, dy:26} ],
+    expect:[ {what:"mean", t0:0, t1:0.07, min:12.4, max:12.6, src:"Ruhespannung 12,5 V (Beispiel)"},
+             {what:"min", t0:0.05, t1:0.15, min:9.3, max:9.7, src:"Modell: U0 − Ri · Einschaltspitze (≈ 500 A · 6 mΩ); Kapitel: ~9,5–10,5 V"},
+             {what:"min", t0:0.25, t1:0.7, min:10.9, max:11.2, src:"Modell; Kapitel: > 10,5 V beim Durchdrehen; Belastungstest ≥ 9,6 V (Discover)"},
+             {what:"mean", t0:0.25, t1:0.7, min:11.3, max:11.7, src:"Modell (Pico-Beispiel Mittelwert 10,51 V liegt tiefer, dort kurz 8,841 V)"},
+             {what:"mean", t0:1.9, t1:2.0, min:14.0, max:14.35, src:"Modell vset 14,3 V, τ 0,3 s; Infineon: 14,3/14,5 V; ZVEI: ≈ 14 V"} ],
+    caption:"Beim Einrücken bricht die Spannung kurz ein (hier ≈ 9,5 V bei ≈ 500 A), beim Orgeln liegt sie mit Buckeln je Verdichtung stabil über ≈ 11 V. Springt der Motor an, verschwinden die Buckel (Freilauf), nach dem Loslassen hebt der Generator auf ≈ 14 V.",
+    why:"Polspannung = Leerlaufspannung − Innenwiderstand × Strom (hier 12,5 V, 6 mΩ: gesunde, warme Batterie). Die Einschaltspitze (stehender Starter, keine Gegenspannung) ist der kurze tiefe Einbruch; beim Durchdrehen zählt das Niveau. Kapitel „Batterietest beim Start“: Spitze ~9,5–10,5 V, Durchdrehen > 10,5 V; Fehler unter ~9,5 V warm bzw. ~8,5 V kalt. Pico zeigt, wie weit die Spannweite gesunder Batterien reicht: 8,841 V kurz, 10,51 V im Mittel – laut Pico noch in Ordnung, solange die Spannung während des Anlassens nicht weiter fällt. Belastungstest: über 9,6 V bleiben (Discover); Grenzwerte sind temperaturabhängig (kalt tiefer). Tiefe oder weiter fallende Spannung = Batterie schwach oder Übergangswiderstand (dann Spannungsfall Plus- und Masseseite messen). Der Anstieg auf ≈ 14,3 V (Modell; Regler typ. 14,3–14,5 V, Infineon) ist hier schematisch mit 0,3 s – Regler mit Load-Response-Begrenzung heben langsamer an." }));
 
   /* === 5-V-Referenz === */
-  fig("svg-5v-gut",{yr:[0,6],yunit:"V",vdiv:"1 V/div",tdiv:"1 ms/div",badge:"GUT",
-    tr:[{ch:1,g:"flat",o:{v:5.0},mp:"5-V-Referenz"}],
-    marks:[{t:0.5,v:5.0,txt:"stabil 5,0 V"}],
-    caption:"Saubere, stabile 5-V-Referenz.",
-    why:"Die Sensorversorgung muss konstant 5,0 V liefern. Eine ruhige, glatte Linie ist die Basis für alle daran hängenden Sensorsignale – Schwankungen hier verfälschen mehrere Sensoren zugleich."});
+  fig("svg-5v-gut",W2({ badge:"GUT", title:"5-V-Referenz: Zündung ein → 5,0 V, steht", cond:"Sensorstecker, Zündung ein bei 1 s", tdiv:1, vdiv:1, off:-3,
+    ch:[{ m:"sensorRefRef", p:{ ign:[[0, 0], [1, 1]] }, lbl:"5-V-Referenz" }],
+    meas:[ {t:"level", v:5.0, t0:1, t1:10, lx:5.5, dy:-12, txt:"≈ 5,0 V (GM: 4,8–5,2 V)"} ],
+    notes:[ {t:0.5, v:0, txt:"Zündung aus: 0 V", dx:-4, dy:-28},
+            {t:3.0, v:5.0, txt:"glatt, ohne Einbrüche – Basis aller Sensoren der Gruppe", dx:-20, dy:40} ],
+    expect:[ {what:"max", t0:0, t1:0.9, max:0.1, src:"Zündung aus"},
+             {what:"mean", t0:1.5, t1:10, min:4.95, max:5.05, src:"GM: 4,8–5,2 V"},
+             {what:"vpp", t0:1.5, t1:10, max:0.05, src:"Modell: Rauschen klein"} ],
+    caption:"Mit Zündung ein springt die Referenz auf 5,0 V und bleibt dort als glatte Linie ohne Einbrüche – und so muss sie auch bei Start und Leerlauf bleiben. Das ist die Basis aller Sensorsignale der Gruppe.",
+    why:"Ein Regler im Steuergerät versorgt mehrere Sensoren mit 5 V; ratiometrische Sensoren liefern Signal = Anteil der Versorgung (TI SBOA628). Schwankt die Referenz, wandern alle Signale der Gruppe gleichzeitig. Richtwert GM: 4,8–5,2 V (modellabhängig, andere GM-Anleitungen 4,6–5,4 V); Fehlercodes ab > 5,5 V oder < 4,5 V länger als 0,5 s (Saab/GM). Messen gegen Batterie-Minus oder Sensormasse; für Rauschen anschließend AC-Kopplung mit 50 mV/div." }));
 
-  fig("svg-5v-einbruch",{yr:[0,6],yunit:"V",vdiv:"1 V/div",tdiv:"500 ms/div",badge:"FEHLER",
-    tr:[{ch:1,g:"ana",o:{pts:[[0,5.0],[0.28,5.0],[0.32,4.1],[0.62,4.1],[0.66,5.0],[1,5.0]]},mp:"5-V-Referenz"}],
-    marks:[{t:0.45,v:4.1,txt:"Einbruch unter Last"}],
-    caption:"5-V-Referenz bricht unter Last ein.",
-    why:"Zieht ein Sensor (Kurzschluss/zu niederohmig) zu viel Strom, bricht die gemeinsame Referenz ein → alle daran hängenden Sensoren werden gleichzeitig unplausibel. Sensoren einzeln abstecken, bis die Referenz steht."});
+  fig("svg-5v-einbruch",W2({ badge:"FEHLER", title:"Einbruch unter Last: ein Sensor zieht die Referenz herunter", cond:"Motor aus; Sensor X bei 3 s an, 7 s ab", tdiv:1, vdiv:1, off:-3,
+    ch:[{ m:"sensorRefRef", p:{ rf:[[0, 0], [3, 47], [7, 0]] }, lbl:"5-V-Referenz" }],
+    ghost:[{ m:"sensorRefRef", p:{} }],
+    meas:[ {t:"level", v:4.5, t0:0, t1:10, lx:0.2, dy:14, txt:"Fehlercode unter 4,5 V (Saab/GM)"} ],
+    notes:[ {t:5, v:2.77, txt:"Sensor X angesteckt: nur ≈ 2,8 V (MOTOR: 47 Ω → 2,8 V)", dx:-120, dy:40},
+            {t:8.5, v:5.0, txt:"abgesteckt: wieder 5 V", dx:-150, dy:-26} ],
+    expect:[ {what:"mean", t0:0.5, t1:2.8, min:4.95, max:5.05, src:"ohne Sensor X: 5 V"},
+             {what:"mean", t0:3.3, t1:6.8, min:2.7, max:2.85, src:"MOTOR: 47 Ω → 2,8 V bei 59 mA"},
+             {what:"mean", t0:7.3, t1:10, min:4.95, max:5.05, src:"Chrysler: steigt sie über 4,5 V, ist dieser Sensor schuld"} ],
+    caption:"Sobald Sensor X angesteckt wird, sackt die gemeinsame Referenz auf ≈ 2,8 V – alle Sensoren der Gruppe werden gleichzeitig unplausibel. Abgesteckt kommt sie sofort auf 5 V zurück: Sensor X ist intern zu niederohmig.",
+    why:"Ein Sensor mit innerem Teilkurzschluss belastet den Regler so stark, dass er in die Strombegrenzung geht (MOTOR-Messung: 47 Ω gegen Masse → 2,8 V bei 59 mA; je nach Widerstand 1–4 V). Vorgehen: Sensoren der Gruppe einzeln abstecken (Zündung aus) und die Referenz ablesen – steigt sie über 4,5 V, war dieser Sensor der Verursacher (Chrysler). Abgrenzung zum Masseschluss der Leitung: Dort bleibt die Referenz auch ohne alle Sensoren bei ≈ 0 V." }));
 
-  fig("svg-5v-ripple",{yr:[0,6],yunit:"V",vdiv:"1 V/div",tdiv:"1 ms/div",badge:"FEHLER",
-    tr:[{ch:1,g:"flat",o:{v:5.0},tf:[function(p){return tNoise(p,0.25);}],mp:"5-V-Referenz"}],
-    marks:[{t:0.5,v:5.0,txt:"Rauschen/Welligkeit"}],
-    caption:"Unruhige 5-V-Referenz (Rauschen).",
-    why:"Welligkeit/Rauschen auf der Referenz (Masseproblem, Einstreuung, sterbender Regler) überträgt sich auf alle Sensorsignale → wandernde Messwerte, Plausibilitätsfehler. Masse und Versorgung sanieren."});
+  fig("svg-5v-ripple",W2({ badge:"FEHLER", title:"Unruhige Referenz: Welligkeit/Rauschen", cond:"Zündung ein, Motor läuft; Beispiel ±0,3 V", tdiv:1, vdiv:1, off:-3, os:8,
+    ch:[{ m:"sensorRefRef", p:{ noise:0.3, seed:52 }, lbl:"5-V-Referenz" }],
+    ghost:[{ m:"sensorRefRef", p:{} }],
+    notes:[ {t:3, v:4.72, txt:"breites Band statt Linie – überträgt sich auf alle Sensorsignale", dx:-40, dy:40},
+            {t:8, v:5.28, txt:"Band ≈ 0,6 Vss (Beispiel, nachgemessen)", dx:-140, dy:-40} ],
+    expect:[ {what:"mean", min:4.95, max:5.05, src:"Mittelwert bleibt 5 V – das DMM sieht nichts"},
+             {what:"vpp", min:0.45, max:0.65, src:"Beispiel ±0,3 V, nachgemessen"} ],
+    caption:"Statt einer glatten Linie ein breites, pelziges Band um 5 V (hier ≈ 0,6 Vss, Beispiel). Das Multimeter zeigt trotzdem 5,0 V – nur das Oszi sieht die Unruhe. Das Sollbild (grau, glatte 5-V-Linie) verschwindet im Band.",
+    why:"Welligkeit oder Rauschen auf der Referenz (Masseproblem, Einstreuung, Regler am Limit) erscheint anteilig auf jedem ratiometrischen Signal der Gruppe (TI SBOA628) → wandernde Messwerte, Plausibilitätsfehler, oft ohne Referenz-Code (Saab/GM: erst ab 4,5/5,5 V länger als 0,5 s). Pico-Forum: sporadische Störungen und starkes Rauschen auf der Versorgung → Steuergerätemassen, Stecker, Pins prüfen. Vorgehen: Sensoren nacheinander abstecken, Schirmung und Masseführung prüfen; Band mit AC-Kopplung bei 50 mV/div und schnellerer Zeitbasis genau ansehen (Frequenz verrät oft die Quelle)." }));
 
-  fig("svg-5v-ks",{yr:[0,6],yunit:"V",vdiv:"1 V/div",tdiv:"500 ms/div",badge:"FEHLER",
-    tr:[{ch:1,g:"ana",o:{pts:[[0,5.0],[0.3,5.0],[0.33,0.2],[1,0.2]]},mp:"5-V-Referenz"}],
-    marks:[{t:0.6,v:0.2,txt:"Referenz zusammengebrochen"}],
-    caption:"5-V-Referenz Kurzschluss nach Masse.",
-    why:"Bricht die Referenz auf ~0 V zusammen (Kurzschluss in Leitung/Sensor), fallen schlagartig alle versorgten Sensoren aus → viele DTCs gleichzeitig. Leitung/Sensor mit Kurzschluss nach Masse suchen."});
+  fig("svg-5v-ks",W2({ badge:"FEHLER", title:"Kurzschluss nach Masse: Referenz bricht auf ≈ 0 V", cond:"Rütteltest; Masseschluss ab 4 s", tdiv:1, vdiv:1, off:-3,
+    ch:[{ m:"sensorRefRef", p:{ rf:[[0, 0], [4, 0.36]] }, lbl:"5-V-Referenz" }],
+    ghost:[{ m:"sensorRefRef", p:{} }],
+    notes:[ {t:7, v:0.02, txt:"Referenz ≈ 0 V: alle Sensoren der Gruppe stromlos (MOTOR: 23 mV)", dx:-250, dy:-50},
+            {t:4.0, v:2.5, txt:"Schluss: schlagartig", dx:-130, dy:-6} ],
+    expect:[ {what:"mean", t0:0.5, t1:3.9, min:4.95, max:5.05, src:"vor dem Schluss 5 V"},
+             {what:"mean", t0:4.5, t1:10, max:0.05, src:"MOTOR: 23 mV bei vollem Masseschluss"} ],
+    caption:"Die Referenz bricht schlagartig auf ≈ 0 V zusammen und bleibt dort – alle Sensoren der Gruppe fallen gleichzeitig aus: viele Fehlercodes auf einmal, Notlauf. Grau: Sollbild.",
+    why:"Die Referenzleitung hat Kontakt zu Masse (Scheuerstelle, Stecker, Sensor intern). Das Steuergerät begrenzt den Strom (MOTOR: 64 mA, an den Sensoren nur 23 mV), eine Sicherung löst nicht aus. Suche: Sensorstecker einzeln abziehen, bis die Referenz wieder 5 V zeigt (MOTOR); bleibt sie bei 0 V, Leitung gegen Masse messen (Chrysler: unter 100 Ω = Schluss) und Kabelbaum absuchen; erst zuletzt das Steuergerät (defekter Regler meist unter 1 V)." }));
 
   /* === Masse / Spannungsabfall === */
-  fig("svg-masse-gut",{yr:[-0.1,1.0],yunit:"V",yminLbl:"0",ymaxLbl:"1,0",vdiv:"0,2 V/div",tdiv:"500 ms/div",badge:"GUT",
-    tr:[{ch:1,g:"ana",o:{pts:[[0,0.02],[0.3,0.03],[0.32,0.06],[0.6,0.06],[0.62,0.03],[1,0.03]]},mp:"Spannungsfall Masse"}],
-    marks:[{t:0.45,v:0.06,txt:"< 0,1 V unter Last"}],
-    caption:"Spannungsfalltest Masse: gut.",
-    why:"Über einen guten Massepfad fällt auch unter Last nur eine sehr kleine Spannung ab (Richtwert < ~0,1 V). Gemessen wird zwischen Bauteilmasse und sauberer Karosserie-/Batteriemasse, während Strom fließt."});
+  fig("svg-masse-gut",W2({ badge:"GUT", title:"Spannungsfall Masse beim Anlassen: ≈ 0,09 V", cond:"Startergehäuse gegen Batterie-Minus, 1:1, Single", tdiv:0.2, vdiv:0.05, off:-3, trig:{ t:0.2, v:0.05 },
+    ch:[{ m:"spannungsfallStart", p:{ out:"gnd" }, lbl:"Masse ΔU" }],
+    meas:[ {t:"level", v:0.1, t0:0, t1:2, lx:1.25, dy:-20, txt:"Richtwert < ~0,1 V (Fischelli), Hino < 0,2 V"} ],
+    notes:[ {t:0.206, v:0.156, txt:"Einschaltspitze ≈ 0,16 V (zählt nicht)", dx:18, dy:-20},
+            {t:1.0, v:0.09, txt:"Durchdrehen ≈ 0,09 V mit Buckel je Verdichtung", dx:-60, dy:52} ],
+    expect:[ {what:"mean", t0:0.5, t1:1.5, min:0.075, max:0.095, src:"Beispiel 170 A · 0,5 mΩ"},
+             {what:"max", min:0.145, max:0.17, src:"Modell: Einschaltspitze"},
+             {what:"mean", t0:0, t1:0.18, max:0.005, src:"ohne Strom kein Spannungsfall"},
+             {what:"period", t0:0.5, t1:1.5, v:0.125, tolRel:0.04, src:"4-Zyl.: 2 Verdichtungen/Umdrehung bei 240 /min"} ],
+    caption:"Ohne Strom 0 V. Mit dem Starterstrom springt der Spannungsfall hoch (kurze Einschaltspitze), beim Durchdrehen liegt er um ≈ 0,09 V mit einem kleinen Buckel je Verdichtung. Unter 0,1 V: Massepfad gut.",
+    why:"Spannungsfall = Strom × Widerstand des Massepfads – nur unter Last messbar (Hino: Starter muss durchdrehen). Beispiel 170 A über 0,5 mΩ ≈ 0,085 V. Richtwerte: Fischelli Masseverbindung über 0,1 V fehlerhaft, Motormassekabel beim Anlassen höchstens 0,2 V; Hino unter 0,2 V; VW höchstens 0,5 V – Herstellerwert geht vor. Die Einschaltspitze ist höher (stehender Starter, kein Gegen-EMK, Spitzenstrom), bewertet wird das Durchdrehen. 4-Zyl.: 2 Verdichtungen je Umdrehung → bei ≈ 240 /min (Pico-Beispiel 237 /min; starterabhängig) ein Buckel alle 125 ms. Skala: Das Kapitel-Setup nennt 200 mV/div (Suchbereich, fasst auch schlechte Werte); hier 50 mV/div, damit 0,09 V ablesbar ist – am Oszi nach dem ersten Blick feiner stellen." }));
 
-  fig("svg-masse-schlecht",{yr:[-0.2,2.5],yunit:"V",yminLbl:"0",ymaxLbl:"2,5",vdiv:"0,5 V/div",tdiv:"500 ms/div",badge:"FEHLER",
-    tr:[{ch:1,g:"ana",o:{pts:[[0,0.05],[0.3,0.06],[0.33,1.4],[0.6,1.5],[0.63,0.08],[1,0.07]]},mp:"Spannungsfall Masse"}],
-    marks:[{t:0.46,v:1.4,txt:"hoher Abfall unter Last"}],
-    caption:"Spannungsfalltest Masse: schlecht.",
-    why:"Ein hoher Spannungsabfall unter Last (hier ~1,4 V) verrät einen Übergangswiderstand (Korrosion, lose Schraube, zu dünner Pfad). Die Sensor-/Aktuatormasse 'schwimmt' → Offsets, unsicheres Schalten, sporadische Fehler."});
+  fig("svg-masse-schlecht",W2({ badge:"FEHLER", title:"Übergangswiderstand Masse: ≈ 1,4 V beim Anlassen", cond:"Startergehäuse gegen Batterie-Minus, 1:1, Single", tdiv:0.2, vdiv:0.5, off:-3, trig:{ t:0.2, v:0.05 },
+    ch:[{ m:"spannungsfallStart", p:{ out:"gnd", Rg:0.0105 }, lbl:"Masse ΔU" }],
+    ghost:[{ m:"spannungsfallStart", p:{ out:"gnd" } }],
+    meas:[ {t:"level", v:0.5, t0:0, t1:2, lx:1.3, dy:-9, txt:"VW: über 0,5 V → Massekabel/Verbindung"} ],
+    notes:[ {t:1.0, v:1.4, txt:"≈ 1,4 V beim Durchdrehen (Beispiel ≈ 10 mΩ)", dx:14, dy:-44},
+            {t:0.211, v:2.56, txt:"Spitze ≈ 2,6 V", dx:16, dy:4} ],
+    expect:[ {what:"mean", t0:0.5, t1:1.5, min:1.3, max:1.5, src:"Beispiel ≈ 135 A · 10,5 mΩ"},
+             {what:"max", min:2.4, max:2.7, src:"Modell: Einschaltspitze"},
+             {what:"period", t0:0.5, t1:1.5, v:0.16, tolRel:0.08, src:"Modell: weniger Strom → langsamer (schematisch)"},
+             {what:"mean", t0:0, t1:0.18, max:0.01, src:"ohne Strom kein Spannungsfall"} ],
+    caption:"Gleiche Messung, aber ≈ 1,4 V beim Durchdrehen und ≈ 2,6 V in der Spitze (grau: Sollbild ≈ 0,09 V). Der Massepfad frisst Startleistung: Der Anlasser dreht träger, die Buckel kommen langsamer.",
+    why:"Ein hoher Spannungsabfall unter Last verrät einen Übergangswiderstand (Korrosion, lose Schraube, zu dünner Pfad): Hino rechnet vor, dass schon 0,01 Ω bei 200 A 2 V kosten – mit dem Ohmmeter nicht messbar (Fischelli). Die Sensor-/Aktuatormasse „schwimmt“ → Offsets, unsicheres Schalten, sporadische Fehler. VW: über 0,5 V die Messspitze an den Massekabelanschluss am Motorblock/Getriebe versetzen; ist es dort gut, liegt der Fehler im Massekabel oder seinen Verbindungen – reinigen oder ersetzen. Abgrenzung Wackelkontakt: dort springt der Wert; schwache Batterie zeigt sich an der Batteriespannung, nicht hier." }));
 }
 
 /* ================= 6) APP-LOGIK ================= */
