@@ -1041,7 +1041,7 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
 <li>Tester: Aussetzerzähler → welcher Zylinder? Zündspule/Injektor testweise quertauschen (wandert der Fehler mit?).</li>
 <li>Oszi Primärbild der betroffenen Spule: Dwell normal? Spitze 300–400 V da? Brennlinie 0,8–2 ms?</li>
 <li>Brennlinie sehr kurz + hohe Brennspannung → zu großer Elektrodenabstand, magerer Zylinder, Falschluft.</li>
-<li>Brennlinie lang + niedrige Spannung → Nebenschluss: Kerze verölt/gerissen, Spulenschaft, fetter Zylinder.</li>
+<li>Brennlinie lang + niedrige Spannung → kleiner Elektrodenabstand, niedrige Kompression (BIAT) oder Nebenschluss: Kerze verölt/gerissen, Spulenschaft.</li>
 <li>Primärbild gut → Injektor: Spannungsbild + Stromrampe des Zylinders gegen Nachbarn vergleichen.</li>
 <li>Elektrik gut → relative Kompression; ggf. In-Cylinder-Druck für Ventile/Steuerzeiten.</li>
 </ol></div></details>
@@ -1826,7 +1826,14 @@ var SIG = (function(){
     var st='';
     chs.forEach(function(c,k){ var sc=smp.sc[k]; st+=(k?'<tspan fill="#5b6b7d">  ·  </tspan>':'')+'<tspan fill="'+(c.col||COL[k+1])+'">CH'+(k+1)+(c.lbl?' '+esc(c.lbl):'')+' '+esc(fmtV(sc.vdiv,sc.unit))+'/div</tspan>'; });
     st+='<tspan fill="#5b6b7d">  ·  </tspan><tspan fill="#8aa0b8">'+esc(fmtT(spec.tdiv))+'/div</tspan>';
-    if(spec.cond) st+='<tspan fill="#5b6b7d">  ·  </tspan><tspan fill="#8aa0b8">'+esc(spec.cond)+'</tspan>';
+    if(spec.cond){
+      /* Platz bis zum Vermerk „TYPISCH · SCHEMATISCH“ (rechts, ~170 px): Zustandstext notfalls kürzen, damit nichts überlappt */
+      var plain=''; chs.forEach(function(c,k){ var sc=smp.sc[k]; plain+=(k?'  ·  ':'')+'CH'+(k+1)+(c.lbl?' '+c.lbl:'')+' '+fmtV(sc.vdiv,sc.unit)+'/div'; });
+      plain+='  ·  '+fmtT(spec.tdiv)+'/div  ·  ';
+      var avail=(g.x1-170)-g.x0, pxc=6.4, room=Math.floor(avail/pxc)-plain.length, cond=String(spec.cond);
+      if(cond.length>room) cond=(room>6)?(cond.slice(0,room-1).replace(/[\s,;·–-]+$/,'')+'…'):'';
+      if(cond) st+='<tspan fill="#5b6b7d">  ·  </tspan><tspan fill="#8aa0b8">'+esc(cond)+'</tspan>';
+    }
     s.push('<text x="'+g.x0+'" y="'+(g.h-16)+'" font-size="12">'+st+'</text>');
     s.push('<text x="'+g.x1+'" y="'+(g.h-16)+'" text-anchor="end" fill="#4f6072" font-size="10" letter-spacing="1.5">TYPISCH · SCHEMATISCH</text>');
     if(spec.badge){ var bc=spec.badge==='GUT'?'#3ecf8e':'#ff6b6b';
@@ -23381,7 +23388,7 @@ var GLOSSAR=[
 {term:"Abschaltspitze",def:"Spannungsspitze beim Abschalten einer Spule (Induktivität wehrt sich gegen Stromänderung). Höhe/Vorhandensein verrät den Spulenzustand."},
 {term:"Freilaufdiode",def:"Begrenzt die Abschaltspitze einer Spule auf einen kleinen, definierten Wert. Erklärt 'kleine' Spitzen als gewollt."},
 {term:"Dwell (Schließwinkel)",def:"Zeit/Winkel, in der die Zündspule Strom aufbaut (Energie speichert), bevor abgeschaltet (gezündet) wird."},
-{term:"Brennlinie/Brennspannung",def:"Spannung/Dauer während der Funke brennt. Kurz+hoch = mager/großer Abstand; lang+tief = fett/Nebenschluss."},
+{term:"Brennlinie/Brennspannung",def:"Spannung/Dauer während der Funke brennt. Kurz+hoch = mager, großer Abstand, hohe Kompression; lang+tief = kleiner Abstand, niedrige Kompression, Nebenschluss (Pico, BIAT)."},
 {term:"Zündspannungsbedarf",def:"Spannung, die der Funke zum Überspringen der Elektroden braucht (kV). Steigt mit Abstand/Druck/Magerkeit."},
 {term:"Peak&Hold",def:"Stromsteuerung mit hohem Anzugs- und niedrigem Haltestrom (Injektoren). Spart Verlustleistung, öffnet trotzdem schnell."},
 {term:"Boost-Spannung",def:"Kurzzeitige Hochspannung (z. B. ~65–90 V) zum schnellen Öffnen von DI-/Piezo-Injektoren gegen hohen Raildruck."},
@@ -23416,7 +23423,7 @@ var GLOSSAR=[
 ];
 
 /* ---------- 5) STATISCHE KONZEPT-SVGs ---------- */
-function fig(id,spec){ var el=document.getElementById(id); if(el){ el.innerHTML=W(spec); } }
+function fig(id,spec){ var el=document.getElementById(id); if(el){ el.innerHTML=(spec&&spec.w2)?String(spec):W(spec); } }  /* W2-Bild (Objekt) oder altes W-Spec */
 
 function renderStatics(){
   /* === Grundlagen === */
@@ -23879,7 +23886,7 @@ var FIGSYS=[
  ['svg-5v-ripple','bordnetz-hochstrom','5-V-Referenz — Ripple'],
  ['svg-5v-ks','bordnetz-hochstrom','5-V-Referenz — Kurzschluss'],
  ['svg-battstart','bordnetz-hochstrom','Batteriespannung Start'],
- ['svg-relkomp','stellglieder','Relais / Kompressor'],
+ ['svg-relkomp','bordnetz-hochstrom','Relative Kompression (Starterstrom)'],
  ['svg-can-gut','bus-daten','CAN-HS — gut'],
  ['svg-can-diff','bus-daten','CAN — Differenzsignal'],
  ['svg-can-f1','bus-daten','CAN — Fehler 1'],
