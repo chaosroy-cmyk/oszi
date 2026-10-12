@@ -1,6 +1,6 @@
 # Projektstatus und Übergabe
 
-Stand: Oktober 2026, Feature-Branch `claude/kfz-oszi-kompendium-vwhkd3` (main = V13.2, Stand 11.10.2026, per Fast-Forward auf 472c8e2; nach main nur mit ausdrücklicher Erlaubnis von Roy).
+Stand: Oktober 2026, Feature-Branch `claude/kfz-oszi-kompendium-vwhkd3` (Branch = V13.3; main = V13.2, Stand 11.10.2026, per Fast-Forward auf 472c8e2; nach main nur mit ausdrücklicher Erlaubnis von Roy).
 Eine neue Sitzung beginnt mit: „Lies docs/STATUS.md und mach weiter.“
 
 ## Erledigt
@@ -11,13 +11,14 @@ Eine neue Sitzung beginnt mit: „Lies docs/STATUS.md und mach weiter.“
 | V12 | 16 neue Sensorkarten, komplett mit Text, 210 Bilder. Kartenschema-Prüfung (28 Felder) in `validateKompendium`. Atlas-Gruppen „Fahrwerk, Komfort & Assistenz“ und „Füllstand & Medien“. Live-Demo erkennt Abläufe. |
 | V13 (Schritt 2) | 2a: 18 Aktor-, Zündungs- und Buskarten auf W2 umgebaut (238 Bilder), 132 geprüfte Textkorrekturen. 2b: 18 neue Karten (213 Bilder) für Bordnetz (Ruhestrom, Spannungsfall, 5-V-Referenz, 48 V, DC/DC, Transienten, Lampen-PWM), Ventile (CR-DRV, ZME, Benzin-MSV, VVT, Klima, LPG, AdBlue) und Bus (FlexRay, K-Leitung, SW-CAN, Control Pilot). Kartenkategorien `einspr` und `elektrik`. Live-Demo: Abläufe über zwei Fenster, Tabellenmodelle in Schleife, Triggerpegel in A bei Stromkarten. |
 
+| V13.3 (Schritt 3b) | 4 neue Buskarten, 62 Bilder, Autor → Prüfer → Korrektur → Nachprüfung (beide Gruppen Runde 2 ohne Blocker): `ethernet-t1` (10BASE-T1S mit Math CH1−CH2; 100BASE-T1 nur Abgrenzung), `j1850` (VPW und PWM), `can-xl` (Arbitrierung, Datenphase als Band, SIC-XL-Umschaltung), `pp-laden` (J1772-Teiler belegt, Typ-2-Stufen berechnet). Live-Modus (Hardwaretest 18.10. offen): Sweep AUTO, eine Aufnahme je Fenster, Messbereich V/div × 10, Positionsschieber. Katalog: 9 Signale offen (7 Hochvolt, Turbolader-Drehzahl, Resolver). |
 | V13.2 (Schritt 3a) | 6 neue Karten, 71 Bilder, nach Autor → Prüfer → Korrektur → Nachprüfung (alle 3 Gruppen in Runde 2 ohne Blocker): `pumpe-duese` (VAG PD Magnetventil, Strom mit BIP, Masseseite 10:1, Piezo-PD als Vergleich), `atg-ventil` (Druckregler 300 Hz PWM/Stromregler mit Dither, Schaltventile), `leerlaufsteller` (Drehsteller 2-/3-polig), `schrittmotor` (IAC, 4-/5-Draht), `ionenstrom` (Saab Trionic, nur Niedervolt-Seite), `cdi` (Pickup, Primär nur mit 100:1). Katalog: MPI-Strombild (inj-saug) und COP-Trigger (zuend-prim) als abgedeckt nachgetragen. |
 | V13.1 | Unabhängige Gesamtkontrolle (4 Prüfer je 18 Karten + Herstellerdaten VDS1022I): 1 Blocker (Relais: 500-V-Spitzen über der 400-V-Grenze), 29 Kleinbefunde korrigiert (setup.vdiv passend zum Normalbild, Triggerangaben, Kanalangaben, Massehinweise, Zahlen in Bildtexten). Neues Kartenfeld `tk11` {stufe ok|einschr|nein, hinweis}: Messbarkeit mit 1:1-Tastkopf (54 ok, 12 eingeschränkt, 6 nicht: inj-di, inj-piezo, zuend-prim, bordnetz-48v, transienten, cp-laden). Live-Modus: Haken „nur 1:1-Tastköpfe vorhanden“ (Auto-Setup stellt dann nie 10:1 ein). |
 
-Stand der App: 78 Karten, alle mit W2-Bildern (1025 Bilder), keine alten Bilder mehr. 143 Signalmodelle.
+Stand der App: 82 Karten, alle mit W2-Bildern (1087 Bilder), keine alten Bilder mehr. 147 Signalmodelle.
 Gerätegrenzen (OWON-Quellen, geprüft): 1:1 max. 40 Vss (≈ ±20 V), 10:1 max. 400 Vss, 5 mV–5 V/div, 1 MΩ, 25 MHz, 100 MS/s, 5000 Punkte;
 mitgelieferte Tastköpfe haben einen 1X/10X-Schalter.
-Katalog: 11 oszirelevante Signale noch offen (davon 7 Hochvolt – ausgeschlossen bzw. nur Niedervolt-Seite).
+Katalog: 9 oszirelevante Signale noch offen (7 Hochvolt – ausgeschlossen bzw. nur Niedervolt-Seite; Turbolader-Drehzahlsensor und Resolver ohne belastbare Quellen).
 
 ## Bekannte Grenzen und offene Kleinigkeiten
 
@@ -40,8 +41,13 @@ Katalog: 11 oszirelevante Signale noch offen (davon 7 Hochvolt – ausgeschlosse
   Doppelklick = Mitte), 0-V-Marken in Kanalfarbe am linken Rand; Zahlenfeld und Schieber synchron.
   **Hardwaretest aller Live-Änderungen (Sweep, eine Aufnahme je Fenster, Messbereich, Schieber): Roy, Samstag
   18.10.2026.** Bis dahin gilt: simuliert geprüft, am Gerät offen.
-- Schritt 3b (Buskarten ethernet-t1, j1850, can-xl, pp-laden) in Arbeit; Vorarbeit der Autoren liegt im
-  Scratchpad der Sitzung (Lauf wurde durch die Nutzungsgrenze bzw. Stopp unterbrochen).
+- Schritt 3b, bewusst als Beispiel/Modell gekennzeichnet: ethernet-t1 – Beacon-Abstand 14 µs (Pico-Bild),
+  Reflexions-/Kopplungs-/Störwerte der Fehlerbilder; j1850 – Entladezeitkonstante F7, PWM-Antwortzeiten aus dem
+  VPW-Beispiel; can-xl – Zeiten der ADS/DAS-Umschaltung aus TI-Zeitfenstern, PWM-Symbolhöhe F6, Rahmen
+  schematisch; pp-laden – Fahrzeugseite nur für J1772 belegt, Typ-2-Stufen berechnet. Statuszeilen-Kollisionen
+  („TYPISCH · SCHEMATISCH“ vs. langer cond-Text) sind ein Werkzeugthema, nicht gelöst.
+- Engine-Test deckte beim Einbau einen NaN in `ethernetT1Bus` bei großem t auf (Gleitkomma-Rest im Beacon-Index);
+  behoben. Lehre: Modelle immer auch mit dem Node-Test prüfen, nicht nur mit dem Render-Werkzeug.
 - Live-Demo (Mock): Signale mit sehr kurzen Pulsen bei langer Zeitbasis (Keyless, PDC, Ruhestrom-Pulse,
   K-Leitung bei 50 ms/div) werden zu grob abgetastet, die Übereinstimmung ist dort niedrig. Ruhestrom
   (20 s/div) liegt außerhalb der Live-Zeitbasis. Kein Kartenfehler.
@@ -90,8 +96,8 @@ Katalog: 11 oszirelevante Signale noch offen (davon 7 Hochvolt – ausgeschlosse
 
 ## Danach (laut Katalog offen)
 
-- Schritt 3b (Bus): Automotive Ethernet 10BASE-T1S, SAE J1850 PWM/VPW, ggf. CAN XL, MOST, Proximity Pilot
-  (stehen nicht alle im Katalog – vorher Quellenlage prüfen); Turbolader-Drehzahlsensor (Quellen fehlen bisher).
-  Hochvolt-Messungen und PSI5 (Airbag) bleiben ausgeschlossen (HV-Schütze/HVIL höchstens Niedervolt-Seite).
+- Karten sind mit 3b im Wesentlichen vollständig (MOST bewusst weggelassen: MOST150 optisch, MOST50 nur Altfahrzeuge).
+  Offen nur noch Hochvolt (ausgeschlossen, HV-Schütze/HVIL höchstens Niedervolt-Seite), Turbolader-Drehzahl und
+  Resolver (Quellenlage prüfen).
 - Fehlerbild-Datenbank (18 Einträge) und freistehende Erklärbilder (5-V-Referenz, Masse, FlexRay, SENT) auf W2.
 - Live-Zeitbasis über 2 s/div hinaus (nur nach Hardwaretest mit dem VDS1022I).
