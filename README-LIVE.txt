@@ -74,6 +74,10 @@ AUTO-SETUP (ab v6):
   Hinweiszeile nennt den Grund (Zangenfaktor).
 
 MEHR EINSTELLUNGEN (ab v8):
+  Schnellbedienung über dem Schirm (ab V13.4): V/div je Kanal, Zeitbasis,
+  Trigger (Kanal, Flanke, Pegel) und Run/Stop/Single – gespiegelt zur
+  Bedienung darunter. Trigger-Pegel auch als Schieber rechts am Schirm
+  (violett, Doppelklick = 1 Division), Marke „T“ am rechten Rand.
   Pro Kanal: Position (+-4 div; ab V13.2 auch als Schieber links/rechts
   neben dem Schirm, Doppelklick = Mitte, 0-V-Marke in Kanalfarbe am
   linken Rand), Invertieren, Zangenfaktor

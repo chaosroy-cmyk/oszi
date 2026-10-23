@@ -200,6 +200,11 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
 .lv-posbar.ch1{color:var(--acc)} .lv-posbar.ch1 input{accent-color:var(--acc)}
 .lv-posbar.ch2{color:var(--acc2)} .lv-posbar.ch2 input{accent-color:var(--acc2)}
 .lv-posbar.off{opacity:.3}
+.lv-posbar.tr{color:#c7b4ff} .lv-posbar.tr input{accent-color:#c7b4ff}
+/* Schnellbedienung über dem Schirm: V/div, Zeit, Trigger, Run/Stop/Single (gespiegelt zur Bedienung unten) */
+.lv-bar{display:flex;flex-wrap:wrap;gap:.35rem .8rem;align-items:center;margin:0 0 .35rem;font-size:.82rem;font-family:var(--mono)}
+.lv-bar select,.lv-bar input{font-size:.82rem;font-family:var(--mono)} .lv-bar .ibtn{padding:.25rem .5rem}
+.lv-bar .c1{color:var(--acc)} .lv-bar .c2{color:var(--acc2)} .lv-bar .ct{color:#c7b4ff}
 .lv-dot{display:inline-block;width:.7rem;height:.7rem;border-radius:50%;background:var(--dim)}
 .lv-dot.ok{background:var(--gut)}
 .lv-dot.warn{background:var(--acc)}
@@ -312,10 +317,20 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
   </section>
 
   <section class="blk">
+    <div class="lv-bar">
+      <span class="c1">CH1 <select id="lv-top-ch1v"></select></span>
+      <span class="c2">CH2 <select id="lv-top-ch2v"></select></span>
+      <span>Zeit <select id="lv-top-tdiv"></select></span>
+      <span class="ct">Trig <select id="lv-top-trigch"><option value="1">CH1</option><option value="2">CH2</option></select>
+        <select id="lv-top-trigedge"><option value="r">↑</option><option value="f">↓</option></select>
+        <input type="number" id="lv-top-triglvl" value="1.0" step="0.1" style="width:4.6rem"> V</span>
+      <span><button class="ibtn" id="lv-top-run">Run</button> <button class="ibtn" id="lv-top-stop">Stop</button> <button class="ibtn" id="lv-top-single">Single</button></span>
+    </div>
     <div class="lv-scope">
       <div class="lv-posbar ch1" title="CH1: 0-V-Linie verschieben (Doppelklick = Mitte)"><span>1</span><input type="range" id="lv-ch1slide" min="-4" max="4" step="0.1" value="0" aria-label="CH1 Position"><span>▲▼</span></div>
       <canvas id="lv-canvas"></canvas>
       <div class="lv-posbar ch2 off" title="CH2: 0-V-Linie verschieben (Doppelklick = Mitte)"><span>2</span><input type="range" id="lv-ch2slide" min="-4" max="4" step="0.1" value="0" aria-label="CH2 Position"><span>▲▼</span></div>
+      <div class="lv-posbar tr" title="Trigger-Pegel (Kanal des Triggers)"><span>T</span><input type="range" id="lv-trigslide" min="-4" max="4" step="0.05" value="0.5" aria-label="Trigger-Pegel"><span>▲▼</span></div>
     </div>
     <div class="lvrow" style="justify-content:space-between">
       <span id="lv-cursorout" class="mono" style="display:none;font-size:.82rem"></span>
@@ -25323,6 +25338,11 @@ function draw(){
     var ti=LV.trig.ch-1;
     var ty=yOf(LV.trig.level*chMul(ti),LV.vdiv[ti],LV.pos[ti]);
     ctx.moveTo(0,ty); ctx.lineTo(w,ty); ctx.stroke(); ctx.setLineDash([]);
+    /* Trigger-Marke rechts (wie am Oszi) */
+    var tyc=Math.max(4*dpr,Math.min(h-4*dpr,ty)), tsz=6*dpr;
+    ctx.fillStyle='#c7b4ff'; ctx.beginPath(); ctx.moveTo(w,tyc-tsz); ctx.lineTo(w-tsz*1.3,tyc); ctx.lineTo(w,tyc+tsz); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#0c1118'; ctx.font='bold '+(8*dpr)+'px ui-monospace,monospace'; ctx.fillText('T',w-6*dpr,tyc+3*dpr);
+    if(LV.syncTrigSlide) LV.syncTrigSlide();
   }
   /* Cursor */
   if(LV.cursor.on){
@@ -25729,6 +25749,32 @@ function initLive(){
   $('lv-stop').addEventListener('click',function(){ LV.running=false; updRunBtns(); send({cmd:'stop'}); });
   $('lv-single').addEventListener('click',function(){ if(LV.playback)exitPlayback(); LV.singleArm=true; LV.running=true; updRunBtns(); send({cmd:'single'}); });
   updRunBtns();
+  /* Schnellbedienung über dem Schirm: spiegelt Auswahl/Eingabe der Bedienung (eine Quelle der Wahrheit bleibt unten) */
+  function mirror(srcId,dstId){
+    var a=$(srcId), b=$(dstId); if(!a||!b) return;
+    if(a.tagName==='SELECT'){ b.innerHTML=a.innerHTML; }
+    b.value=a.value;
+    b.addEventListener('change',function(){ a.value=b.value; a.dispatchEvent(new Event('change')); });
+    a.addEventListener('change',function(){ b.value=a.value; });
+  }
+  mirror('lv-ch1v','lv-top-ch1v'); mirror('lv-ch2v','lv-top-ch2v'); mirror('lv-tdiv','lv-top-tdiv');
+  mirror('lv-trigch','lv-top-trigch'); mirror('lv-trigedge','lv-top-trigedge'); mirror('lv-triglvl','lv-top-triglvl');
+  [['lv-top-run','lv-run'],['lv-top-stop','lv-stop'],['lv-top-single','lv-single']].forEach(function(pr){
+    var b=$(pr[0]), a=$(pr[1]); if(a&&b) b.addEventListener('click',function(){ a.click(); }); });
+  /* Trigger-Schieber rechts am Schirm: Pegel in Divisionen des Triggerkanals (wie der Trigger-Knopf am Oszi) */
+  var trS=$('lv-trigslide');
+  function trigDiv(){ var i=LV.trig.ch-1; return LV.trig.level*chMul(i)/LV.vdiv[i]+(LV.pos[i]||0); }
+  if(trS){
+    trS.addEventListener('input',function(){
+      var i=LV.trig.ch-1, d=parseFloat(this.value)||0, lv=(d-(LV.pos[i]||0))*LV.vdiv[i]/chMul(i);
+      lv=Math.round(lv*1000)/1000; LV.trig.level=lv;
+      $('lv-triglvl').value=String(lv); var t=$('lv-top-triglvl'); if(t) t.value=String(lv);
+      sendTrig();
+    });
+    trS.addEventListener('dblclick',function(){ var i=LV.trig.ch-1; LV.trig.level=Math.round(LV.vdiv[i]*100)/100;
+      $('lv-triglvl').value=String(LV.trig.level); var t=$('lv-top-triglvl'); if(t) t.value=String(LV.trig.level); sendTrig(); });
+    LV.syncTrigSlide=function(){ if(document.activeElement===trS) return; var d=Math.max(-4,Math.min(4,trigDiv())); if(isFinite(d) && Math.abs(parseFloat(trS.value)-d)>0.02) trS.value=String(d); };
+  }
   /* Verbindung */
   $('lv-connect').addEventListener('click',function(){ connect($('lv-url').value.trim()||'ws://localhost:8765'); });
   $('lv-disconnect').addEventListener('click',function(){ disconnect(); if(LV.mock)LV.mock.stop(); setStat('getrennt',''); });

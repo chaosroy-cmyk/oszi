@@ -40,8 +40,12 @@ Katalog: 9 oszirelevante Signale noch offen (7 Hochvolt – ausgeschlossen bzw. 
   multiplizierte bei 10:1 sonst doppelt), `probeUi` zur Info. **Hardwaretest offen.**
   Wunsch Roy umgesetzt: vertikale Positionsschieber neben dem Schirm (CH1 links, CH2 rechts, ±4 div,
   Doppelklick = Mitte), 0-V-Marken in Kanalfarbe am linken Rand; Zahlenfeld und Schieber synchron.
-  **Hardwaretest aller Live-Änderungen (Sweep, eine Aufnahme je Fenster, Messbereich, Schieber): Roy, Samstag
-  18.10.2026.** Bis dahin gilt: simuliert geprüft, am Gerät offen.
+  **Hardwaretest 23.10.2026 (Roy, Testsignal 5 V/1 kHz):** Kurve läuft dauerhaft und steht stabil (Sweep AUTO und
+  eine Aufnahme je Fenster bestätigt). Offen: Amplitude zeigte ~1 V statt 5 V bei 1 V/div, Plateaus stufig –
+  Verdacht Tastkopfschalter 10X / App 1:1 oder noch die alte bridge.py; Diagnose läuft (Messwertzeile,
+  Bridge-Ausgabe, Tastkopfstellung erfragt).
+- Live-UI (23.10.): Schnellbedienleiste über dem Schirm (V/div, Zeit, Trigger, Run/Stop/Single, gespiegelt
+  zur Bedienung) und Trigger-Pegel-Schieber rechts mit Marke „T“ – Wunsch Roy.
 - Schritt 3b, bewusst als Beispiel/Modell gekennzeichnet: ethernet-t1 – Beacon-Abstand 14 µs (Pico-Bild),
   Reflexions-/Kopplungs-/Störwerte der Fehlerbilder; j1850 – Entladezeitkonstante F7, PWM-Antwortzeiten aus dem
   VPW-Beispiel; can-xl – Zeiten der ADS/DAS-Umschaltung aus TI-Zeitfenstern, PWM-Symbolhöhe F6, Rahmen
