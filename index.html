@@ -25258,10 +25258,14 @@ function draw(){
   function yOf(v,vd,pos){ return h/2 - (pos||0)*(h/8) - (v/vd)*(h/8); }
   function drawDec(d,vd,pos,col,alpha){
     ctx.globalAlpha=alpha; ctx.strokeStyle=col; ctx.lineWidth=1.6*dpr; ctx.beginPath();
+    var pmin=null, pmax=null;
     for(var c=0;c<cols;c++){
-      var x=(c+0.5)*w/cols;
-      var y1=yOf(d[c*2],vd,pos), y2=yOf(d[c*2+1],vd,pos);
+      var x=(c+0.5)*w/cols, a0=d[c*2], a1=d[c*2+1], lo=Math.min(a0,a1), hi=Math.max(a0,a1);
+      /* Lücke zur Nachbarspalte schließen: liegt eine Flanke genau auf der Spaltengrenze, fehlt sonst der senkrechte Strich */
+      if(pmin!=null){ if(lo>pmax) lo=pmax; else if(hi<pmin) hi=pmin; }
+      var y1=yOf(hi,vd,pos), y2=yOf(lo,vd,pos);
       ctx.moveTo(x,y1); ctx.lineTo(x,Math.abs(y2-y1)<1?y1+1:y2);
+      pmin=Math.min(a0,a1); pmax=Math.max(a0,a1);
     }
     ctx.stroke(); ctx.globalAlpha=1;
   }

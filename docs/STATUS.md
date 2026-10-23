@@ -42,8 +42,12 @@ Katalog: 9 oszirelevante Signale noch offen (7 Hochvolt – ausgeschlossen bzw. 
   Doppelklick = Mitte), 0-V-Marken in Kanalfarbe am linken Rand; Zahlenfeld und Schieber synchron.
   **Hardwaretest 23.10.2026 (Roy, Testsignal 5 V/1 kHz):** Kurve läuft dauerhaft und steht stabil (Sweep AUTO und
   eine Aufnahme je Fenster bestätigt). Offen: Amplitude zeigte ~1 V statt 5 V bei 1 V/div, Plateaus stufig –
-  Verdacht Tastkopfschalter 10X / App 1:1 oder noch die alte bridge.py; Diagnose läuft (Messwertzeile,
-  Bridge-Ausgabe, Tastkopfstellung erfragt).
+  Ursache war der Tastkopfschalter auf 10X bei App 1:1 (Vpp 560 mV) – nach Umstellen 5,36 Vss, Max 5,28 V:
+  **alle drei Live-Fixes am Gerät bestätigt.** Aufnahme (0,8 s, 200 000 Punkte) nachgemessen: alle Pulsbreiten
+  496–504 µs, keine Lücken. „Fehlende Flanken“ waren ein Zeichenfehler der Live-Anzeige (Spalten ohne Verbindung
+  zur Nachbarspalte, Flanke auf Spaltengrenze) – behoben in drawDec (Lücke zur Nachbarspalte schließen).
+  Offen: Gerät setzt den Triggerpunkt an den Fensteranfang statt auf die übergebene Position (Lib: SET_PRE_TRG
+  mit htp); für die Messung unerheblich, Ursache noch nicht geprüft.
 - Live-UI (23.10.): Schnellbedienleiste über dem Schirm (V/div, Zeit, Trigger, Run/Stop/Single, gespiegelt
   zur Bedienung) und Trigger-Pegel-Schieber rechts mit Marke „T“ – Wunsch Roy.
 - Schritt 3b, bewusst als Beispiel/Modell gekennzeichnet: ethernet-t1 – Beacon-Abstand 14 µs (Pico-Bild),
