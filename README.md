@@ -47,6 +47,12 @@ Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
 - **Eigene Messungen importieren:** Scope-CSV (`Zeit,Spannung`) einlesen,
   benennen, als Gut-/Fehlerbild speichern (lokal im Browser), als JSON
   exportieren/importieren.
+- **LIN-Prüfstand:** Bauteil-Dashboard (Klimabedienteil, LIN-Generator, Batteriesensor),
+  Scope-Ansicht mit dekodiertem Frame (BREAK · SYNC · PID · DATEN · CS), automatische
+  Prüfung von Pegeln, Bitrate, Parität, Checksumme und Takt der Antwort sowie ein
+  Bit-Monitor („welches Bit kippt beim Tastendruck?“). Quelle: Lernmodus-Simulation
+  mit zuschaltbaren Fehlern oder eigene Scope-CSV. Die IDs und Belegungen im Lernmodus
+  sind Beispiele; die echte Bedeutung der Bytes steht in der LDF des Herstellers.
 - **Suche** über Bauteile, Fehlercodes, Kapitel und Glossar.
 - **Barrierefrei:** volle Tastaturbedienung, ARIA, WCAG-AA-Kontraste,
   farbcodierungssichere Gut-/Fehler-Kennzeichnung.
@@ -54,7 +60,8 @@ Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
 
 ## Entwicklung
 
-Datenvalidierung (prüft Karten, Referenzen, Varianten-Generatoren):
+Datenvalidierung (prüft Karten, Referenzen, Varianten-Generatoren und den
+LIN-Decoder gegen simulierte Gut- und Fehlerbilder):
 
 ```
 npm i -D playwright

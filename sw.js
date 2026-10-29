@@ -3,7 +3,7 @@
    Cache-Version bei jedem Release erhöhen (Datum), damit Clients aktualisieren. */
 "use strict";
 
-var CACHE = "kfzoszi-v2-2026-07-16";
+var CACHE = "kfzoszi-v3-2026-10-29";
 var ASSETS = [
   "./",
   "./index.html",

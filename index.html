@@ -287,6 +287,50 @@ figcaption .why{color:var(--dim)}
   figure.sig,figure.sig *{-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
 }
 
+/* ===== LIN-Prüfstand ===== */
+.lin-bar{display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:.7rem .8rem}
+.lin-bar .implab{flex:1;min-width:130px}
+#pg-lin select,#pg-lin input[type=number],#pg-lin textarea{width:100%;background:#0e141d;border:1px solid var(--line);border-radius:8px;color:var(--tx);font:inherit;font-size:.88rem;padding:.4rem .55rem}
+#pg-lin textarea{font-family:var(--mono);font-size:.82rem;resize:vertical}
+:root[data-theme="light"] #pg-lin select,:root[data-theme="light"] #pg-lin input[type=number],:root[data-theme="light"] #pg-lin textarea{background:#ffffff}
+.lin-status{font-family:var(--mono);font-size:.75rem;font-weight:700;letter-spacing:.06em;border-radius:6px;padding:.4rem .6rem;border:1px solid var(--acc2);color:var(--acc2);white-space:nowrap}
+.lin-status.mess{border-color:var(--gut);color:var(--gut)}
+.lin-status.leer{border-color:var(--line);color:var(--mut)}
+.lin-tabs{display:flex;gap:.3rem;overflow-x:auto;margin:.8rem 0 0;border-bottom:2px solid var(--line);scrollbar-width:none}
+.lin-tab{flex:0 0 auto;background:var(--panel2);border:1px solid var(--line);border-bottom:none;border-radius:8px 8px 0 0;padding:.5rem .85rem;font-family:var(--mono);font-size:.8rem;color:var(--mut)}
+.lin-tab.on{background:var(--accBg);border-color:var(--accBg);color:#1a1405;font-weight:700}
+.lin-tab:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+.lin-pane{display:none}
+.lin-pane.on{display:block}
+.lin-panel{background:#0b0f14;border:1px solid #27364a;border-radius:18px;padding:.9rem;display:grid;grid-template-columns:auto 1fr auto;gap:.8rem;align-items:center;color:#dce6f2;margin:.5rem 0}
+.lin-knob{width:96px;min-height:96px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a4656,#11161d 70%);border:3px solid #6b7a8c;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--mono);font-size:.7rem;text-align:center;padding:.3rem;color:#8ca0b6}
+.lin-knob b{font-size:.95rem;color:#ffd24a}
+.lin-knob input{width:84px;margin-top:.2rem}
+.lin-btns{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:.45rem}
+.lin-key{background:#1a2330;border:1px solid #3a4a5e;border-radius:8px;padding:.6rem .3rem;font-family:var(--mono);font-size:.78rem;color:#dce6f2;position:relative}
+.lin-key[aria-pressed="true"]{background:#1f3324;border-color:#7dff9b;box-shadow:0 0 8px #7dff9b55}
+.lin-key[aria-pressed="true"]::after{content:"";position:absolute;top:5px;right:6px;width:6px;height:6px;border-radius:50%;background:#7dff9b}
+.lin-key:focus-visible{outline:2px solid #4fd2ff;outline-offset:2px}
+@media(max-width:600px){.lin-panel{grid-template-columns:1fr 1fr;justify-items:center}.lin-btns{grid-column:1/-1;order:3;width:100%}}
+.lin-sum{border-radius:10px;padding:.6rem .8rem;font-weight:700;margin:.5rem 0;border:2px solid var(--line)}
+.lin-sum.st-ok{border-color:var(--gut);color:var(--gut)}
+.lin-sum.st-warn{border-color:var(--acc);color:var(--acc)}
+.lin-sum.st-bad{border-color:var(--bad);color:var(--bad)}
+.lin-sum small{display:block;font-weight:400;color:var(--mut);margin-top:.2rem}
+.lin-checks{list-style:none;margin:.4rem 0;padding:0}
+.lin-checks li{display:grid;grid-template-columns:1.6rem 1fr;gap:.2rem .4rem;padding:.4rem 0;border-bottom:1px solid var(--line2);margin:0}
+.lin-ic{font-weight:700;font-family:var(--mono);text-align:center}
+.lin-checks .st-ok .lin-ic,.lin-ic.st-ok{color:var(--gut)}
+.lin-checks .st-warn .lin-ic,.lin-ic.st-warn{color:var(--acc)}
+.lin-checks .st-bad .lin-ic,.lin-ic.st-bad{color:var(--bad)}
+.lin-checks .st-info .lin-ic,.lin-ic.st-info{color:var(--acc2)}
+.lin-checks .lin-hint{grid-column:2;font-size:.85rem;color:var(--mut)}
+.lin-scope{border:2px solid var(--line);border-radius:10px;overflow:hidden;background:#0b0f14;margin:.6rem 0}
+.lin-scope svg{display:block;width:100%;height:auto}
+.lin-bits{font-family:var(--mono);letter-spacing:.12em;white-space:nowrap}
+.lin-bits .chg{background:var(--bad);color:#fff;border-radius:3px;font-weight:700}
+.lin-row{display:flex;flex-wrap:wrap;gap:.5rem;align-items:flex-end;margin:.4rem 0}
+.lin-row .implab{flex:1;min-width:150px}
 </style>
 
 <meta content="#0a0e13" name="theme-color"/>
@@ -342,6 +386,7 @@ figcaption .why{color:var(--dim)}
 <button class="qbtn" data-go="pg-plan" data-open="pl-can"><b>PRÜFPLAN</b>CAN-Bus-Fehler</button>
 <button class="qbtn" data-go="pg-plan" data-open="pl-5v"><b>PRÜFPLAN</b>5-V-Referenz fehlt</button>
 <button class="qbtn" data-go="pg-plan" data-open="pl-lade"><b>PRÜFPLAN</b>Generator lädt nicht</button>
+<button class="qbtn" data-go="pg-lin"><b>PRÜFSTAND</b>LIN-Bauteil prüfen</button>
 <button class="qbtn" data-go="pg-karten"><b>NACHSCHLAGEN</b>Alle Messkarten (Bauteile)</button>
 <button class="qbtn" data-go="pg-setup"><b>TABELLE</b>Oszi-Einstellungen je Messung</button>
 <button class="qbtn" data-go="pg-fdb"><b>GALERIE</b>Fehlerbild-Datenbank</button>
@@ -718,6 +763,7 @@ figcaption .why{color:var(--dim)}
 <li><b>Massefehler am Slave:</b> Low-Pegel des Slaves zu hoch (z. B. 2 V statt &lt; 1 V) → Übergangswiderstand in dessen Massepfad.</li>
 <li><b>Falsche Versorgung:</b> Ruhepegel deutlich unter U<sub>Bat</sub> → Vorwiderstand/Korrosion in der Busleitung oder schwacher Pull-up.</li>
 </ul>
+<p><button type="button" class="ibtn" data-go="pg-lin">LIN-Prüfstand öffnen: Frame dekodieren und Bauteil prüfen →</button></p>
 <p><b>Praxis:</b> Am LIN-geregelten Generator zeigt die Messung an der LIN-Klemme sofort, ob das Motorsteuergerät pollt (Header da?) und ob der Generator antwortet – klassische Diagnose bei „Generator lädt nicht" mit Kl.-15-LIN-Generatoren (siehe Messkarte Generator).</p>
 </div></details>
 <details><summary>FlexRay <span class="badge b-bus">10 Mbit/s</span></summary><div class="dbody">
@@ -772,6 +818,91 @@ figcaption .why{color:var(--dim)}
 <div class="rw">Richtwerte können je nach Hersteller, System, Motorsteuergerät und Messgerät abweichen. Herstellerdaten und Stromlaufplan haben Vorrang.</div>
 </section>
 <!-- ===================== KOMPLEXE MESSUNGEN ===================== -->
+<!-- ================= LIN-PRÜFSTAND ================= -->
+<section class="page" data-nav="LIN-Prüfstand" id="pg-lin">
+<h2>LIN-Prüfstand</h2>
+<p>Ein LIN-Bauteil prüfen wie am Werkstatt-Prüfstand: Frame zerlegen (<b>BREAK · SYNC · PID · DATEN · CS</b>), Pegel und Timing bewerten und beim Betätigen einer Taste sehen, <b>welches Bit sich ändert</b>.</p>
+<div class="lin-bar">
+<label class="implab">Quelle<select id="linQuelle"><option value="sim">Simulation (Lernmodus)</option><option value="csv">Eigene Messung (CSV)</option></select></label>
+<label class="implab">Bauteil<select id="linBauteil"></select></label>
+<label class="implab">Baudrate<select id="linBaud"><option value="0">automatisch (aus Sync)</option><option value="19200">19 200 bit/s</option><option value="10417">10 417 bit/s</option><option value="9600">9 600 bit/s</option><option value="2400">2 400 bit/s</option></select></label>
+<label class="implab"><span>U<sub>Bat</sub> in V</span><input id="linUbat" type="number" step="0.1" min="6" max="32" value="12.6"></label>
+<span class="lin-status" id="linStatus" role="status">SIMULATION</span>
+</div>
+<div class="lin-tabs" role="tablist" aria-label="Ansichten des LIN-Prüfstands">
+<button type="button" role="tab" class="lin-tab on" id="lt-dash" data-lt="dash" aria-selected="true" aria-controls="lp-dash">Dashboard</button>
+<button type="button" role="tab" class="lin-tab" id="lt-scope" data-lt="scope" aria-selected="false" aria-controls="lp-scope" tabindex="-1">Scope LIN</button>
+<button type="button" role="tab" class="lin-tab" id="lt-log" data-lt="log" aria-selected="false" aria-controls="lp-log" tabindex="-1">Frames &amp; Bits</button>
+<button type="button" role="tab" class="lin-tab" id="lt-pruef" data-lt="pruef" aria-selected="false" aria-controls="lp-pruef" tabindex="-1">Prüfschritte</button>
+</div>
+<div class="lin-pane on" id="lp-dash" role="tabpanel" aria-labelledby="lt-dash">
+<section class="blk">
+<h3 id="linName">Bauteil</h3>
+<div id="linSteckbrief"></div>
+</section>
+<section class="blk" id="linSimBlk">
+<h3>Bedienung (simuliert)</h3>
+<div id="linCtrls"></div>
+<label class="implab">Fehler einbauen<select id="linFehler">
+<option value="">Kein Fehler (Gutbild)</option>
+<option value="noresp">Bauteil antwortet nicht</option>
+<option value="cs">Übertragung gestört (Checksumme falsch)</option>
+<option value="masse">Massefehler am Bauteil (Low-Pegel zu hoch)</option>
+<option value="pullup">Ruhepegel zu niedrig (Übergangswiderstand/Pull-up)</option>
+<option value="drift">Takt des Bauteils weicht ab (+6 %)</option>
+<option value="kurzmasse">LIN-Leitung Kurzschluss nach Masse</option>
+<option value="still">Kein Verkehr (Master sendet nicht / Kurzschluss nach Plus)</option>
+</select></label>
+</section>
+<section class="blk">
+<h3>Prüfergebnis</h3>
+<div id="linSum"></div>
+<div id="linMini" class="lin-scope"></div>
+<div id="linFrameSum"></div>
+<button type="button" class="ibtn" data-lt-go="scope">Details im Scope ansehen →</button>
+</section>
+</div>
+<div class="lin-pane" id="lp-scope" role="tabpanel" aria-labelledby="lt-scope" hidden>
+<section class="blk" id="linCsvBlk" hidden>
+<h3>Eigene Messung laden</h3>
+<p class="imphint">Scope-Export als CSV mit <b>Zeit,Spannung</b> (ein Wertepaar pro Zeile). Messpunkt: LIN-Pin gegen Masse, DC-Kopplung. Für eine sichere Dekodierung mindestens <b>10 Messpunkte pro Bit</b> (bei 19,2 kbit/s ≥ 200 kS/s) und mindestens einen vollständigen Frame inkl. Break aufnehmen.</p>
+<div class="lin-row">
+<label class="implab">Zeiteinheit der CSV<select id="linTunit"><option value="1">Sekunden</option><option value="0.001">Millisekunden</option><option value="0.000001">Mikrosekunden</option></select></label>
+<button type="button" class="ibtn" id="linFile">CSV-Datei wählen…</button>
+<button type="button" class="ibtn on" id="linDecode">Dekodieren</button>
+</div>
+<textarea id="linCsv" rows="5" aria-label="Messdaten als CSV" placeholder="0.000000, 12.1&#10;0.000005, 12.1&#10;0.000010, 0.9&#10;…"></textarea>
+<input type="file" id="linFileInput" accept=".csv,text/csv,text/plain" hidden>
+</section>
+<section class="blk">
+<label class="implab">Ansicht<select id="linFrameSel"></select></label>
+<div id="linScope" class="lin-scope"></div>
+<div id="linFields"></div>
+<h4>Prüfungen</h4>
+<div id="linChecks"></div>
+</section>
+</div>
+<div class="lin-pane" id="lp-log" role="tabpanel" aria-labelledby="lt-log" hidden>
+<section class="blk">
+<h3>Bit-Monitor</h3>
+<p>So findet man heraus, welches Bit zu welcher Taste gehört: Stand ohne Tastendruck als <b>Referenz merken</b>, dann Taste betätigen (bzw. zweite Messung laden). Rot markierte Bits haben sich geändert.</p>
+<div class="lin-row"><button type="button" class="ibtn" id="linRef">Aktuellen Stand als Referenz merken</button><button type="button" class="ibtn" id="linRefClear">Referenz löschen</button></div>
+<div id="linBitmon"></div>
+</section>
+<section class="blk">
+<h3>Frame-Log</h3>
+<div id="linLog"></div>
+<button type="button" class="ibtn" id="linClearLog">Log leeren</button>
+</section>
+</div>
+<div class="lin-pane" id="lp-pruef" role="tabpanel" aria-labelledby="lt-pruef" hidden>
+<section class="blk">
+<h3>Prüfschritte für dieses Bauteil</h3>
+<div id="linPruef"></div>
+</section>
+</div>
+<div class="warn"><b>Was der Prüfstand bewertet – und was nicht:</b> Geprüft werden <b>Physik</b> (Pegel, Bitrate, Takt) und <b>Protokoll</b> (Break, Sync, PID-Parität, Checksumme, Antwort vorhanden). Welche Bedeutung ein Datenbyte hat, legt der Hersteller in der LDF-Datei fest. Die IDs und Bit-Belegungen im Lernmodus sind <b>frei gewählte Beispiele</b>, keine Herstellerdaten. Die App steuert keinen LIN-Adapter an. Sie wertet Oszilloskop-Aufnahmen aus, die als CSV exportiert wurden.</div>
+</section>
 <section class="page" data-nav="Komplex" id="pg-komplex">
 <h2>Komplexe Mehrkanalmessungen</h2>
 <p>Hier spielt das Oszi seine eigentliche Stärke aus: <b>mehrere Signale zeitgleich</b> ansehen und in Beziehung setzen. Erst der Vergleich macht viele Fehler sichtbar, die einzeln „gut" aussehen.</p>
@@ -1004,6 +1135,7 @@ figcaption .why{color:var(--dim)}
 <li>Master sendet, Slave-Antwortfeld bleibt leer → Slave abgesteckt? Versorgung/Masse Slave? → Slave defekt.</li>
 <li>Pegel kommt nicht über z. B. 8 V (dominant zu hoch/rezessiv zu niedrig) → ein Teilnehmer zieht halb → Teilnehmer einzeln abstecken.</li>
 <li>Nur niedrige Flanken/verschliffen → Pull-up fehlt (Master) oder Leitungs-/Steckerproblem.</li>
+<li>Aufnahme als CSV exportieren und im <b>LIN-Prüfstand</b> dekodieren: Checksumme, Parität, Takt der Antwort und Low-Pegel je Teilnehmer werden automatisch bewertet.</li>
 </ol></div></details>
 <details id="pl-lambda"><summary>Lambdaregelung arbeitet nicht</summary><div class="plan"><ol>
 <li>Motor warm! Vorher regelt das System nicht (Sonde braucht Betriebstemperatur).</li>
@@ -4087,6 +4219,7 @@ function applyPage(id,opts){
   if(id==='pg-karten' && !cardsRendered){ renderCards(); cardsRendered=true; }
   if(id==='pg-fdb' && !fdbRendered){ renderFdb(); fdbRendered=true; }
   if(id==='pg-glossar' && !glossRendered){ renderGloss(); glossRendered=true; }
+  if(id==='pg-lin' && !linRendered){ linInit(); linRendered=true; }
   if(opts.open){ var d=document.getElementById(opts.open); if(d){ if(d.tagName==='DETAILS') d.open=true; setTimeout(function(){ d.scrollIntoView({behavior:'smooth',block:'start'}); },60); } }
   else if(opts.card){ openCard(opts.card); }
   else if(opts.fdb){ openFdb(opts.fdb); }
@@ -4177,6 +4310,622 @@ function toggleTheme(){
 }
 
 /* ---- Datenvalidierung (Aufruf: ?validate oder window.validateKompendium()) ---- */
+/* ---------- LIN-PRÜFSTAND ----------
+   Lernmodus-Simulation eines LIN-Bauteils, Frame-Decoder für Scope-CSV und Bewertung.
+   Grenzwerte aus LIN 2.x / ISO 17987: Master-Break ≥ 13 Bit (Slave erkennt ab 11 Bit),
+   Sync = 0x55, PID-Parität P0/P1, Checksumme klassisch (nur Daten, LIN 1.x und
+   Diagnose-IDs 0x3C/0x3D) bzw. erweitert (inkl. PID, LIN 2.x), Slave-Takt nach
+   Synchronisation ±2 % zum Master, Empfängerschwellen dominant < 40 % / rezessiv > 60 % U_Bat.
+   Der Low-Pegel-Richtwert ≤ 15 % U_Bat ist ein Werkstatt-Erfahrungswert (Transceiver
+   liegen typ. bei 0,8–1,4 V) und wird im Text als Richtwert ausgewiesen. */
+
+function linPid(id){
+  id&=0x3f;
+  function b(n){ return (id>>n)&1; }
+  var p0=b(0)^b(1)^b(2)^b(4), p1=1^(b(1)^b(3)^b(4)^b(5));
+  return id|(p0<<6)|(p1<<7);
+}
+/* Summe mit Übertrag (>255 → −255), danach invertiert; pid=null → klassisch */
+function linChecksum(data,pid){
+  var s=(pid==null)?0:pid;
+  for(var i=0;i<data.length;i++){ s+=data[i]; if(s>255) s-=255; }
+  return (~s)&0xff;
+}
+function linIsDiag(id){ return id===0x3c||id===0x3d; }
+function linHex(v){ return '0x'+(v<16?'0':'')+v.toString(16).toUpperCase(); }
+function linBin(v){ var s=v.toString(2); while(s.length<8) s='0'+s; return s; }
+function linFmt(n,d){ return (+n).toFixed(d).replace('.',','); }
+function linSgn(n,d){ return (n>=0?'+':'−')+linFmt(Math.abs(n),d); }
+function linMedian(arr){ if(!arr.length) return null; var s=arr.slice().sort(function(a,b){return a-b;}); return s[Math.floor(s.length/2)]; }
+
+/* Erzeugt eine abgetastete LIN-Spur [[t,v],…] (t in s).
+   frames: [{id, data, slave}] · o: {baud, ubat, fault, spb (Punkte pro Bit)}
+   Flanken als RC-Verlauf (dominant aktiv getrieben, rezessiv nur über Pull-up → langsamer). */
+function linSynth(frames,o){
+  var baud=o.baud||19200, Tb=1/baud, ubat=o.ubat||12.6, spb=o.spb||12, f=o.fault||'';
+  var vHigh=ubat-0.7;                     /* Master-Pull-up über Verpolschutzdiode */
+  if(f==='pullup') vHigh=ubat*0.55;
+  var mLow=0.9, sLow=(f==='masse')?2.8:1.0, sTb=(f==='drift')?Tb*1.06:Tb;
+  var segs=[];
+  function push(lvl,bits,low,tb){ segs.push({lvl:lvl,dur:bits*(tb||Tb),low:low}); }
+  function byte(v,low,tb){ push(0,1,low,tb); for(var i=0;i<8;i++) push((v>>i)&1,1,low,tb); push(1,1,low,tb); }
+  push(1,8,mLow);
+  frames.forEach(function(fr){
+    var pid=linPid(fr.id), resp=!(fr.slave&&f==='noresp');
+    push(0,13,mLow); push(1,1,mLow);
+    byte(0x55,mLow); byte(pid,mLow);
+    if(resp){
+      var data=fr.data.slice(), cs=linChecksum(data,linIsDiag(fr.id)?null:pid);
+      if(fr.slave&&f==='cs') data[0]^=0x04;   /* Bit kippt nach der CS-Bildung → CS passt nicht */
+      var low=fr.slave?sLow:mLow, tb=fr.slave?sTb:Tb;
+      push(1,fr.slave?2:1,low);               /* Response Space */
+      data.forEach(function(d){ byte(d,low,tb); });
+      byte(cs,low,tb);
+    }
+    push(1,resp?12:40,mLow);
+  });
+  var total=0; segs.forEach(function(s){ total+=s.dur; });
+  var dt=Tb/spb, aF=1-Math.exp(-dt/(0.06*Tb)), aR=1-Math.exp(-dt/(0.12*Tb));
+  var out=[], si=0, segEnd=segs[0].dur, v=vHigh, seed=12345, n=Math.floor(total/dt);
+  for(var i=0;i<=n;i++){
+    var t=i*dt;
+    while(si<segs.length-1 && t>=segEnd){ si++; segEnd+=segs[si].dur; }
+    var s=segs[si], target=s.lvl?vHigh:s.low;
+    if(f==='kurzmasse') target=0.3; else if(f==='still') target=vHigh;
+    v+=(target-v)*(target<v?aF:aR);
+    seed=(seed*1103515245+12345)%2147483648;
+    out.push([+t.toFixed(9), +(v+(seed/2147483648-0.5)*0.12).toFixed(3)]);
+  }
+  return out;
+}
+
+/* Dekodiert eine abgetastete Spur. o.baud=0 → Bitrate nur aus dem Sync-Feld.
+   Rückgabe: {frames, idle, dt, lo, hi, err}; Frames ohne gültiges Sync werden verworfen. */
+function linDecode(pairs,o){
+  o=o||{};
+  var res={frames:[], idle:null, dt:null, lo:null, hi:null, err:null, n:pairs.length, t0:null, t1:null};
+  if(pairs.length<50){ res.err='Zu wenige Messpunkte (mindestens 50).'; return res; }
+  pairs=pairs.slice().sort(function(a,b){ return a[0]-b[0]; });
+  res.t0=pairs[0][0]; res.t1=pairs[pairs.length-1][0];
+  var i, vs=pairs.map(function(p){ return p[1]; }).sort(function(a,b){ return a-b; });
+  var vmin=vs[Math.floor(vs.length*0.001)], vmax=vs[Math.ceil(vs.length*0.999)-1];
+  var dts=[]; for(i=1;i<pairs.length;i++) dts.push(pairs[i][0]-pairs[i-1][0]);
+  res.dt=linMedian(dts);
+  if(vmax-vmin<1.0){ res.idle={level:linMedian(vs)}; return res; }
+  /* Pegel robust: Median unter- bzw. oberhalb der Mitte */
+  var m0=(vmin+vmax)/2, los=[], his=[];
+  vs.forEach(function(v){ (v<m0?los:his).push(v); });
+  var lo=linMedian(los), hi=linMedian(his); res.lo=lo; res.hi=hi;
+  var mid=(lo+hi)/2, thL=lo+0.4*(hi-lo), thH=lo+0.6*(hi-lo);
+  function cross(k){
+    for(var j=k;j>0&&j>k-200;j--){ var a=pairs[j-1], b=pairs[j];
+      if((a[1]-mid)*(b[1]-mid)<=0 && a[1]!==b[1]) return a[0]+(mid-a[1])*(b[0]-a[0])/(b[1]-a[1]); }
+    return pairs[k][0];
+  }
+  /* Digitalisieren mit Hysterese (40/60 %), Flankenzeit = interpolierter 50-%-Durchgang */
+  var st=pairs[0][1]>mid?1:0, runs=[], ts=pairs[0][0], te;
+  for(i=1;i<pairs.length;i++){
+    var v=pairs[i][1];
+    if(st===1&&v<thL){ te=cross(i); runs.push({lvl:1,t0:ts,t1:te}); ts=te; st=0; }
+    else if(st===0&&v>thH){ te=cross(i); runs.push({lvl:0,t0:ts,t1:te}); ts=te; st=1; }
+  }
+  runs.push({lvl:st,t0:ts,t1:res.t1});
+  function runAt(t){ var a=0,b=runs.length-1; while(a<b){ var m=(a+b+1)>>1; if(runs[m].t0<=t) a=m; else b=m-1; } return a; }
+  function stateAt(t){ return runs[runAt(t)].lvl; }
+  function nextFall(t){ for(var j=runAt(t);j<runs.length;j++){ if(runs[j].lvl===0&&runs[j].t0>t) return j; } return -1; }
+  function readByte(t0,T){
+    var v=0; for(var k=0;k<8;k++){ if(stateAt(t0+(k+1.5)*T)) v|=1<<k; }
+    return {val:v, start:stateAt(t0+0.5*T)===0, stop:stateAt(t0+9.5*T)===1, t0:t0, t1:t0+10*T};
+  }
+  function idxAt(t){ var a=0,b=pairs.length-1; while(a<b){ var m=(a+b)>>1; if(pairs[m][0]<t) a=m+1; else b=m; } return a; }
+  function vals(t0,t1,out){ for(var j=idxAt(t0);j<pairs.length&&pairs[j][0]<=t1;j++) out.push(pairs[j][1]); return out; }
+
+  var tbNom=o.baud?1/o.baud:null, hiVals=[], minRunHi=null;
+  for(var r=0;r<runs.length;r++){
+    var R=runs[r]; if(R.lvl!==0||r===0) continue;     /* Low-Phase am Aufnahmebeginn ist unvollständig */
+    var dur=R.t1-R.t0;
+    if(tbNom && dur<10*tbNom) continue;
+    var falls=[], q;
+    for(q=r+1;q<runs.length&&falls.length<5;q++){ if(runs[q].lvl===0) falls.push(runs[q].t0); }
+    if(falls.length<5) continue;
+    var Tm=(falls[4]-falls[0])/8, okSync=Tm>0;
+    for(q=1;q<5&&okSync;q++){ if(Math.abs(falls[q]-falls[q-1]-2*Tm)>0.25*Tm) okSync=false; }
+    if(!okSync||dur<10.5*Tm) continue;
+    var sync=readByte(falls[0],Tm);
+    if(sync.val!==0x55) continue;
+    var fp=nextFall(sync.t0+9.5*Tm);
+    if(fp<0||runs[fp].t0>R.t0+1.4*34*Tm) continue;
+    var pid=readByte(runs[fp].t0,Tm), id=pid.val&0x3f;
+    var fr={t0:R.t0, breakBits:dur/Tm, Tm:Tm, sync:sync, pid:pid, id:id, parityOk:linPid(id)===pid.val, bytes:[]};
+    var tNext=pid.t0+9.5*Tm, tMax=R.t0+1.4*(34+10*9)*Tm;
+    while(fr.bytes.length<9){
+      var nf=nextFall(tNext); if(nf<0||runs[nf].t0>tMax) break;
+      if(runs[nf].t1-runs[nf].t0>=10.5*Tm) break;     /* nächster Break */
+      var b=readByte(runs[nf].t0,Tm); fr.bytes.push(b); tNext=b.t0+9.5*Tm;
+    }
+    fr.tEnd=fr.bytes.length?fr.bytes[fr.bytes.length-1].t1:pid.t1;
+    if(fr.bytes.length){
+      fr.data=fr.bytes.slice(0,-1).map(function(x){ return x.val; });
+      fr.cs=fr.bytes[fr.bytes.length-1].val;
+      fr.csClassicOk=linChecksum(fr.data,null)===fr.cs;
+      fr.csEnhOk=linChecksum(fr.data,pid.val)===fr.cs;
+      /* Takt der Antwort: Flanken je Byte relativ zum Startbit, Ausgleichsgerade durch 0 */
+      var sxy=0, sxx=0, cnt=0;
+      fr.bytes.forEach(function(by){
+        for(var j=runAt(by.t0)+1;j<runs.length&&runs[j].t0<by.t0+8.6*Tm;j++){
+          if(runs[j].lvl!==0) continue;                 /* nur fallende Flanken: gleiche Verzögerung wie das Startbit */
+          var e=runs[j].t0-by.t0, k=Math.round(e/Tm);
+          if(k>=1&&k<=8){ sxy+=e*k; sxx+=k*k; cnt++; }
+        }
+      });
+      fr.respDev=cnt>=4?((sxy/sxx)/Tm-1)*100:null;
+      /* Low-Pegel der Antwort: Mitte aller 0-Bits */
+      var lv=[];
+      fr.bytes.forEach(function(by){
+        for(var k=0;k<9;k++){ if(k===0||!((by.val>>(k-1))&1)) vals(by.t0+(k+0.35)*Tm,by.t0+(k+0.65)*Tm,lv); }
+      });
+      fr.vLowResp=linMedian(lv);
+    } else { fr.data=[]; fr.cs=null; fr.vLowResp=null; fr.respDev=null; }
+    fr.vLowHdr=linMedian(vals(R.t0+2*Tm,R.t1-2*Tm,[]));
+    if(minRunHi===null||Tm<minRunHi) minRunHi=Tm;
+    res.frames.push(fr);
+    while(r+1<runs.length&&runs[r+1].t0<fr.tEnd) r++;
+  }
+  /* Ruhepegel: Innenbereich langer High-Phasen */
+  if(minRunHi){ runs.forEach(function(R){ if(R.lvl===1&&R.t1-R.t0>4*minRunHi) vals(R.t0+minRunHi,R.t1-minRunHi,hiVals); }); }
+  res.vHigh=linMedian(hiVals);
+  return res;
+}
+
+var LIN_NORM=[2400,4800,9600,10417,19200,20000];
+/* Bewertung eines Frames. st: ok | warn | bad | info */
+function linAssess(fr,dec,o){
+  var ub=o.ubat, ch=[];
+  function add(st,name,val,hint){ ch.push({st:st,name:name,val:val,hint:hint||''}); }
+  var brkOk=fr.breakBits>=13-dec.dt/fr.Tm;          /* ein Abtastintervall Messtoleranz */
+  add(brkOk?'ok':'warn','Break',linFmt(fr.breakBits,1)+' Bit',
+    brkOk?'Master sendet ≥ 13 Bit dominant.':'Kürzer als 13 Bit: Slaves erkennen den Break ab 11 Bit, aber der Master liegt außerhalb der Norm.');
+  var baud=1/fr.Tm, unc=dec.dt/(8*fr.Tm)*100;
+  var bv=linFmt(baud,0)+' bit/s ± '+linFmt(unc,1)+' %';
+  if(o.baud){
+    var dev=(baud/o.baud-1)*100, adev=Math.max(0,Math.abs(dev)-unc);
+    add(adev<=0.5?'ok':adev<=2?'warn':'bad','Bitrate aus Sync',bv+' (Abweichung '+linSgn(dev,1)+' %)',
+      adev<=0.5?'Master-Takt innerhalb ±0,5 %.':'Der Master-Takt sollte auf ±0,5 % genau sein. Baudrate-Auswahl prüfen, sonst Takt des Masters (Steuergerät).');
+  } else {
+    var near=LIN_NORM.reduce(function(a,b){ return Math.abs(b-baud)<Math.abs(a-baud)?b:a; });
+    add('info','Bitrate aus Sync',bv,'Nächste übliche LIN-Bitrate: '+linFmt(near,0)+' bit/s ('+linSgn((baud/near-1)*100,1)+' %).');
+  }
+  if(dec.dt>fr.Tm/8) add('warn','Abtastrate',linFmt(fr.Tm/dec.dt,1)+' Punkte pro Bit','Für belastbare Werte mindestens 10 Punkte pro Bit aufnehmen.');
+  add(fr.sync.stop?'ok':'bad','Sync-Feld',linHex(fr.sync.val),fr.sync.stop?'0x55 mit gültigem Stoppbit.':'Stoppbit fehlt – Störung oder Takt stimmt nicht.');
+  add(fr.parityOk?'ok':'bad','PID / Parität',linHex(fr.pid.val)+' → ID '+linHex(fr.id),
+    fr.parityOk?'Paritätsbits P0/P1 stimmen.':'Paritätsbits falsch: Störung auf der Leitung oder Master-Fehler. Kein Slave antwortet auf einen ungültigen PID.');
+  if(!fr.bytes.length){
+    var exp=o.expect&&o.expect.indexOf(fr.id)>=0;
+    add(exp?'bad':'warn','Antwort','keine',
+      'Nach dem Header antwortet niemand. Ursachen: Bauteil ohne Versorgung/Masse, Leitung zum Bauteil unterbrochen, Bauteil defekt – oder diese ID ist im Fahrzeug nicht belegt (LDF/Schaltplan prüfen).');
+  } else {
+    add('info','Datenlänge',fr.data.length+' Byte + Checksumme','Die Länge legt die LDF fest. Bei LIN 1.x ergibt sie sich aus der ID (0x00–0x1F: 2, 0x20–0x2F: 4, 0x30–0x3F: 8 Byte).');
+    var badStop=[]; fr.bytes.forEach(function(b,i){ if(!b.start||!b.stop) badStop.push(i); });
+    add(badStop.length?'bad':'ok','Byte-Rahmen (Start-/Stoppbits)',badStop.length?('fehlerhaft in Byte '+badStop.join(', ')):'alle gültig',
+      badStop.length?'Start- oder Stoppbit an falscher Stelle: Takt der Antwort weicht ab oder Störimpulse.':'');
+    var diag=linIsDiag(fr.id), csTxt=linHex(fr.cs);
+    if(fr.csEnhOk&&!diag) add('ok','Checksumme',csTxt+' (erweitert, LIN 2.x)','Summe über PID und Daten stimmt.');
+    else if(fr.csClassicOk) add('ok','Checksumme',csTxt+' (klassisch'+(diag?', Diagnose-ID':', LIN 1.x')+')','Summe über die Daten stimmt.');
+    else if(fr.csEnhOk&&diag) add('warn','Checksumme',csTxt+' (erweitert)','Diagnose-Frames 0x3C/0x3D müssen die klassische Checksumme nutzen.');
+    else add('bad','Checksumme',csTxt+' falsch','Daten wurden verfälscht übertragen. Störungen, Massefehler oder Taktabweichung prüfen. Inhalte dieses Frames nicht verwenden.');
+    if(fr.respDev!=null) add(Math.abs(fr.respDev)<=2?'ok':'bad','Takt der Antwort',linSgn(fr.respDev,1)+' % zum Master',
+      Math.abs(fr.respDev)<=2?'Innerhalb ±2 % (LIN-Grenze nach Synchronisation).':'Mehr als ±2 %: Oszillator/Elektronik des antwortenden Teilnehmers prüfen, Bauteil ggf. defekt.');
+  }
+  if(dec.vHigh!=null){
+    var rh=dec.vHigh/ub;
+    add(rh>=0.8?'ok':rh>=0.6?'warn':'bad','Ruhepegel (rezessiv)',linFmt(dec.vHigh,2)+' V = '+linFmt(rh*100,0)+' % U_Bat',
+      rh>=0.8?'Pull-up und Versorgung des Masters in Ordnung.':'Zu niedrig: Übergangswiderstand in Leitung/Stecker, schwacher Pull-up oder Versorgung des Masters prüfen. Eingestellte U_Bat kontrollieren.');
+  }
+  function lowCheck(name,v){
+    if(v==null) return;
+    var rl=v/ub;
+    add(rl<=0.15?'ok':rl<=0.4?'warn':'bad',name,linFmt(v,2)+' V = '+linFmt(rl*100,0)+' % U_Bat',
+      rl<=0.15?'':rl<=0.4?'Wird noch erkannt (< 40 %), liegt aber über dem Richtwert ≤ 15 %. Massepfad des Senders per Spannungsabfall prüfen.':'Über 40 % U_Bat: Empfänger erkennen das Bit nicht sicher als dominant.');
+  }
+  lowCheck('Low-Pegel Header (Master)',fr.vLowHdr);
+  lowCheck('Low-Pegel Antwort',fr.vLowResp);
+  if(fr.vLowHdr!=null&&fr.vLowResp!=null&&fr.vLowResp-fr.vLowHdr>0.7)
+    add('warn','Pegelvergleich',  'Antwort '+linFmt(fr.vLowResp-fr.vLowHdr,1)+' V höher als Header',
+      'Der antwortende Teilnehmer zieht schlechter nach Masse als der Master: typisch für einen Übergangswiderstand in seiner Masse.');
+  return ch;
+}
+function linAssessIdle(dec,ub){
+  var lv=dec.idle.level, r=lv/ub;
+  if(r>0.6) return [{st:'bad',name:'Keine Kommunikation',val:'Leitung ruht bei '+linFmt(lv,2)+' V',hint:'Kein Header in der Aufnahme. Master sendet nicht (Versorgung, Masse, Weckbedingung, Zündung) oder Kurzschluss nach Plus. Ein schlafender Bus ist bei abgeschalteter Zündung normal.'}];
+  if(r<0.4) return [{st:'bad',name:'Leitung dauerhaft dominant',val:linFmt(lv,2)+' V',hint:'Kurzschluss nach Masse oder ein Teilnehmer zieht die Leitung. Teilnehmer einzeln abstecken, bis der Pegel auf U_Bat springt.'}];
+  return [{st:'bad',name:'Undefinierter Pegel',val:linFmt(lv,2)+' V',hint:'Weder sauber rezessiv noch dominant: Leitung/Stecker, Pull-up und Massen prüfen.'}];
+}
+var LIN_RANK={ok:0,info:0,warn:1,bad:2};
+function linWorst(checks){ var w='ok'; checks.forEach(function(c){ if(LIN_RANK[c.st]>LIN_RANK[w]) w=c.st; }); return w; }
+var LIN_IC={ok:'✓',warn:'!',bad:'✕',info:'i'};
+
+/* ---- Bauteil-Profile (Lernmodus). IDs/Belegungen sind Beispiele, keine Herstellerdaten. ---- */
+var LIN_BAUTEILE=[
+  {id:'klima', name:'Klimabedienteil', baud:19200, master:'Klima- bzw. Karosseriesteuergerät',
+    funktion:'Liest Tasten und Drehsteller ein und meldet sie auf Anfrage des Masters. Umgekehrt schickt der Master die LED- und Anzeigezustände.',
+    pins:'Kl. 30/15 (Versorgung) · Kl. 31 (Masse) · LIN · ggf. Kl. 58 (Beleuchtung)',
+    frames:[
+      {id:0x20, name:'LEDs/Anzeige (Master → Bedienteil)', slave:false,
+        labels:{0:{name:'LEDs',bits:{0:'AUTO-LED',1:'OFF-LED',2:'FRONT-LED',3:'Umluft-LED',4:'A/C-LED',5:'Heckscheibe-LED'}},1:{name:'Gebläse-Anzeige',bits:{}}}, build:function(s){ return [s.auto|s.off<<1|s.front<<2|s.umluft<<3|s.ac<<4|s.heck<<5, s.gebl]; }},
+      {id:0x21, name:'Tasten & Steller (Bedienteil → Master)', slave:true, build:function(s){ return [s.auto|s.off<<1|s.front<<2|s.umluft<<3|s.ac<<4|s.heck<<5, s.temp, s.gebl, 0]; }}],
+    ctrls:[
+      {k:'temp',t:'knob',l:'TEMP',f:0x21,b:1,min:32,max:58,def:44,fmt:function(v){ return linFmt(v/2,1)+' °C'; }},
+      {k:'auto',t:'key',l:'AUTO',f:0x21,b:0,bit:0},{k:'off',t:'key',l:'OFF',f:0x21,b:0,bit:1},
+      {k:'front',t:'key',l:'FRONT',f:0x21,b:0,bit:2},{k:'umluft',t:'key',l:'Umluft',f:0x21,b:0,bit:3},
+      {k:'ac',t:'key',l:'A/C',f:0x21,b:0,bit:4},{k:'heck',t:'key',l:'Heckscheibe',f:0x21,b:0,bit:5},
+      {k:'gebl',t:'knob',l:'GEBLÄSE',f:0x21,b:2,min:0,max:7,def:3,fmt:function(v){ return 'Stufe '+v; }}],
+    pruef:[
+      'Taste ohne Funktion, Rest geht: im Bit-Monitor prüfen, ob beim Drücken ein Bit kippt. <b>Kippt nicht</b> → Taster/Bedienteil defekt. <b>Kippt</b> → Bedienteil gut, weiter bei Master (Klimasteuergerät), Stellmotor oder Codierung.',
+      'LED-Frame des Masters beobachten: Übernimmt der Master den Tastendruck (LED-Bit folgt), ist die Kommunikation in beide Richtungen in Ordnung.',
+      'Ganzes Bedienteil dunkel und ohne Antwort: Versorgung, Masse und LIN direkt am Stecker des Bedienteils messen.']},
+  {id:'gen', name:'Generator mit LIN-Regler', baud:19200, master:'Motorsteuergerät bzw. Energiemanagement',
+    funktion:'Der Master gibt die Soll-Ladespannung vor, der Regler meldet Auslastung und Fehlerbits zurück. Ohne LIN-Sollwert fällt der Regler je nach Hersteller auf eine Notlauf-Spannung zurück.',
+    pins:'B+ (Ladeleitung) · Gehäuse-Masse · LIN (Ein-Pin-Stecker)',
+    frames:[
+      {id:0x29, name:'Sollwert (Motorsteuergerät → Regler)', slave:false, build:function(s){ return [s.soll-106, 0x01]; }},
+      {id:0x2A, name:'Status (Regler → Motorsteuergerät)', slave:true, build:function(s){ return [s.last, s.tempf|s.mech<<1|s.elek<<2, 0x50]; }}],
+    ctrls:[
+      {k:'soll',t:'knob',l:'SOLL',f:0x29,b:0,min:130,max:155,def:142,fmt:function(v){ return linFmt(v/10,1)+' V'; }},
+      {k:'tempf',t:'key',l:'Übertemp.',f:0x2A,b:1,bit:0},{k:'mech',t:'key',l:'Mech. Fehler',f:0x2A,b:1,bit:1},
+      {k:'elek',t:'key',l:'Elektr. Fehler',f:0x2A,b:1,bit:2},
+      {k:'last',t:'knob',l:'LAST',f:0x2A,b:0,min:0,max:100,def:35,fmt:function(v){ return v+' %'; }}],
+    pruef:[
+      'Generator lädt nicht: Kommt der Header für den Sollwert? Nein → Motorsteuergerät/Leitung. Ja, aber keine Status-Antwort → Regler ohne Versorgung (B+), Masse oder defekt.',
+      'Sollwert und Antwort kommen, Ladespannung folgt trotzdem nicht → Regler/Generator mechanisch oder elektrisch (siehe Messkarte Generator, Ripple).',
+      'Fehlerbits in der Status-Antwort gesetzt → Fehlerspeicher des Motorsteuergeräts auslesen, Ursache (Temperatur, Keilriemen, Wicklung) prüfen.']},
+  {id:'ibs', name:'Intelligenter Batteriesensor (IBS)', baud:19200, master:'Energiemanagement bzw. Motorsteuergerät',
+    funktion:'Sitzt an der Minus-Polklemme und misst Batteriespannung, -strom und -temperatur. Der Master fragt die Werte zyklisch ab.',
+    pins:'Kl. 30 (Versorgung/Messung) · Polklemme Minus · Masseband · LIN',
+    frames:[
+      {id:0x2C, name:'Batteriedaten (IBS → Master)', slave:true, build:function(s){ var mv=s.u*100; return [mv&0xff, mv>>8, (s.i+128)&0xff, s.tb+40]; }}],
+    ctrls:[
+      {k:'u',t:'knob',l:'U BATT',f:0x2C,b:0,min:110,max:148,def:126,fmt:function(v){ return linFmt(v/10,1)+' V'; }},
+      {k:'i',t:'knob',l:'STROM',f:0x2C,b:2,min:-100,max:100,def:-2,fmt:function(v){ return v+' A'; }},
+      {k:'tb',t:'knob',l:'TEMP',f:0x2C,b:3,min:-20,max:60,def:20,fmt:function(v){ return v+' °C'; }}],
+    pruef:[
+      'IBS sitzt an der Minus-Polklemme: Klemme, Masseband und Übergang zur Karosserie per Spannungsabfall prüfen.',
+      'Antwortet der IBS nicht, meldet das Energiemanagement oft „Batterie“-Fehler oder schaltet Verbraucher ab. Versorgung (Kl. 30) am IBS-Stecker prüfen.',
+      'Nach dem Batteriewechsel Batterie im Steuergerät anlernen bzw. registrieren (herstellerspezifisch). Sonst bewertet der Master die IBS-Werte falsch.']}
+];
+var LIN_PRUEF_ALLG=[
+  'Sichtprüfung: Stecker, Pins und Dichtungen auf Korrosion und aufgeweitete Kontakte prüfen. Gemessen wird bei gestecktem Bauteil von hinten (Backprobing, Kapitel Sicherheit).',
+  'Versorgung am Bauteil <b>unter Last</b> gegen die Bauteilmasse messen: ≈ U<sub>Bat</sub>. Liegt sie mehr als ~0,5 V darunter (Richtwert), Sicherung, Leitung und Stecker prüfen.',
+  'Masse: Spannungsabfall von der Bauteilmasse zum Batterie-Minus unter Last messen, Richtwert &lt; 0,1 V (Kapitel Masse/U-Abfall).',
+  'LIN-Ruhepegel bei Zündung ein: ≈ U<sub>Bat</sub> minus ca. 0,7 V (Diode im Master-Pull-up). 0 V → Kurzschluss nach Masse oder ein Teilnehmer zieht. Deutlich darunter → Leitung oder Pull-up.',
+  'Oszi am LIN-Pin (DC, 5 V/div, 1–2 ms/div, Trigger fallende Flanke ~6 V): Aufnahme als CSV exportieren und hier unter <b>Quelle: Eigene Messung</b> laden. Prüfen: Header vorhanden? Antwort vorhanden? Checksumme korrekt?',
+  'Funktion prüfen: Bedienelement betätigen und im Tab <b>Frames &amp; Bits</b> beobachten, ob sich das zugehörige Bit ändert.'];
+
+var linRendered=false;
+var linState={prof:null, vals:{}, log:[], ref:null, pairs:null, dec:null, assess:[], sel:-1, csvPairs:null, seq:0};
+
+function linProf(){ return linState.prof; }
+function linEl(id){ return document.getElementById(id); }
+function linUbat(){ var v=parseFloat((linEl('linUbat')||{}).value); return (isFinite(v)&&v>=6&&v<=32)?v:12.6; }
+function linSrc(){ return (linEl('linQuelle')||{}).value||'sim'; }
+
+function linResetVals(){
+  linState.vals={};
+  linProf().ctrls.forEach(function(c){ linState.vals[c.k]=c.t==='key'?0:c.def; });
+}
+function linSetProfile(id){
+  linState.prof=LIN_BAUTEILE.filter(function(p){ return p.id===id; })[0]||LIN_BAUTEILE[0];
+  linResetVals(); linState.log=[]; linState.ref=null;
+  var p=linProf();
+  linEl('linName').textContent=p.name;
+  linEl('linSteckbrief').innerHTML='<div class="setuptab"><b>Funktion</b><span>'+esc(p.funktion)+'</span><b>LIN-Rolle</b><span>Slave – antwortet nur auf Anfrage</span><b>Master</b><span>'+esc(p.master)+'</span><b>Anschlüsse</b><span>'+esc(p.pins)+'</span><b>Bitrate</b><span>'+linFmt(p.baud,0)+' bit/s (typisch)</span><b>Frames</b><span>'+
+    p.frames.map(function(f){ return 'ID '+linHex(f.id)+': '+esc(f.name); }).join('<br>')+'</span></div>'+
+    '<p class="imphint">IDs und Bit-Belegung sind Beispiele für den Lernmodus. Die echte Belegung steht in der LDF des Herstellers.</p>';
+  var steps=LIN_PRUEF_ALLG.concat(p.pruef);
+  linEl('linPruef').innerHTML='<ol>'+steps.map(function(s){ return '<li>'+s+'</li>'; }).join('')+'</ol>'+
+    '<p><button type="button" class="ibtn" data-go="pg-plan" data-open="pl-lin">Prüfplan LIN-Bus</button> <button type="button" class="ibtn" data-go="pg-masse">Masse/U-Abfall</button> <button type="button" class="ibtn" data-go="pg-bus">Kapitel LIN-Bus</button></p>';
+  linRenderCtrls();
+}
+function linRenderCtrls(){
+  var p=linProf(), v=linState.vals, knobs=p.ctrls.filter(function(c){ return c.t==='knob'; }), keys=p.ctrls.filter(function(c){ return c.t==='key'; });
+  function knob(c){ return '<label class="lin-knob">'+esc(c.l)+'<b id="linKv-'+c.k+'">'+esc(c.fmt(v[c.k]))+'</b><input type="range" data-lk="'+c.k+'" min="'+c.min+'" max="'+c.max+'" value="'+v[c.k]+'" aria-label="'+esc(c.l)+'"></label>'; }
+  var h='<div class="lin-panel">'+(knobs[0]?knob(knobs[0]):'<span></span>')+'<div class="lin-btns">'+
+    keys.map(function(c){ return '<button type="button" class="lin-key" data-lk="'+c.k+'" aria-pressed="'+(v[c.k]?'true':'false')+'">'+esc(c.l)+'</button>'; }).join('')+
+    knobs.slice(2).map(knob).join('')+'</div>'+(knobs[1]?knob(knobs[1]):'<span></span>')+'</div>';
+  linEl('linCtrls').innerHTML=h;
+}
+/* Bezeichnung je Byte/Bit aus dem Profil (nur Lernmodus) */
+function linLabels(id){
+  var out={}, p=linProf(); if(linSrc()!=='sim'||!p) return out;
+  p.frames.forEach(function(f){ if(f.id===id&&f.labels) out=JSON.parse(JSON.stringify(f.labels)); });
+  p.ctrls.forEach(function(c){ if(c.f!==id) return; out[c.b]=out[c.b]||{name:'',bits:{}}; if(c.t==='key') { out[c.b].bits[c.bit]=c.l; out[c.b].name='Tasten/Zustände'; } else out[c.b].name=c.l; });
+  return out;
+}
+
+function linRun(){
+  var p=linProf(), ub=linUbat(), baud=parseInt(linEl('linBaud').value,10)||0, src=linSrc(), stEl=linEl('linStatus');
+  var pairs, expect=[];
+  if(src==='sim'){
+    var frames=p.frames.map(function(f){ return {id:f.id, data:f.build(linState.vals), slave:f.slave}; });
+    expect=p.frames.map(function(f){ return f.id; });
+    pairs=linSynth(frames,{baud:p.baud, ubat:ub, fault:linEl('linFehler').value});
+    stEl.textContent='SIMULATION'; stEl.className='lin-status';
+  } else {
+    pairs=linState.csvPairs;
+    if(!pairs||!pairs.length){
+      stEl.textContent='KEINE DATEN'; stEl.className='lin-status leer';
+      linState.dec=null; linState.pairs=null; linState.assess=[];
+      linRenderAll(); return;
+    }
+    stEl.textContent='MESSUNG · '+pairs.length+' Punkte'; stEl.className='lin-status mess';
+  }
+  var dec=linDecode(pairs,{baud:baud});
+  linState.pairs=pairs; linState.dec=dec;
+  linState.assess=dec.frames.map(function(fr){ return linAssess(fr,dec,{ubat:ub, baud:baud, expect:expect}); });
+  /* Standardansicht: auffälligster Frame, bei Gleichstand der letzte */
+  var sel=-1, worst=-1;
+  linState.assess.forEach(function(a,i){ var r=LIN_RANK[linWorst(a)]; if(r>=worst){ worst=r; sel=i; } });
+  linState.sel=sel;
+  /* Log: Simulation hängt an, Messung ersetzt */
+  if(src!=='sim') linState.log=[];
+  dec.frames.forEach(function(fr,i){
+    linState.log.push({n:++linState.seq, id:fr.id, pid:fr.pid.val, data:fr.data.slice(), cs:fr.cs, st:linWorst(linState.assess[i]), src:src, t:fr.t0});
+  });
+  if(linState.log.length>60) linState.log=linState.log.slice(-60);
+  linRenderAll();
+}
+
+function linScopeSvg(pairs,dec,o){
+  var Wd=720, H=o.small?230:330, x0=48, x1=712, y0=o.small?34:46, y1=H-36, ub=o.ubat;
+  var ta=o.ta, tb=o.tb, span=(tb-ta)||1e-6;
+  var vmin=Math.min(-0.5,(dec.lo!=null?dec.lo:0)-0.5), vmax=Math.max(ub+1.2,(dec.hi!=null?dec.hi:ub)+1);
+  if(dec.idle){ vmin=Math.min(vmin,dec.idle.level-1); vmax=Math.max(vmax,dec.idle.level+1); }
+  function X(t){ return x0+(t-ta)/span*(x1-x0); }
+  function Y(v){ return y1-(v-vmin)/(vmax-vmin)*(y1-y0); }
+  var i, s='<svg viewBox="0 0 '+Wd+' '+H+'" xmlns="http://www.w3.org/2000/svg" role="img"><title>'+esc(o.title||'LIN-Signal mit Dekodierung')+'</title>';
+  s+='<rect width="'+Wd+'" height="'+H+'" fill="#0b0f14"/><rect x="'+x0+'" y="'+y0+'" width="'+(x1-x0)+'" height="'+(y1-y0)+'" fill="#070a0e" stroke="#1d2733"/>';
+  for(i=1;i<10;i++){ var gx=x0+i*(x1-x0)/10; s+='<line x1="'+gx+'" y1="'+y0+'" x2="'+gx+'" y2="'+y1+'" stroke="#16202b"/>'; }
+  for(i=1;i<8;i++){ var gy=y0+i*(y1-y0)/8; s+='<line x1="'+x0+'" y1="'+gy+'" x2="'+x1+'" y2="'+gy+'" stroke="#16202b"/>'; }
+  /* Bezugslinien: U_Bat und Empfängerschwellen */
+  [[ub,'U_Bat','#5b6b7d','6 3'],[0.6*ub,'60 %','#3e5a46','2 4'],[0.4*ub,'40 %','#5a3e3e','2 4'],[0,'0 V','#2a3a4d','4 3']].forEach(function(l){
+    var y=Y(l[0]); if(y<y0||y>y1) return;
+    s+='<line x1="'+x0+'" y1="'+y.toFixed(1)+'" x2="'+x1+'" y2="'+y.toFixed(1)+'" stroke="'+l[2]+'" stroke-dasharray="'+l[3]+'"/>';
+    s+='<text x="'+(x0-4)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" fill="#8aa0b8" font-size="10" font-family="ui-monospace,monospace">'+l[1]+'</text>';
+  });
+  /* Spur: Min/Max je Pixelspalte, damit keine Flanke verloren geht */
+  var cols={}, a=0, b=pairs.length-1;
+  while(a<b){ var m=(a+b)>>1; if(pairs[m][0]<ta) a=m+1; else b=m; }
+  for(i=Math.max(0,a-1);i<pairs.length&&pairs[i][0]<=tb;i++){
+    var cx=Math.round(X(pairs[i][0])), c=cols[cx];
+    if(!c) cols[cx]=[pairs[i][1],pairs[i][1]]; else { if(pairs[i][1]<c[0]) c[0]=pairs[i][1]; if(pairs[i][1]>c[1]) c[1]=pairs[i][1]; }
+  }
+  var d='', first=true;
+  Object.keys(cols).map(Number).sort(function(p,q){ return p-q; }).forEach(function(cx){
+    if(cx<x0||cx>x1) return; var c=cols[cx];
+    d+=(first?'M':'L')+cx+' '+Y(c[0]).toFixed(1)+'L'+cx+' '+Y(c[1]).toFixed(1); first=false;
+  });
+  s+='<path d="'+d+'" fill="none" stroke="#ffd24a" stroke-width="1.6" stroke-linejoin="round"/>';
+  /* Dekodier-Bänder über der Spur */
+  var by=y0-(o.small?26:32), bh=o.small?20:24;
+  function band(t0,t1,col,txt,bad){
+    var xa=Math.max(x0,X(t0)), xb=Math.min(x1,X(t1)); if(xb-xa<1) return;
+    s+='<rect x="'+xa.toFixed(1)+'" y="'+by+'" width="'+(xb-xa).toFixed(1)+'" height="'+bh+'" rx="3" fill="'+col+'33" stroke="'+(bad?'#ff6b6b':col)+'"'+(bad?' stroke-width="2"':'')+'/>';
+    s+='<line x1="'+xa.toFixed(1)+'" y1="'+(by+bh)+'" x2="'+xa.toFixed(1)+'" y2="'+y1+'" stroke="'+col+'44"/>';
+    var w=xb-xa, label=w>txt.length*6.6?txt:(w>28?txt.split(' ')[0]:'');
+    if(label) s+='<text x="'+((xa+xb)/2).toFixed(1)+'" y="'+(by+bh/2+4)+'" text-anchor="middle" fill="'+(bad?'#ff9d9d':col)+'" font-size="'+(o.small?10:11)+'" font-weight="700" font-family="ui-monospace,monospace">'+esc(label)+'</text>';
+  }
+  dec.frames.forEach(function(fr){
+    if(fr.tEnd<ta||fr.t0>tb) return;
+    band(fr.t0,fr.t0+fr.breakBits*fr.Tm,'#ff6b6b','BREAK');
+    band(fr.sync.t0,fr.sync.t1,'#4fd2ff','SYNC '+linHex(fr.sync.val),!fr.sync.stop);
+    band(fr.pid.t0,fr.pid.t1,'#ffd24a','PID '+linHex(fr.pid.val),!fr.parityOk);
+    var nb=fr.bytes.length, csOk=fr.csEnhOk||fr.csClassicOk;
+    fr.bytes.forEach(function(bt,k){
+      var isCs=k===nb-1;
+      band(bt.t0,bt.t1,isCs?'#ff7ad9':'#7dff9b',(isCs?'CS ':'D'+k+' ')+linHex(bt.val),!bt.start||!bt.stop||(isCs&&!csOk));
+    });
+    if(!nb) band(fr.pid.t1+2*fr.Tm,fr.pid.t1+30*fr.Tm,'#ff6b6b','KEINE ANTWORT',true);
+  });
+  /* Achsen */
+  var perDiv=span/10, ms=perDiv*1000;
+  var tdiv=ms>=1?linFmt(ms,ms>=10?0:2)+' ms/div':linFmt(ms*1000,0)+' µs/div';
+  var vdiv=linFmt((vmax-vmin)/8,1)+' V/div';
+  s+='<text x="'+x0+'" y="'+(H-14)+'" fill="#8aa0b8" font-size="11" font-family="ui-monospace,monospace">'+linFmt((ta-(o.tref||0))*1000,2)+' ms</text>';
+  s+='<text x="'+((x0+x1)/2)+'" y="'+(H-14)+'" text-anchor="middle" fill="#8aa0b8" font-size="11" font-family="ui-monospace,monospace">CH1 LIN · '+vdiv+' · '+tdiv+'</text>';
+  s+='<text x="'+x1+'" y="'+(H-14)+'" text-anchor="end" fill="#8aa0b8" font-size="11" font-family="ui-monospace,monospace">'+linFmt((tb-(o.tref||0))*1000,2)+' ms</text>';
+  s+='<text x="'+(x1-6)+'" y="'+(y0+14)+'" text-anchor="end" fill="#5b6b7d" font-size="10" letter-spacing="2" font-family="ui-monospace,monospace">'+esc(o.stamp)+'</text>';
+  return s+'</svg>';
+}
+
+function linChecksHtml(ch){
+  return '<ul class="lin-checks">'+ch.map(function(c){
+    return '<li class="st-'+c.st+'"><span class="lin-ic" aria-label="'+({ok:'in Ordnung',warn:'Hinweis',bad:'Fehler',info:'Info'}[c.st])+'">'+LIN_IC[c.st]+'</span><span><b>'+esc(c.name)+':</b> '+esc(c.val)+'</span>'+(c.hint?'<span class="lin-hint">'+esc(c.hint)+'</span>':'')+'</li>';
+  }).join('')+'</ul>';
+}
+function linFrameName(id){
+  var p=linProf(); if(linSrc()!=='sim'||!p) return '';
+  var f=p.frames.filter(function(x){ return x.id===id; })[0]; return f?f.name:'';
+}
+
+function linRenderAll(){
+  var dec=linState.dec, pairs=linState.pairs, ub=linUbat(), src=linSrc(), stamp=src==='sim'?'SIMULATION':'MESSUNG';
+  var sumEl=linEl('linSum'), mini=linEl('linMini'), fs=linEl('linFrameSum'), sel=linEl('linFrameSel');
+  linEl('linSimBlk').hidden=src!=='sim';
+  linEl('linCsvBlk').hidden=src==='sim';
+  if(!dec){
+    sumEl.innerHTML='<div class="note">Noch keine Messung geladen. Im Tab <b>Scope LIN</b> eine CSV einfügen oder als Datei wählen und auf <b>Dekodieren</b> tippen.</div>';
+    mini.innerHTML=''; fs.innerHTML=''; sel.innerHTML=''; linEl('linScope').innerHTML='';
+    linEl('linFields').innerHTML=''; linEl('linChecks').innerHTML=''; linRenderLog(); return;
+  }
+  var all=[], worst='ok', head, sub;
+  if(dec.err){ all=[{st:'bad',name:'Auswertung',val:dec.err,hint:''}]; }
+  else if(dec.idle){ all=linAssessIdle(dec,ub); }
+  else if(!dec.frames.length){ all=[{st:'bad',name:'Kein LIN-Frame erkannt',val:'Signal vorhanden, aber kein gültiger Header',hint:'Baudrate auf „automatisch“ stellen, Zeiteinheit der CSV prüfen, mindestens 10 Messpunkte pro Bit und einen vollständigen Break aufnehmen.'}]; }
+  linState.assess.forEach(function(a){ all=all.concat(a); });
+  worst=linWorst(all);
+  head={ok:'✓ Kommunikation in Ordnung',warn:'! Kommunikation läuft, mit Auffälligkeiten',bad:'✕ Fehler gefunden'}[worst];
+  sub='Bewertet: Pegel, Timing und Protokoll. Ob die Datenwerte plausibel sind, lässt sich nur mit den Herstellerdaten (LDF) beurteilen.';
+  sumEl.innerHTML='<div class="lin-sum st-'+worst+'" role="status">'+head+'<small>'+sub+'</small></div>';
+  var ta=dec.t0, tb=dec.t1;
+  mini.innerHTML=pairs?linScopeSvg(pairs,dec,{ta:ta,tb:tb,tref:dec.t0,ubat:ub,small:true,stamp:stamp,title:'Gesamte Aufnahme'}):'';
+  if(dec.frames.length){
+    fs.innerHTML=linChecksHtml(dec.frames.map(function(fr,i){
+      var w=linWorst(linState.assess[i]), nm=linFrameName(fr.id);
+      var bad=linState.assess[i].filter(function(c){ return c.st==='bad'||c.st==='warn'; }).map(function(c){ return c.name; });
+      return {st:w, name:'Frame '+(i+1)+' · ID '+linHex(fr.id)+(nm?' · '+nm:''), val:fr.bytes.length?('Daten '+fr.data.map(linHex).join(' ')):'ohne Antwort', hint:bad.length?('Auffällig: '+bad.join(', ')):''};
+    }));
+  } else fs.innerHTML=linChecksHtml(all);
+  /* Ansicht-Auswahl */
+  var opts='<option value="-1">Gesamte Aufnahme</option>'+dec.frames.map(function(fr,i){
+    return '<option value="'+i+'">Frame '+(i+1)+': ID '+linHex(fr.id)+' · '+linFmt((fr.t0-dec.t0)*1000,2)+' ms</option>'; }).join('');
+  sel.innerHTML=opts; sel.value=String(linState.sel);
+  linRenderScope();
+  linRenderLog();
+}
+function linRenderScope(){
+  var dec=linState.dec, pairs=linState.pairs, ub=linUbat(), src=linSrc(), stamp=src==='sim'?'SIMULATION':'MESSUNG';
+  if(!dec||!pairs) return;
+  var i=linState.sel, fr=dec.frames[i], ta, tb;
+  if(fr){ ta=fr.t0-3*fr.Tm; tb=(fr.bytes.length?fr.tEnd:fr.pid.t1+30*fr.Tm)+4*fr.Tm; }
+  else { ta=dec.t0; tb=dec.t1; }
+  linEl('linScope').innerHTML=linScopeSvg(pairs,dec,{ta:ta,tb:tb,tref:dec.t0,ubat:ub,stamp:stamp,title:fr?('Frame ID '+linHex(fr.id)):'Gesamte Aufnahme'});
+  if(!fr){
+    linEl('linFields').innerHTML='<p class="imphint">Einen Frame wählen, um die Felder einzeln zu sehen.</p>';
+    var all=[]; if(dec.idle) all=linAssessIdle(dec,ub); linState.assess.forEach(function(a){ all=all.concat(a.filter(function(c){ return c.st!=='ok'; })); });
+    linEl('linChecks').innerHTML=all.length?linChecksHtml(all):'<p>Keine Auffälligkeiten in der Aufnahme.</p>';
+    return;
+  }
+  var lab=linLabels(fr.id), rows='';
+  function row(f,v,bits,info){ rows+='<tr><td class="mono">'+f+'</td><td class="mono">'+v+'</td><td class="lin-bits">'+bits+'</td><td>'+info+'</td></tr>'; }
+  row('BREAK',linFmt(fr.breakBits,1)+' Bit','–','Rahmenstart, sendet der Master');
+  row('SYNC',linHex(fr.sync.val),linBin(fr.sync.val),'Taktvorgabe: '+linFmt(1/fr.Tm,0)+' bit/s');
+  row('PID',linHex(fr.pid.val),linBin(fr.pid.val),'ID '+linHex(fr.id)+' + Parität '+(fr.parityOk?'✓':'✕'));
+  fr.data.forEach(function(v,k){ var l=lab[k]; row('D'+k,linHex(v),linBin(v),l?esc(l.name):'Bedeutung laut LDF'); });
+  if(fr.cs!=null) row('CS',linHex(fr.cs),linBin(fr.cs),(fr.csEnhOk||fr.csClassicOk)?'Checksumme ✓':'Checksumme ✕');
+  else row('Antwort','–','–','keine');
+  linEl('linFields').innerHTML='<div class="twrap"><table><tr><th>Feld</th><th>Wert</th><th>Bits (MSB…LSB)</th><th>Bedeutung</th></tr>'+rows+'</table></div>';
+  linEl('linChecks').innerHTML=linChecksHtml(linState.assess[i]);
+}
+function linRenderLog(){
+  var log=linState.log, lg=linEl('linLog'), bm=linEl('linBitmon');
+  if(!log.length){ lg.innerHTML='<p class="imphint">Noch keine Frames.</p>'; bm.innerHTML=''; return; }
+  lg.innerHTML='<div class="twrap"><table><tr><th>Nr.</th><th>ID</th><th>PID</th><th>Daten</th><th>CS</th><th>Status</th></tr>'+
+    log.slice().reverse().map(function(e){
+      return '<tr><td class="mono">'+e.n+'</td><td class="mono">'+linHex(e.id)+'</td><td class="mono">'+linHex(e.pid)+'</td><td class="mono">'+(e.data.length?e.data.map(linHex).join(' '):'– keine Antwort –')+'</td><td class="mono">'+(e.cs!=null?linHex(e.cs):'–')+'</td><td><span class="lin-ic st-'+e.st+'">'+LIN_IC[e.st]+'</span></td></tr>';
+    }).join('')+'</table></div>';
+  /* Bit-Monitor: jüngster Frame je ID gegen Referenz bzw. Vorgänger derselben ID */
+  var ids=[], last={}, prev={};
+  log.forEach(function(e){ if(!e.data.length) return; if(last[e.id]) prev[e.id]=last[e.id]; else ids.push(e.id); last[e.id]=e; });
+  if(!ids.length){ bm.innerHTML='<p class="imphint">Keine Frames mit Daten.</p>'; return; }
+  var ref=linState.ref, h='';
+  ids.forEach(function(id){
+    var cur=last[id].data, cmp=(ref&&ref[id])?ref[id]:(prev[id]?prev[id].data:null), lab=linLabels(id), changed=[];
+    var basis=(ref&&ref[id])?'Referenz':(prev[id]?'vorheriger Frame':'–');
+    var rows=cur.map(function(v,k){
+      var o=cmp&&cmp[k]!=null?cmp[k]:v, bits='';
+      for(var bit=7;bit>=0;bit--){
+        var b=(v>>bit)&1, ch=((v^o)>>bit)&1;
+        if(ch){ var nm=lab[k]&&lab[k].bits[bit]?lab[k].bits[bit]:'Bit '+bit; changed.push('D'+k+'.'+bit+' ('+nm+') '+(((o>>bit)&1))+'→'+b); }
+        bits+=ch?'<span class="chg">'+b+'</span>':String(b);
+      }
+      return '<tr><td class="mono">D'+k+'</td><td class="mono">'+linHex(v)+'</td><td class="lin-bits">'+bits+'</td><td>'+(lab[k]?esc(lab[k].name):'')+'</td></tr>';
+    }).join('');
+    var nm=linFrameName(id);
+    h+='<h4>ID '+linHex(id)+(nm?' · '+esc(nm):'')+'</h4><p class="imphint">Vergleich mit: '+basis+'</p>'+
+      '<div class="twrap"><table><tr><th>Byte</th><th>Wert</th><th>Bits (7…0)</th><th>Bedeutung</th></tr>'+rows+'</table></div>'+
+      (cmp?('<p>'+(changed.length?('<b>Geändert:</b> '+esc(changed.join(' · '))):'Keine Bit-Änderung.')+'</p>'):'');
+  });
+  bm.innerHTML=h;
+}
+function linSetTab(name,focus){
+  document.querySelectorAll('#pg-lin .lin-tab').forEach(function(t){
+    var on=t.getAttribute('data-lt')===name;
+    t.classList.toggle('on',on); t.setAttribute('aria-selected',on?'true':'false'); t.tabIndex=on?0:-1;
+    if(on&&focus) t.focus();
+  });
+  document.querySelectorAll('#pg-lin .lin-pane').forEach(function(p){ var on=p.id==='lp-'+name; p.classList.toggle('on',on); p.hidden=!on; });
+}
+function linLoadCsv(){
+  var unit=parseFloat(linEl('linTunit').value)||1;
+  linState.csvPairs=parseCsv(linEl('linCsv').value).map(function(p){ return [p[0]*unit,p[1]]; });
+  linRun();
+}
+function linInit(){
+  var bs=linEl('linBauteil'); if(!bs) return;
+  bs.innerHTML=LIN_BAUTEILE.map(function(p){ return '<option value="'+p.id+'">'+esc(p.name)+'</option>'; }).join('');
+  linSetProfile(LIN_BAUTEILE[0].id);
+  bs.addEventListener('change',function(){ linSetProfile(bs.value); linRun(); });
+  ['linBaud','linFehler','linQuelle'].forEach(function(id){ linEl(id).addEventListener('change',linRun); });
+  linEl('linUbat').addEventListener('change',linRun);
+  var ctr=linEl('linCtrls');
+  ctr.addEventListener('click',function(e){
+    var k=e.target.closest('.lin-key'); if(!k) return;
+    var key=k.getAttribute('data-lk'); linState.vals[key]=linState.vals[key]?0:1;
+    k.setAttribute('aria-pressed',linState.vals[key]?'true':'false'); linRun();
+  });
+  ctr.addEventListener('input',function(e){
+    var r=e.target.closest('input[type=range]'); if(!r) return;
+    var key=r.getAttribute('data-lk'), c=linProf().ctrls.filter(function(x){ return x.k===key; })[0];
+    linState.vals[key]=parseInt(r.value,10); var out=linEl('linKv-'+key); if(out) out.textContent=c.fmt(linState.vals[key]);
+  });
+  ctr.addEventListener('change',function(e){ if(e.target.closest('input[type=range]')) linRun(); });
+  var tabs=document.querySelector('#pg-lin .lin-tabs');
+  tabs.addEventListener('click',function(e){ var t=e.target.closest('.lin-tab'); if(t) linSetTab(t.getAttribute('data-lt')); });
+  tabs.addEventListener('keydown',function(e){
+    if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft') return;
+    var all=Array.prototype.slice.call(tabs.querySelectorAll('.lin-tab')), i=all.indexOf(document.activeElement); if(i<0) return;
+    e.preventDefault(); i=(i+(e.key==='ArrowRight'?1:all.length-1))%all.length; linSetTab(all[i].getAttribute('data-lt'),true);
+  });
+  linEl('pg-lin').addEventListener('click',function(e){ var g=e.target.closest('[data-lt-go]'); if(g) linSetTab(g.getAttribute('data-lt-go')); });
+  linEl('linFrameSel').addEventListener('change',function(){ linState.sel=parseInt(this.value,10); linRenderScope(); });
+  linEl('linDecode').addEventListener('click',linLoadCsv);
+  var fi=linEl('linFileInput');
+  linEl('linFile').addEventListener('click',function(){ fi.click(); });
+  fi.addEventListener('change',function(){ var f=fi.files&&fi.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(){ linEl('linCsv').value=String(r.result); linLoadCsv(); }; r.readAsText(f); fi.value=''; });
+  linEl('linRef').addEventListener('click',function(){
+    var ref={}; linState.log.forEach(function(e){ if(e.data.length) ref[e.id]=e.data.slice(); });
+    linState.ref=ref; linRenderLog();
+  });
+  linEl('linRefClear').addEventListener('click',function(){ linState.ref=null; linRenderLog(); });
+  linEl('linClearLog').addEventListener('click',function(){ linState.log=[]; linRenderLog(); });
+  linRun();
+}
+
+/* Selbsttest für validateKompendium(): Decoder gegen bekannte Simulationen prüfen */
+function linSelfTest(){
+  var errs=[];
+  function ex(cond,msg){ if(!cond) errs.push('LIN: '+msg); }
+  ex(linPid(0x00)===0x80&&linPid(0x01)===0xC1&&linPid(0x3C)===0x3C&&linPid(0x3D)===0x7D,'PID-Paritätstabelle');
+  ex(linChecksum([0x4A,0x55,0x93,0xE5],null)===0xE6,'klassische Checksumme (Normbeispiel)');
+  LIN_BAUTEILE.forEach(function(p){
+    var vals={}; p.ctrls.forEach(function(c){ vals[c.k]=c.t==='key'?1:c.def; });
+    var frames=p.frames.map(function(f){ return {id:f.id,data:f.build(vals),slave:f.slave}; });
+    [[p.baud,0],[p.baud,p.baud],[9600,0],[10417,0]].forEach(function(bb){
+      var dec=linDecode(linSynth(frames,{baud:bb[0],ubat:12.6}),{baud:bb[1]});
+      ex(dec.frames.length===frames.length,p.id+' @'+bb[0]+': '+dec.frames.length+' statt '+frames.length+' Frames');
+      dec.frames.forEach(function(fr,i){
+        var f=frames[i]; if(!f) return;
+        ex(fr.id===f.id&&fr.parityOk,p.id+': ID '+linHex(fr.id));
+        ex(fr.data.join()===f.data.join(),p.id+': Daten '+fr.data.map(linHex).join(' '));
+        ex(fr.csEnhOk,p.id+': Checksumme');
+        ex(Math.abs(1/fr.Tm/bb[0]-1)<0.01,p.id+': Bitrate '+(1/fr.Tm).toFixed(0));
+        ex(linWorst(linAssess(fr,dec,{ubat:12.6,baud:bb[1]}))==='ok',p.id+' @'+bb[0]+': Gutbild nicht ok');
+      });
+    });
+    function run(fault){ var dec=linDecode(linSynth(frames,{baud:p.baud,ubat:12.6,fault:fault}),{baud:p.baud});
+      var a=[]; if(dec.idle) a=linAssessIdle(dec,12.6); dec.frames.forEach(function(fr){ a=a.concat(linAssess(fr,dec,{ubat:12.6,baud:p.baud,expect:frames.map(function(f){ return f.id; })})); });
+      return {dec:dec,a:a}; }
+    function has(a,name,st){ return a.some(function(c){ return c.name===name&&c.st===st; }); }
+    var r=run('noresp'); ex(has(r.a,'Antwort','bad'),p.id+': fehlende Antwort nicht erkannt');
+    r=run('cs'); ex(has(r.a,'Checksumme','bad'),p.id+': falsche Checksumme nicht erkannt');
+    r=run('drift'); ex(has(r.a,'Takt der Antwort','bad'),p.id+': Taktabweichung nicht erkannt');
+    r=run('masse'); ex(has(r.a,'Low-Pegel Antwort','warn')&&has(r.a,'Pegelvergleich','warn'),p.id+': Massefehler nicht erkannt');
+    r=run('pullup'); ex(has(r.a,'Ruhepegel (rezessiv)','bad'),p.id+': niedriger Ruhepegel nicht erkannt');
+    r=run('kurzmasse'); ex(has(r.a,'Leitung dauerhaft dominant','bad'),p.id+': Kurzschluss Masse nicht erkannt');
+    r=run('still'); ex(has(r.a,'Keine Kommunikation','bad'),p.id+': fehlender Verkehr nicht erkannt');
+  });
+  return errs;
+}
+
 function validateKompendium(){
   var errs=[], warns=[];
   var KAT=['sensor','lambda','aktor','zuend','einspr','elektrik','bus'];
@@ -4203,6 +4952,7 @@ function validateKompendium(){
   var terms={}; GLOSSAR.forEach(function(g){ if(!g.term){ errs.push('Glossar ohne term'); } else if(terms[g.term]) warns.push('Doppelter Glossarbegriff: '+g.term); else terms[g.term]=1; if(!g.def) warns.push((g.term||'?')+': keine def'); });
   document.querySelectorAll('[data-open]').forEach(function(el){ var t=el.getAttribute('data-open'); if(t && t.indexOf("'")<0 && !document.getElementById(t)) errs.push('data-open Ziel fehlt: #'+t); });
   document.querySelectorAll('[data-go]').forEach(function(el){ var t=el.getAttribute('data-go'); if(t && !document.getElementById(t)) errs.push('data-go Ziel fehlt: #'+t); });
+  errs=errs.concat(linSelfTest());
   return {errors:errs, warnings:warns, cards:KARTEN.length, fdb:FEHLERDB.length, gloss:GLOSSAR.length};
 }
 try{ window.validateKompendium=validateKompendium; }catch(e){}
