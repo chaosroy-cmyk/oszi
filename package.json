@@ -1,13 +1,13 @@
 {
   "name": "kfz-oszi",
-  "version": "13.5.1",
+  "version": "13.6.0",
   "private": true,
   "description": "KFZ-Oszilloskop-Kompendium – static offline PWA and local OWON bridge",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "test": "node tests/live-logic.test.js && node tests/signal-engine.test.js && node --test tests/v135-regression.test.js tests/data-format.test.js tests/service-worker.test.js",
+    "test": "node tests/live-logic.test.js && node tests/signal-engine.test.js && node --test tests/v135-regression.test.js tests/data-format.test.js tests/service-worker.test.js tests/decode/*.test.js",
     "test:browser": "node --test --test-concurrency=1 tests/browser.test.cjs",
     "test:python": "python3 -m unittest discover -s tests -p 'test_*.py' -v",
     "validate": "node tools/validate.js",

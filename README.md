@@ -1,4 +1,4 @@
-# KFZ-Oszilloskop-Kompendium V13.5.1
+# KFZ-Oszilloskop-Kompendium V13.6
 
 Offline-Diagnoseunterlage für die Werkstatt als installierbare **PWA**:
 Messkarten mit Oszi-Einstellungen, schematischen **und** fahrzeugspezifischen
@@ -19,6 +19,7 @@ Für Smartphone optimiert, ohne externe Abhängigkeiten.
 | `tools/validate.js` | Datenvalidierung (headless, für CI) |
 | `bridge.py` | Live-Modus: WebSocket-Bridge zum OWON VDS1022I (lokal, **nicht** deployt) |
 | `tests/live-logic.test.js` | Node-Tests der Live-Logik (`OsziLogic`, 39 Tests) |
+| `tests/decode/` | Node-Tests der Bus-Decoder und Zyklus-Messung (`OsziDecode`, 148 Tests, laufen gegen `index.html`) |
 | `tests/signal-engine.test.js` | Node-Tests der Signalbild-Engine W2 und aller Kartenmodelle |
 | `tools/w2/` | Kit für neue Signalbilder: Regeln (`API.md`), Prüf-/Render-Werkzeug, Einbau, Textkorrektur |
 | `docs/SIGNAL-KATALOG.md` | Katalog aller am Fahrzeug messbaren Signale (146) mit Abdeckung, Priorität, Quellen; `docs/signal-katalog.json` maschinenlesbar |
@@ -132,3 +133,11 @@ Der GitHub-Deploy-Workflow ist nur manuell auslösbar. Eine bestehende automatis
 ## Zeitzoom bei Stop (V13.5.1)
 
 Aufnahme mit **Stop** anhalten oder **Single** abwarten. Die vorhandene Zeitbasis-Auswahl zoomt jetzt in diese Aufnahme; der Regler **Ausschnitt** verschiebt das Fenster. Die Anzeige nennt die gesamte und sichtbare Aufnahmedauer. Herauszoomen ist auf die vorhandenen Daten begrenzt. Beim Fortsetzen mit **Run** wird die neue Zeitbasis für weitere Aufnahmen übernommen. Siehe `docs/ZEITZOOM-V13.5.1.md`.
+
+## Serielle Entschlüsselung und Zyklus-Messung (V13.6)
+
+Im Live-Tab unter dem Oszi-Bild: Decoder für **LIN, CAN, K-Leitung und SENT** mit farbigen Feldern über der
+Kurve, Frame-Tabelle und Prüfungen sowie die **Zyklus-Messung** (jeder Zyklus einzeln, Ausreißer markiert,
+CSV-Export). Funktioniert live, bei Stop, in der Bibliothek und mit CSV-Importen; „Beispielsignal“ zeigt
+jeden Bus ohne Gerät. Bedienung, Grenzen und Normbezüge: `docs/DECODER.md`.
+

@@ -1,3 +1,15 @@
+# V13.6 – Serielle Entschlüsselung und Zyklus-Messung (30. Oktober 2026)
+
+Basis: unveränderte V13.5.1 (`releases/kfz-oszi-v13.5.1.zip`, SHA-256 geprüft). Neu im Kapitel **Live**, direkt unter dem Oszi-Bild:
+
+- **Serielle Entschlüsselung** für LIN, CAN (klassisch, ISO 11898), K-Leitung (ISO 9141-2/14230) und SENT (SAE J2716): farbige Felder über der Kurve, Frame-Tabelle mit Prüfungen (Prüfsummen, Parität, Stuffing, ACK, Rahmen, Pegel, Bitrate/Tick mit Messunsicherheit). Ein Frame in der Tabelle springt bei Stop dorthin (Zeitzoom der V13.5.1). CAN-FD wird erkannt, die Datenphase aber nicht dekodiert.
+- **Zyklus-Messung (DeepMeasure):** jeder vollständige Zyklus einzeln (Periode, Frequenz, Pulsbreiten, Tastgrad, Anstieg/Abfall 10/90 bzw. 20/80, Max/Min), Statistik je Messgröße, robuste Ausreißererkennung (Median/MAD), CSV-Export.
+- **Beispielsignal** je Bus als gekennzeichnete Wiedergabe (keine Messung) zum Kennenlernen ohne Gerät.
+- Abtastprüfung für die 5 000 Punkte des VDS1022I: unter 8 Punkten pro Bit Hinweis mit passender Zeitbasis, unter 4 Punkten keine Inhalte (statt geratener Werte).
+- DOM-freier Block `oszi-decode` (`OsziDecode.decode/cycles/synth`), 148 neue Node-Tests (`tests/decode/`) gegen den ausgelieferten Block, ein neuer Browser-Test.
+
+Nicht erfolgt: Test mit echtem Gerät und echten Fahrzeugsignalen. Bedeutung der Datenbytes bleibt herstellerspezifisch (LDF/DBC/Tester). Details: `docs/DECODER.md`.
+
 # V13.5.1 – Zeitzoom bei Stop (26. Oktober 2026)
 
 - Zeitbasisänderungen bei Stop erhalten die Aufnahme und ändern ausschließlich den sichtbaren Ausschnitt. Keine Zeitbasisbefehle beim Zoomen; das ursprüngliche dt und beide Kanäle bleiben erhalten.

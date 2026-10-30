@@ -114,6 +114,42 @@ test('timebase changed before any samples arrives is applied only when Run resum
  await p.locator('#lv-run').click();assert.deepEqual(await p.evaluate(()=>__emptyCommands),[{cmd:'timebase',secdiv:.0001},{cmd:'run'}]);await c.close();
 });
 
+test('serial decoders and cycle measurement decode demo signals, mark frames and jump on stop',async()=>{
+ const context=await browser.newContext({viewport:{width:1280,height:900}}),p=await context.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await live(p);
+ const expectTitles={lin:['ID 0x20','ID 0x21','ID 0x2A'],can:['ID 0x316','ID 0x18FEF100','ID 0x43F'],kline:null,sent:null};
+ for(const bus of ['lin','can','kline','sent']){
+  await p.selectOption('#lv-dec-bus',bus);await p.click('#lv-dec-demo');
+  /* Beim Buswechsel wird kurz die alte Aufnahme mit dem neuen Decoder gelesen – auf das Beispielsignal warten */
+  const label={lin:'LIN',can:'CAN',kline:'K-Leitung',sent:'SENT'}[bus];
+  await p.waitForFunction(l=>document.querySelector('#lv-playname').textContent.includes('Beispiel '+l),label);
+  await p.waitForFunction(()=>{const r=[...document.querySelectorAll('#lv-dec-rows tr.lv-ana-row')];return r.length>=2&&r.every(x=>x.querySelector('.st-ok,.st-bad,.st-warn'));});
+  if(expectTitles[bus])await p.waitForFunction(e=>JSON.stringify([...document.querySelectorAll('#lv-dec-rows tr.lv-ana-row')].map(x=>x.children[2].textContent))===JSON.stringify(e),expectTitles[bus]);
+  else await p.waitForFunction(()=>{const r=[...document.querySelectorAll('#lv-dec-rows tr.lv-ana-row')];return r.length>=2&&r.every(x=>x.querySelector('.st-ok'));});
+ }
+ /* CAN-Beispiel: dritter Frame ohne ACK ist rot, Detail nennt ACK */
+ await p.selectOption('#lv-dec-bus','can');await p.click('#lv-dec-demo');await p.waitForFunction(()=>document.querySelectorAll('#lv-dec-rows tr.lv-ana-row').length===3);
+ assert.equal(await p.locator('#lv-dec-rows tr.lv-ana-row >> nth=2').locator('.st-bad').count(),1);
+ await p.selectOption('#lv-tdiv',String(2e-5));await p.waitForFunction(()=>Math.abs(window.OsziLive.state.secdiv-2e-5)<1e-9);
+ const before=await p.evaluate(()=>window.OsziLive.state.frozen.anchor);
+ await p.click('#lv-dec-rows tr.lv-ana-row >> nth=2');
+ assert.match(await p.locator('#lv-dec-detail').innerText(),/ACK/);
+ assert.notEqual(await p.evaluate(()=>window.OsziLive.state.frozen.anchor),before);
+ /* zu grobe Abtastung: klare Meldung statt erfundener Inhalte */
+ const coarse=await p.evaluate(()=>{const s=OsziDecode.synth('can');const v=s.values.filter((_,i)=>i%6===0);return OsziDecode.decode('can',v,s.dt*6,{signal:'canh'});});
+ assert.equal(coarse.ok,false);assert.equal(coarse.frames.length,0);assert.match(coarse.error,/µs\/div/);
+ /* Zyklus-Messung am Hall-Demo: Zahnlücken als Ausreißer */
+ await p.click('#lv-playback-exit');await p.selectOption('#lv-dec-bus','');
+ const hall=await p.evaluate(()=>{const o=[...document.querySelectorAll('#lv-karte option')].find(x=>/Hall/.test(x.textContent));return o&&o.value;});assert(hall);
+ await p.selectOption('#lv-karte',hall);await p.click('#lv-mock');await p.waitForTimeout(1200);await p.click('#lv-stop');
+ await p.check('#lv-dm-on');await p.waitForFunction(()=>/Zyklen/.test(document.querySelector('#lv-dm-sum').textContent));
+ const dm=await p.evaluate(()=>({sum:document.querySelector('#lv-dm-sum .lv-ana-sum').textContent,out:document.querySelectorAll('#lv-dm-rows tr.out').length,rows:document.querySelectorAll('#lv-dm-rows tr.lv-ana-row').length}));
+ assert(dm.rows>10);assert(dm.out>=1&&dm.out<=3,JSON.stringify(dm));
+ const dl=p.waitForEvent('download');await p.click('#lv-dm-csv');const file=await dl;assert.match(file.suggestedFilename(),/^zyklen-.*\.csv$/);
+ assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ assert.deepEqual(errors,[]);await context.close();
+});
+
 test('V13.4 to V13.5 user-confirmed offline update preserves stored recordings and sibling caches',async()=>{
  version='13.4';const context=await browser.newContext(),p=await context.newPage();await p.goto(base+'/',{waitUntil:'networkidle'});await p.evaluate(()=>navigator.serviceWorker.ready);await p.reload({waitUntil:'networkidle'});
  await p.evaluate(async()=>{localStorage.setItem('v135-retained','yes');const c=await caches.open('kfz-multimeter-profi-v7-3');await c.put('/sibling-test',new Response('retained'));await caches.open('unrelated-cache');const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('oszi-live',1);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});await new Promise((resolve,reject)=>{const tx=db.transaction('aufnahmen','readwrite');tx.objectStore('aufnahmen').put({id:'retained',name:'V13.4',dt:.001,len1:3,len2:0,ch1:new Float32Array([1,2,3]).buffer,meta:{},created:1});tx.oncomplete=resolve;tx.onerror=reject;});db.close();});

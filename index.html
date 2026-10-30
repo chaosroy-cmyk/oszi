@@ -215,6 +215,29 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
 .lv-badge.bad{color:var(--bad);border-color:var(--bad);background:#3a1e1e}
 .m-ok{color:var(--gut);font-weight:700}
 .m-bad{color:var(--bad);font-weight:700}
+/* @ana-css-begin */
+/* Serielle Entschlüsselung + Zyklus-Messung */
+.lv-ana-sum{font-weight:700;border:2px solid var(--line);border-radius:8px;padding:.4rem .6rem;margin:.4rem 0}
+.lv-ana-sum.st-ok{border-color:var(--gut);color:var(--gut)}
+.lv-ana-sum.st-warn{border-color:var(--acc);color:var(--acc)}
+.lv-ana-sum.st-bad{border-color:var(--bad);color:var(--bad)}
+.lv-ana-checks{list-style:none;margin:.3rem 0;padding:0;font-size:.86rem}
+.lv-ana-checks li{display:grid;grid-template-columns:1.4rem 1fr;gap:.35rem;padding:.25rem 0;border-bottom:1px solid var(--line2);margin:0}
+.lv-ana-checks small{color:var(--mut)}
+.lv-ana-ic{font-family:var(--mono);font-weight:700;text-align:center}
+.st-ok>.lv-ana-ic,.lv-ana-ic.st-ok{color:var(--gut)}
+.st-warn>.lv-ana-ic,.lv-ana-ic.st-warn{color:var(--acc)}
+.st-bad>.lv-ana-ic,.lv-ana-ic.st-bad{color:var(--bad)}
+.st-info>.lv-ana-ic,.lv-ana-ic.st-info{color:var(--acc2)}
+.lv-dec-table,.lv-dm-table{max-height:22rem;overflow:auto}
+.lv-ana-row{cursor:pointer}
+.lv-ana-row:hover td{background:var(--panel2)}
+.lv-ana-row.sel td{background:#2a2440}
+.lv-ana-row.out td:first-child{box-shadow:inset 3px 0 0 var(--bad)}
+.lv-ana-row:focus-visible{outline:2px solid var(--acc2);outline-offset:-2px}
+td.lv-ana-out{color:var(--bad);font-weight:700}
+:root[data-theme="light"] .lv-ana-row.sel td{background:#e6e0f7}
+/* @ana-css-end */
 .lv-rec{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem;margin:.45rem 0}
 .lv-recname{font-weight:700}
 .lv-recmeta{font-size:.82rem;color:var(--mut);margin:.2rem 0}
@@ -339,6 +362,43 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
     </div>
     <div class="mono" id="lv-meas" style="font-size:.78rem;color:var(--mut);margin-top:.25rem"></div>
   </section>
+
+  <!-- @ana-html-begin -->
+  <section class="blk" id="lv-dec-blk">
+    <h3>Serielle Entschlüsselung</h3>
+    <div class="lvrow">
+      <label>Bus <select id="lv-dec-bus"><option value="">aus</option><option value="lin">LIN</option><option value="can">CAN</option><option value="kline">K-Leitung</option><option value="sent">SENT</option></select></label>
+      <label>Quelle <select id="lv-dec-src"><option value="1">CH1</option><option value="2">CH2</option><option value="d">CH1−CH2</option></select></label>
+      <label>Bitrate <select id="lv-dec-baud"></select></label>
+      <span id="lv-dec-extra" class="lvrow" style="margin:0"></span>
+      <button class="ibtn" id="lv-dec-demo" title="Lädt ein simuliertes Signal dieses Busses als Wiedergabe (ohne Gerät)">Beispielsignal</button>
+    </div>
+    <div id="lv-dec-sum" role="status"></div>
+    <div class="twrap tsm lv-dec-table"><table>
+      <thead><tr><th>Nr.</th><th>Zeit</th><th>Kennung</th><th>Inhalt</th><th>Status</th></tr></thead>
+      <tbody id="lv-dec-rows"><tr><td colspan="5">Bus wählen.</td></tr></tbody>
+    </table></div>
+    <div id="lv-dec-detail"></div>
+    <p class="note">Geprüft werden Physik (Pegel, Bitrate, Abtastung) und Protokoll (Rahmen, Prüfsumme, Bestätigung). Was die Datenbytes bedeuten, legt der Hersteller fest – dafür Herstellerunterlagen oder Tester. Eine Zeile antippen markiert den Frame im Bild; bei <b>Stop</b> springt die Anzeige dorthin.</p>
+  </section>
+
+  <section class="blk" id="lv-dm-blk">
+    <h3>Zyklus-Messung (DeepMeasure)</h3>
+    <div class="lvrow">
+      <label><input type="checkbox" id="lv-dm-on"> an</label>
+      <label>Quelle <select id="lv-dm-src"><option value="1">CH1</option><option value="2">CH2</option><option value="d">CH1−CH2</option></select></label>
+      <label>Bereich <select id="lv-dm-range"><option value="all">ganze Aufnahme</option><option value="view">sichtbarer Ausschnitt</option></select></label>
+      <label>Zyklus ab <select id="lv-dm-edge"><option value="rise">Flanke ↑</option><option value="fall">Flanke ↓</option></select></label>
+      <label>Anstieg <select id="lv-dm-ref"><option value="10/90">10/90 %</option><option value="20/80">20/80 %</option></select></label>
+      <label>Schwelle <input type="number" id="lv-dm-thr" step="0.1" placeholder="auto" style="width:5rem"></label>
+      <label>Hysterese <input type="number" id="lv-dm-hyst" step="0.05" min="0" placeholder="auto" style="width:5rem"></label>
+      <button class="ibtn" id="lv-dm-csv">Tabelle CSV</button>
+    </div>
+    <div id="lv-dm-sum" role="status"></div>
+    <div class="twrap tsm lv-dm-table"><table><thead id="lv-dm-head"></thead><tbody id="lv-dm-rows"><tr><td>Einschalten, um jeden Zyklus der Aufnahme einzeln zu vermessen.</td></tr></tbody></table></div>
+    <p class="note">Jeder Zyklus wird einzeln vermessen (Periode, Pulsbreiten, Tastgrad, Flankenzeiten, Pegel). Rot markiert sind Ausreißer gegenüber den übrigen Zyklen der Aufnahme – z. B. der eine schlechte Zahn oder ein Aussetzer. Zeitwerte sind auf etwa ± ein Abtastintervall genau.</p>
+  </section>
+  <!-- @ana-html-end -->
 
   <section class="blk">
     <h3>Bedienung</h3>
@@ -1379,7 +1439,7 @@ Perfekt geometrische Signale sind im Fahrzeug selten realistisch.
 </div>
 <button class="up" id="upbtn" title="Nach oben">▲</button>
 <footer>
-<p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-PWA · Stand v13.5.1 (82 Messkarten · 1087 quellenbelegte Signalbilder · 45 Erklär- und Fehlermusterbilder · 1:1-Tastkopf-Hinweise · referenzgeprüft · Live-Modus · Auto-Setup · Auto-Deploy) · Alle Signalbilder schematisch.</p>
+<p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-PWA · Stand v13.6 (82 Messkarten · 1087 quellenbelegte Signalbilder · 45 Erklär- und Fehlermusterbilder · 1:1-Tastkopf-Hinweise · referenzgeprüft · Live-Modus · Auto-Setup · Auto-Deploy) · Alle Signalbilder schematisch.</p>
 <p>Richtwerte können je nach Hersteller, System, Motorsteuergerät und Messgerät abweichen. Herstellerdaten und Stromlaufplan haben Vorrang.</p>
 <p>Sicherheit zuerst: keine Messungen an Airbag-/PSI5-Zündkreisen, HV-Systemen nur mit Qualifikation.</p>
 <div class="owner-signature">
@@ -24983,7 +25043,7 @@ function measurement(input){
   var tr=input.trigger||{};if(tr.channel!=null&&!seen.has(tr.channel))throw new Error('Triggerkanal fehlt');
   if(tr.edge!=null&&!['rise','fall'].includes(tr.edge))throw new Error('Triggerflanke');
   var q=input.quality||{},meta=input.vehicle||{};
-  return {schema:'kfz-oszi.measurement',schemaVersion:1,appVersion:'13.5.1',captureId:text(input.id||('capture-'+Date.now()),128),source:text(input.source||'unknown',128),
+  return {schema:'kfz-oszi.measurement',schemaVersion:1,appVersion:'13.6',captureId:text(input.id||('capture-'+Date.now()),128),source:text(input.source||'unknown',128),
     capturedAtUnixSeconds:input.capturedAt==null?null:number(input.capturedAt,0,1e12),sampleIntervalSeconds:dt,channels:channels,
     trigger:{channel:tr.channel==null?null:tr.channel,edge:tr.edge||null,level:tr.level==null?null:number(tr.level,-3.4e38,3.4e38),unit:tr.unit||'V',position:tr.position==null?null:number(tr.position,0,1),confirmed:tr.confirmed===true},
     vehicle:{vehicle:text(meta.fahrzeug,256),engine:text(meta.motor,256),component:text(meta.system,256),measurementPoint:text(meta.messpunkt,256),conditions:text(meta.bedingung),notes:text(meta.notiz)},
@@ -24999,6 +25059,2524 @@ return {MAX_SAMPLES:MAX,MAX_TEXT:MAX_TEXT,frame:frame,jsonFrame:jsonFrame,binary
 })();
 if(typeof module!=='undefined'&&module.exports)module.exports=OsziData;
 
+</script>
+<script id="oszi-decode">
+/* ===== OSZI-DECODE: Bus-Decoder und Zyklus-Messung (DOM-frei, unter Node testbar) =====
+   Quelle der Module: LIN, CAN (ISO 11898), K-Leitung (ISO 9141/14230), SENT (SAE J2716), Zyklus-Messung.
+   Jedes Modul ist gekapselt; gemeinsame Helfer stehen in H. Ergebnisformat: docs/DECODER.md */
+var OsziDecode = (function(){
+  'use strict';
+  var H = (function(){
+    /* OsziDecode – gemeinsame Helfer (DOM-frei). Wird später in den Script-Block
+       <script id="oszi-decode"> von index.html übernommen; alle Decoder bekommen
+       dieses Objekt als Parameter H.
+
+       Zeiten sind Sekunden relativ zum ersten Sample (Sample i liegt bei i*dt).
+       Spannungen in Volt (Tastkopf-Volt). Fehlende Daten werden nie als 0 gedeutet. */
+
+    var MAX_SAMPLES = 262144;
+    var DEVICE_POINTS = 5000;   /* VDS1022I: Punkte je Aufnahme (10 Divisionen) */
+
+    function finiteArray(v){
+      if(!v || !Number.isInteger(v.length) || v.length < 2 || v.length > MAX_SAMPLES) return false;
+      for(var i = 0; i < v.length; i++) if(typeof v[i] !== 'number' || !Number.isFinite(v[i])) return false;
+      return true;
+    }
+    function median(arr){
+      if(!arr || !arr.length) return null;
+      var s = new Float64Array(arr); s.sort();            /* typisiertes Array: numerisch, deutlich schneller */
+      var m = s.length >> 1;
+      return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+    }
+    function percentile(sorted, p){
+      if(!sorted.length) return null;
+      var i = Math.min(sorted.length - 1, Math.max(0, Math.round(p * (sorted.length - 1))));
+      return sorted[i];
+    }
+
+    /* Digitalisieren mit Hysterese.
+       opt.threshold: feste Mittenschwelle in V (sonst aus den Pegeln)
+       opt.hyst:      Hysterese als Anteil des Hubs (Standard 0,2 → Schwellen 40 % / 60 %)
+       opt.minSwing:  kleinster Hub in V, ab dem überhaupt Verkehr angenommen wird (Standard 0,3 V)
+       Rückgabe: {ok, error, lo, hi, mid, thLo, thHi, runs:[{lvl,t0,t1}], idle:{level}|null, dt, n, tEnd}
+       lvl 1 = oberhalb der Schwelle, 0 = unterhalb. Flankenzeit = linear interpolierter Durchgang der Mittenschwelle. */
+    function digitize(values, dt, opt){
+      opt = opt || {};
+      if(!finiteArray(values)) return {ok:false, error:'Keine gültigen Messdaten (fehlende oder ungültige Samples).'};
+      if(typeof dt !== 'number' || !Number.isFinite(dt) || dt <= 0) return {ok:false, error:'Ungültiges Abtastintervall.'};
+      var n = values.length, tEnd = (n - 1) * dt;
+      var sorted = new Float64Array(values); sorted.sort();
+      var vmin = percentile(sorted, 0.001), vmax = percentile(sorted, 0.999);
+      var minSwing = opt.minSwing != null ? opt.minSwing : 0.3;
+      var base = {ok:true, error:null, dt:dt, n:n, tEnd:tEnd, runs:[], idle:null};
+      if(vmax - vmin < minSwing && opt.threshold == null){
+        base.idle = {level:median(sorted)}; base.lo = base.hi = base.idle.level; return base;
+      }
+      var lo, hi, mid;
+      if(opt.threshold != null && Number.isFinite(opt.threshold)){
+        mid = opt.threshold;
+        var below = [], above = [];
+        for(var k = 0; k < sorted.length; k++) (sorted[k] < mid ? below : above).push(sorted[k]);
+        if(!below.length || !above.length){ base.idle = {level:median(sorted)}; base.lo = base.hi = base.idle.level; return base; }
+        lo = median(below); hi = median(above);
+      } else {
+        var m0 = (vmin + vmax) / 2, los = [], his = [];
+        for(var j = 0; j < sorted.length; j++) (sorted[j] < m0 ? los : his).push(sorted[j]);
+        lo = median(los); hi = median(his); mid = (lo + hi) / 2;
+      }
+      var h = opt.hyst != null ? opt.hyst : 0.2;
+      var thLo = mid - h * (hi - lo) / 2, thHi = mid + h * (hi - lo) / 2;
+      function cross(i){
+        for(var q = i; q > 0 && q > i - 400; q--){
+          var a = values[q - 1], b = values[q];
+          if((a - mid) * (b - mid) <= 0 && a !== b) return (q - 1 + (mid - a) / (b - a)) * dt;
+        }
+        return i * dt;
+      }
+      var st = values[0] > mid ? 1 : 0, ts = 0, runs = [];
+      for(var i = 1; i < n; i++){
+        var v = values[i];
+        if(st === 1 && v < thLo){ var te = cross(i); runs.push({lvl:1, t0:ts, t1:te}); ts = te; st = 0; }
+        else if(st === 0 && v > thHi){ var te2 = cross(i); runs.push({lvl:0, t0:ts, t1:te2}); ts = te2; st = 1; }
+      }
+      runs.push({lvl:st, t0:ts, t1:tEnd});
+      base.lo = lo; base.hi = hi; base.mid = mid; base.thLo = thLo; base.thHi = thHi; base.runs = runs;
+      return base;
+    }
+
+    /* Index des Runs, der Zeitpunkt t enthält */
+    function runAt(runs, t){
+      var a = 0, b = runs.length - 1;
+      while(a < b){ var m = (a + b + 1) >> 1; if(runs[m].t0 <= t) a = m; else b = m - 1; }
+      return a;
+    }
+    function stateAt(runs, t){ return runs[runAt(runs, t)].lvl; }
+    /* Index des ersten Runs mit Pegel lvl, der echt nach t beginnt (also eine Flanke in Richtung lvl), sonst -1 */
+    function nextEdge(runs, t, lvl){
+      for(var j = runAt(runs, t); j < runs.length; j++) if(runs[j].lvl === lvl && runs[j].t0 > t) return j;
+      return -1;
+    }
+    /* UART-Byte (Startbit = 0, 8 Datenbits LSB zuerst, Stoppbit = 1), Abtastung in Bitmitte.
+       idle1: true, wenn Ruhepegel = 1 (LIN, K-Leitung). Liefert {val, start, stop, t0, t1}. */
+    function readUart(runs, t0, T){
+      var v = 0;
+      for(var k = 0; k < 8; k++) if(stateAt(runs, t0 + (k + 1.5) * T)) v |= 1 << k;
+      return {val:v, start:stateAt(runs, t0 + 0.5 * T) === 0, stop:stateAt(runs, t0 + 9.5 * T) === 1, t0:t0, t1:t0 + 10 * T};
+    }
+    function indexAt(dt, t){ return Math.max(0, Math.round(t / dt)); }
+    /* Samples im Zeitintervall [t0, t1] */
+    function samplesBetween(values, dt, t0, t1, out){
+      out = out || [];
+      var i0 = Math.max(0, Math.ceil(t0 / dt)), i1 = Math.min(values.length - 1, Math.floor(t1 / dt));
+      for(var i = i0; i <= i1; i++) out.push(values[i]);
+      return out;
+    }
+
+    function check(st, name, val, hint){ return {st:st, name:name, val:val, hint:hint || ''}; }
+    var RANK = {ok:0, info:0, warn:1, bad:2};
+    function worst(checks){
+      var w = 'ok';
+      (checks || []).forEach(function(c){ if(RANK[c.st] > RANK[w]) w = c.st; });
+      return w;
+    }
+    function hex(v, digits){
+      var s = v.toString(16).toUpperCase();
+      while(s.length < (digits || 2)) s = '0' + s;
+      return '0x' + s;
+    }
+    function fmt(n, d){ return (+n).toFixed(d).replace('.', ','); }
+    function sgn(n, d){ return (n >= 0 ? '+' : '−') + fmt(Math.abs(n), d); }
+    /* Zeitbasis lesbar: Sekunden → "125 µs/div" */
+    function fmtDiv(sec){
+      if(sec >= 1) return fmt(sec, sec >= 10 ? 0 : 1) + ' s/div';
+      if(sec >= 1e-3) return fmt(sec * 1e3, sec >= 1e-2 ? 0 : 1) + ' ms/div';
+      return fmt(sec * 1e6, sec >= 1e-5 ? 0 : 1) + ' µs/div';
+    }
+    /* Abtast-Prüfung: wie viele Punkte pro Bit, und welche Zeitbasis am VDS1022I nötig wäre.
+       Empfehlung: ≥ 8 Punkte pro Bit; bei 5000 Punkten auf 10 Divisionen ⇒ s/div ≤ Tbit/8 · 500. */
+    function rateCheck(Tbit, dt){
+      var spb = Tbit / dt, maxDiv = Tbit / 8 * DEVICE_POINTS / 10;
+      if(spb >= 8) return check('ok', 'Abtastung', fmt(spb, 1) + ' Punkte pro Bit', '');
+      return check(spb >= 4 ? 'warn' : 'bad', 'Abtastung', fmt(spb, 1) + ' Punkte pro Bit',
+        'Für sichere Dekodierung mindestens 8 Punkte pro Bit: am VDS1022I Zeitbasis höchstens ' + fmtDiv(maxDiv) + ' einstellen.');
+    }
+    function recommendedDiv(Tbit){ return Tbit / 8 * DEVICE_POINTS / 10; }
+
+    var H = {
+      MAX_SAMPLES:MAX_SAMPLES, DEVICE_POINTS:DEVICE_POINTS,
+      finiteArray:finiteArray, median:median, percentile:percentile,
+      digitize:digitize, runAt:runAt, stateAt:stateAt, nextEdge:nextEdge, readUart:readUart,
+      indexAt:indexAt, samplesBetween:samplesBetween,
+      check:check, worst:worst, RANK:RANK, hex:hex, fmt:fmt, sgn:sgn, fmtDiv:fmtDiv,
+      rateCheck:rateCheck, recommendedDiv:recommendedDiv
+    };
+    return H;
+  })();
+  var M_lin = (function(){
+    /* LIN-Decoder (LIN 2.x / ISO 17987). Grenzwerte:
+       Master-Break ≥ 13 Bit (Slave erkennt ab 11 Bit), Sync = 0x55, PID-Parität P0/P1,
+       Checksumme klassisch (nur Daten; LIN 1.x und Diagnose-IDs 0x3C/0x3D) bzw. erweitert (inkl. PID),
+       Slave-Takt nach Synchronisation ±2 % zum Master, Empfängerschwellen dominant < 40 % / rezessiv > 60 % U_Bat.
+       Der Low-Pegel-Richtwert ≤ 15 % U_Bat ist ein Werkstatt-Erfahrungswert (Transceiver typ. 0,8–1,4 V)
+       und wird im Text als Richtwert ausgewiesen. */
+    function linPid(id){
+      id &= 0x3f;
+      function b(n){ return (id >> n) & 1; }
+      var p0 = b(0) ^ b(1) ^ b(2) ^ b(4), p1 = 1 ^ (b(1) ^ b(3) ^ b(4) ^ b(5));
+      return id | (p0 << 6) | (p1 << 7);
+    }
+    /* Summe mit Übertrag (> 255 → −255), danach invertiert; pid = null → klassisch */
+    function linChecksum(data, pid){
+      var s = pid == null ? 0 : pid;
+      for(var i = 0; i < data.length; i++){ s += data[i]; if(s > 255) s -= 255; }
+      return (~s) & 0xff;
+    }
+    function linIsDiag(id){ return id === 0x3c || id === 0x3d; }
+    var LIN_RATES = [2400, 4800, 9600, 10417, 19200, 20000];
+
+    function decodeLIN(values, dt, opt, H){
+      opt = opt || {};
+      var vbat = opt.vbat > 0 ? opt.vbat : 12.6, nom = opt.baud > 0 ? opt.baud : 0;
+      var res = {bus:'lin', ok:true, error:null, info:{bitrate:null, bitTime:null, samplesPerBit:null}, checks:[], frames:[]};
+      var D = H.digitize(values, dt, {minSwing:1.0});
+      if(!D.ok){ res.ok = false; res.error = D.error; return res; }
+      if(D.idle){
+        var lv = D.idle.level, r = lv / vbat;
+        if(r > 0.6) res.checks.push(H.check('bad', 'Keine Kommunikation', 'Leitung ruht bei ' + H.fmt(lv, 2) + ' V',
+          'Kein Header in der Aufnahme. Master sendet nicht (Versorgung, Masse, Weckbedingung, Zündung) oder Kurzschluss nach Plus. Bei abgeschalteter Zündung ist ein schlafender Bus normal.'));
+        else if(r < 0.4) res.checks.push(H.check('bad', 'Leitung dauerhaft dominant', H.fmt(lv, 2) + ' V',
+          'Kurzschluss nach Masse oder ein Teilnehmer zieht die Leitung. Teilnehmer einzeln abstecken, bis der Pegel auf U_Bat springt.'));
+        else res.checks.push(H.check('bad', 'Undefinierter Pegel', H.fmt(lv, 2) + ' V', 'Weder sauber rezessiv noch dominant: Leitung, Stecker, Pull-up und Massen prüfen.'));
+        return res;
+      }
+      var runs = D.runs, tbNom = nom ? 1 / nom : null, minTm = null;
+      function vals(t0, t1, out){ return H.samplesBetween(values, dt, t0, t1, out); }
+      for(var r0 = 1; r0 < runs.length; r0++){              /* Run 0 beginnt am Aufnahmeanfang → unvollständig */
+        var R = runs[r0]; if(R.lvl !== 0) continue;
+        var dur = R.t1 - R.t0;
+        if(tbNom && dur < 10 * tbNom) continue;
+        var falls = [], q;
+        for(q = r0 + 1; q < runs.length && falls.length < 5; q++) if(runs[q].lvl === 0) falls.push(runs[q].t0);
+        if(falls.length < 5) continue;
+        var Tm = (falls[4] - falls[0]) / 8, okSync = Tm > 0;
+        for(q = 1; q < 5 && okSync; q++) if(Math.abs(falls[q] - falls[q - 1] - 2 * Tm) > 0.25 * Tm) okSync = false;
+        if(!okSync || dur < 10.5 * Tm) continue;
+        var sync = H.readUart(runs, falls[0], Tm);
+        if(sync.val !== 0x55) continue;
+        var fp = H.nextEdge(runs, sync.t0 + 9.5 * Tm, 0);
+        if(fp < 0 || runs[fp].t0 > R.t0 + 1.4 * 34 * Tm) continue;
+        var pid = H.readUart(runs, runs[fp].t0, Tm), id = pid.val & 0x3f;
+        var fr = {t0:R.t0, breakBits:dur / Tm, Tm:Tm, sync:sync, pid:pid, id:id, parityOk:linPid(id) === pid.val, bytes:[]};
+        var tNext = pid.t0 + 9.5 * Tm, tMax = R.t0 + 1.4 * (34 + 10 * 9) * Tm;
+        while(fr.bytes.length < 9){
+          var nf = H.nextEdge(runs, tNext, 0); if(nf < 0 || runs[nf].t0 > tMax) break;
+          if(runs[nf].t1 - runs[nf].t0 >= 10.5 * Tm) break;      /* nächster Break */
+          if(runs[nf].t0 + 10 * Tm > D.tEnd) { fr.cut = true; break; }
+          var by = H.readUart(runs, runs[nf].t0, Tm); fr.bytes.push(by); tNext = by.t0 + 9.5 * Tm;
+        }
+        fr.tEnd = fr.bytes.length ? fr.bytes[fr.bytes.length - 1].t1 : pid.t1;
+        if(fr.bytes.length){
+          fr.data = fr.bytes.slice(0, -1).map(function(x){ return x.val; });
+          fr.cs = fr.bytes[fr.bytes.length - 1].val;
+          fr.csClassicOk = linChecksum(fr.data, null) === fr.cs;
+          fr.csEnhOk = linChecksum(fr.data, pid.val) === fr.cs;
+          /* Takt der Antwort: nur fallende Flanken (gleiche Verzögerung wie das Startbit), Ausgleichsgerade durch 0 */
+          var sxy = 0, sxx = 0, cnt = 0;
+          fr.bytes.forEach(function(b){
+            for(var j = H.runAt(runs, b.t0) + 1; j < runs.length && runs[j].t0 < b.t0 + 8.6 * Tm; j++){
+              if(runs[j].lvl !== 0) continue;
+              var e = runs[j].t0 - b.t0, k = Math.round(e / Tm);
+              if(k >= 1 && k <= 8){ sxy += e * k; sxx += k * k; cnt++; }
+            }
+          });
+          fr.respDev = cnt >= 4 ? ((sxy / sxx) / Tm - 1) * 100 : null;
+          var lv2 = [];
+          fr.bytes.forEach(function(b){
+            for(var k = 0; k < 9; k++) if(k === 0 || !((b.val >> (k - 1)) & 1)) vals(b.t0 + (k + 0.35) * Tm, b.t0 + (k + 0.65) * Tm, lv2);
+          });
+          fr.vLowResp = H.median(lv2);
+        } else { fr.data = []; fr.cs = null; fr.vLowResp = null; fr.respDev = null; }
+        fr.vLowHdr = H.median(vals(R.t0 + 2 * Tm, R.t1 - 2 * Tm, []));
+        if(minTm === null || Tm < minTm) minTm = Tm;
+        res.frames.push(fr);
+        while(r0 + 1 < runs.length && runs[r0 + 1].t0 < fr.tEnd) r0++;
+      }
+      /* Ruhepegel: Innenbereich langer High-Phasen */
+      var hiVals = [];
+      if(minTm) runs.forEach(function(Rh){ if(Rh.lvl === 1 && Rh.t1 - Rh.t0 > 4 * minTm) vals(Rh.t0 + minTm, Rh.t1 - minTm, hiVals); });
+      var vHigh = H.median(hiVals);
+
+      if(!res.frames.length){
+        /* Bitzeit grob aus kürzesten Pulsen schätzen, um eine konkrete Zeitbasis empfehlen zu können */
+        var shortest = Infinity; runs.forEach(function(x, i){ if(i > 0 && i < runs.length - 1) shortest = Math.min(shortest, x.t1 - x.t0); });
+        var spb = Number.isFinite(shortest) ? shortest / dt : null;
+        if(spb != null && spb < 4){
+          res.ok = false;
+          res.error = 'Zu wenig Messpunkte pro Bit (' + H.fmt(spb, 1) + '). Für LIN mit 19,2 kbit/s am VDS1022I höchstens ' + H.fmtDiv(H.recommendedDiv(1 / 19200)) + ' einstellen.';
+        } else {
+          res.checks.push(H.check('bad', 'Kein LIN-Frame erkannt', 'Signal vorhanden, aber kein gültiger Header (Break + Sync 0x55)',
+            'Bitrate auf „automatisch“ stellen, mindestens einen vollständigen Break aufnehmen (Trigger: fallende Flanke, Position 10 %), Zeitbasis ' + H.fmtDiv(H.recommendedDiv(1 / 19200)) + ' oder kleiner.'));
+        }
+        return res;
+      }
+      var T0 = res.frames[0].Tm;
+      res.info.bitTime = T0; res.info.bitrate = 1 / T0; res.info.samplesPerBit = T0 / dt;
+      if(T0 / dt < 4){        /* Abtastpunkt in Bitmitte nicht mehr sicher → keine Inhalte behaupten */
+        res.ok = false; res.frames = [];
+        res.error = 'Zu wenig Messpunkte pro Bit (' + H.fmt(T0 / dt, 1) + '). Am VDS1022I höchstens ' + H.fmtDiv(H.recommendedDiv(T0)) + ' einstellen.';
+        return res;
+      }
+      res.checks.push(H.rateCheck(T0, dt));
+      if(vHigh != null){
+        var rh = vHigh / vbat;
+        res.checks.push(H.check(rh >= 0.8 ? 'ok' : rh >= 0.6 ? 'warn' : 'bad', 'Ruhepegel (rezessiv)', H.fmt(vHigh, 2) + ' V = ' + H.fmt(rh * 100, 0) + ' % U_Bat',
+          rh >= 0.8 ? 'Pull-up und Versorgung des Masters in Ordnung.' : 'Zu niedrig: Übergangswiderstand in Leitung/Stecker, schwacher Pull-up oder Versorgung des Masters prüfen. Eingestellte U_Bat kontrollieren.'));
+      }
+      var expect = opt.expect || [];
+      res.frames = res.frames.map(function(fr){
+        var ch = [];
+        var brkOk = fr.breakBits >= 13 - dt / fr.Tm;   /* ein Abtastintervall Messtoleranz */
+        ch.push(H.check(brkOk ? 'ok' : 'warn', 'Break', H.fmt(fr.breakBits, 1) + ' Bit',
+          brkOk ? 'Master sendet ≥ 13 Bit dominant.' : 'Kürzer als 13 Bit: Slaves erkennen den Break ab 11 Bit, der Master liegt aber außerhalb der Norm.'));
+        var baud = 1 / fr.Tm, unc = dt / (8 * fr.Tm) * 100, bv = H.fmt(baud, 0) + ' bit/s ± ' + H.fmt(unc, 1) + ' %';
+        if(nom){
+          var dev = (baud / nom - 1) * 100, adev = Math.max(0, Math.abs(dev) - unc);
+          ch.push(H.check(adev <= 0.5 ? 'ok' : adev <= 2 ? 'warn' : 'bad', 'Bitrate aus Sync', bv + ' (Abweichung ' + H.sgn(dev, 1) + ' %)',
+            adev <= 0.5 ? 'Master-Takt innerhalb ±0,5 %.' : 'Der Master-Takt sollte auf ±0,5 % genau sein. Eingestellte Bitrate prüfen, sonst Takt des Masters (Steuergerät).'));
+        } else {
+          var near = LIN_RATES.reduce(function(a, b){ return Math.abs(b - baud) < Math.abs(a - baud) ? b : a; });
+          ch.push(H.check('info', 'Bitrate aus Sync', bv, 'Nächste übliche LIN-Bitrate: ' + H.fmt(near, 0) + ' bit/s (' + H.sgn((baud / near - 1) * 100, 1) + ' %).'));
+        }
+        ch.push(H.check(fr.sync.stop ? 'ok' : 'bad', 'Sync-Feld', H.hex(fr.sync.val), fr.sync.stop ? '0x55 mit gültigem Stoppbit.' : 'Stoppbit fehlt: Störung oder Takt stimmt nicht.'));
+        ch.push(H.check(fr.parityOk ? 'ok' : 'bad', 'PID / Parität', H.hex(fr.pid.val) + ' → ID ' + H.hex(fr.id),
+          fr.parityOk ? 'Paritätsbits P0/P1 stimmen.' : 'Paritätsbits falsch: Störung auf der Leitung oder Master-Fehler. Auf einen ungültigen PID antwortet kein Slave.'));
+        if(!fr.bytes.length){
+          if(fr.cut) ch.push(H.check('info', 'Antwort', 'außerhalb der Aufnahme', 'Der Frame endet hinter dem Aufnahmeende: Trigger-Position oder Zeitbasis ändern.'));
+          else ch.push(H.check(expect.indexOf(fr.id) >= 0 ? 'bad' : 'warn', 'Antwort', 'keine',
+            'Nach dem Header antwortet niemand. Ursachen: Bauteil ohne Versorgung/Masse, Leitung zum Bauteil unterbrochen, Bauteil defekt – oder diese ID ist im Fahrzeug nicht belegt (LDF/Schaltplan).'));
+        } else {
+          ch.push(H.check('info', 'Datenlänge', fr.data.length + ' Byte + Checksumme', 'Die Länge legt die LDF fest. Bei LIN 1.x ergibt sie sich aus der ID (0x00–0x1F: 2, 0x20–0x2F: 4, 0x30–0x3F: 8 Byte).'));
+          var badStop = []; fr.bytes.forEach(function(b, i){ if(!b.start || !b.stop) badStop.push(i); });
+          ch.push(H.check(badStop.length ? 'bad' : 'ok', 'Byte-Rahmen', badStop.length ? 'fehlerhaft in Byte ' + badStop.join(', ') : 'Start-/Stoppbits gültig',
+            badStop.length ? 'Start- oder Stoppbit an falscher Stelle: Takt der Antwort weicht ab oder Störimpulse.' : ''));
+          var diag = linIsDiag(fr.id), csTxt = H.hex(fr.cs);
+          if(fr.csEnhOk && !diag) ch.push(H.check('ok', 'Checksumme', csTxt + ' (erweitert, LIN 2.x)', 'Summe über PID und Daten stimmt.'));
+          else if(fr.csClassicOk) ch.push(H.check('ok', 'Checksumme', csTxt + ' (klassisch' + (diag ? ', Diagnose-ID' : ', LIN 1.x') + ')', 'Summe über die Daten stimmt.'));
+          else if(fr.csEnhOk && diag) ch.push(H.check('warn', 'Checksumme', csTxt + ' (erweitert)', 'Diagnose-Frames 0x3C/0x3D müssen die klassische Checksumme nutzen.'));
+          else ch.push(H.check('bad', 'Checksumme', csTxt + ' falsch', 'Daten wurden verfälscht übertragen. Störungen, Massefehler oder Taktabweichung prüfen; Inhalt dieses Frames nicht verwenden.'));
+          if(fr.respDev != null) ch.push(H.check(Math.abs(fr.respDev) <= 2 ? 'ok' : 'bad', 'Takt der Antwort', H.sgn(fr.respDev, 1) + ' % zum Master',
+            Math.abs(fr.respDev) <= 2 ? 'Innerhalb ±2 % (LIN-Grenze nach Synchronisation).' : 'Mehr als ±2 %: Elektronik des antwortenden Teilnehmers prüfen, Bauteil ggf. defekt.'));
+        }
+        function lowCheck(name, v){
+          if(v == null) return;
+          var rl = v / vbat;
+          ch.push(H.check(rl <= 0.15 ? 'ok' : rl <= 0.4 ? 'warn' : 'bad', name, H.fmt(v, 2) + ' V = ' + H.fmt(rl * 100, 0) + ' % U_Bat',
+            rl <= 0.15 ? '' : rl <= 0.4 ? 'Wird noch erkannt (< 40 %), liegt aber über dem Richtwert ≤ 15 %. Massepfad des Senders per Spannungsabfall prüfen.' : 'Über 40 % U_Bat: Empfänger erkennen das Bit nicht sicher als dominant.'));
+        }
+        lowCheck('Low-Pegel Header (Master)', fr.vLowHdr);
+        lowCheck('Low-Pegel Antwort', fr.vLowResp);
+        if(fr.vLowHdr != null && fr.vLowResp != null && fr.vLowResp - fr.vLowHdr > 0.7)
+          ch.push(H.check('warn', 'Pegelvergleich', 'Antwort ' + H.fmt(fr.vLowResp - fr.vLowHdr, 1) + ' V höher als Header',
+            'Der antwortende Teilnehmer zieht schlechter nach Masse als der Master: typisch für einen Übergangswiderstand in seiner Masse.'));
+        var csOk = fr.csEnhOk || fr.csClassicOk, nb = fr.bytes.length;
+        var fields = [
+          {t0:fr.t0, t1:fr.t0 + fr.breakBits * fr.Tm, label:'BREAK', kind:'start', bad:!brkOk},
+          {t0:fr.sync.t0, t1:fr.sync.t1, label:'SYNC', kind:'sync', bad:!fr.sync.stop},
+          {t0:fr.pid.t0, t1:fr.pid.t1, label:'PID ' + H.hex(fr.pid.val), kind:'id', bad:!fr.parityOk}
+        ];
+        fr.bytes.forEach(function(b, k){
+          var isCs = k === nb - 1;
+          fields.push({t0:b.t0, t1:b.t1, label:(isCs ? 'CS ' : 'D' + k + ' ') + H.hex(b.val), kind:isCs ? 'crc' : 'data', bad:!b.start || !b.stop || (isCs && !csOk)});
+        });
+        if(!nb && !fr.cut) fields.push({t0:fr.pid.t1 + 2 * fr.Tm, t1:Math.min(D.tEnd, fr.pid.t1 + 30 * fr.Tm), label:'KEINE ANTWORT', kind:'err', bad:true});
+        return {t0:fr.t0, t1:fr.tEnd, title:'ID ' + H.hex(fr.id), data:fr.data.slice(),
+          text:nb ? fr.data.length + ' Byte: ' + fr.data.map(function(x){ return H.hex(x); }).join(' ') : (fr.cut ? 'Antwort außerhalb der Aufnahme' : 'ohne Antwort'),
+          status:H.worst(ch), checks:ch, fields:fields, id:fr.id, pid:fr.pid.val, cs:fr.cs};
+      });
+      return res;
+    }
+
+    /* Testsignal: frames [{id, data, slave}], o {baud, vbat, fault, spb}
+       fault: noresp | cs | masse | pullup | drift | kurzmasse | still (wirkt auf Slave-Frames bzw. global).
+       Flanken als RC-Verlauf (dominant aktiv getrieben, rezessiv nur über Pull-up → langsamer). */
+    function synthLIN(frames, o){
+      o = o || {};
+      var baud = o.baud || 19200, Tb = 1 / baud, vbat = o.vbat || 12.6, spb = o.spb || 12, f = o.fault || '';
+      var vHigh = vbat - 0.7;                 /* Master-Pull-up über Verpolschutzdiode */
+      if(f === 'pullup') vHigh = vbat * 0.55;
+      var mLow = 0.9, sLow = f === 'masse' ? 2.8 : 1.0, sTb = f === 'drift' ? Tb * 1.06 : Tb;
+      var segs = [];
+      function push(lvl, bits, low, tb){ segs.push({lvl:lvl, dur:bits * (tb || Tb), low:low}); }
+      function byte(v, low, tb){ push(0, 1, low, tb); for(var i = 0; i < 8; i++) push((v >> i) & 1, 1, low, tb); push(1, 1, low, tb); }
+      push(1, o.lead != null ? o.lead : 8, mLow);
+      frames.forEach(function(fr){
+        var pid = linPid(fr.id), resp = !(fr.slave && f === 'noresp');
+        push(0, 13, mLow); push(1, 1, mLow);
+        byte(0x55, mLow); byte(pid, mLow);
+        if(resp){
+          var data = fr.data.slice(), cs = linChecksum(data, linIsDiag(fr.id) ? null : pid);
+          if(fr.slave && f === 'cs') data[0] ^= 0x04;
+          var low = fr.slave ? sLow : mLow, tb = fr.slave ? sTb : Tb;
+          push(1, fr.slave ? 2 : 1, low);
+          data.forEach(function(d){ byte(d, low, tb); });
+          byte(cs, low, tb);
+        }
+        push(1, resp ? 12 : 40, mLow);
+      });
+      var total = 0; segs.forEach(function(s){ total += s.dur; });
+      var dt = Tb / spb, aF = 1 - Math.exp(-dt / (0.06 * Tb)), aR = 1 - Math.exp(-dt / (0.12 * Tb));
+      var n = Math.floor(total / dt) + 1, out = new Float32Array(n), si = 0, segEnd = segs[0].dur, v = vHigh, seed = 12345;
+      for(var i = 0; i < n; i++){
+        var t = i * dt;
+        while(si < segs.length - 1 && t >= segEnd){ si++; segEnd += segs[si].dur; }
+        var s = segs[si], target = s.lvl ? vHigh : s.low;
+        if(f === 'kurzmasse') target = 0.3; else if(f === 'still') target = vHigh;
+        v += (target - v) * (target < v ? aF : aR);
+        seed = (seed * 1103515245 + 12345) % 2147483648;
+        out[i] = v + (seed / 2147483648 - 0.5) * 0.12;
+      }
+      return {values:out, dt:dt};
+    }
+    return {decodeLIN:decodeLIN, synthLIN:synthLIN, linPid:linPid, linChecksum:linChecksum};
+  })();
+  var M_can = (function(){
+    /* OsziDecode – CAN-Decoder (klassisches CAN 2.0A/B nach ISO 11898-1) und Signalsynthese. DOM-frei, ES5.
+
+       Entscheidungen (kurz begründet):
+       - Zeitbasierte Dekodierung auf den von H.digitize gelieferten Runs (Flanken sind linear interpoliert, also
+         besser als eine Abtastung am Sample-Raster). Abtastpunkt 75 % der Bitzeit (üblich für Automotive-CAN, ISO 11898-1
+         Empfehlung 70–87,5 %), Hard-Sync auf SOF, Resync an jeder rezessiv→dominant-Flanke, die nahe der erwarteten
+         Bitgrenze liegt (nur dort, nur im bit-gestopften Teil SOF…CRC, damit die verzögerte ACK-Flanke nicht verschiebt).
+       - Bus-Idle = ≥ 11 rezessive Bits (ACK-Delimiter + EOF 7 + Intermission 3). Nach einem Frame genügen 10 (dominantes Bit
+         in der 3. Intermission-Stelle gilt nach ISO als SOF), daher dort Schwelle 9,5 Bit, am Aufnahmeanfang 10,5 Bit.
+         Eine Aufnahme, die mitten im Frame beginnt, wird bis zum ersten echten Idle übersprungen (nie raten).
+       - Bitrate automatisch: kürzeste Pulse (Cluster mit ≥ 10 % der Pulse) → Ausgleichsrechnung über alle Pulse
+         (Σ Dauer / Σ ganzzahlige Bitanzahl, Flankenasymmetrie mittelt sich heraus), dann Einrasten auf Normraten.
+         Messunsicherheit der Bitzeit ≈ 2·dt / Σ Bits (nur die beiden Randflanken gehen ein, der Rest teleskopiert).
+       - Bei CAN FD wird nur die Arbitrierungsphase gelesen (FDF-Bit); die Datenphase kann eine andere Bitrate haben und wird
+         bewusst nicht dekodiert. Bei automatischer Bitrate kann dann die Datenrate erkannt werden → Warnhinweis.
+       - Pegelgrenzen:
+           differenziell (ISO 11898-2:2016): dominant 1,5…3,0 V (Sender, Last 50…65 Ω), rezessiv −0,5…+0,05 V;
+           Empfängerschwellen 0,5 V (rezessiv) / 0,9 V (dominant) → darunter/darüber „bad“.
+           Einzelleitung CAN-H/CAN-L: nur Richtwerte (ISO 11898-2:2003 Tab. 3 / Transceiver-Datenblätter, z. B. NXP TJA1050):
+           CAN-H dominant 2,75…4,5 V (typ. 3,5 V), CAN-L dominant 0,5…2,25 V (typ. 1,5 V), rezessiv 2,0…3,0 V (typ. 2,5 V).
+           Das sind keine Normgrenzen für die Messung → höchstens „warn“, nie „bad“.
+       - Oszillatortoleranz: ISO 11898-1 erlaubt ≤ 1,58 % (Bit-Timing-Bereich) → Frame-Check „Bitrate“.
+       - CRC-15: Polynom 0x4599 (x^15+x^14+x^10+x^8+x^7+x^4+x^3+1), Startwert 0, über die destuffed Bits SOF…Daten.
+       - Fehlende/unbekannte Werte werden nie als 0 gedeutet (z. B. Bitrate = null, wenn nicht bestimmbar). */
+
+    var CAN_RATES = [33333.3333, 50000, 83333.3333, 100000, 125000, 250000, 500000, 1000000];
+    var CAN_SAMPLE_POINT = 0.75;
+    var CAN_IDLE = 9.5;         /* Bus-Idle: 11 rezessive Bits nach Norm; 10 genügen, wenn der nächste SOF in der 3. Intermission-Stelle liegt
+                                   (ISO 11898-1) – 9,5 lässt eine halbe Bitzeit Messtoleranz. Im Frame selbst sind max. 5 gleiche Bits möglich. */
+    var CAN_IDLE_FIRST = 6.6;   /* nur für den angeschnittenen ersten Run: ≥ 7 rezessive Bits gibt es nur im EOF/Idle (im Frame max. 5),
+                                   also kann die Aufnahme danach sicher mit einem SOF fortfahren */
+    var CAN_POLY = 0x4599;
+
+    function canCrcStep(crc, b){
+      var nx = b ^ ((crc >> 14) & 1);
+      crc = (crc << 1) & 0x7FFF;
+      if(nx) crc ^= CAN_POLY;
+      return crc;
+    }
+    function canCrc15(bits){
+      var crc = 0;
+      for(var i = 0; i < bits.length; i++) crc = canCrcStep(crc, bits[i] ? 1 : 0);
+      return crc;
+    }
+    function canNum(a, b){ return a - b; }
+
+    function canPct(H, dev){ var p = Math.round(dev * 1000) / 10; return (p >= 0 ? '+' : '−') + H.fmt(Math.abs(p), 1); }
+    function canRateStr(H, r){
+      if(r >= 999500) return H.fmt(r / 1e6, 0) + ' MBit/s';
+      var k = r / 1000;
+      return (Math.abs(k - Math.round(k)) < 0.05 ? String(Math.round(k)) : H.fmt(k, 1)) + ' kBit/s';
+    }
+
+    /* Bitzeit aus den Pulsdauern schätzen. runs: Ergebnis von H.digitize (erster/letzter Run sind angeschnitten). */
+    function canEstimate(runs){
+      var d = [], i, j;
+      for(i = 1; i < runs.length - 1; i++) d.push(runs[i].t1 - runs[i].t0);
+      if(d.length < 3) return null;
+      var s = d.slice().sort(canNum), N = s.length, need = Math.max(2, Math.ceil(0.1 * N)), T0 = null;
+      j = 0;
+      for(i = 0; i < N; i++){
+        if(j < i) j = i;
+        while(j < N && s[j] <= 1.3 * s[i]) j++;
+        if(j - i >= need){ T0 = s[(i + j - 1) >> 1]; break; }
+      }
+      if(T0 === null || !(T0 > 0)) return null;
+      var T = T0, it, sumD, sumK, k;
+      for(it = 0; it < 2; it++){
+        sumD = 0; sumK = 0;
+        for(i = 0; i < N; i++){
+          k = Math.round(s[i] / T);
+          if(k < 1 || k > 6 || Math.abs(s[i] - k * T) > 0.2 * T) continue;
+          sumD += s[i]; sumK += k;
+        }
+        if(sumK === 0) return null;
+        T = sumD / sumK;
+      }
+      return {T:T, nBits:sumK};
+    }
+
+    function canSnap(T, uRel){
+      var best = null, bd = 1e9;
+      for(var i = 0; i < CAN_RATES.length; i++){
+        var dv = Math.abs(T * CAN_RATES[i] - 1);
+        if(dv < bd){ bd = dv; best = CAN_RATES[i]; }
+      }
+      var tol = Math.min(0.1, Math.max(0.03, 3 * uRel));
+      return bd <= tol ? best : null;
+    }
+
+    /* Zweigipfligkeit: ruht die Leitung nur verrauscht, darf kein Verkehr erfunden werden (H.digitize würde Rauschen sonst
+       in Flanken zerlegen). Trennmaß = Abstand der beiden Pegel (Mediane aus H.digitize) / Streuung innerhalb der Pegel,
+       in einem Durchlauf über die mittlere absolute Abweichung (σ ≈ 1,2533 · mittlere Abweichung). Reines Gauß-Rauschen
+       liefert ≈ 2,7, ein CAN-Signal mit 10 % Rauschen (σ = 0,2 V bei 2 V Hub) ≈ 10; Schwelle 4,5. */
+    function canBimodal(x, dig){
+      var n = x.length, nl = 0, nh = 0, al = 0, ah = 0, i, v;
+      for(i = 0; i < n; i++){
+        v = x[i];
+        if(v < dig.mid){ nl++; al += Math.abs(v - dig.lo); } else { nh++; ah += Math.abs(v - dig.hi); }
+      }
+      if(nl < 8 || nh < 8) return {bimodal:false, median:canMedian(x)};
+      var sl = 1.2533 * al / nl, sh = 1.2533 * ah / nh, pooled = Math.sqrt((sl * sl + sh * sh) / 2) + 1e-9;
+      var bim = (dig.hi - dig.lo) / pooled >= 4.5;
+      return {bimodal:bim, median:bim ? null : canMedian(x)};
+    }
+    function canMedian(x){
+      var s = new Float32Array(x);
+      s.sort();
+      return s[s.length >> 1];
+    }
+
+    /* Ruhepegel einordnen: 'dom' | 'rec' | 'unk' */
+    function canStaticState(level, signal){
+      if(signal === 'diff'){ if(level > 0.9) return 'dom'; if(level < 0.5) return 'rec'; return 'unk'; }
+      if(signal === 'canh'){ if(level >= 1.9 && level <= 2.9) return 'rec'; if(level >= 3.1 && level <= 5.0) return 'dom'; return 'unk'; }
+      if(level >= 2.1 && level <= 3.1) return 'rec';
+      if(level >= 0.4 && level <= 1.9) return 'dom';
+      return 'unk';
+    }
+
+    function canLevelChecks(H, signal, dom, rec){
+      var out = [], c = H.check, f = function(v){ return H.fmt(v, 2) + ' V'; };
+      if(signal === 'diff'){
+        if(dom >= 1.5 && dom <= 3.0) out.push(c('ok', 'Pegel dominant', f(dom) + ' (Norm 1,5–3,0 V)', ''));
+        else if(dom > 3.0) out.push(c('warn', 'Pegel dominant', f(dom) + ' (Norm 1,5–3,0 V)', 'Differenzspannung über dem Normbereich. Messaufbau prüfen: beide Kanäle richtig an CAN-H/CAN-L, Tastkopf-Teiler (1×/10×) passend eingestellt?'));
+        else if(dom >= 0.9) out.push(c('warn', 'Pegel dominant', f(dom) + ' (Norm 1,5–3,0 V)', 'Dominanter Pegel zu schwach. Abschlusswiderstände prüfen (zwischen CAN-H und CAN-L bei ausgeschaltetem Bus ca. 60 Ω), Übergangswiderstände an Steckern, zu viele Teilnehmer.'));
+        else out.push(c('bad', 'Pegel dominant', f(dom) + ' (Norm 1,5–3,0 V; Empfänger erkennt dominant erst ab 0,9 V)', 'Dominanter Pegel zu schwach für sichere Erkennung. Abschlusswiderstände, Leitungsschluss (CAN-H/CAN-L), Kontaktwiderstände und Spannungsversorgung der Teilnehmer prüfen.'));
+        if(rec >= -0.5 && rec <= 0.05) out.push(c('ok', 'Pegel rezessiv', f(rec) + ' (Norm −0,5…+0,05 V)', ''));
+        else if(rec > 0.05 && rec < 0.5) out.push(c('warn', 'Pegel rezessiv', f(rec) + ' (Norm −0,5…+0,05 V)', 'Rezessiver Pegel leicht erhöht. Zuerst Nullabgleich/Offset beider Kanäle prüfen (Tastköpfe an Masse); sonst Busspannung, Abschluss und Teilnehmer prüfen.'));
+        else if(rec >= 0.5) out.push(c('bad', 'Pegel rezessiv', f(rec) + ' (Norm −0,5…+0,05 V; Empfänger erkennt rezessiv nur unter 0,5 V)', 'Rezessiver Pegel zu hoch. Möglich: Leitung CAN-H/CAN-L vertauscht, Kurzschluss gegen Versorgung, fehlerhafter Transceiver.'));
+        else out.push(c('warn', 'Pegel rezessiv', f(rec) + ' (Norm −0,5…+0,05 V)', 'Rezessiver Pegel unter dem Normbereich. Kanalzuordnung (CAN-H/CAN-L vertauscht?) und Offset prüfen.'));
+      } else {
+        var isH = signal === 'canh', nm = isH ? 'CAN-H' : 'CAN-L';
+        var dLo = isH ? 2.75 : 0.5, dHi = isH ? 4.5 : 2.25, typ = isH ? '3,5' : '1,5';
+        var tail = ' – Richtwert, keine Normgrenze (Einzelleitung gegen Masse gemessen).';
+        if(dom >= dLo && dom <= dHi) out.push(c('ok', 'Pegel dominant', f(dom) + ' (' + nm + ' typisch ' + typ + ' V)', ''));
+        else out.push(c('warn', 'Pegel dominant', f(dom) + ' (' + nm + ' typisch ' + typ + ' V)', 'Weicht vom typischen dominanten Pegel ab' + tail + ' Kanal/Signalart (CAN-H, CAN-L oder Differenz) richtig gewählt?'));
+        if(rec >= 2.0 && rec <= 3.0) out.push(c('ok', 'Pegel rezessiv', f(rec) + ' (typisch 2,5 V)', ''));
+        else out.push(c('warn', 'Pegel rezessiv', f(rec) + ' (typisch 2,5 V)', 'Weicht vom typischen rezessiven Pegel ab' + tail + ' Kanal/Signalart richtig gewählt? Bus-Ruhepegel ca. 2,5 V auf beiden Leitungen.'));
+      }
+      return out;
+    }
+
+    /* ===================================================================== Decoder */
+    function decodeCAN(values, dt, opt, H){
+      opt = opt || {};
+      var signal = (opt.signal === 'canh' || opt.signal === 'canl') ? opt.signal : 'diff';
+      var res = {bus:'can', ok:true, error:null, info:{bitrate:null, bitTime:null, samplesPerBit:null}, checks:[], frames:[]};
+      var n = values && values.length ? values.length : 0, i;
+      var sg = signal === 'canl' ? -1 : 1, x = values;
+      if(sg < 0 && n){ x = new Float32Array(n); for(i = 0; i < n; i++) x[i] = -values[i]; }
+      var dig = H.digitize(x, dt, {});
+      if(!dig.ok){ res.ok = false; res.error = dig.error; return res; }
+
+      /* ---- statische Leitung ---- */
+      var idleLevel = null;
+      if(dig.idle) idleLevel = dig.idle.level;
+      else { var bm = canBimodal(x, dig); if(!bm.bimodal) idleLevel = bm.median; }
+      if(idleLevel !== null){
+        var lv = sg * idleLevel, st = canStaticState(lv, signal), lvs = H.fmt(lv, 2) + ' V';
+        if(st === 'dom') res.checks.push(H.check('bad', 'Busstatus', 'dauerhaft dominant (' + lvs + ')', 'Die Leitung bleibt die ganze Aufnahme über dominant: Kurzschluss zwischen CAN-H und CAN-L, oder ein Teilnehmer hängt und sendet dauernd. Teilnehmer nacheinander abstecken, bis der Bus wieder frei wird; Leitung auf Kurzschluss prüfen.'));
+        else if(st === 'rec') res.checks.push(H.check('warn', 'Busstatus', 'dauerhaft rezessiv (' + lvs + '), kein Verkehr', 'In der Aufnahme sendet niemand. Möglich: Bus schläft (Zündung/Klemme 15 ein, Steuergerät wecken), Aufnahmefenster zu kurz bzw. Trigger falsch, Tastkopf nicht am Bus, Leitung unterbrochen.'));
+        else res.checks.push(H.check('warn', 'Busstatus', 'ruhender Pegel ' + lvs + ' passt nicht zu CAN', 'Der Pegel liegt weder im dominanten noch im rezessiven Bereich (z. B. Kurzschluss gegen Masse/Batterie oder Tastkopf nicht angeschlossen). Anschluss und gewählte Signalart (Differenz/CAN-H/CAN-L) prüfen.'));
+        return res;
+      }
+
+      var runs = dig.runs, nr = runs.length, tEnd = dig.tEnd;
+
+      /* ---- Bitrate ---- */
+      var est = canEstimate(runs), T, rate, source, uRel = null;
+      if(est) uRel = 2 * dt / (est.nBits * est.T);
+      if(opt.baud > 0){
+        rate = +opt.baud; source = 'fest';
+      } else {
+        if(!est){
+          res.ok = false;
+          res.error = 'Zu wenige Signalflanken, um die Bitrate zu bestimmen. Bitrate fest einstellen oder eine Aufnahme mit mehr Busverkehr verwenden.';
+          return res;
+        }
+        var snapped = canSnap(est.T, uRel);
+        rate = snapped !== null ? snapped : 1 / est.T;
+        source = 'auto';
+      }
+      T = 1 / rate;
+      var spb = T / dt;
+      res.info.bitrate = rate; res.info.bitTime = T; res.info.samplesPerBit = spb;
+      var rc = H.rateCheck(T, dt);
+
+      var bitrateVal = canRateStr(H, rate);
+      if(est && source === 'auto'){
+        var uR = (1 / est.T) * uRel, devA = (1 / est.T) / rate - 1;
+        bitrateVal += ' ± ' + H.fmt(uR / 1000, 1) + ' kBit/s (automatisch erkannt, gemessen ' + H.fmt(1 / est.T / 1000, 1) + ' kBit/s';
+        bitrateVal += (CAN_RATES.indexOf(rate) >= 0 ? ', Abweichung ' + canPct(H, devA) + ' %)' : ')');
+        var okRate = CAN_RATES.indexOf(rate) >= 0;
+        if(!okRate) res.checks.push(H.check('warn', 'Bitrate', bitrateVal, 'Gemessene Bitrate liegt nicht bei einer üblichen CAN-Rate (33,3/50/83,3/100/125/250/500/1000 kBit/s). Bitrate fest einstellen, falls bekannt; bei CAN FD kann die Datenrate erfasst worden sein.'));
+        else if(Math.abs(devA) > 0.0158 + 2 * uRel) res.checks.push(H.check('warn', 'Bitrate', bitrateVal, 'Abweichung größer als die zulässige Oszillatortoleranz (ca. 1,6 %). Falsche Rate erkannt oder Sendegerät ungenau.'));
+        else res.checks.push(H.check('ok', 'Bitrate', bitrateVal, ''));
+      } else if(est){
+        var devF = (1 / est.T) / rate - 1, uF = uRel;
+        bitrateVal += ' (fest eingestellt; gemessen ' + H.fmt(1 / est.T / 1000, 1) + ' ± ' + H.fmt((1 / est.T) * uF / 1000, 1) + ' kBit/s)';
+        if(Math.abs(devF) > Math.max(0.05, 3 * uF)) res.checks.push(H.check('warn', 'Bitrate', bitrateVal, 'Die eingestellte Bitrate passt nicht zum gemessenen Signal. Bitrate prüfen oder auf „automatisch“ stellen.'));
+        else res.checks.push(H.check('ok', 'Bitrate', bitrateVal, ''));
+      } else {
+        res.checks.push(H.check('info', 'Bitrate', bitrateVal + ' (fest eingestellt, nicht nachgemessen)', 'Zu wenige Flanken für eine Messung der Bitrate.'));
+      }
+      res.checks.push(rc);
+      if(spb < 4){
+        res.ok = false;
+        res.error = 'Zu wenig Punkte pro Bit (' + H.fmt(spb, 1) + ' bei ' + canRateStr(H, rate) + '): CAN lässt sich so nicht sicher dekodieren. ' + rc.hint;
+        return res;
+      }
+      var domV = sg * dig.hi, recV = sg * dig.lo;
+      var lvChecks = canLevelChecks(H, signal, domV, recV);
+      for(i = 0; i < lvChecks.length; i++) res.checks.push(lvChecks[i]);
+
+      /* ---- Bit-Dekodierung ---- */
+      var ri = 0, tb = 0, prevB = 1, tPrev = 0, rawN = 0, lastEdgeT = 0, lastEdgeK = 0, resyncOn = true;
+      var cnt = 0, last = 1, crc = 0, errBit = null, rs = 0;
+
+      function stAt(t){ while(ri + 1 < nr && runs[ri + 1].t0 <= t) ri++; return runs[ri].lvl; }
+      function rawBit(){
+        if(resyncOn && prevB === 1 && rawN > 0){
+          var e = (ri + 1 < nr && runs[ri].lvl === 0) ? runs[ri + 1].t0 : Infinity;
+          if(e < tb + 0.5 * T){ tb = e; lastEdgeT = e; lastEdgeK = rawN; }
+        }
+        var ts = tb + CAN_SAMPLE_POINT * T;
+        if(ts > tEnd) return null;
+        var b = stAt(ts) === 1 ? 0 : 1, o = {b:b, t0:tb, t1:tb + T};
+        tb += T; prevB = b; tPrev = ts; rawN++;
+        return o;
+      }
+      /* n destuffte Bits lesen. Fehler: null, rs = 1 (Aufnahmeende) oder 2 (Stuff-Verletzung, errBit gesetzt) */
+      function readStuffed(k){
+        var out = [];
+        for(var q = 0; q < k; q++){
+          var r = rawBit();
+          if(!r){ rs = 1; return null; }
+          if(cnt === 5){
+            if(r.b === last){ errBit = r; rs = 2; return null; }
+            last = r.b; cnt = 1;
+            r = rawBit();
+            if(!r){ rs = 1; return null; }
+          }
+          if(r.b === last) cnt++; else { last = r.b; cnt = 1; }
+          out.push(r);
+        }
+        return out;
+      }
+      function flushStuff(){
+        if(cnt !== 5) return 0;
+        var r = rawBit();
+        if(!r){ rs = 1; return 1; }
+        if(r.b === last){ errBit = r; rs = 2; return 2; }
+        return 0;
+      }
+      function feed(arr){ for(var q = 0; q < arr.length; q++) crc = canCrcStep(crc, arr[q].b); }
+      function val(arr){ var v = 0; for(var q = 0; q < arr.length; q++) v = v * 2 + arr[q].b; return v; }
+      /* erster rezessiver Run ab j0 mit ≥ CAN_IDLE Bits (gezählt ab tFrom, damit die Bits vor einer Stuff-Verletzung nicht
+         zum Idle zählen); firstMin: abweichende Schwelle für den angeschnittenen Run 0 */
+      function findIdle(j0, tFrom, firstMin){
+        for(var j = j0; j < nr - 1; j++){
+          if(runs[j].lvl !== 0) continue;
+          var need = (j === 0 && firstMin) ? firstMin : CAN_IDLE;
+          if(runs[j].t1 - Math.max(runs[j].t0, tFrom) >= need * T) return j;
+        }
+        return -1;
+      }
+
+      /* Frame ab SOF-Run sj dekodieren. Rückgabe {trunc}|{skip}|{frame, next} (next = Suchstart für das Bus-Idle) */
+      function decodeFrame(sj){
+        var tS = runs[sj].t0, fields = [], checks = [];
+        tb = tS; ri = sj; prevB = 1; rawN = 0; resyncOn = true; lastEdgeT = 0; lastEdgeK = 0; crc = 0; cnt = 0; last = 1; errBit = null; rs = 0;
+        var sof = rawBit();
+        if(!sof) return {trunc:true};
+        if(sof.b !== 0) return {skip:true};
+        last = 0; cnt = 1; feed([sof]);
+        function addF(kind, label, arr, bad){ fields.push({t0:arr[0].t0, t1:arr[arr.length - 1].t1, label:label, kind:kind, bad:!!bad}); }
+        addF('start', 'SOF', [sof]);
+        var f = {t0:tS, t1:tS, title:'', text:'', data:[], status:'ok', checks:checks, fields:fields, kind:'data', id:null, ext:false, rtr:false, dlc:null};
+
+        function finish(){
+          var k, bc = rateOfFrame();
+          if(bc) checks.push(bc);
+          for(k = 1; k < fields.length; k++){
+            var gap = fields[k].t0 - fields[k - 1].t1;
+            if(gap > 0 && gap < 1.2 * T) fields[k - 1].t1 = fields[k].t0;
+          }
+          f.t1 = fields[fields.length - 1].t1;
+          f.status = H.worst(checks);
+          return f;
+        }
+        function errorFrame(){
+          var dominant = errBit.b === 0, flagEnd = errBit.t1, nDom = 0;
+          if(dominant){
+            flagEnd = runs[ri].t1; nDom = Math.round((runs[ri].t1 - runs[ri].t0) / T);
+          }
+          var label = dominant ? 'Error-Frame' : 'Stuff-Fehler';
+          fields.push({t0:errBit.t0, t1:flagEnd, label:label, kind:'err', bad:true});
+          f.kind = 'err';
+          f.title = dominant ? 'Error-Frame' : 'Stuff-Fehler';
+          f.text = dominant ? 'Mindestens 6 dominante Bits in Folge (' + (runs[ri].t1 >= tEnd - 1e-12 ? 'mind. ' : '') + nDom + ' Bit) – Fehlerflagge' : '6 gleiche rezessive Bits in Folge innerhalb des Frames';
+          checks.push(H.check('bad', 'Bit-Stuffing', dominant ? 'Verletzung: ' + nDom + ' dominante Bits in Folge' : 'Verletzung: 6 gleiche Bits in Folge',
+            dominant ? 'Error-Frame: Ein Teilnehmer hat einen Fehler erkannt und den Bus mit ≥ 6 dominanten Bits gestört. Häufige Ursachen: Störungen auf der Leitung, falsche Bitrate, fehlender/defekter Abschlusswiderstand (ca. 60 Ω zwischen CAN-H und CAN-L), Wackelkontakt, defekter Teilnehmer.'
+                     : 'Nach 5 gleichen Bits muss ein Stuff-Bit folgen. Signal gestört, Bitrate falsch eingestellt oder Leitungsproblem: Abschluss, Stecker, Tastkopfmasse prüfen.'));
+          return {frame:finish(), next:ri, from:errBit.t1};
+        }
+        function rateOfFrame(){
+          if(lastEdgeK < 16) return null;
+          var Tf = (lastEdgeT - tS) / lastEdgeK, dev = Tf / T - 1, u = dt / (lastEdgeK * T), ad = Math.abs(dev);
+          var v = H.fmt(1 / Tf / 1000, 1) + ' kBit/s (' + canPct(H, dev) + ' % gegenüber ' + canRateStr(H, rate) + ')';
+          if(ad <= 0.0158 + u) return H.check('ok', 'Bitrate', v, '');
+          return H.check(ad <= 0.04 ? 'warn' : 'bad', 'Bitrate', v, 'Bitzeit im Frame weicht stark ab (zulässig ca. 1,6 % Oszillatortoleranz nach ISO 11898-1). Falsche Bitrate eingestellt oder Sender ungenau.');
+        }
+        function fail(){ return rs === 1 ? {trunc:true} : errorFrame(); }
+        /* CAN FD: nur Arbitrierungsphase gelesen; Rest bis zum nächsten Bus-Idle als ein Band, nicht dekodiert */
+        function fdFrame(idVal, isExt){
+          f.kind = 'fd'; f.id = idVal; f.ext = isExt;
+          f.title = 'ID ' + H.hex(idVal, isExt ? 8 : 3) + ' (FD)';
+          f.text = 'CAN FD – Datenphase wird nicht dekodiert';
+          checks.push(H.check('warn', 'CAN FD', 'CAN FD – Datenphase wird nicht dekodiert', 'FDF-Bit rezessiv: Dies ist ein CAN-FD-Frame. Dieser Decoder liest nur klassisches CAN (2.0A/B); nur die Kennung (Arbitrierungsphase) wird angezeigt. Daten und CRC sind nicht geprüft.'));
+          var jj = findIdle(ri, tb), tf = tEnd;
+          if(jj >= 0) tf = Math.min(runs[jj].t1, runs[jj].t0 + 8 * T);
+          else checks.push(H.check('info', 'Format', 'Frame-Ende nicht in der Aufnahme', 'Aufnahme endet vor dem Frame-Ende.'));
+          fields.push({t0:tb, t1:Math.max(tf, tb), label:'FD-Daten', kind:'data', bad:false});
+          return {frame:finish(), next:jj >= 0 ? jj : ri, fd:true};
+        }
+        function formError(what, bitObj, label){
+          fields.push({t0:bitObj.t0, t1:bitObj.t1, label:label, kind:'err', bad:true});
+          f.kind = 'err';
+          checks.push(H.check('bad', 'Format', what + ' (muss rezessiv sein)', 'Formfehler: ein Trennzeichen/EOF-Bit ist dominant. Meist Störung auf der Leitung oder ein Teilnehmer, der einen Fehler meldet (Error-Frame folgt). Leitung, Abschluss und Bitrate prüfen.'));
+          return {frame:finish(), next:ri};
+        }
+
+        /* Arbitrierung + Steuerfeld */
+        var h = readStuffed(13);
+        if(!h) return fail();
+        feed(h);
+        var idA = val(h.slice(0, 11)), ext = h[12].b === 1, rtr, id, dlcBits, k2;
+        if(!ext){
+          var q = readStuffed(1);
+          if(!q) return fail();
+          feed(q);
+          addF('id', 'ID ' + H.hex(idA, 3), h.slice(0, 11));
+          if(q[0].b === 1){
+            addF('ctrl', 'RRS', [h[11]]);
+            addF('ctrl', 'IDE/FDF', [h[12], q[0]]);
+            return fdFrame(idA, false);
+          }
+          rtr = h[11].b === 1; id = idA;
+          addF('ctrl', 'RTR', [h[11]]);
+          addF('ctrl', 'IDE/r0', [h[12], q[0]]);
+        } else {
+          var h2 = readStuffed(21);
+          if(!h2) return fail();
+          feed(h2);
+          addF('id', 'ID-A ' + H.hex(idA, 3), h.slice(0, 11));
+          addF('ctrl', 'SRR/IDE', [h[11], h[12]]);
+          var idB = val(h2.slice(0, 18));
+          id = (idA << 18) + idB;
+          addF('id', 'ID-B ' + H.hex(idB, 5), h2.slice(0, 18));
+          if(h2[19].b === 1){
+            addF('ctrl', 'RRS', [h2[18]]);
+            addF('ctrl', 'FDF', [h2[19]]);
+            return fdFrame(id, true);
+          }
+          rtr = h2[18].b === 1;
+          addF('ctrl', 'RTR', [h2[18]]);
+          addF('ctrl', 'r1/r0', [h2[19], h2[20]]);
+        }
+        dlcBits = readStuffed(4);
+        if(!dlcBits) return fail();
+        feed(dlcBits);
+        var dlc = val(dlcBits);
+        addF('ctrl', 'DLC ' + dlc, dlcBits);
+        f.id = id; f.ext = ext; f.rtr = rtr; f.dlc = dlc;
+        var len = rtr ? 0 : Math.min(dlc, 8);
+        for(k2 = 0; k2 < len; k2++){
+          var db = readStuffed(8);
+          if(!db) return fail();
+          feed(db);
+          var by = val(db);
+          f.data.push(by);
+          addF('data', 'D' + k2 + ' ' + H.hex(by, 2), db);
+        }
+        var calc = crc;
+        var cb = readStuffed(15);
+        if(!cb) return fail();
+        var rcv = val(cb), fl = flushStuff();
+        if(fl){ if(rs === 1) return {trunc:true}; return errorFrame(); }
+        resyncOn = false;
+        var crcOk = rcv === calc;
+        addF('crc', 'CRC ' + H.hex(rcv, 4), cb, !crcOk);
+
+        /* Titel/Text */
+        f.title = 'ID ' + H.hex(id, ext ? 8 : 3) + (rtr ? ' RTR' : '');
+        if(rtr) f.text = 'Remote-Anfrage (kein Datenfeld), angefordert: ' + dlc + ' Byte' + (ext ? ', Extended-ID (29 Bit)' : '');
+        else if(len === 0) f.text = '0 Byte (keine Daten)' + (ext ? ', Extended-ID (29 Bit)' : '');
+        else {
+          var parts = [];
+          for(k2 = 0; k2 < f.data.length; k2++) parts.push(H.hex(f.data[k2], 2));
+          f.text = len + ' Byte: ' + parts.join(' ') + (ext ? ' (Extended-ID, 29 Bit)' : '');
+        }
+        f.kind = rtr ? 'remote' : 'data';
+
+        /* Checks: CRC */
+        if(crcOk) checks.push(H.check('ok', 'CRC-15', H.hex(rcv, 4) + ' stimmt', ''));
+        else checks.push(H.check('bad', 'CRC-15', 'empfangen ' + H.hex(rcv, 4) + ', berechnet ' + H.hex(calc, 4),
+          'Der Frame wurde gestört oder falsch gelesen. Prüfen: Abschlusswiderstände (ca. 60 Ω zwischen CAN-H und CAN-L), Störeinstreuung, Tastkopf/Masse, Bitrate. Tritt es nur gelegentlich auf: Leitung, Stecker, Teilnehmer wechselnd abstecken.'));
+        checks.push(H.check('ok', 'Bit-Stuffing', 'keine Verletzung', ''));
+        if(dlc > 8 && !rtr) checks.push(H.check('info', 'DLC', 'DLC ' + dlc + ' → 8 Byte', 'Bei klassischem CAN bedeutet DLC > 8 immer 8 Datenbytes.'));
+
+        /* Trennzeichen, ACK, EOF */
+        var cd = rawBit();
+        if(!cd) return {trunc:true};
+        if(cd.b === 0) return formError('CRC-Trennzeichen dominant', cd, 'CRC-Del');
+        addF('end', 'CRC-Del', [cd]);
+        var ak = rawBit();
+        if(!ak) return {trunc:true};
+        var ackOk = ak.b === 0;
+        addF('ack', 'ACK', [ak], !ackOk);
+        if(ackOk) checks.push(H.check('ok', 'ACK', 'bestätigt (ACK-Slot dominant)', ''));
+        else checks.push(H.check('bad', 'ACK', 'fehlt (ACK-Slot rezessiv)', 'Kein anderes Steuergerät hat den Frame bestätigt – z. B. nur ein Teilnehmer am Bus bzw. Messaufbau ohne Gegenstelle, Leitung unterbrochen oder beim Empfänger falsche Bitrate. Weitere Teilnehmer anschließen und Leitung auf Unterbrechung prüfen.'));
+        var ad = rawBit();
+        if(!ad) return {trunc:true};
+        if(ad.b === 0) return formError('ACK-Trennzeichen dominant', ad, 'ACK-Del');
+        addF('end', 'ACK-Del', [ad]);
+        var eof = [], eofBad = -1, trEof = false;
+        for(k2 = 0; k2 < 7; k2++){
+          var eb = rawBit();
+          if(!eb){ trEof = true; break; }
+          eof.push(eb);
+          if(eb.b === 0){ eofBad = k2; break; }
+        }
+        if(eof.length) addF('end', 'EOF', eof, eofBad >= 0 && eofBad < 6);
+
+        if(eofBad >= 0 && eofBad < 6){
+          checks.push(H.check('bad', 'Format', 'EOF: Bit ' + (eofBad + 1) + ' von 7 dominant', 'Formfehler im Frame-Ende (EOF muss 7 rezessive Bits haben). Meist Störung oder Fehlermeldung eines Teilnehmers (Error-Frame).'));
+          f.kind = 'err';
+        } else if(eofBad === 6){
+          checks.push(H.check('warn', 'Format', 'EOF: letztes Bit dominant (Overload-Frame)', 'Ein Teilnehmer fordert mit einem Overload-Frame eine Pause an (ausgelastetes Steuergerät). Gelegentlich normal; häufig deutet es auf überlastete Teilnehmer.'));
+        } else if(trEof){
+          checks.push(H.check('info', 'Format', 'EOF am Aufnahmeende abgeschnitten (' + eof.length + ' von 7 Bit)', 'Aufnahme endet im Frame-Ende; Frame sonst vollständig. Für vollständige Prüfung etwas längere Aufnahme.'));
+        } else {
+          checks.push(H.check('ok', 'Format', 'Trennzeichen und EOF in Ordnung', ''));
+        }
+        return {frame:finish(), next:ri};
+      }
+
+      /* Hauptschleife */
+      var j = findIdle(0, 0, CAN_IDLE_FIRST), skippedStart = j > 0 || runs[0].lvl === 1, firstSof = j >= 0 && j + 1 < nr ? runs[j + 1].t0 : null;
+      var truncated = false, nFd = 0;
+      while(j >= 0 && j + 1 < nr){
+        var r = decodeFrame(j + 1);
+        if(r.trunc){ truncated = true; break; }
+        if(r.skip){ j = findIdle(j + 2, 0); continue; }
+        res.frames.push(r.frame);
+        if(r.fd) nFd++;
+        j = findIdle(r.next, r.from || 0);
+      }
+
+      /* ---- globale Zusammenfassung ---- */
+      var nBad = 0, nWarn = 0;
+      for(i = 0; i < res.frames.length; i++){
+        if(res.frames[i].status === 'bad') nBad++; else if(res.frames[i].status === 'warn') nWarn++;
+      }
+      function tStr(t){ return t >= 1e-3 ? H.fmt(t * 1e3, 2) + ' ms' : H.fmt(t * 1e6, 1) + ' µs'; }
+      if(res.frames.length){
+        var sum = res.frames.length + (res.frames.length === 1 ? ' Frame' : ' Frames') + ' erkannt';
+        if(nBad) sum += ', davon ' + nBad + ' fehlerhaft';
+        if(nWarn) sum += (nBad ? ', ' : ', davon ') + nWarn + ' mit Warnung';
+        res.checks.push(H.check(nBad ? 'bad' : (nWarn ? 'warn' : 'ok'), 'Frames', sum, nBad ? 'Einzelne Frames anwählen: dort steht je Fehler, was zu prüfen ist.' : ''));
+      } else {
+        res.checks.push(H.check('warn', 'Frames', 'keine vollständigen Frames erkannt',
+          'Es wurde kein Frame gefunden, der nach einem Bus-Idle (≥ 11 rezessive Bits) beginnt und vollständig aufgezeichnet ist. Mögliche Ursachen: Bitrate falsch eingestellt, Signalart (Differenz/CAN-H/CAN-L) falsch gewählt, Aufnahmefenster zu kurz (ganzer Frame samt Pause erfassen), Bus dauerhaft ausgelastet oder Signal stark gestört.'));
+      }
+      if(skippedStart && firstSof !== null) res.checks.push(H.check('info', 'Aufnahmestart', 'beginnt mitten im Frame, Anfang bis ' + tStr(firstSof) + ' übersprungen', 'Dekodiert wird erst ab dem ersten sicheren Bus-Idle, damit nichts geraten wird. Trigger früher setzen, wenn auch der erste Frame gebraucht wird.'));
+      if(truncated) res.checks.push(H.check('info', 'Aufnahmeende', 'letzter Frame abgeschnitten, nicht ausgewertet', 'Die Aufnahme endet mitten in einem Frame. Zeitfenster länger wählen oder früher triggern.'));
+      if(nFd && source === 'auto') res.checks.push(H.check('warn', 'Bitrate', 'bei CAN FD möglicherweise Datenrate erfasst', 'Bei CAN FD kann die automatische Erkennung die schnellere Datenphasen-Bitrate treffen. Arbitrierungs-Bitrate fest einstellen.'));
+      return res;
+    }
+
+    /* ===================================================================== Synthese */
+    function canBitsOf(v, n){ var a = []; for(var k = n - 1; k >= 0; k--) a.push((v >>> k) & 1); return a; }
+    function canStuff(bits, markFirst){
+      var out = [], lastB = -1, c = 0, firstStuff = -1;
+      for(var i = 0; i < bits.length; i++){
+        var b = bits[i];
+        out.push(b);
+        if(b === lastB) c++; else { lastB = b; c = 1; }
+        if(c === 5){ if(firstStuff < 0) firstStuff = out.length; out.push(1 - b); lastB = 1 - b; c = 1; }
+      }
+      if(markFirst) markFirst.idx = firstStuff;
+      return out;
+    }
+    /* Ein Frame als Rohbit-Folge (1 = rezessiv, 0 = dominant) inkl. Stuffing, CRC, ACK, EOF */
+    function canEncodeFrame(f){
+      var id = f.id != null ? f.id : 0x123, ext = !!f.ext, rtr = !!f.rtr, data = f.data || [];
+      var len = f.dlc != null ? f.dlc : Math.min(data.length, 8);
+      var raw = [0], i;
+      if(f.fd){
+        raw = raw.concat(canBitsOf(id, 11), [0, 0, 1, 0, 1, 0]);                 /* RRS, IDE, FDF, res, BRS, ESI */
+        raw = raw.concat(canBitsOf(len, 4));
+        for(i = 0; i < Math.min(len, 8); i++) raw = raw.concat(canBitsOf(data[i] || 0, 8));
+        raw = raw.concat(canBitsOf(0x1A5C3, 21));                                 /* Platzhalter für FD-CRC (wird nicht dekodiert) */
+      } else {
+        if(ext) raw = raw.concat(canBitsOf(id >>> 18, 11), [1, 1], canBitsOf(id & 0x3FFFF, 18), [rtr ? 1 : 0, 0, 0]);
+        else raw = raw.concat(canBitsOf(id, 11), [rtr ? 1 : 0, 0, 0]);
+        raw = raw.concat(canBitsOf(len, 4));
+        if(!rtr) for(i = 0; i < Math.min(len, 8); i++) raw = raw.concat(canBitsOf(data[i] || 0, 8));
+        var crc = canCrc15(raw);
+        if(f.corruptCrc) crc ^= (typeof f.corruptCrc === 'number' ? f.corruptCrc : 1) & 0x7FFF;
+        raw = raw.concat(canBitsOf(crc, 15));
+      }
+      var mk = {idx:-1}, bits = canStuff(raw, mk);
+      if(f.stuffViolation && mk.idx >= 0) bits[mk.idx] = 1 - bits[mk.idx];
+      if(f.errorAt != null){
+        bits = bits.slice(0, f.errorAt).concat([0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1, 1, 1]);
+        return {bits:bits, crc:null};
+      }
+      bits.push(1, f.ack === false ? 1 : 0, 1);
+      for(i = 0; i < 7; i++) bits.push(1);
+      if(f.formError){                                  /* 'crcDel' | 'ackDel' | 'eof3' (Bit 3 von 7) | 'eof7' (letztes Bit = Overload) */
+        var tl0 = bits.length - 10, fe = f.formError;
+        if(fe === 'crcDel') bits[tl0] = 0; else if(fe === 'ackDel') bits[tl0 + 2] = 0;
+        else if(fe === 'eof3') bits[tl0 + 5] = 0; else if(fe === 'eof7') bits[tl0 + 9] = 0;
+      }
+      return {bits:bits, crc:f.fd ? null : (function(){ var c2 = canCrc15(raw.slice(0, raw.length - 15)); return c2; })()};
+    }
+
+    function canRandom(seed){      /* xorshift32: deterministisch, nur 32-Bit-Ganzzahloperationen */
+      var x = (seed >>> 0) || 1;
+      return function(){ x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; };
+    }
+
+    /* synthCAN({id, ext, data, rtr, ack, corruptCrc, dlc, fd, stuffViolation, errorAt, formError,   (Frame; oder frames:[{…},…])
+                 baud, spb | dt, signal, noise, idleBefore, idleAfter, gap, phase, clockErr,
+                 trimStart, trimEnd, samples, vdom, vrec, seed}) → {values:Float32Array, dt, meta} */
+    function synthCAN(o){
+      o = o || {};
+      var baud = o.baud > 0 ? o.baud : 500000, Tn = 1 / baud, signal = o.signal || 'diff';
+      var dt = o.dt > 0 ? o.dt : Tn / (o.spb > 0 ? o.spb : 10);
+      var Ta = Tn * (1 + (o.clockErr || 0));
+      var vd = o.vdom, vr = o.vrec;
+      if(vd == null) vd = signal === 'canh' ? 3.5 : (signal === 'canl' ? 1.5 : 2.0);
+      if(vr == null) vr = signal === 'diff' ? 0.0 : 2.5;
+      var noise = o.noise != null ? o.noise : 0.02, rnd = canRandom(o.seed != null ? o.seed : 12345);
+      var list = o.frames && o.frames.length ? o.frames : [o], tl = [], i, enc = [], starts = [];
+      var idleB = o.idleBefore != null ? o.idleBefore : 14, idleA = o.idleAfter != null ? o.idleAfter : 14, gap = o.gap != null ? o.gap : 3;
+      for(i = 0; i < idleB; i++) tl.push(1);
+      for(i = 0; i < list.length; i++){
+        var e = canEncodeFrame(list[i]);
+        enc.push(e); starts.push(tl.length);
+        for(var k = 0; k < e.bits.length; k++) tl.push(e.bits[k]);
+        for(k = 0; k < (i < list.length - 1 ? gap : idleA); k++) tl.push(1);
+      }
+      var off = ((o.trimStart || 0) + (o.phase != null ? o.phase : 0.3)) * Ta;
+      var tTot = tl.length * Ta - (o.trimEnd || 0) * Ta;
+      var N = o.samples > 0 ? o.samples : Math.max(2, Math.floor((tTot - off) / dt));
+      var vals = new Float32Array(N);
+      var rUp = 0.03 * Ta, rDn = 0.10 * Ta;      /* in dominant: schnell; zurück in rezessiv: langsamer (passive Flanke) */
+      function lvl(k){ if(k < 0) return 1; if(k >= tl.length) return 1; return tl[k]; }
+      function volt(b){ return b ? vr : vd; }
+      function gauss(){ var u = rnd() || 1e-12, w = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * w); }
+      for(i = 0; i < N; i++){
+        var t = off + i * dt, kk = Math.round(t / Ta), d = t - kk * Ta, a = lvl(kk - 1), b = lvl(kk), v;
+        var r = (b === 0 && a === 1) ? rUp : rDn;
+        if(a !== b && Math.abs(d) < r / 2) v = volt(a) + (volt(b) - volt(a)) * (0.5 + d / r);
+        else v = volt(lvl(Math.floor(t / Ta)));
+        vals[i] = v + (noise > 0 ? noise * gauss() : 0);
+      }
+      var frameInfo = [];
+      for(i = 0; i < enc.length; i++) frameInfo.push({crc:enc[i].crc, bits:enc[i].bits, t0:(starts[i] * Ta - off)});
+      return {values:vals, dt:dt, meta:{baud:baud, bitTime:Ta, spb:Ta / dt, bits:tl, frames:frameInfo}};
+    }
+
+    decodeCAN.crc15 = canCrc15;
+    return {decodeCAN:decodeCAN, synthCAN:synthCAN};
+  })();
+  var M_kline = (function(){
+    /* OsziDecode – K-Leitung (ISO 9141-2 / ISO 14230 KWP2000), DOM-frei, ES5.
+       decodeKLine(values, dt, opt, H)  |  synthKLine(o)
+
+       Quellen (Normwerte nur aus diesen Stellen):
+       - ISO 9141-2:1994, Abschn. 5.1 (Pegel): Logik 0 = unter 20 % Vs (Sender) bzw. 30 % Vs (Empfänger),
+         Logik 1 = über 80 % Vs (Sender) bzw. 70 % Vs (Empfänger); Vs = Batteriespannung. Zwischen 30 % und 70 %
+         kann der Empfänger beides erkennen. Flankenzeit < 10 % der Bitzeit (20–80 %). Für ISO 14230-1 wird dieselbe
+         Pegelbasis angenommen (dort nicht selbst geprüft, Norm kostenpflichtig).
+       - ISO 9141-2:1994, Abschn. 8.3.2/9.3: 10,4 kBd (Tester ±1 %); Toleranz aller Übertragungsraten ±2 %.
+       - ISO 9141-2:1994, Tab. 1 und Abschn. 11.2: Kopf 68 6A F1 (Anfrage) / 48 6B <Adresse> (Antwort), bis zu 7 Datenbytes,
+         Prüfsumme = Summe aller Bytes modulo 256.
+       - ISO 9141-2:1994, Tab. A.2 (Zeiten): P1 0–20 ms (Byteabstand ECU), P2 25–50 ms (Schlüsselwort 08H; bei 94H 0–50 ms),
+         P3 55 ms–5 s, P4 5–20 ms (Byteabstand Tester). ISO 14230-2 (2. Auflage) nennt dieselben P1/P3/P4.
+       - ISO 14230-2: Schnellinitialisierung (Fast-Init): TiniL 25 ±1 ms Low, Twup 50 ±1 ms gesamt (z. B. EU 2016/799 Anl. 8 Tab. 3).
+       - ISO 14230-2: Kopf = Formatbyte (A1 A0 = Adressmodus, L5..L0 = Datenlänge, 0 = Längenbyte folgt), optional Ziel-/Quelladresse,
+         optional Längenbyte, 1..255 Datenbytes, Prüfsumme (Summe mod 256). Beispiel StartCommunication: 81 11 F1 81 04.
+
+       Entscheidungen:
+       - Botschaftstrennung opt.msgGap (s), Standard 22,5 ms: P1/P4 enden bei 20 ms, P2 beginnt bei 25 ms (Mitte = 22,5 ms).
+         Ist P2min per Timing-Parameter auf 0 gesetzt, trennt zusätzlich die Längenangabe im Kopf (Länge + Prüfsumme müssen passen).
+       - Bit-Takt: Bytes werden je Startflanke neu synchronisiert (Abtastung in Bitmitte). Baudrate automatisch aus den kürzesten
+         Pulsen, dann Einrasten auf 10400/9600/4800 (±12 %), Feinwert aus Summe(Dauer)/Summe(Bitanzahl) (hebt Flankenasymmetrie auf).
+       - Pegel-Schwelle zum Digitalisieren liegt in der Signalmitte (nicht bei U_Bat-Prozenten), die Norm-Pegel werden nur bewertet. */
+
+    var KL_MSG_GAP = 0.0225;          /* s: Mitte zwischen P1/P4 max (20 ms) und P2 min (25 ms) */
+    var KL_STD_BAUD = [10400, 9600, 4800];
+
+    function klMs(H, s){ return H.fmt(s * 1000, s < 0.01 ? 2 : 1) + ' ms'; }
+
+    /* Dienstnamen nur zur Orientierung (ISO 14230-3 / SAE J1979), unbekannte bleiben als Hexwert */
+    var KL_SID = {
+      0x10:'StartDiagnosticSession', 0x11:'ECUReset', 0x12:'ReadFreezeFrameData', 0x13:'ReadDTC', 0x14:'ClearDiagnosticInfo',
+      0x17:'ReadStatusOfDTC', 0x18:'ReadDTCByStatus', 0x1A:'ReadECUIdentification', 0x21:'ReadDataByLocalId',
+      0x22:'ReadDataByCommonId', 0x23:'ReadMemoryByAddress', 0x27:'SecurityAccess', 0x30:'IOControlByLocalId',
+      0x31:'StartRoutineByLocalId', 0x3B:'WriteDataByLocalId', 0x3E:'TesterPresent', 0x81:'StartCommunication',
+      0x82:'StopCommunication', 0x83:'AccessTimingParameter'
+    };
+    var KL_NRC = {0x10:'allgemein abgelehnt', 0x11:'Dienst nicht unterstützt', 0x12:'Unterfunktion nicht unterstützt',
+      0x22:'Bedingungen nicht erfüllt', 0x31:'Wert außerhalb Bereich', 0x33:'Zugriff verweigert', 0x78:'Antwort folgt (responsePending)'};
+    var KL_MODE = {1:'Live-Daten', 2:'Standbilddaten', 3:'Fehlercodes lesen', 4:'Fehlerspeicher löschen', 5:'Sauerstoffsonden-Test',
+      6:'Testergebnisse', 7:'anstehende Fehler', 8:'Steuerung', 9:'Fahrzeuginfo', 10:'permanente Fehler'};
+
+    function klSvcName(H, sid){
+      if(sid === 0x7F) return 'Negative Antwort';
+      if(KL_SID[sid]) return KL_SID[sid];
+      if(sid >= 0x40 && KL_SID[sid - 0x40]) return KL_SID[sid - 0x40] + ' (Antwort)';
+      return 'SID ' + H.hex(sid);
+    }
+
+    /* Prüfsumme: Summe der Bytes [i, i+len-1) mod 256 */
+    function klSum(v, i, end){ var s = 0; for(var k = i; k < end; k++) s = (s + v[k]) & 255; return s; }
+
+    /* Kopf auswerten. Rückgabe: {kind:'9141'|'kwp', hdr, total|null, ...} */
+    function klParse(v, i){
+      var n = v.length - i, f = v[i];
+      if(n >= 5 && (f === 0x68 || f === 0x48) && (v[i + 1] === 0x6A || v[i + 1] === 0x6B))
+        return {kind:'9141', hdr:3, total:null, req:f === 0x68};
+      var mode = f >> 6, L = f & 63, lenByte = (L === 0), hdr = 1 + (mode ? 2 : 0) + (lenByte ? 1 : 0);
+      var p = {kind:'kwp', mode:mode, L:L, lenByte:lenByte, hdr:hdr, total:null, dl:null, incomplete:false};
+      if(n < hdr){ p.incomplete = true; return p; }
+      p.dl = lenByte ? v[i + hdr - 1] : L;
+      p.total = hdr + p.dl + 1;
+      return p;
+    }
+
+    /* Baudraten-Passung: mittlerer Rundungsfehler der Pulsdauern in Bitzeiten */
+    function klFit(ds, Tc){
+      var cost = 0, sd = 0, sr = 0, n = 0;
+      for(var i = 0; i < ds.length; i++){
+        var x = ds[i] / Tc;
+        if(x < 0.5) continue;                       /* Störspitze */
+        var r = Math.max(1, Math.round(x));
+        if(r > 12) continue;                        /* Pause, kein UART-Puls */
+        cost += Math.abs(x - r); sd += ds[i]; sr += r; n++;
+      }
+      return {n:n, cost:n ? cost / n : 1e9, Tm:n ? sd / sr : null};
+    }
+
+    function klFindInits(runs){
+      var out = [];
+      for(var j = 0; j < runs.length - 1; j++){
+        var r = runs[j];
+        if(r.lvl !== 0) continue;
+        var dL = r.t1 - r.t0, cutS = (j === 0);
+        if(cutS ? (dL < 5e-3 || dL > 35e-3) : (dL < 15e-3 || dL > 35e-3)) continue;
+        var h = runs[j + 1], dH = h.t1 - h.t0, cutE = (j + 1 === runs.length - 1);
+        if(cutE ? dH < 10e-3 : (dH < 15e-3 || dH > 40e-3)) continue;
+        out.push({j:j, t0:r.t0, t1:h.t1, tLow:dL, tHigh:dH, cutS:cutS, cutE:cutE});
+      }
+      return out;
+    }
+
+    /* Langsame 5-Baud-Initialisierung: mehrere Pulse mit Vielfachen von 200 ms */
+    function klFiveBaud(runs){
+      var c = 0, k;
+      for(var j = 1; j < runs.length - 1; j++){
+        var d = runs[j].t1 - runs[j].t0;
+        if(d < 0.15) continue;
+        k = Math.round(d / 0.2);
+        if(k >= 1 && Math.abs(d - k * 0.2) <= 0.02) c++;
+      }
+      var a = runs[0].t1 - runs[0].t0, b = runs[runs.length - 1].t1 - runs[runs.length - 1].t0;
+      if(c >= 1 && a >= 0.18) c += 1;
+      if(c >= 1 && b >= 0.18) c += 1;
+      return c >= 2;
+    }
+
+    function klLevelChecks(H, dg, vbat){
+      var lo = dg.lo, hi = dg.hi, rl = lo / vbat, rh = hi / vbat, out = [];
+      var stL = rl < 0.2 ? 'ok' : (rl <= 0.3 ? 'warn' : 'bad');
+      out.push(H.check(stL, 'Low-Pegel', H.fmt(lo, 2) + ' V (' + H.fmt(rl * 100, 0) + ' % U_Bat)',
+        stL === 'ok' ? '' : 'Nach ISO 9141-2 muss Low unter 20 % U_Bat (' + H.fmt(0.2 * vbat, 1) + ' V) liegen, ein Empfänger erkennt Low bis 30 %. ' +
+        'Zu hoher Low-Pegel: Leitung wird nicht sauber nach Masse gezogen (Masse/Tastkopf-Masse, Treiber im Steuergerät oder Tester prüfen).'));
+      var stH = rh > 0.8 ? 'ok' : (rh >= 0.7 ? 'warn' : 'bad');
+      out.push(H.check(stH, 'High-Pegel', H.fmt(hi, 2) + ' V (' + H.fmt(rh * 100, 0) + ' % U_Bat)',
+        stH === 'ok' ? '' : 'Nach ISO 9141-2 muss High über 80 % U_Bat (' + H.fmt(0.8 * vbat, 1) + ' V) liegen, ein Empfänger erkennt High ab 70 %. ' +
+        'Pull-up/Versorgung prüfen, oder die eingestellte U_Bat (' + H.fmt(vbat, 1) + ' V) passt nicht zur Messung.'));
+      if(hi > 1.2 * vbat)
+        out.push(H.check('info', 'U_Bat-Einstellung', H.fmt(hi, 1) + ' V gemessen, ' + H.fmt(vbat, 1) + ' V eingestellt',
+          'Gemessener High-Pegel liegt deutlich über der eingestellten U_Bat; Pegelbewertung dann entsprechend ungenau (bei laufendem Motor ca. 13,5–14,5 V).'));
+      return out;
+    }
+
+    /* Bytes ab Flanke F[from] lesen */
+    function klScan(H, runs, F, from, T, tEnd){
+      var out = {bytes:[], cut:false}, i = from;
+      while(i < F.length){
+        var te = F[i].t;
+        if(te + 9.6 * T > tEnd){ out.cut = true; break; }
+        var b = H.readUart(runs, te, T);
+        b.ok = b.start && b.stop;
+        b.j = F[i].j;
+        out.bytes.push(b);
+        var lim = te + 9.5 * T;
+        i++;
+        while(i < F.length && F[i].t < lim) i++;
+      }
+      return out;
+    }
+    function klChain(bytes, gap){
+      var c = 0;
+      for(var k = 0; k < bytes.length; k++){
+        if(k > 0 && bytes[k].t0 - bytes[k - 1].t1 > gap) break;
+        if(!bytes[k].ok) break;
+        c++;
+      }
+      return c;
+    }
+
+    /* Bytes einer Lückengruppe in Botschaften teilen (Länge im Kopf + gültige Prüfsumme) */
+    function klSplit(vals){
+      var segs = [], i = 0, n = vals.length;
+      while(i < n){
+        var p = klParse(vals, i);
+        if(p.total !== null && i + p.total < n && p.dl > 0 && klSum(vals, i, i + p.total - 1) === vals[i + p.total - 1]){
+          segs.push({i0:i, i1:i + p.total}); i += p.total; continue;
+        }
+        segs.push({i0:i, i1:n}); break;
+      }
+      return segs;
+    }
+
+    function klTitleFor(H, p, d){
+      if(p.kind === '9141'){
+        if(!d.length) return p.req ? 'OBD-Anfrage' : 'OBD-Antwort';
+        var md = p.req ? d[0] : d[0] - 0x40, nm = KL_MODE[md];
+        return (p.req ? 'OBD-Anfrage Modus ' : 'OBD-Antwort Modus ') + H.hex(d[0]) + (nm ? ' (' + nm + ')' : '');
+      }
+      if(!d.length) return 'KWP2000 (ohne Daten)';
+      if(d[0] === 0x7F && d.length >= 3) return 'KWP Neg. Antwort ' + H.hex(d[1]) + (KL_NRC[d[2]] ? ' (' + KL_NRC[d[2]] + ')' : ' (Code ' + H.hex(d[2]) + ')');
+      return 'KWP ' + klSvcName(H, d[0]);
+    }
+
+    function decodeKLine(values, dt, opt, H){
+      opt = opt || {};
+      var res = {bus:'kline', ok:false, error:null, info:{bitrate:null, bitTime:null, samplesPerBit:null}, checks:[], frames:[]};
+      var vbat = (typeof opt.vbat === 'number' && opt.vbat > 0) ? opt.vbat : 12.6;
+      var msgGap = (typeof opt.msgGap === 'number' && opt.msgGap > 0) ? opt.msgGap : KL_MSG_GAP;
+      var dg = H.digitize(values, dt, {threshold:opt.threshold, hyst:opt.hyst, minSwing:opt.minSwing});
+      if(!dg.ok){ res.error = dg.error; return res; }
+
+      /* statische Leitung */
+      if(dg.idle){
+        var lv = dg.idle.level, rel = lv / vbat, val = H.fmt(lv, 2) + ' V (' + H.fmt(rel * 100, 0) + ' % U_Bat)';
+        if(rel > 0.8){
+          res.error = 'Leitung ruht auf High (' + val + '): keine Kommunikation in der Aufnahme. Zündung/Steuergerät prüfen, Tester muss anfragen; ' +
+            'Trigger auf fallende Flanke stellen (einmalig) und Aufnahme erst während der Abfrage starten.';
+          res.checks.push(H.check('warn', 'Leitungspegel', val, 'Ruhepegel High = Leitung frei (Pull-up). Es wurde nichts gesendet.'));
+        } else if(rel < 0.2){
+          res.error = 'Leitung dauerhaft auf Low (' + val + '): Kurzschluss nach Masse, ein Teilnehmer hält die K-Leitung nieder, oder Kanal/Masse falsch angeschlossen.';
+          res.checks.push(H.check('bad', 'Leitungspegel', val, 'Dauer-Low blockiert die K-Leitung; Verkehr ist so nicht möglich.'));
+        } else {
+          res.error = 'Leitung auf Zwischenpegel (' + val + '): K-Leitung offen/nicht angeschlossen, falscher Kanal oder falsche U_Bat-Einstellung (' + H.fmt(vbat, 1) + ' V).';
+          res.checks.push(H.check('bad', 'Leitungspegel', val, 'Weder sauberes High (über 80 % U_Bat) noch sauberes Low (unter 20 %).'));
+        }
+        return res;
+      }
+
+      var runs = dg.runs, nr = runs.length, tEnd = dg.tEnd, j, k;
+      var lv0 = klLevelChecks(H, dg, vbat);
+      for(k = 0; k < lv0.length; k++) res.checks.push(lv0[k]);
+
+      /* 5-Baud-Init */
+      if(klFiveBaud(runs)){
+        res.checks.push(H.check('info', '5-Baud-Init', 'Bitstruktur mit ca. 200 ms sichtbar',
+          'Langsame Initialisierung (Adresse mit 5 Bd, ISO 9141-2/14230) erkannt. Sie passt nicht zusammen mit den schnellen Daten in ein Fenster; ' +
+          'danach (10 400 Bd) eigene Aufnahme mit Zeitbasis höchstens ' + H.fmtDiv(H.recommendedDiv(1 / 10400)) + ' machen.'));
+        res.error = 'Dieses Fenster zeigt die langsame 5-Baud-Initialisierung (ca. 200 ms pro Bit), keine 10-kBd-Daten. ' +
+          'Für die Botschaften danach Zeitbasis höchstens ' + H.fmtDiv(H.recommendedDiv(1 / 10400)) + ' einstellen.';
+        return res;
+      }
+
+      /* Fast-Init */
+      var inits = klFindInits(runs), skipRun = {};
+      for(k = 0; k < inits.length; k++){ skipRun[inits[k].j] = true; skipRun[inits[k].j + 1] = true; }
+
+      /* Bitzeit */
+      var userBaud = (typeof opt.baud === 'number' && opt.baud > 0) ? opt.baud : 0;
+      var ds = [], d;
+      for(j = 1; j < nr - 1; j++){
+        if(skipRun[j]) continue;
+        d = runs[j].t1 - runs[j].t0;
+        if(d <= 3e-3) ds.push(d);
+      }
+      ds.sort(function(a, b){ return a - b; });
+      var Tc = null, Tdec = null, baud = null, fit = null, nonStd = false, tmin = null;
+      if(userBaud){
+        Tc = 1 / userBaud; baud = userBaud;
+      } else if(ds.length >= 2){
+        var m = ds[Math.floor(ds.length * 0.1)], cl = [];
+        for(k = 0; k < ds.length; k++) if(ds[k] >= 0.8 * m && ds[k] <= 1.35 * m) cl.push(ds[k]);
+        tmin = H.median(cl);
+        var best = null, bf = null;
+        for(k = 0; k < KL_STD_BAUD.length; k++){
+          var tc = 1 / KL_STD_BAUD[k];
+          if(Math.abs(tc / tmin - 1) > 0.12) continue;
+          var f = klFit(ds, tc);
+          if(!bf || f.cost < bf.cost){ bf = f; best = KL_STD_BAUD[k]; }
+        }
+        if(best){ baud = best; Tc = 1 / best; }
+        else { Tc = tmin; baud = Math.round(1 / tmin); nonStd = true; }
+      }
+      if(!Tc){
+        if(inits.length){
+          /* nur Wake-up sichtbar, keine Bytes */
+          Tc = 1 / 10400; baud = null;
+        } else {
+          var rt = H.rateCheck(1 / 10400, dt);
+          res.error = 'Keine auswertbare K-Leitungs-Kommunikation gefunden (weniger als 2 UART-Pulse erkannt). ' +
+            (rt.hint ? rt.hint : 'Aufnahme während einer Abfrage auslösen (fallende Flanke).');
+          return res;
+        }
+      }
+      fit = klFit(ds, Tc);
+      /* Feinwert aus Abständen zwischen fallenden Flanken (Low+High): Flankenasymmetrie (Anstieg langsamer als Abfall) hebt sich dort auf */
+      var Tm = fit.Tm, np = 0, it;
+      for(it = 0; it < 4; it++){       /* iterativ: erst mit Nennwert runden, dann mit dem gefundenen Wert (hohe Abweichung verschiebt lange Pulse) */
+        var sp = 0, sr2 = 0, Tr = (it === 0 || !Tm) ? Tc : Tm;
+        np = 0;
+        for(j = 1; j + 2 < nr; j++){
+          if(runs[j].lvl !== 0 || skipRun[j] || skipRun[j + 1]) continue;
+          var pd = runs[j + 2].t0 - runs[j].t0, xr = pd / Tr, rr = Math.round(xr);
+          if(rr < 2 || rr > 12 || Math.abs(xr - rr) > 0.3) continue;
+          sp += pd; sr2 += rr; np++;
+        }
+        if(np >= 3) Tm = sp / sr2;
+      }
+      var dev = (Tm && (np >= 3 || fit.n >= 3)) ? Tm / Tc - 1 : null;
+      Tdec = (dev !== null && Math.abs(dev) <= 0.05) ? Tm : Tc;
+      var nomT = baud ? 1 / baud : Tc;
+      var spb = nomT / dt;
+      if(tmin && !userBaud && tmin / dt < 3) spb = Math.min(spb, tmin / dt);
+      res.info.bitrate = baud; res.info.bitTime = baud ? nomT : null; res.info.samplesPerBit = baud ? spb : null;
+      if(spb < 3){
+        var rt2 = H.rateCheck(Math.min(nomT, 1 / 9600), dt);
+        res.checks.push(rt2);
+        res.error = 'Zu wenige Messpunkte pro Bit (' + H.fmt(spb, 1) + '): K-Leitung nicht auswertbar. ' + rt2.hint;
+        return res;
+      }
+      res.checks.push(H.rateCheck(nomT, dt));
+      if(baud){
+        var bv = H.fmt(baud, 0) + ' Bd' + (userBaud ? ' (vorgegeben)' : ' (automatisch)');
+        res.checks.push(H.check(nonStd ? 'warn' : 'info', 'Baudrate', bv,
+          nonStd ? 'Gemessene Bitzeit passt zu keiner Standardrate (10400/9600/4800 Bd).' : ''));
+        if(dev !== null){
+          var ad = Math.abs(dev);
+          if(spb >= 8){
+            res.checks.push(H.check(ad <= 0.02 ? 'ok' : (ad <= 0.05 ? 'warn' : 'bad'), 'Baudraten-Abweichung',
+              H.sgn(dev * 100, 1) + ' % gegen ' + H.fmt(baud, 0) + ' Bd',
+              ad <= 0.02 ? '' : 'ISO 9141-2: Toleranz ±2 % (Tester ±1 %). ' + (ad > 0.05 ? 'Falsche Baudrate eingestellt? Bytes werden vermutlich falsch gelesen.' : 'Wert noch lesbar, aber außerhalb der Norm.')));
+          } else {
+            /* unter 8 Punkten pro Bit ist die Zeitmessung zu grob für die ±2-%-Normprüfung */
+            res.checks.push(H.check(ad > 0.05 ? 'bad' : 'info', 'Baudraten-Abweichung', H.sgn(dev * 100, 1) + ' % gegen ' + H.fmt(baud, 0) + ' Bd',
+              'Bei weniger als 8 Punkten pro Bit zu ungenau für die Normprüfung (±2 %).' + (ad > 0.05 ? ' Falsche Baudrate eingestellt?' : '')));
+          }
+        }
+      }
+
+      /* Startflanken (Init-Flanken ausnehmen) */
+      var F = [];
+      for(j = 1; j < nr; j++){
+        if(runs[j].lvl !== 0) continue;
+        var inInit = false;
+        for(k = 0; k < inits.length; k++) if(runs[j].t0 >= inits[k].t0 - 1e-12 && runs[j].t0 < inits[k].t1 - 1e-12) inInit = true;
+        if(!inInit) F.push({t:runs[j].t0, j:j});
+      }
+      function idleBefore(jj){
+        if(jj < 1) return false;
+        var p = runs[jj - 1];
+        return p.lvl === 1 && (p.t1 - p.t0) >= 9.5 * Tdec;
+      }
+      var anchor = -1;
+      for(k = 0; k < F.length; k++) if(idleBefore(F[k].j)){ anchor = k; break; }
+      var startIdx = 0, scan = null;
+      if(anchor !== 0 && F.length){
+        var lastC = Math.min(anchor < 0 ? F.length : anchor, 10), bc = -1, bs = 1;
+        for(k = 0; k < lastC; k++){
+          var sc = klChain(klScan(H, runs, F, k, Tdec, tEnd).bytes, msgGap);
+          if(sc > bs){ bs = sc; bc = k; }
+        }
+        startIdx = bc >= 0 ? bc : (anchor >= 0 ? anchor : F.length);
+      }
+      scan = klScan(H, runs, F, startIdx, Tdec, tEnd);
+      var bytes = scan.bytes;
+
+      /* Gruppen nach Pausen */
+      var groups = [], g = null;
+      for(k = 0; k < bytes.length; k++){
+        if(!g || bytes[k].t0 - bytes[k - 1].t1 > msgGap){ g = []; groups.push(g); }
+        g.push(bytes[k]);
+      }
+
+      /* Botschaften bauen */
+      var frames = [], meta = [];
+      var nFrameBytes = 0, nBadFrame = 0;
+      function mkField(b, nextB, label, kind, bad){
+        var t1 = b.t1;
+        if(nextB && nextB.t0 < t1) t1 = nextB.t0;
+        return {t0:b.t0, t1:t1, label:label, kind:kind, bad:!!bad};
+      }
+      for(var gi = 0; gi < groups.length; gi++){
+        var gb = groups[gi];
+        /* Beginn unsicher, wenn vor dem ersten Byte weniger als msgGap Ruhe liegt (Aufnahme kann mitten in der Botschaft begonnen haben);
+           ein Wake-up unmittelbar davor beweist den Botschaftsanfang */
+        var partialStart = false;
+        if(gi === 0){
+          var jj = gb[0].j, lead = jj >= 1 ? runs[jj - 1].t1 - runs[jj - 1].t0 : 0, afterInit = false;
+          for(k = 0; k < inits.length; k++) if(Math.abs(inits[k].t1 - gb[0].t0) < 2 * dt + 1e-9) afterInit = true;
+          partialStart = !afterInit && lead < msgGap;
+        }
+        var vals = gb.map(function(x){ return x.val; });
+        var segs = klSplit(vals);
+        /* Teilbotschaft am Aufnahmeanfang: nur wenn der normale Aufbau nicht aufgeht */
+        var firstPartial = false;
+        if(partialStart){
+          var p0 = klParse(vals, 0);
+          /* Echter Botschaftsanfang, wenn der Kopf typisch aussieht (OBD-Kopf 68 6A/48 6B, oder KWP mit Adressbytes und Tester-Adresse ≥ 0xF0)
+             oder Länge und Prüfsumme komplett aufgehen. Dann werden Fehler (Länge, Prüfsumme) normal gemeldet statt als "Teilbotschaft". */
+          var okFull = p0.kind === '9141' ||
+            (p0.kind === 'kwp' && p0.mode !== 0 && vals.length >= 3 && (vals[1] >= 0xF0 || vals[2] >= 0xF0)) ||
+            (p0.kind === 'kwp' && p0.total !== null && p0.total === vals.length && klSum(vals, 0, vals.length - 1) === vals[vals.length - 1]);
+          if(!okFull){ segs = [{i0:0, i1:vals.length}]; firstPartial = true; }
+        }
+        for(var si = 0; si < segs.length; si++){
+          var sg = segs[si], sb = gb.slice(sg.i0, sg.i1), sv = vals.slice(sg.i0, sg.i1), n = sv.length;
+          var isPartial = firstPartial && si === 0;
+          var lastSeg = (si === segs.length - 1) && gi === groups.length - 1;
+          var nearEnd = lastSeg && (tEnd - sb[n - 1].t1) < msgGap;
+          var fr = {t0:sb[0].t0, t1:sb[n - 1].t1, title:'', text:'', data:[], status:'ok', checks:[], fields:[]};
+          var dir = null;
+          var p = klParse(sv, 0);
+          var csIdx = -1, hdrN = 0;
+          var cs = fr.checks;
+
+          /* Zeichenrahmen */
+          var badFr = 0;
+          for(k = 0; k < n; k++) if(!sb[k].ok) badFr++;
+          cs.push(badFr ? H.check('bad', 'Zeichenrahmen', badFr + ' von ' + n + ' Byte(s) ohne gültiges Stoppbit',
+            'Stoppbit muss High sein. Mögliche Ursachen: falsche Baudrate, Störung/EMV, schlechter Pegel, Bytes überlagert.') :
+            H.check('ok', 'Zeichenrahmen', n + ' Byte(s), Start-/Stoppbits in Ordnung', ''));
+
+          if(isPartial){
+            fr.title = 'Teilbotschaft (' + n + ' Byte)';
+            for(k = 0; k < n; k++){
+              fr.fields.push(mkField(sb[k], sb[k + 1], 'D' + k + ' ' + H.hex(sv[k]), sb[k].ok ? 'data' : 'err', !sb[k].ok));
+              fr.data.push(sv[k]);
+            }
+            cs.push(H.check('warn', 'Aufnahmebeginn', 'Botschaft beginnt vor der Aufnahme',
+              'Kopf und Prüfsumme sind nicht auswertbar. Früher auslösen (Vortrigger) oder längere Zeitbasis wählen – dabei aber auf ≥ 8 Punkte pro Bit achten.'));
+          } else {
+            var total = p.total, wholeOk = (n >= 2 && klSum(sv, 0, n - 1) === sv[n - 1]);
+            if(p.kind === '9141'){
+              hdrN = 3; csIdx = n - 1; dir = p.req ? 'req' : 'resp';
+              fr.fields.push(mkField(sb[0], sb[1], 'Kopf ' + H.hex(sv[0]), 'ctrl', false));
+              fr.fields.push(mkField(sb[1], sb[2], 'Kopf ' + H.hex(sv[1]), 'ctrl', false));
+              fr.fields.push(mkField(sb[2], sb[3], 'Quelle ' + H.hex(sv[2]), 'id', false));
+              cs.push(H.check('info', 'Format', 'ISO 9141-2 / OBD-II (SAE J1979), ' + (p.req ? 'Anfrage' : 'Antwort'),
+                'Kopf ' + H.hex(sv[0]) + ' ' + H.hex(sv[1]) + ' ' + H.hex(sv[2]) + '; Länge steht nicht im Kopf, sie ergibt sich aus der Pause am Botschaftsende.'));
+              if(n > 11) cs.push(H.check('warn', 'Länge', n + ' Byte', 'OBD-II-Botschaften haben 5 bis 11 Byte (ISO 9141-2, Abschn. 11.1).'));
+              else cs.push(H.check('ok', 'Länge', n + ' Byte (5 bis 11 erlaubt)', ''));
+            } else {
+              dir = (p.mode && n >= 3) ? (sv[2] >= 0xF0 ? 'req' : 'resp') : null;
+              var modeTxt = ['ohne Adressen', 'CARB-Modus', 'physisch adressiert', 'funktional adressiert'][p.mode];
+              if(p.incomplete){
+                hdrN = n;
+              } else hdrN = p.hdr;
+              fr.fields.push(mkField(sb[0], sb[1], 'Fmt ' + H.hex(sv[0]), 'ctrl', false));
+              if(p.mode && n > 1) fr.fields.push(mkField(sb[1], sb[2], 'Ziel ' + H.hex(sv[1]), 'id', false));
+              if(p.mode && n > 2) fr.fields.push(mkField(sb[2], sb[3], 'Quelle ' + H.hex(sv[2]), 'id', false));
+              if(p.lenByte && !p.incomplete) fr.fields.push(mkField(sb[p.hdr - 1], sb[p.hdr], 'Len ' + sv[p.hdr - 1], 'ctrl', p.dl === 0));
+              cs.push(H.check('info', 'Format', 'KWP2000 (ISO 14230), ' + modeTxt,
+                'Formatbyte ' + H.hex(sv[0]) + (p.lenByte ? ': Länge steht im eigenen Längenbyte.' : ': Datenlänge ' + p.L + ' Byte im Formatbyte.')));
+              if(p.incomplete){
+                cs.push(nearEnd ? H.check('warn', 'Länge', 'Kopf unvollständig', 'Aufnahme endet mitten im Kopf.') :
+                  H.check('bad', 'Länge', 'Kopf unvollständig (' + n + ' Byte)', 'Nach dem Formatbyte fehlen Adress-/Längenbytes.'));
+              } else if(p.dl === 0){
+                cs.push(H.check('bad', 'Länge', 'Länge 0', 'Eine KWP-Botschaft hat mindestens 1 Datenbyte.'));
+              } else if(n === total){
+                cs.push(H.check('ok', 'Länge', p.dl + ' Datenbyte(s) laut Kopf, ' + n + ' Byte gesamt', ''));
+                csIdx = n - 1;
+              } else if(n < total){
+                if(wholeOk){ csIdx = n - 1; }
+                cs.push(nearEnd ?
+                  H.check('warn', 'Länge', 'Kopf nennt ' + total + ' Byte, bis Aufnahmeende ' + n, 'Aufnahme endet vor dem Botschaftsende (abgeschnitten) – später enden lassen oder Zeitbasis erhöhen.') :
+                  H.check('bad', 'Länge', 'Kopf nennt ' + total + ' Byte, empfangen ' + n,
+                    'Es fehlen ' + (total - n) + ' Byte (Byte verloren, Botschaft abgebrochen oder Längenangabe falsch).'));
+              } else {
+                csIdx = wholeOk ? n - 1 : total - 1;
+                cs.push(H.check('bad', 'Länge', 'Kopf nennt ' + total + ' Byte, empfangen ' + n,
+                  wholeOk ? 'Prüfsumme über die ganze Botschaft stimmt: Längenangabe im Kopf ist vermutlich falsch.' :
+                  'Überzählige Bytes: zwei Botschaften ohne Pause oder Störung.'));
+              }
+            }
+            /* Nutzdaten und Prüfsummenfeld */
+            var dEnd = csIdx >= 0 ? csIdx : n;
+            for(k = hdrN; k < dEnd; k++){
+              fr.data.push(sv[k]);
+              fr.fields.push(mkField(sb[k], sb[k + 1], 'D' + (k - hdrN) + ' ' + H.hex(sv[k]), sb[k].ok ? 'data' : 'err', !sb[k].ok));
+            }
+            if(csIdx >= 0){
+              var calc = klSum(sv, 0, csIdx), got = sv[csIdx], csOk = (calc === got);
+              if(csOk) cs.push(H.check('ok', 'Prüfsumme', H.hex(got) + ' (Summe mod 256 stimmt)', ''));
+              else if(nearEnd && p.kind === '9141') cs.push(H.check('warn', 'Prüfsumme', H.hex(got) + ' gelesen, ' + H.hex(calc) + ' berechnet',
+                'Aufnahme endet kurz nach der Botschaft – evtl. fehlt das letzte Byte. Sonst Prüfsummenfehler.'));
+              else cs.push(H.check('bad', 'Prüfsumme', H.hex(got) + ' gelesen, ' + H.hex(calc) + ' berechnet',
+                'Summe aller Bytes vor der Prüfsumme modulo 256 passt nicht: Übertragungsfehler, falsches/fehlendes Byte oder Störung.'));
+              fr.fields.push(mkField(sb[csIdx], sb[csIdx + 1], 'CS ' + H.hex(got), 'crc', !csOk));
+              for(k = csIdx + 1; k < n; k++)
+                fr.fields.push(mkField(sb[k], sb[k + 1], 'X' + (k - csIdx - 1) + ' ' + H.hex(sv[k]), 'err', true));
+            } else {
+              cs.push(H.check(nearEnd ? 'info' : 'bad', 'Prüfsumme', 'nicht prüfbar', 'Botschaft unvollständig, Prüfsumme fehlt oder ist nicht erkennbar.'));
+            }
+            fr.title = klTitleFor(H, p, fr.data);
+          }
+
+          /* Byte-Abstände */
+          if(n >= 2){
+            var gmin = 1e9, gmax = 0;
+            for(k = 1; k < n; k++){
+              var gp = Math.max(0, sb[k].t0 - sb[k - 1].t1);
+              if(gp < gmin) gmin = gp;
+              if(gp > gmax) gmax = gp;
+            }
+            cs.push(gmax > 0.020 ?
+              H.check('warn', 'Byte-Abstand', klMs(H, gmin) + ' bis ' + klMs(H, gmax), 'Längster Abstand über 20 ms (P1/P4 max, ISO 9141-2 Tab. A.2): Botschaft evtl. in zwei Teile zerfallen.') :
+              H.check('info', 'Byte-Abstand', klMs(H, gmin) + ' bis ' + klMs(H, gmax),
+                'Norm: Steuergerät (P1) 0–20 ms, Tester (P4) 5–20 ms; Tester-Werte unter 5 ms sind nur mit geändertem Timing-Parameter zulässig.'));
+          }
+          var dtxt = [], dl = Math.min(fr.data.length, 16);
+          for(k = 0; k < dl; k++) dtxt.push(H.hex(fr.data[k]));
+          var head = '';
+          if(isPartial) head = 'Teilbotschaft';
+          else if(p.kind === '9141') head = 'Kopf ' + H.hex(sv[0]) + ' ' + H.hex(sv[1]) + ' · Quelle ' + H.hex(sv[2]);
+          else head = 'Fmt ' + H.hex(sv[0]) + (p.mode && n > 2 ? ' · Ziel ' + H.hex(sv[1]) + ' ← Quelle ' + H.hex(sv[2]) : '');
+          fr.text = head + ' · ' + fr.data.length + ' Byte Daten' + (dl ? ': ' + dtxt.join(' ') + (fr.data.length > dl ? ' …' : '') : '');
+          frames.push(fr);
+          meta.push({dir:isPartial ? null : dir, t0:sb[0].t0, t1:sb[n - 1].t1});
+          nFrameBytes += n;
+        }
+      }
+
+      /* Fast-Init den folgenden Botschaften zuordnen */
+      for(k = 0; k < inits.length; k++){
+        var w = inits[k], target = -1;
+        for(var q = 0; q < frames.length; q++){
+          if(meta[q].t0 >= w.t1 - 2 * dt && meta[q].t0 - w.t1 < 5e-3){ target = q; break; }
+        }
+        var ic = [], okLow = Math.abs(w.tLow - 0.025) <= 0.001 + dt, okTot = Math.abs((w.tLow + w.tHigh) - 0.050) <= 0.001 + 2 * dt;
+        if(w.cutS){
+          ic.push(H.check('info', 'Fast-Init', 'Wake-up beginnt vor der Aufnahme', 'Dauer der Low-Phase (soll 25 ±1 ms) nicht prüfbar.'));
+        } else {
+          ic.push(H.check(okLow ? 'ok' : 'warn', 'Fast-Init Low (TiniL)', klMs(H, w.tLow), okLow ? 'Soll 25 ±1 ms (ISO 14230-2).' : 'Soll 25 ±1 ms (ISO 14230-2); Steuergeräte tolerieren oft mehr, Tester sollte aber sauber sein.'));
+        }
+        if(w.cutE){
+          ic.push(H.check('info', 'Fast-Init Ende', 'High-Phase endet mit der Aufnahme', 'Twup (soll 50 ±1 ms gesamt) nicht prüfbar; Aufnahme länger/später beenden.'));
+        } else if(!w.cutS){
+          ic.push(H.check(okTot ? 'ok' : 'warn', 'Fast-Init gesamt (Twup)', klMs(H, w.tLow + w.tHigh), okTot ? 'Soll 50 ±1 ms.' : 'Soll 50 ±1 ms (ISO 14230-2).'));
+        }
+        var fld = {t0:w.t0, t1:w.t1, label:'Init', kind:'start', bad:!w.cutS && !okLow};
+        if(target >= 0){
+          frames[target].fields.unshift(fld);
+          frames[target].t0 = w.t0;
+          for(var c = ic.length - 1; c >= 0; c--) frames[target].checks.unshift(ic[c]);
+        } else {
+          frames.push({t0:w.t0, t1:w.t1, title:'Fast-Init (Wake-up)', text:'Wake-up-Muster ' + klMs(H, w.tLow) + ' Low + ' + klMs(H, w.tHigh) + ' High, keine Botschaft in der Aufnahme',
+            data:[], status:'ok', checks:ic, fields:[fld]});
+          meta.push({dir:null, t0:w.t0, t1:w.t1});
+        }
+      }
+      /* sortieren (Rahmen und Metadaten gemeinsam) */
+      var order = [];
+      for(k = 0; k < frames.length; k++) order.push(k);
+      order.sort(function(a, b){ return frames[a].t0 - frames[b].t0; });
+      var fs = [], ms = [];
+      for(k = 0; k < order.length; k++){ fs.push(frames[order[k]]); ms.push(meta[order[k]]); }
+      frames = fs; meta = ms;
+
+      /* Antwortzeiten P2 / P3 */
+      for(k = 1; k < frames.length; k++){
+        var a = meta[k - 1], b2 = meta[k];
+        if(!a.dir || !b2.dir || a.dir === b2.dir) continue;
+        var gap = b2.t0 - a.t1;
+        if(gap <= 0) continue;
+        if(a.dir === 'req' && b2.dir === 'resp'){
+          var okp = gap >= 0.025 && gap <= 0.050;
+          frames[k].checks.push(H.check(okp ? 'ok' : 'info', 'Antwortzeit (P2)', klMs(H, gap),
+            okp ? 'Im Normbereich 25–50 ms.' : 'Norm (ISO 9141-2): 25–50 ms; kürzere/längere Zeiten sind mit anderen Timing-Parametern erlaubt (z. B. Schlüsselwort 94H: ab 0 ms).'));
+        } else if(a.dir === 'resp' && b2.dir === 'req'){
+          var okq = gap >= 0.055;
+          frames[k].checks.push(H.check(okq ? 'ok' : 'info', 'Wartezeit (P3)', klMs(H, gap),
+            okq ? 'Mindestens 55 ms (ISO 9141-2).' : 'Norm: mindestens 55 ms zwischen Antwort-Ende und nächster Anfrage; kürzer nur mit geändertem Timing-Parameter.'));
+        }
+      }
+      for(k = 0; k < frames.length; k++){
+        frames[k].status = H.worst(frames[k].checks);
+        if(frames[k].status === 'bad') nBadFrame++;
+      }
+      res.frames = frames;
+
+      /* Zusammenfassung */
+      var nMsg = 0;
+      for(k = 0; k < frames.length; k++) if(frames[k].data.length || frames[k].title.indexOf('Fast-Init') !== 0) nMsg++;
+      if(nMsg === 0 && !inits.length){
+        res.checks.push(H.check('warn', 'Botschaften', 'keine erkannt', 'Es wurden Pulse, aber keine vollständigen Bytes gefunden: Baudrate oder Pegel/Trigger prüfen.'));
+      } else {
+        res.checks.push(H.check(nBadFrame ? 'warn' : 'ok', 'Botschaften', nMsg + ' erkannt, ' + nFrameBytes + ' Byte(s), ' + nBadFrame + ' mit Fehler', ''));
+      }
+      if(scan.cut) res.checks.push(H.check('info', 'Aufnahmeende', 'Letztes Byte nicht vollständig', 'Die Aufnahme endet mitten in einem Byte; es wird nicht ausgewertet.'));
+      if(F.length && startIdx > 0 && startIdx < F.length && anchor !== startIdx)
+        res.checks.push(H.check('info', 'Aufnahmebeginn', 'Beginnt mitten in der Übertragung', 'Die ersten Flanken gehören zu einem angeschnittenen Byte und wurden verworfen.'));
+      res.ok = true;
+      return res;
+    }
+
+    /* ---------- Testsignale ---------- */
+    function klRng(seed){
+      var a = (seed >>> 0) || 1;
+      return function(){
+        a = (a + 0x6D2B79F5) >>> 0;
+        var t = a;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    /* Botschaft-Beschreibungen:
+       {kwp:{mode:2, tgt, src, data:[..], lenByte:false}} | {j1979:{req:true, ecu:0x10, data:[..]}} | {bytes:[..]}
+       Fehler: badCs:true|Zahl, dropIndex:k (Byte fehlt), badStop:k (Stoppbit Low), lenDelta:±n (Längenangabe im Kopf falsch)
+       Zeiten: gap (s vor der Botschaft), ibGap (s zwischen Bytes) */
+    function klBuildBytes(d){
+      var b = [], i, cs;
+      if(d.kwp){
+        var k = d.kwp, mode = k.mode != null ? k.mode : 2, dl = k.data.length, useLen = !!k.lenByte || dl > 63, ld = d.lenDelta || 0;
+        b.push((mode << 6) | (useLen ? 0 : ((dl + ld) & 63)));
+        if(mode){ b.push(k.tgt & 255); b.push(k.src & 255); }
+        if(useLen) b.push((dl + ld) & 255);
+        for(i = 0; i < dl; i++) b.push(k.data[i] & 255);
+      } else if(d.j1979){
+        var j = d.j1979;
+        if(j.req !== false) b.push(0x68, 0x6A, 0xF1); else b.push(0x48, 0x6B, j.ecu != null ? j.ecu : 0x10);
+        for(i = 0; i < j.data.length; i++) b.push(j.data[i] & 255);
+      } else return d.bytes.slice();
+      cs = klSum(b, 0, b.length);
+      if(d.badCs) cs = (cs + (typeof d.badCs === 'number' ? d.badCs : 1)) & 255;
+      b.push(cs);
+      return b;
+    }
+
+    function synthKLine(o){
+      o = o || {};
+      var dt = o.dt || 12e-6, n = o.n || 5000;
+      var baud = o.baud || 10400, T = (1 / baud) * (1 + (o.baudErr || 0));
+      var vbat = o.vbat || 12.6;
+      var vlo = o.vlow != null ? o.vlow : 0.7, vhi = o.vhigh != null ? o.vhigh : vbat;
+      var noise = o.noise != null ? o.noise : 0.08;
+      var tr = o.rise != null ? o.rise : 6e-6, tf = o.fall != null ? o.fall : 3e-6;
+      var rnd = klRng(o.seed != null ? o.seed : 1);
+      var ev = [{t:-1, lvl:1}], cur = 1;
+      function set(t, lvl){ if(lvl !== cur){ ev.push({t:t, lvl:lvl}); cur = lvl; } }
+      var t = o.t0 != null ? o.t0 : 2e-3, truth = {baud:baud, messages:[], initT0:null};
+      var i, m;
+      if(o.fiveBaud){
+        var ad = o.fiveBaud.addr != null ? o.fiveBaud.addr : 0x33, tb = 0.2;
+        set(t, 0); t += tb;
+        for(i = 0; i < 8; i++){ set(t, (ad >> i) & 1); t += tb; }
+        set(t, 1); t += tb;
+      }
+      if(o.fastInit){
+        var fi = o.fastInit === true ? {} : o.fastInit;
+        var tl = fi.low != null ? fi.low : 0.025, th = fi.high != null ? fi.high : 0.025;
+        truth.initT0 = t;
+        set(t, 0); t += tl; set(t, 1); t += th;
+      }
+      var msgs = o.messages || [];
+      for(m = 0; m < msgs.length; m++){
+        var d = msgs[m], bytes = klBuildBytes(d), sent = bytes.slice();
+        if(d.dropIndex != null) sent.splice(d.dropIndex, 1);
+        var isReq = d.kwp ? d.kwp.src >= 0xF0 : (d.j1979 ? d.j1979.req !== false : false);
+        var ib = d.ibGap != null ? d.ibGap : (isReq ? 5.5e-3 : 1e-3);
+        t += (d.gap != null ? d.gap : (m === 0 ? 0 : 30e-3));
+        var tm0 = t;
+        for(i = 0; i < sent.length; i++){
+          var v = sent[i], bs = (d.badStop === i);
+          set(t, 0);
+          for(var bit = 0; bit < 8; bit++) set(t + (bit + 1) * T, (v >> bit) & 1);
+          set(t + 9 * T, bs ? 0 : 1);
+          if(bs) set(t + 10 * T, 1);
+          t += 10 * T + (i < sent.length - 1 ? ib : 0);
+        }
+        truth.messages.push({bytes:sent, intended:bytes, t0:tm0, t1:t});
+      }
+      var vals = new Float32Array(n), k = 0;
+      for(i = 0; i < n; i++){
+        var ts = i * dt;
+        while(k + 1 < ev.length && ev[k + 1].t <= ts) k++;
+        var lv = ev[k].lvl, volt = lv ? vhi : vlo;
+        if(k > 0){
+          var edge = lv ? tr : tf, fr = (ts - ev[k].t) / edge;
+          if(fr < 1){
+            var pv = ev[k - 1].lvl ? vhi : vlo;
+            volt = pv + (volt - pv) * fr;
+          }
+        }
+        var gs = (rnd() + rnd() + rnd() - 1.5) * 2;
+        vals[i] = volt + noise * gs;
+      }
+      return {values:vals, dt:dt, truth:truth};
+    }
+    return {decodeKLine:decodeKLine, synthKLine:synthKLine};
+  })();
+  var M_sent = (function(){
+    /* OsziDecode – SENT (SAE J2716), DOM-frei, ES5.
+       decodeSENT(values, dt, opt, H)  |  synthSENT(o)
+
+       Quellen:
+       - SAE J2716 (Einzelflanken-Nibble-Übertragung) laut Applikationsschriften:
+         TI SPRAB22 "Multi-Channel SAE-J2716 (SENT) Decoder Using NHET" (Juli 2010): Sync-/Kalibrierpuls 56 Ticks, Nibble-Periode =
+         (12 + Wert) Ticks, Sender-Taktabweichung ±20 %, Empfänger muss eine Änderung > 1/64 (1,5625 %) zwischen zwei aufeinander
+         folgenden Kalibrierpulsen erkennen; CRC4 mit x^4+x^3+x^2+1, Startwert 5 (bitserielle Referenz dort, ohne Null-Nibble = Variante 2007/2008).
+       - NXP AN4432 (SENT/SPC-Treiber MPC560xP): Aufbau Sync, Status, bis zu 6 Datennibble, CRC; CRC (x^4+x^3+x^2+1, Startwert 0b0101) über alle
+         Nibble außer Status/Kommunikation (laut SAE J2716); der NXP-Treiber rechnet den Status mit (Infineon TLE4889C) – Herstellerabweichung.
+       - Microchip dsPIC33 SENT-Modul (Abschn. CRC Calculation): empfohlene Implementierung (J2716 2010): Tabelle {0,13,7,10,14,3,9,4,1,12,6,11,15,2,8,5},
+         crc = Daten-Nibble XOR Tabelle[crc], Startwert 5, danach ein weiterer Schritt mit zusätzlichem Null-Nibble (crc = Tabelle[crc]).
+       - Allegro AN296244 (A17700, J2716-2016): CRC x^4+x^3+x^2+1, Startwert 0101, standardmäßig nur über die Datennibble.
+       - Wikipedia "SENT (protocol)": Tick 3–90 µs, Nibble 12–27 Ticks, Pausenpuls 12–768 Ticks (optional), Low-Phase mindestens 5 Ticks,
+         Slow Channel in den Status-Bits (Bit 3 = Startkennung, Bit 2 = serielles Datenbit), Pegel Low < 0,5 V, High > 4,1 V bei 5 V Versorgung.
+       Nicht aus freier Quelle belegbar: die Zahlentabelle B.1-2 der Norm (kostenpflichtig). Deshalb prüft der Test die CRC gegen die
+       bitserielle TI-Referenz und gegen die Microchip-Tabelle (zwei voneinander unabhängige veröffentlichte Algorithmen).
+
+       Entscheidungen:
+       - Messung nur zwischen fallenden Flanken (wie in der Norm): unabhängig von Anstiegszeit und Schwelle.
+       - Tick je Botschaft aus deren eigenem Sync-Puls (Puls/56); Nibble-Wert = Runden(Periode/Tick) − 12.
+       - Sync-Erkennung: Periode ≈ 56 Ticks (±25 %, TI-Entwurfsgrenze) und danach Nibble-Perioden. Ohne opt.tick (oder 0/'auto') wird der Tick
+         aus den Sync-Pulsen bestimmt (dichteste Häufung). Nibble-Anzahl/Pausenpuls: opt.nibbles oder aus Rahmenlängen, Mehrdeutigkeiten über die CRC.
+       - Beide CRC-Varianten (2007/2008 ohne und 2010 mit Null-Nibble) werden geprüft und gemeldet; opt.crc = 'legacy'|'recommended'|'auto'. */
+
+    var SENT_CRC_TAB = [0, 13, 7, 10, 14, 3, 9, 4, 1, 12, 6, 11, 15, 2, 8, 5];
+
+    /* CRC-4 über Nibble-Liste. variant 'recommended' hängt ein Null-Nibble an (SAE J2716 2010), 'legacy' nicht. */
+    function sentCrc(nibs, variant){
+      var c = 5;
+      for(var i = 0; i < nibs.length; i++) c = SENT_CRC_TAB[c] ^ (nibs[i] & 15);
+      if(variant === 'recommended') c = SENT_CRC_TAB[c];
+      return c;
+    }
+
+    function sentUs(H, s){ return H.fmt(s * 1e6, s < 1e-5 ? 2 : 1) + ' µs'; }
+    function sentHx(v){ return v === null ? '–' : v.toString(16).toUpperCase(); }
+    function sentRatioOk(r, lo, hi){ return r >= lo && r <= hi; }
+
+    /* Sync-Kandidaten bei Soll-Tick tn: Periode 56 Ticks ±tol, danach Nibble-Perioden (grobe Grenzen 9–30 Ticks) */
+    function sentSyncs(P, tn, tol){
+      var out = [];
+      for(var k = 0; k < P.length; k++){
+        var r = P[k] / (56 * tn);
+        if(r < 1 - tol || r > 1 + tol) continue;
+        var tk = P[k] / 56, ok = true;
+        for(var q = 1; q <= 2 && k + q < P.length; q++){
+          if(!sentRatioOk(P[k + q] / tk, 9, 30)){ ok = false; break; }
+        }
+        if(ok) out.push(k);
+      }
+      return out;
+    }
+
+    /* Tick aus den Sync-Pulsen: dichteste Häufung der Kandidaten (je Kandidat Tick = Periode/56) */
+    function sentAutoTick(H, P){
+      var cand = [];
+      for(var k = 0; k < P.length; k++){
+        var tk = P[k] / 56, ok = true, cnt = 0;
+        for(var q = 1; q <= 2 && k + q < P.length; q++){
+          cnt++;
+          if(!sentRatioOk(P[k + q] / tk, 9, 30)){ ok = false; break; }
+        }
+        if(ok && cnt >= 1) cand.push(tk);
+      }
+      if(!cand.length) return null;
+      cand.sort(function(a, b){ return a - b; });
+      var bi = 0, bn = 0;
+      for(var i = 0; i < cand.length; i++){
+        var n = 0;
+        while(i + n < cand.length && cand[i + n] <= cand[i] * 1.16) n++;
+        if(n > bn){ bn = n; bi = i; }
+      }
+      return H.median(cand.slice(bi, bi + bn));
+    }
+
+    function sentLevelChecks(H, dg){
+      var out = [], lo = dg.lo, hi = dg.hi;
+      var sl = lo <= 0.5 ? 'ok' : (lo <= 1.0 ? 'warn' : 'bad');
+      out.push(H.check(sl, 'Low-Pegel', H.fmt(lo, 2) + ' V',
+        sl === 'ok' ? '' : 'Typisch bei 5-V-Sensoren: Low unter 0,5 V (Richtwert, keine Normgrenze). Pull-up/Last, Masse und Tastkopf prüfen.'));
+      var sh = hi >= 4.1 ? 'ok' : (hi >= 3.5 ? 'warn' : 'bad');
+      out.push(H.check(sh, 'High-Pegel', H.fmt(hi, 2) + ' V',
+        sh === 'ok' ? '' : 'Typisch bei 5-V-Sensoren: High über 4,1 V (Richtwert, keine Normgrenze). Sensorversorgung und Pull-up prüfen.'));
+      return out;
+    }
+
+    function decodeSENT(values, dt, opt, H){
+      opt = opt || {};
+      var res = {bus:'sent', ok:false, error:null, info:{bitrate:null, bitTime:null, samplesPerBit:null}, checks:[], frames:[]};
+      var dg = H.digitize(values, dt, {threshold:opt.threshold, hyst:opt.hyst, minSwing:opt.minSwing});
+      if(!dg.ok){ res.error = dg.error; return res; }
+
+      if(dg.idle){
+        var lv = dg.idle.level, val = H.fmt(lv, 2) + ' V';
+        if(lv >= 3.5){
+          res.error = 'Leitung ruht auf High (' + val + '): der Sensor sendet nichts. Versorgung und Masse des Sensors prüfen; bei SPC-Sensoren fehlt der Trigger-Impuls des Steuergeräts.';
+          res.checks.push(H.check('warn', 'Leitungspegel', val, 'Ruhepegel High = Leitung frei, aber keine Impulse in der Aufnahme.'));
+        } else if(lv <= 1.0){
+          res.error = 'Leitung dauerhaft auf Low (' + val + '): Kurzschluss nach Masse, Sensor ohne Versorgung oder defekt, oder Kanal falsch angeschlossen.';
+          res.checks.push(H.check('bad', 'Leitungspegel', val, 'Dauer-Low: keine Übertragung möglich.'));
+        } else {
+          res.error = 'Leitung auf Zwischenpegel (' + val + '): Signalleitung offen/nicht angeschlossen oder falscher Kanal.';
+          res.checks.push(H.check('bad', 'Leitungspegel', val, 'Weder sauberes High noch Low.'));
+        }
+        return res;
+      }
+
+      var runs = dg.runs, nr = runs.length, j, k, q;
+      var lc = sentLevelChecks(H, dg);
+      for(k = 0; k < lc.length; k++) res.checks.push(lc[k]);
+
+      /* fallende Flanken */
+      var F = [], LW = [];
+      for(j = 1; j < nr; j++){
+        if(runs[j].lvl !== 0) continue;
+        F.push(runs[j].t0);
+        LW.push(j < nr - 1 ? runs[j].t1 - runs[j].t0 : null);
+      }
+      var m = F.length, P = [];
+      for(k = 0; k + 1 < m; k++) P.push(F[k + 1] - F[k]);
+      var rt3 = H.rateCheck(3e-6, dt);
+      var hintNom = rt3.st === 'ok' ? '' : ' Bei 3 µs Tick: ' + rt3.hint;
+      if(m < 4){
+        res.error = 'Zu wenige Impulse (' + m + ') für eine SENT-Botschaft in der Aufnahme.' + hintNom;
+        return res;
+      }
+
+      /* Tick bestimmen */
+      var tn = (typeof opt.tick === 'number' && opt.tick > 0) ? opt.tick : null, tick0, syncs = [], fellBack = false;
+      if(tn){
+        tick0 = tn; syncs = sentSyncs(P, tn, 0.25);
+        if(!syncs.length){
+          var ta = sentAutoTick(H, P);
+          if(ta){ tick0 = ta; syncs = sentSyncs(P, ta, 0.25); fellBack = true; }
+        }
+      } else {
+        var tb = sentAutoTick(H, P);
+        if(tb){ tick0 = tb; syncs = sentSyncs(P, tb, 0.25); }
+      }
+      if(!syncs.length){
+        res.error = 'Kein SENT-Signal erkannt: kein Sync-Puls (56 Ticks) mit anschließenden Nibble-Impulsen (12–27 Ticks) gefunden.' + hintNom;
+        return res;
+      }
+      var spb = tick0 / dt;
+      res.info.bitrate = 1 / tick0; res.info.bitTime = tick0; res.info.samplesPerBit = spb;
+      if(spb < 3){
+        var rt = H.rateCheck(tick0, dt);
+        res.checks.push(rt);
+        res.error = 'Zu wenige Messpunkte pro Tick (' + H.fmt(spb, 1) + ' bei ' + sentUs(H, tick0) + ' Tick): SENT nicht sicher auswertbar. ' + rt.hint;
+        return res;
+      }
+      /* 1 % Messunsicherheit der Tick-Schätzung, damit genau 8,0 Punkte/Tick nicht wegen 7,999 als Warnung erscheinen */
+      res.checks.push(H.rateCheck(tick0 * 1.01, dt));
+
+      /* Nibble-Anzahl / Pausenpuls bestimmen */
+      var nib0 = (typeof opt.nibbles === 'number' && opt.nibbles >= 1 && opt.nibbles <= 8) ? Math.floor(opt.nibbles) : null;
+      var crcMode = opt.crc === 'legacy' || opt.crc === 'recommended' ? opt.crc : 'auto';
+      var comp = [];   /* vollständige Botschaften zwischen zwei Syncs */
+      for(k = 0; k + 1 < syncs.length; k++) comp.push({a:syncs[k], b:syncs[k + 1], c:syncs[k + 1] - syncs[k] - 1});
+      function ratio(a, idx){ return P[idx] / (P[a] / 56); }
+      function nibsOf(a, N, off){
+        var out = [];
+        for(var i = 0; i <= N + 1; i++){
+          var r = ratio(a, a + 1 + i + (off || 0)), v = Math.round(r) - 12;
+          out.push(sentRatioOk(r, 11.5, 27.5) && v >= 0 && v <= 15 ? v : null);
+        }
+        return out;
+      }
+      function crcGood(a, N){
+        var nb = nibsOf(a, N), i, dn = [];
+        for(i = 1; i <= N; i++){ if(nb[i] === null) return false; dn.push(nb[i]); }
+        if(nb[N + 1] === null) return false;
+        var want = nb[N + 1];
+        if(crcMode === 'legacy') return sentCrc(dn, 'legacy') === want;
+        if(crcMode === 'recommended') return sentCrc(dn, 'recommended') === want;
+        return sentCrc(dn, 'legacy') === want || sentCrc(dn, 'recommended') === want;
+      }
+      var hyp = null, hypGuess = false;
+      if(comp.length){
+        var cs = [], seen = {};
+        for(k = 0; k < comp.length; k++) if(!seen[comp[k].c]){ seen[comp[k].c] = 1; cs.push(comp[k].c); }
+        cs.sort(function(x, y){ return x - y; });
+        var best = -1, hs = [];
+        for(k = 0; k < cs.length; k++){ hs.push({N:cs[k] - 2, p:0}); hs.push({N:cs[k] - 3, p:1}); }
+        for(k = 0; k < hs.length; k++){
+          var h = hs[k];
+          if(h.N < 1 || h.N > 8 || (nib0 && h.N !== nib0)) continue;
+          var sc = 0;
+          for(q = 0; q < comp.length; q++){
+            var cp = comp[q];
+            if(cp.c !== h.N + 2 + h.p) continue;
+            if(!sentRatioOk(ratio(cp.a, cp.a + 1 + h.N + 1), 11.5, 27.5)) continue;
+            if(h.p && ratio(cp.a, cp.a + 1 + h.N + 2) < 11.5) continue;
+            sc += 1 + (crcGood(cp.a, h.N) ? 10 : 0);
+          }
+          if(sc > best){ best = sc; hyp = h; }
+        }
+        if(best <= 0) hyp = null;
+      }
+      if(!hyp){
+        /* nur eine angeschnittene Botschaft: Länge schätzen */
+        var la = syncs[syncs.length - 1], avail = P.length - 1 - la;
+        if(nib0 && avail >= nib0 + 2){ hyp = {N:nib0, p:0}; }
+        else if(!nib0 && avail >= 3 && avail <= 10){ hyp = {N:avail - 2, p:0}; hypGuess = true; }
+      }
+      if(!hyp && nib0) hyp = {N:nib0, p:0};   /* vorgegebene Anzahl gilt, abweichende Botschaften werden als Fehler gemeldet */
+      if(!hyp){
+        res.checks.push(H.check('warn', 'Botschaften', 'keine vollständige erkannt',
+          'Sync-Puls gefunden, aber die Aufnahme enthält keine vollständige Botschaft. Längere Aufnahme (mehr Zeit) wählen, dabei ≥ 8 Punkte pro Tick halten.'));
+        res.ok = true;
+        return res;
+      }
+
+      /* Rahmen auswerten */
+      var frames = [], stat = [], prevSync = null, nBad = 0;
+      var tickSum = [], vUsed = {both:0, legacy:0, rec:0, none:0, stat:0};
+      for(k = 0; k < syncs.length; k++){
+        var a = syncs[k], b = (k + 1 < syncs.length) ? syncs[k + 1] : -1;
+        var N, pause = 0, mism = false, c;
+        if(b >= 0){
+          c = b - a - 1;
+          if(c === hyp.N + 2 + hyp.p){ N = hyp.N; pause = hyp.p; }
+          else {
+            mism = true;
+            pause = (c >= 4 && ratio(a, a + c) > 27.5) ? 1 : 0;
+            N = Math.max(0, c - 2 - pause);
+          }
+        } else {
+          var av = P.length - 1 - a;
+          if(av < hyp.N + 2) continue;
+          N = hyp.N; pause = (hyp.p && av >= N + 3) ? 1 : 0; c = N + 2 + pause;
+        }
+        var tickF = P[a] / 56, e = a + N + 3 + pause;       /* Index der Flanke nach dem letzten Feld */
+        var nb = [], bad = [], dev = 0, i, rr;
+        for(i = 0; i <= N + 1; i++){
+          rr = ratio(a, a + 1 + i);
+          var vv = Math.round(rr) - 12, okr = sentRatioOk(rr, 11.5, 27.5);
+          nb.push(okr ? vv : null);
+          if(!okr) bad.push({i:i, r:rr});
+          else dev = Math.max(dev, Math.abs(rr - Math.round(rr)));
+        }
+        var fr = {t0:F[a], t1:F[Math.min(e, m - 1)], title:'', text:'', data:[], status:'ok', checks:[], fields:[]};
+        var cs2 = fr.checks;
+        var stt = N + 1 >= 1 ? nb[0] : null;
+        /* Sync */
+        fr.fields.push({t0:F[a], t1:F[a + 1], label:'SYNC', kind:'sync', bad:false});
+        cs2.push(H.check('ok', 'Sync-Puls', sentUs(H, P[a]) + ' = 56 Ticks → Tick ' + sentUs(H, tickF), ''));
+        tickSum.push(tickF);
+        if(prevSync !== null){
+          var dv = Math.abs(P[a] - prevSync) / prevSync, lim = 1 / 64 + 1.5 * dt / prevSync, rr2 = dv / lim;
+          cs2.push(H.check(rr2 <= 1 ? 'ok' : (rr2 <= 2 ? 'warn' : 'bad'), 'Sync-Schwankung', H.fmt(dv * 100, 2) + ' % zur vorigen Botschaft (Grenze 1,56 %)',
+            rr2 <= 1 ? '' : 'Nach SAE J2716 darf der Sync-Puls von Botschaft zu Botschaft um höchstens 1/64 (1,56 %) schwanken (TI SPRAB22). Sensortakt driftet/instabil oder Versorgung/Störung.'));
+        }
+        prevSync = P[a];
+        if(tn){
+          var td = tickF / tn - 1, atd = Math.abs(td);
+          cs2.push(H.check(atd <= 0.2 ? 'ok' : 'bad', 'Tick-Zeit', sentUs(H, tickF) + ' (Soll ' + sentUs(H, tn) + ', ' + H.sgn(td * 100, 1) + ' %)',
+            atd <= 0.2 ? '' : 'SAE J2716 erlaubt ±20 % Abweichung der Sensortakts vom Sollwert.'));
+        }
+        if(mism){
+          cs2.push(H.check('bad', 'Nibble-Anzahl', N + ' Datennibble statt ' + hyp.N + (pause ? ' (mit Pausenpuls)' : ''),
+            'Ein Impuls fehlt oder ist zu viel (Störimpuls, Flanke verloren). Die Botschaft ist nicht verlässlich.'));
+        }
+        /* Nibble-Felder */
+        var dn = [];
+        fr.fields.push({t0:F[a + 1], t1:F[a + 2], label:'ST 0x' + sentHx(nb[0]), kind:'ctrl', bad:nb[0] === null});
+        for(i = 1; i <= N; i++){
+          fr.fields.push({t0:F[a + 1 + i], t1:F[a + 2 + i], label:'D' + (i - 1) + ' 0x' + sentHx(nb[i]), kind:'data', bad:nb[i] === null});
+          fr.data.push(nb[i]); dn.push(nb[i]);
+        }
+        var crcIdx = N + 1;
+        if(bad.length){
+          var bs = [];
+          for(i = 0; i < bad.length && i < 3; i++) bs.push((bad[i].i === 0 ? 'Status' : (bad[i].i === crcIdx ? 'CRC' : 'D' + (bad[i].i - 1))) + ' = ' + H.fmt(bad[i].r, 1) + ' Ticks');
+          cs2.push(H.check('bad', 'Nibble-Bereich', bs.join(', ') + (bad.length > 3 ? ' …' : ''),
+            'Gültig sind 12 bis 27 Ticks (Wert 0–15, SAE J2716). Außerhalb = fehlende/zusätzliche Flanke, Störung oder falsche Tick-Zeit.'));
+        } else cs2.push(H.check('ok', 'Nibble-Bereich', (N + 2) + ' Nibble im gültigen Bereich 12–27 Ticks', ''));
+        if(dev > 0.3) cs2.push(H.check('warn', 'Messgenauigkeit', 'bis ' + H.fmt(dev, 2) + ' Tick neben dem Raster',
+          'Impulslängen liegen nicht sauber auf ganzen Ticks: Rauschen, zu wenig Abtastpunkte oder instabiler Sensortakt. Werte evtl. um 1 falsch.'));
+        /* CRC */
+        var rx = nb[crcIdx], crcOk = false, varTxt = '';
+        var allValid = (rx !== null);
+        for(i = 0; i < dn.length; i++) if(dn[i] === null) allValid = false;
+        if(!allValid || N < 1){
+          cs2.push(H.check('warn', 'CRC', 'nicht prüfbar', 'Mindestens ein Nibble ist ungültig oder es fehlen Datennibble.'));
+          fr.fields.push({t0:F[a + 1 + crcIdx], t1:F[a + 2 + crcIdx], label:'CRC 0x' + sentHx(rx), kind:'crc', bad:true});
+        } else {
+          var cl = sentCrc(dn, 'legacy'), cr = sentCrc(dn, 'recommended'), mL = (rx === cl), mR = (rx === cr);
+          if(crcMode === 'legacy') crcOk = mL; else if(crcMode === 'recommended') crcOk = mR; else crcOk = mL || mR;
+          if(mL && mR) { varTxt = 'beide Varianten'; vUsed.both++; }
+          else if(mR){ varTxt = 'Variante 2010 (empfohlen, mit Null-Nibble)'; vUsed.rec++; }
+          else if(mL){ varTxt = 'Variante 2007/2008 (ohne Null-Nibble)'; vUsed.legacy++; }
+          if(crcOk){
+            cs2.push(H.check('ok', 'CRC', '0x' + sentHx(rx) + ' passt – ' + varTxt, ''));
+          } else if(!mL && !mR){
+            var withSt = (stt !== null) ? [stt].concat(dn) : null, alt = '';
+            if(withSt && (sentCrc(withSt, 'legacy') === rx || sentCrc(withSt, 'recommended') === rx)){
+              alt = 'Passt nur, wenn das Status-Nibble mit in die CRC eingeht – das ist nicht Norm, aber bei manchen Sensoren üblich (z. B. Infineon TLE4889C laut NXP AN4432).';
+              vUsed.stat++; crcOk = true;
+              cs2.push(H.check('warn', 'CRC', '0x' + sentHx(rx) + ' passt nur mit Status-Nibble', alt));
+            } else {
+              vUsed.none++;
+              cs2.push(H.check('bad', 'CRC', '0x' + sentHx(rx) + ' empfangen, erwartet 0x' + sentHx(cr) + ' (2010) / 0x' + sentHx(cl) + ' (2007)',
+                'Prüfsumme stimmt in keiner Variante: Übertragungsfehler, falsches Nibble oder ungewöhnliche Sensor-CRC.'));
+            }
+          } else {
+            cs2.push(H.check('bad', 'CRC', '0x' + sentHx(rx) + ' passt nur zur anderen Variante (' + varTxt + ')',
+              'Eingestellt ist die ' + (crcMode === 'legacy' ? 'Variante 2007/2008 (ohne Null-Nibble)' : 'Variante 2010 (mit Null-Nibble)') + '. Auf "automatisch" stellen, falls der Sensor die andere nutzt.'));
+          }
+          fr.fields.push({t0:F[a + 1 + crcIdx], t1:F[a + 2 + crcIdx], label:'CRC 0x' + sentHx(rx), kind:'crc', bad:!crcOk});
+        }
+        /* Pausenpuls */
+        if(pause){
+          var pp = P[a + 1 + N + 2] / tickF;
+          var okp = pp >= 12 && pp <= 768;
+          fr.fields.push({t0:F[a + 1 + N + 2], t1:F[a + 2 + N + 2], label:'PAUSE', kind:'end', bad:!okp});
+          cs2.push(H.check(okp ? 'ok' : 'warn', 'Pausenpuls', H.fmt(pp, 0) + ' Ticks (erlaubt 12–768)', okp ? '' : 'Pausenpuls außerhalb von 12 bis 768 Ticks.'));
+        }
+        /* Low-Zeit */
+        var lw = [];
+        for(i = a; i < e && i < m; i++) if(LW[i] !== null) lw.push(LW[i]);
+        if(lw.length >= 3){
+          var lt = H.median(lw) / tickF, okl = lt >= 3 && lt <= 9;
+          cs2.push(H.check(okl ? 'info' : 'warn', 'Low-Zeit', H.fmt(lt, 1) + ' Ticks (Richtwert ca. 5)',
+            okl ? 'Die Low-Phase ist bei SENT etwa 5 Ticks lang; gemessen an der Mittenschwelle, daher wirken langsame Anstiege etwas länger.' : 'Low-Phase weicht stark von den typischen 5 Ticks ab (Richtwert).'));
+        }
+        /* Status */
+        stat.push(stt);
+        fr.title = 'SENT ' + (dn.length ? '0x' + dn.map(sentHx).join('') : '(ohne Daten)');
+        fr.text = 'Status 0x' + sentHx(stt) + ' · ' + N + ' Datennibble: ' + (dn.length ? dn.map(sentHx).join(' ') : '–') +
+          ' · CRC ' + (allValid && N >= 1 ? (crcOk ? 'ok' : 'FEHLER') : 'nicht prüfbar') + (pause ? ' · Pausenpuls' : '');
+        fr.status = H.worst(fr.checks);
+        if(fr.status === 'bad') nBad++;
+        frames.push(fr);
+      }
+      res.frames = frames;
+
+      /* Global */
+      var tm = H.median(tickSum);
+      if(tn){
+        var gd = tm / tn - 1;
+        res.checks.push(H.check(Math.abs(gd) <= 0.2 ? 'ok' : 'bad', 'Tick-Zeit', sentUs(H, tm) + ' gemessen, Soll ' + sentUs(H, tn) + ' (' + H.sgn(gd * 100, 1) + ' %)',
+          (fellBack ? 'Mit dem Sollwert wurde kein Sync-Puls gefunden; Tick wurde automatisch bestimmt. ' : '') + 'SAE J2716 erlaubt ±20 % Abweichung des Sensortakts.'));
+      } else {
+        var typ = tm >= 3e-6 * 0.95 && tm <= 90e-6 * 1.05;
+        res.checks.push(H.check(typ ? 'info' : 'warn', 'Tick-Zeit', sentUs(H, tm) + ' (aus Sync-Puls, ' + H.fmt(1 / tm / 1000, 1) + ' kHz Takt)',
+          typ ? 'Üblich sind 3 bis 90 µs.' : 'Ungewöhnlich: üblich sind 3 bis 90 µs. Evtl. kein SENT-Signal oder falsche Zeitbasis.'));
+      }
+      var crcTxt2;
+      if(vUsed.rec && !vUsed.legacy) crcTxt2 = H.check('ok', 'CRC-Variante', 'Variante 2010 (empfohlen, mit Null-Nibble)', 'Alle eindeutig prüfbaren Botschaften passen zu SAE J2716 2010.');
+      else if(vUsed.legacy && !vUsed.rec) crcTxt2 = H.check('ok', 'CRC-Variante', 'Variante 2007/2008 (älter, ohne Null-Nibble)', 'Der Sensor nutzt die ältere CRC-Berechnung.');
+      else if(vUsed.legacy && vUsed.rec) crcTxt2 = H.check('warn', 'CRC-Variante', 'gemischt: beide Varianten kommen vor', 'Uneinheitlich – Übertragungsfehler oder zwei Sensoren/Ausgabestände.');
+      else if(vUsed.both) crcTxt2 = H.check('info', 'CRC-Variante', 'beide Varianten passen', 'Mit den vorhandenen Daten nicht unterscheidbar (bei manchen Werten liefern beide dasselbe). Mehr Botschaften aufnehmen.');
+      else if(vUsed.stat) crcTxt2 = H.check('warn', 'CRC-Variante', 'nur mit Status-Nibble', 'Sensor rechnet das Status-Nibble in die CRC ein (herstellerspezifisch, nicht Norm).');
+      else if(vUsed.none) crcTxt2 = H.check('bad', 'CRC-Variante', 'keine Variante passt', 'Keine Botschaft hat eine gültige CRC.');
+      else crcTxt2 = null;
+      if(crcTxt2) res.checks.push(crcTxt2);
+      if(frames.length){
+        res.checks.push(H.check(nBad ? 'warn' : 'ok', 'Botschaften', frames.length + ' erkannt, ' + nBad + ' mit Fehler', hypGuess ? 'Nibble-Anzahl nur aus einer Botschaft geschätzt; mehr Botschaften aufnehmen.' : ''));
+        res.checks.push(H.check('info', 'Aufbau', hyp.N + ' Datennibble je Botschaft' + (hyp.p ? ', mit Pausenpuls' : ', ohne Pausenpuls'),
+          hyp.p ? 'Pausenpuls hält die Botschaftslänge konstant.' : 'Kein Pausenpuls erkannt; ist er kürzer als 28 Ticks, kann er nicht sicher von einem Nibble unterschieden werden (CRC entscheidet).'));
+      }
+      /* Slow Channel */
+      var s2 = {}, s3 = {};
+      for(k = 0; k < stat.length; k++) if(stat[k] !== null){ s2[(stat[k] >> 2) & 1] = 1; s3[(stat[k] >> 3) & 1] = 1; }
+      if((s2[0] && s2[1]) || (s3[0] && s3[1]))
+        res.checks.push(H.check('info', 'Slow Channel', 'Status-Bits 2/3 wechseln', 'Hier läuft vermutlich der serielle Zusatzkanal (Slow Channel, ein Bit je Botschaft). Er wird nicht dekodiert.'));
+      /* Rand */
+      if(syncs[0] > 0) res.checks.push(H.check('info', 'Aufnahmebeginn', 'Beginnt mitten in einer Botschaft', syncs[0] + ' Impuls(e) vor dem ersten Sync-Puls wurden verworfen.'));
+      res.ok = true;
+      return res;
+    }
+
+    /* ---------- Testsignale ---------- */
+    function sentRng(seed){
+      var a = (seed >>> 0) || 1;
+      return function(){
+        a = (a + 0x6D2B79F5) >>> 0;
+        var t = a;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    /* o: tick (s, 3e-6), dt (tick/8), n (5000), nibbles (6), crc 'recommended'|'legacy', pause (Ticks fest) | frameTicks (konstante Länge),
+       drift (relative Tick-Änderung je Botschaft), t0 (s, Zeit des ersten Impulses, negativ = Aufnahme beginnt mitten in der Botschaft),
+       vlow, vhigh, noise, rise, fall, lowTicks, seed,
+       frames:[{status, data:[..], crc:'legacy'|'recommended', crcNibble:Zahl (CRC-Nibble fest vorgeben), badCrc:true|Zahl, override:{periodIndex:ticks}, dropPeriod:index, pause:Ticks, tick:s}]
+       Periodenindex: 0 = Status, 1.. = Daten, danach CRC. */
+    function synthSENT(o){
+      o = o || {};
+      var tick = o.tick || 3e-6, dt = o.dt || tick / 8, n = o.n || 5000;
+      var NN = o.nibbles || 6, vlo = o.vlow != null ? o.vlow : 0.3, vhi = o.vhigh != null ? o.vhigh : 5.0;
+      var noise = o.noise != null ? o.noise : 0.03, tr = o.rise != null ? o.rise : 8e-6, tf = o.fall != null ? o.fall : 3e-6;
+      var lowTicks = o.lowTicks || 5, rnd = sentRng(o.seed != null ? o.seed : 1), variant = o.crc || 'recommended';
+      var ev = [{t:-1e9, lvl:1}], t = o.t0 != null ? o.t0 : 7 * tick, tEnd = n * dt;
+      var list = o.frames, auto = !list;
+      var truth = {tick:tick, frames:[]}, fi = 0, i, drift = o.drift || 0, curTick = tick;
+      if(auto) list = [];
+      function pulse(tt, tk){
+        ev.push({t:tt, lvl:0});
+        ev.push({t:tt + lowTicks * tk, lvl:1});
+      }
+      if(!o.noFrames){
+        while((auto || fi < list.length) && t < tEnd + 400 * tick && fi < 400){
+          var f = auto ? {status:0, data:null} : list[fi];
+          if(auto) list.push(f);
+          var tk = f.tick || curTick, data = f.data;
+          if(!data){
+            data = [];
+            for(i = 0; i < NN; i++) data.push(Math.floor(rnd() * 16));
+          }
+          var st = f.status != null ? f.status : 0;
+          var crc = f.crcNibble != null ? f.crcNibble & 15 : sentCrc(data, f.crc || variant);
+          if(f.badCrc) crc = (crc + (typeof f.badCrc === 'number' ? f.badCrc : 1)) & 15;
+          var per = [56, 12 + st];
+          for(i = 0; i < data.length; i++) per.push(12 + data[i]);
+          per.push(12 + crc);
+          var body = per.slice(1);
+          if(f.override) for(var key in f.override) if(Object.prototype.hasOwnProperty.call(f.override, key)) body[+key] = f.override[key];
+          if(f.dropPeriod != null) body.splice(f.dropPeriod, 1);
+          per = [56].concat(body);
+          var pz = f.pause != null ? f.pause : (o.pause || 0);
+          if(o.frameTicks){
+            var sum = 0;
+            for(i = 0; i < per.length; i++) sum += per[i];
+            pz = Math.max(12, Math.round(o.frameTicks - sum));
+          }
+          if(pz) per.push(pz);
+          var t0f = t;
+          for(i = 0; i < per.length; i++){
+            pulse(t, tk);
+            t += per[i] * tk;
+          }
+          truth.frames.push({t0:t0f, status:st, data:data.slice(), crc:crc, periods:per.slice(), tick:tk});
+          curTick *= (1 + drift);
+          fi++;
+        }
+        pulse(t, curTick);   /* schließende Flanke für die letzte CRC */
+      }
+      var vals = new Float32Array(n), k = 0;
+      for(i = 0; i < n; i++){
+        var ts = i * dt;
+        while(k + 1 < ev.length && ev[k + 1].t <= ts) k++;
+        var lv = ev[k].lvl, volt = lv ? vhi : vlo;
+        if(k > 0){
+          var edge = lv ? tr : tf, fr = (ts - ev[k].t) / edge;
+          if(fr < 1){
+            var pv = ev[k - 1].lvl ? vhi : vlo;
+            volt = pv + (volt - pv) * fr;
+          }
+        }
+        vals[i] = volt + noise * (rnd() + rnd() + rnd() - 1.5) * 2;
+      }
+      return {values:vals, dt:dt, truth:truth};
+    }
+    return {decodeSENT:decodeSENT, synthSENT:synthSENT};
+  })();
+  var M_cycles = (function(){
+    /* OsziDecode – Zyklus-Messung („DeepMeasure“), DOM-frei, ES5.
+       Wird später 1:1 in den Script-Block <script id="oszi-decode"> übernommen. Alle Namen außer
+       measureCycles/synthCycles tragen deshalb das Präfix "cy", damit sie nicht mit common.js oder
+       anderen Modulen kollidieren. Die Helfer H (digitize, median, check, fmt, fmtDiv) kommen als Parameter.
+
+       Messprinzip
+       - Flanken: H.digitize (Hysterese-Schwellwert, lineare Interpolation der Mittenschwelle).
+         Zyklus = Startflanke bis nächste Startflanke (gleiche Richtung); nur vollständige Zyklen.
+       - Breiten/Periode aus den interpolierten Mittenschwellen-Durchgängen, nicht aus Sample-Zählung.
+       - Anstiegs-/Abfallzeit: interpolierter Durchgang durch 10 %/90 % (oder 20 %/80 %) von Base/Top
+         (Base/Top = die beiden Pegel, die digitize aus der ganzen Aufnahme bestimmt, Median je Hälfte).
+         Gemessen wird der LETZTE Durchgang durch den ersten und der ERSTE Durchgang durch den zweiten
+         Bezugspegel rund um die Flanke (robust gegen Rauschen auf den Plateaus). Wird ein Pegel nicht
+         erreicht oder liegen weniger als CY_MIN_EDGE_SAMPLES Samples dazwischen, ist der Wert null.
+       - Ausreißer: modifizierter Z-Wert nach Iglewicz/Hoaglin, |x − Median| / (1,4826·MAD) > 3,5.
+         Ersatz bei MAD = 0 (mehr als die Hälfte der Werte identisch, typisch für rauschfreie oder
+         quantisierte Signale): 1,253314·mittlere absolute Abweichung (ebenfalls Iglewicz/Hoaglin).
+         Begründung: MAD = 0 würde jede winzige Abweichung (Rundungsrauschen) unendlich "signifikant" machen;
+         die mittlere Abweichung bleibt dann endlich und wächst mit echten Ausreißern.
+         Zusätzlich gilt eine Mindestabweichung (Messunsicherheit, siehe cyFloor): Abweichungen unterhalb
+         der Zeitauflösung (± dt) bzw. 5 % des Hubs bei Spannungen werden nie als Ausreißer gemeldet
+         (vmax/vmin sind Extremwerte über viele verrauschte Samples, also schief verteilt; die symmetrische
+         MAD-Regel würde sonst durch normales Rauschen zufällig anschlagen).
+         Ab 5 Messwerten je Spalte (darunter ist Median/MAD zu unsicher).
+       - Messunsicherheit: Zeitwerte mindestens ± dt (Abtastintervall); steht in info und in den Checks. */
+
+    var CY_MIN_EDGE_SAMPLES = 3;     /* weniger Samples zwischen den Bezugspegeln: Flankenzeit nicht aussagekräftig */
+    var CY_MIN_OUTLIER_N = 5;        /* Ausreißer-Suche erst ab so vielen Werten je Spalte */
+    var CY_OUTLIER_Z = 3.5;          /* Iglewicz/Hoaglin */
+    var CY_DEFAULT_MAX_CYCLES = 10000;
+
+    function cyColumns(){
+      return [
+        {key:'period', label:'Periode',      unit:'s',  factor:1},
+        {key:'freq',   label:'Frequenz',     unit:'Hz', factor:1},
+        {key:'wPos',   label:'Breite High',  unit:'s',  factor:1},
+        {key:'wNeg',   label:'Breite Low',   unit:'s',  factor:1},
+        {key:'duty',   label:'Tastgrad',     unit:'%',  factor:100},   /* Wert 0…1, Anzeige = Wert · factor */
+        {key:'rise',   label:'Anstiegszeit', unit:'s',  factor:1},
+        {key:'fall',   label:'Abfallzeit',   unit:'s',  factor:1},
+        {key:'vmax',   label:'Maximum',      unit:'V',  factor:1},
+        {key:'vmin',   label:'Minimum',      unit:'V',  factor:1}
+      ];
+    }
+
+    /* Zeit lesbar: 2,5e-5 → "25 µs" */
+    function cyFmtT(H, s){
+      var a = Math.abs(s);
+      if(a >= 1) return H.fmt(s, 2) + ' s';
+      if(a >= 1e-3) return H.fmt(s * 1e3, a >= 1e-2 ? 1 : 2) + ' ms';
+      if(a >= 1e-6) return H.fmt(s * 1e6, a >= 1e-5 ? 1 : 2) + ' µs';
+      return H.fmt(s * 1e9, 0) + ' ns';
+    }
+
+    function cyStats(xs, H){
+      var n = xs.length;
+      if(!n) return {n:0, min:null, max:null, mean:null, sd:null, median:null};
+      var mn = xs[0], mx = xs[0], sum = 0, i;
+      for(i = 0; i < n; i++){ var x = xs[i]; if(x < mn) mn = x; if(x > mx) mx = x; sum += x; }
+      var mean = sum / n, sd = null;
+      if(n > 1){                                     /* Stichproben-SD (n−1); bei einem Wert unbekannt statt 0 */
+        var q = 0;
+        for(i = 0; i < n; i++) q += (xs[i] - mean) * (xs[i] - mean);
+        sd = Math.sqrt(q / (n - 1));
+      }
+      return {n:n, min:mn, max:mx, mean:mean, sd:sd, median:H.median(xs)};
+    }
+
+    /* Indizes (in vals, null wird übersprungen) der Ausreißer. minDev = Mindestabweichung (Messunsicherheit). */
+    function cyOutlierIdx(vals, minDev, H){
+      var xs = [], idx = [], i;
+      for(i = 0; i < vals.length; i++) if(vals[i] !== null){ xs.push(vals[i]); idx.push(i); }
+      if(xs.length < CY_MIN_OUTLIER_N) return [];
+      var med = H.median(xs), dev = [];
+      for(i = 0; i < xs.length; i++) dev.push(Math.abs(xs[i] - med));
+      var mad = H.median(dev), sigma;
+      if(mad > 0) sigma = 1.4826 * mad;
+      else {
+        var s = 0;
+        for(i = 0; i < dev.length; i++) s += dev[i];
+        sigma = 1.253314 * s / dev.length;
+      }
+      if(!(sigma > 0)) return [];
+      var out = [];
+      for(i = 0; i < xs.length; i++) if(dev[i] > minDev && dev[i] / sigma > CY_OUTLIER_Z) out.push(idx[i]);
+      return out;
+    }
+
+    /* Flankendauer zwischen den Bezugspegeln um die Flanke bei tc.
+       tPrev/tNext: Zeiten der Nachbarflanken (Suchgrenzen). vLo/vHi: Bezugspegel in V.
+       Rückgabe {dur, status:'ok'|'incomplete'|'few'}; dur = null außer bei 'ok'. */
+    function cyEdge(values, dt, tc, tPrev, tNext, rising, vLo, vHi){
+      var n = values.length;
+      var s = rising ? 1 : -1;                       /* fallende Flanke = gespiegelt, danach wie steigend */
+      var a = s * (rising ? vLo : vHi), b = s * (rising ? vHi : vLo);   /* a < b: erst a, dann b durchlaufen */
+      var ic = Math.floor(tc / dt);
+      if(ic < 0) ic = 0;
+      if(ic > n - 2) ic = n - 2;
+      var jMin = Math.max(0, Math.floor(tPrev / dt)), kMax = Math.min(n - 1, Math.ceil(tNext / dt));
+      var j = ic;
+      while(j >= jMin && s * values[j] > a) j--;
+      if(j < jMin) return {dur:null, status:'incomplete'};
+      var k = ic + 1;
+      while(k <= kMax && s * values[k] < b) k++;
+      if(k > kMax) return {dur:null, status:'incomplete'};
+      var vj = s * values[j], vj1 = s * values[j + 1], fa = vj1 > vj ? (a - vj) / (vj1 - vj) : 0;
+      var vk0 = s * values[k - 1], vk = s * values[k], fb = vk > vk0 ? (b - vk0) / (vk - vk0) : 1;
+      if(fa < 0) fa = 0; if(fa > 1) fa = 1;
+      if(fb < 0) fb = 0; if(fb > 1) fb = 1;
+      var ta = (j + fa) * dt, tb = (k - 1 + fb) * dt;
+      if(!(tb > ta)) return {dur:null, status:'incomplete'};
+      var cnt = Math.ceil(tb / dt - 1e-9) - 1 - Math.floor(ta / dt + 1e-9);   /* Samples echt zwischen ta und tb */
+      if(cnt < CY_MIN_EDGE_SAMPLES) return {dur:null, status:'few'};
+      return {dur:tb - ta, status:'ok'};
+    }
+
+    /* Runs mit Hysterese – gleiche Semantik wie H.digitize (Flankenzeit = letzter interpolierter Durchgang der Mitte vor dem Hysterese-Überschreiten) */
+    function cyRuns(values, dt, mid, thLo, thHi, tEnd){
+      var n = values.length;
+      function cross(i){
+        for(var q = i; q > 0 && q > i - 400; q--){
+          var a = values[q - 1], b = values[q];
+          if((a - mid) * (b - mid) <= 0 && a !== b) return (q - 1 + (mid - a) / (b - a)) * dt;
+        }
+        return i * dt;
+      }
+      var st = values[0] > mid ? 1 : 0, ts = 0, runs = [];
+      for(var i = 1; i < n; i++){
+        var v = values[i];
+        if(st === 1 && v < thLo){ var te = cross(i); runs.push({lvl:1, t0:ts, t1:te}); ts = te; st = 0; }
+        else if(st === 0 && v > thHi){ var te2 = cross(i); runs.push({lvl:0, t0:ts, t1:te2}); ts = te2; st = 1; }
+      }
+      runs.push({lvl:st, t0:ts, t1:tEnd});
+      return runs;
+    }
+
+    function cyList(arr, max){
+      var s = arr.slice(0, max).join(', ');
+      return arr.length > max ? s + ' …' : s;
+    }
+
+    function measureCycles(values, dt, opt, H){
+      opt = opt || {};
+      var refKey = opt.ref === '20/80' ? '20/80' : '10/90';
+      var pRef = refKey === '20/80' ? 0.2 : 0.1;
+      var edge = opt.edge === 'fall' ? 'fall' : 'rise';
+      var maxCycles = (typeof opt.maxCycles === 'number' && opt.maxCycles >= 1) ? Math.floor(opt.maxCycles) : CY_DEFAULT_MAX_CYCLES;
+      var userHyst = (typeof opt.hyst === 'number' && Number.isFinite(opt.hyst) && opt.hyst >= 0) ? opt.hyst : null;
+      var minSwing = opt.minSwing != null ? opt.minSwing : 0.3;
+      var columns = cyColumns(), checks = [];
+      var info = {threshold:null, hyst:null, lo:null, hi:null, ref:refKey, edge:edge, dt:dt,
+                  timeUncertainty:(typeof dt === 'number' && dt > 0) ? dt : null, uncertaintyText:'', cycleCount:0};
+
+      function fail(msg, hint){
+        checks.push(H.check('bad', 'Zyklus-Messung', msg, hint || ''));
+        return {ok:false, error:msg, info:info, columns:columns, cycles:[], stats:{}, checks:checks};
+      }
+
+      var dOpt = {minSwing:minSwing};
+      if(opt.threshold != null && Number.isFinite(opt.threshold)) dOpt.threshold = opt.threshold;
+      var d = H.digitize(values, dt, dOpt);
+      if(!d.ok) return fail(d.error);
+      info.uncertaintyText = 'Zeitwerte sind mindestens auf ± ' + cyFmtT(H, dt) + ' genau (ein Abtastintervall).';
+      info.lo = d.lo; info.hi = d.hi;
+      if(d.idle){
+        info.level = d.idle.level;
+        return fail('Statisches Signal: Der Pegel ändert sich nicht (Hub unter ' + H.fmt(minSwing, 2) + ' V bzw. Schwelle nie überschritten) – ohne Flanken gibt es keine Zyklen.',
+          'Prüfen: richtiger Kanal, Kopplung (DC/AC), Tastkopf, Empfindlichkeit (V/div) und Auslösung.');
+      }
+      if(userHyst !== null){                         /* eigene Hysterese in V: Pegel/Mitte von digitize, Runs neu (ein zweiter digitize-Aufruf würde die ganze Aufnahme nochmals sortieren) */
+        d.thLo = d.mid - userHyst / 2; d.thHi = d.mid + userHyst / 2;
+        d.runs = cyRuns(values, dt, d.mid, d.thLo, d.thHi, d.tEnd);
+      }
+      var hub = d.hi - d.lo;
+      info.threshold = d.mid; info.hyst = d.thHi - d.thLo; info.hi = d.hi; info.lo = d.lo;
+      var runs = d.runs, m = runs.length;
+      if(m <= 1){
+        if(userHyst !== null && userHyst >= hub)
+          return fail('Hysterese (' + H.fmt(userHyst, 2) + ' V) ist nicht kleiner als der Signalhub (' + H.fmt(hub, 2) + ' V) – keine Flanke erkennbar.',
+            'Hysterese kleiner wählen (Standard: 20 % des Hubs).');
+        return fail('Statisches Signal: Die Schwelle (' + H.fmt(d.mid, 2) + ' V, Hysterese ' + H.fmt(info.hyst, 2) + ' V) wird nie durchquert – keine Flanken, keine Zyklen.',
+          'Schwelle prüfen (zu hoch/niedrig?) oder Zeitbasis größer stellen.');
+      }
+
+      /* Zyklen: Startflanke = Beginn eines Runs mit lvl === startLvl; Zyklus = Run i, i+1, Beginn von Run i+2 */
+      var startLvl = edge === 'rise' ? 1 : 0;
+      var vLoRef = d.lo + pRef * hub, vHiRef = d.lo + (1 - pRef) * hub;
+      var cycles = [], truncated = false;
+      var nRise = {ok:0, few:0, incomplete:0}, nFall = {ok:0, few:0, incomplete:0};
+      var shortPhase = 0, i = runs[1].lvl === startLvl ? 1 : 2;
+      var tEnd = d.tEnd, nS = values.length;
+      while(i + 2 <= m - 1){
+        if(cycles.length >= maxCycles){ truncated = true; break; }
+        var t0 = runs[i].t0, tMid = runs[i + 1].t0, t1 = runs[i + 2].t0;
+        var first = tMid - t0, second = t1 - tMid, period = t1 - t0;
+        var wPos = edge === 'rise' ? first : second, wNeg = edge === 'rise' ? second : first;
+        var riseIdx = edge === 'rise' ? i : i + 1, fallIdx = edge === 'rise' ? i + 1 : i;
+        var re = cyEdge(values, dt, runs[riseIdx].t0, runs[riseIdx - 1].t0, runs[riseIdx + 1].t0, true, vLoRef, vHiRef);
+        var fe = cyEdge(values, dt, runs[fallIdx].t0, runs[fallIdx - 1].t0, runs[fallIdx + 1].t0, false, vLoRef, vHiRef);
+        nRise[re.status]++; nFall[fe.status]++;
+        var i0 = Math.max(0, Math.ceil(t0 / dt)), i1 = Math.min(nS - 1, Math.floor(t1 / dt)), vmax = null, vmin = null;
+        for(var q = i0; q <= i1; q++){
+          var v = values[q];
+          if(vmax === null || v > vmax) vmax = v;
+          if(vmin === null || v < vmin) vmin = v;
+        }
+        if(wPos < CY_MIN_EDGE_SAMPLES * dt || wNeg < CY_MIN_EDGE_SAMPLES * dt) shortPhase++;
+        cycles.push({n:cycles.length + 1, t0:t0, t1:t1, period:period, freq:1 / period, wPos:wPos, wNeg:wNeg,
+                     duty:wPos / period, rise:re.dur, fall:fe.dur, vmax:vmax, vmin:vmin, outliers:[]});
+        i += 2;
+      }
+      info.cycleCount = cycles.length;
+      var nC = cycles.length;
+
+      /* Kein vollständiger Zyklus */
+      if(!nC){
+        return fail('Kein vollständiger Zyklus in der Aufnahme: Es gibt keine zwei gleichartigen Flanken (' + (edge === 'rise' ? 'steigend' : 'fallend') + ').',
+          'Zeitbasis größer stellen, damit mindestens eine volle Periode (besser 10 und mehr) ins Bild passt; sonst Schwelle/Flankenrichtung prüfen.');
+      }
+
+      /* Spalten, Statistik, Ausreißer */
+      var colVals = {}, stats = {}, c, k;
+      for(c = 0; c < columns.length; c++){
+        var key = columns[c].key, arr = [];
+        for(k = 0; k < nC; k++) arr.push(cycles[k][key]);
+        colVals[key] = arr;
+      }
+      for(c = 0; c < columns.length; c++){
+        var ky = columns[c].key, nn = [];
+        for(k = 0; k < nC; k++) if(colVals[ky][k] !== null) nn.push(colVals[ky][k]);
+        stats[ky] = cyStats(nn, H);
+      }
+      var medP = stats.period.median, medF = stats.freq.median;
+      var floors = {period:dt, freq:medF * medF * dt, wPos:dt, wNeg:dt, duty:dt / medP, rise:dt, fall:dt, vmax:0.05 * hub, vmin:0.05 * hub};
+      var outCols = {}, outCycles = 0, nOutTotal = 0;
+      for(c = 0; c < columns.length; c++){
+        var kc = columns[c].key, oi = cyOutlierIdx(colVals[kc], floors[kc], H);
+        for(k = 0; k < oi.length; k++) cycles[oi[k]].outliers.push(kc);
+        if(oi.length){ outCols[kc] = oi.length; nOutTotal += oi.length; }
+      }
+      var outList = [];
+      for(k = 0; k < nC; k++) if(cycles[k].outliers.length){ outCycles++; outList.push(cycles[k].n); }
+
+      /* Checks */
+      checks.push(H.check('info', 'Schwelle', H.fmt(d.mid, 2) + ' V, Hysterese ' + H.fmt(info.hyst, 2) + ' V',
+        'Pegel: Low ' + H.fmt(d.lo, 2) + ' V, High ' + H.fmt(d.hi, 2) + ' V. Bei Rauschen mit Mehrfachflanken die Hysterese vergrößern.'));
+      var perTxt = ' Typische Periode ' + cyFmtT(H, medP) + ' (' + H.fmt(medF, medF >= 100 ? 0 : 2) + ' Hz).';
+      if(nC < 3){
+        checks.push(H.check('warn', 'Zyklen', nC + (nC === 1 ? ' vollständiger Zyklus' : ' vollständige Zyklen'),
+          'Zu wenige Zyklen für eine Auswertung (mindestens 3, besser 10 und mehr). Zeitbasis größer stellen, z. B. mindestens ' +
+          H.fmtDiv(medP) + ', dann passen etwa 10 Zyklen ins Bild.' + perTxt));
+      } else if(nC < CY_MIN_OUTLIER_N){
+        checks.push(H.check('info', 'Zyklen', nC + ' vollständige Zyklen',
+          'Ausreißer werden erst ab ' + CY_MIN_OUTLIER_N + ' Zyklen gesucht. Für eine verlässliche Suche Zeitbasis größer stellen.' + perTxt));
+      } else {
+        checks.push(H.check('ok', 'Zyklen', nC + ' vollständige Zyklen', perTxt.replace(/^ /, '')));
+      }
+      info.uncertaintyText += ' Das sind etwa ' + H.fmt(100 * dt / medP, 2) + ' % der Periode.';
+      checks.push(H.check('info', 'Messunsicherheit', '± ' + cyFmtT(H, dt),
+        'Zeitwerte (Periode, Breiten, Flankenzeiten) sind mindestens auf ± ein Abtastintervall genau; Interpolation verbessert das nur bei sauberen Flanken. ' +
+        'Unterschiede unterhalb dieser Grenze werden nicht als Ausreißer gemeldet.'));
+
+      function edgeChecks(label, cnt){
+        var total = cnt.ok + cnt.few + cnt.incomplete;
+        if(cnt.few){
+          checks.push(H.check('warn', label, 'bei ' + cnt.few + ' von ' + total + ' Flanken nicht aussagekräftig',
+            label + ' nicht aussagekräftig: weniger als ' + CY_MIN_EDGE_SAMPLES + ' Messpunkte zwischen den Bezugspegeln (' + refKey.replace('/', ' % / ') + ' %). ' +
+            'Zeitbasis kleiner stellen, damit die Flanke aufgelöst wird.'));
+        }
+        if(cnt.incomplete){
+          checks.push(H.check('warn', label, 'bei ' + cnt.incomplete + ' von ' + total + ' Flanken kein Wert',
+            'Die Flanke erreicht die Bezugspegel (' + refKey.replace('/', ' % / ') + ' %) nicht, z. B. bei Sinus, Einschwingen oder zu kleiner Amplitude. Kein Wert statt einer Schätzung.'));
+        }
+        if(cnt.ok === total) checks.push(H.check('ok', label, 'bei allen ' + total + ' Flanken gemessen', ''));
+      }
+      edgeChecks('Anstiegszeit', nRise);
+      edgeChecks('Abfallzeit', nFall);
+
+      if(shortPhase){
+        checks.push(H.check('warn', 'Kurze Phasen', shortPhase + ' Zyklen mit High oder Low unter ' + CY_MIN_EDGE_SAMPLES + ' Messpunkten',
+          'Entweder sehr schmale Pulse (Zeitbasis kleiner stellen) oder Rauschen mit Mehrfachflanken (Hysterese vergrößern, Tastkopf/Masse prüfen).'));
+      }
+      if(nC >= CY_MIN_OUTLIER_N){
+        if(!outCycles){
+          checks.push(H.check('ok', 'Ausreißer', 'keine auffälligen Zyklen', 'Alle Zyklen liegen im Rahmen der üblichen Streuung.'));
+        } else {
+          var names = [];
+          for(c = 0; c < columns.length; c++) if(outCols[columns[c].key]) names.push(columns[c].label);
+          var hint = 'Diese Zyklen weichen deutlich vom typischen Zyklus (Median) ab, in der Tabelle markiert. Mögliche Ursachen: Zahnlücke oder schlechter Zahn, ' +
+            'Zündaussetzer, einzelner abweichender Puls. Betroffene Größen: ' + names.join(', ') + '.';
+          if(outCycles > nC * 0.2) hint += ' Achtung: mehr als 20 % der Zyklen sind auffällig – das Signal ist insgesamt unregelmäßig (z. B. Drehzahländerung); der Vergleich mit dem Median ist dann nur bedingt aussagekräftig.';
+          checks.push(H.check(outCycles > nC * 0.2 ? 'bad' : 'warn', 'Ausreißer',
+            outCycles + ' von ' + nC + ' Zyklen auffällig (Nr. ' + cyList(outList, 8) + ')', hint));
+        }
+      }
+      if(truncated){
+        checks.push(H.check('warn', 'Zyklenlimit', 'nur die ersten ' + maxCycles + ' Zyklen ausgewertet',
+          'Die Aufnahme enthält mehr Zyklen. Zeitbasis größer stellen ist hier nicht nötig – Auswahl eingrenzen oder Limit erhöhen.'));
+      }
+      return {ok:true, error:null, info:info, columns:columns, cycles:cycles, stats:stats, checks:checks};
+    }
+
+    /* ------------------------------------------------------------------ Testsignale */
+
+    function cyRng(seed){                            /* mulberry32: deterministisch */
+      var s = (seed | 0) || 1;
+      return function(){
+        s = (s + 0x6D2B79F5) | 0;
+        var t = Math.imul(s ^ (s >>> 15), 1 | s);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    function cyGauss(rnd){
+      var u = rnd(); if(u < 1e-12) u = 1e-12;
+      return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd());
+    }
+
+    /* Rechteckpulse mit linearen Flanken. pulses: [{t: Mitte der steigenden Flanke, w: Breite bis Mitte der fallenden Flanke}] */
+    function cyPulseSignal(n, dt, pulses, vlo, vhi, tr, tf, noise, rnd){
+      var arr = new Float32Array(n), hub = vhi - vlo, i, p;
+      for(i = 0; i < n; i++) arr[i] = vlo;
+      tr = Math.max(tr, 1e-12); tf = Math.max(tf, 1e-12);
+      for(p = 0; p < pulses.length; p++){
+        var tR = pulses[p].t, tF = tR + pulses[p].w, r0 = tR - tr / 2, f0 = tF - tf / 2;
+        var i0 = Math.max(0, Math.ceil(r0 / dt)), i1 = Math.min(n - 1, Math.floor((tF + tf / 2) / dt));
+        for(i = i0; i <= i1; i++){
+          var t = i * dt, up = (t - r0) / tr, dn = 1 - (t - f0) / tf;
+          up = up < 0 ? 0 : (up > 1 ? 1 : up); dn = dn < 0 ? 0 : (dn > 1 ? 1 : dn);
+          var val = vlo + hub * (up < dn ? up : dn);
+          if(val > arr[i]) arr[i] = val;
+        }
+      }
+      if(noise > 0) for(i = 0; i < n; i++) arr[i] += noise * cyGauss(rnd);
+      return arr;
+    }
+
+    /* synthCycles({kind, n, dt, noise, seed, vlo, vhi, rise, fall, …}) → {values:Float32Array, dt, truth}
+       kind 'square': freq, duty                      (Standard 1 kHz, 50 %)
+       kind 'pwm':    freq, duty, oddIndex, oddDuty   (ein Puls mit abweichendem Tastgrad, Periode bleibt gleich)
+       kind 'hall60-2': toothFreq, teeth(60), missing(2), slotOffset, duty, badTooth, badScale
+                      (Zahnlücke; badTooth = Slot eines Zahns mit verkürztem Puls)
+       kind 'inductive': freq, ampStart, ampEnd, offset (Sinus mit linear wachsender Amplitude)
+       truth.odd: [{t0, t1, kind}] – Zyklen (Mitte Startflanke bis nächste), die ein Messverfahren als Ausreißer finden muss. */
+    function synthCycles(o){
+      o = o || {};
+      var kind = o.kind || 'square', n = o.n || 5000;
+      var noise = o.noise != null ? o.noise : 0.02;
+      var rnd = cyRng(o.seed != null ? o.seed : 1);
+      var vlo = o.vlo != null ? o.vlo : 0, vhi = o.vhi != null ? o.vhi : 5;
+      var odd = [], pulses = [], dt, values, T, truth;
+      if(kind === 'square' || kind === 'pwm'){
+        var f = o.freq || 1000, duty = o.duty != null ? o.duty : 0.5;
+        T = 1 / f; dt = o.dt || T / 250;
+        var tS = o.tStart != null ? o.tStart : 0.37 * T;
+        for(var k = 0; tS + k * T < n * dt + T; k++){
+          var dk = (kind === 'pwm' && o.oddIndex != null && k === o.oddIndex) ? o.oddDuty : duty;
+          pulses.push({t:tS + k * T, w:dk * T});
+          if(kind === 'pwm' && o.oddIndex === k && tS + (k + 1) * T <= (n - 1) * dt) odd.push({t0:tS + k * T, t1:tS + (k + 1) * T, kind:'pwm'});
+        }
+        values = cyPulseSignal(n, dt, pulses, vlo, vhi, o.rise != null ? o.rise : 6 * dt, o.fall != null ? o.fall : 6 * dt, noise, rnd);
+        truth = {period:T, freq:f, duty:duty, odd:odd};
+      } else if(kind === 'hall60-2'){
+        var tf0 = o.toothFreq || 1000, teeth = o.teeth || 60, miss = o.missing != null ? o.missing : 2, off = o.slotOffset || 0;
+        var Ts = 1 / tf0, d2 = o.duty != null ? o.duty : 0.5;
+        dt = o.dt || Ts / 40;
+        var tS2 = o.tStart != null ? o.tStart : 0.35 * Ts;
+        for(var s = 0; tS2 + s * Ts < n * dt + Ts; s++){
+          var pos = (s + off) % teeth;
+          if(pos >= teeth - miss) continue;
+          var w = d2 * Ts, bad = (o.badTooth != null && s === o.badTooth);
+          if(bad) w *= (o.badScale != null ? o.badScale : 0.5);
+          pulses.push({t:tS2 + s * Ts, w:w});
+          if(pos === teeth - miss - 1 && miss > 0 && tS2 + (s + miss + 1) * Ts <= (n - 1) * dt)
+            odd.push({t0:tS2 + s * Ts, t1:tS2 + (s + miss + 1) * Ts, kind:'gap'});
+          if(bad && tS2 + (s + 1) * Ts <= (n - 1) * dt) odd.push({t0:tS2 + s * Ts, t1:tS2 + (s + 1) * Ts, kind:'badTooth'});
+        }
+        values = cyPulseSignal(n, dt, pulses, vlo, vhi, o.rise != null ? o.rise : 6 * dt, o.fall != null ? o.fall : 6 * dt, noise, rnd);
+        truth = {period:Ts, freq:tf0, teeth:teeth, missing:miss, odd:odd};
+      } else if(kind === 'inductive'){
+        var fi = o.freq || 1000, a0 = o.ampStart != null ? o.ampStart : 0.5, a1 = o.ampEnd != null ? o.ampEnd : 3, vo = o.offset || 0;
+        T = 1 / fi; dt = o.dt || T / 40;
+        var ph = o.phase != null ? o.phase : 0.3, tEnd = (n - 1) * dt;
+        values = new Float32Array(n);
+        for(var i = 0; i < n; i++){
+          var tt = i * dt, amp = a0 + (a1 - a0) * tt / tEnd;
+          values[i] = vo + amp * Math.sin(2 * Math.PI * fi * tt + ph) + (noise > 0 ? noise * cyGauss(rnd) : 0);
+        }
+        truth = {period:T, freq:fi, odd:[]};
+      } else {
+        throw new Error('synthCycles: unbekannte Signalart "' + kind + '"');
+      }
+      return {values:values, dt:dt, truth:truth};
+    }
+    return {measureCycles:measureCycles, synthCycles:synthCycles};
+  })();
+  var DEC = {lin:M_lin.decodeLIN, can:M_can.decodeCAN, kline:M_kline.decodeKLine, sent:M_sent.decodeSENT};
+  function fail(bus, msg){ return {bus:bus, ok:false, error:msg, info:{bitrate:null, bitTime:null, samplesPerBit:null}, checks:[], frames:[]}; }
+  /* Einstiegspunkt der Oberfläche. Ein Fehler im Decoder darf die Live-Anzeige nie anhalten. */
+  function decode(bus, values, dt, opt){
+    var f = DEC[bus];
+    if(!f) return fail(bus, 'Unbekannter Bus.');
+    try { return f(values, dt, opt || {}, H); }
+    catch(e){ return fail(bus, 'Auswertung fehlgeschlagen: ' + (e && e.message || e)); }
+  }
+  function cycles(values, dt, opt){
+    try { return M_cycles.measureCycles(values, dt, opt || {}, H); }
+    catch(e){ return {ok:false, error:'Auswertung fehlgeschlagen: ' + (e && e.message || e), info:{}, columns:[], cycles:[], stats:{}, checks:[]}; }
+  }
+  /* Beispielsignale (simuliert, im Bild als Wiedergabe gekennzeichnet). Bewusst gemischt: Gutframes und ein Fehler. */
+  function synth(bus, o){
+    o = o || {};
+    if(bus === 'lin'){
+      var s = M_lin.synthLIN([
+        {id:0x20, data:[0x01, 0x03], slave:false},
+        {id:0x21, data:[0x3F, 0x2C, 0x03, 0x00], slave:true},
+        {id:0x2A, data:[0x23, 0x00, 0x50], slave:true}
+      ], {baud:19200, fault:o.fault || ''});
+      s.label = 'LIN 19,2 kbit/s'; return s;
+    }
+    if(bus === 'can'){
+      var c = M_can.synthCAN({baud:500000, signal:'canh', spb:12, frames:[
+        {id:0x316, data:[0x05, 0x1F, 0x0C, 0x80, 0x1A, 0x00, 0x00, 0x00]},
+        {id:0x18FEF100, ext:true, data:[0xF3, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00]},
+        {id:0x43F, data:[0x01, 0x40], ack:false}
+      ]});
+      c.label = 'CAN 500 kbit/s (CAN-H)'; return c;
+    }
+    if(bus === 'kline'){
+      /* KWP2000 StartCommunication: Anfrage Tester → STG und positive Antwort (Beispiel ISO 14230-2) */
+      var k = M_kline.synthKLine({dt:12e-6, n:8000, messages:[
+        {bytes:[0x81, 0x10, 0xF1, 0x81, 0x03], ibGap:5.5e-3},
+        {bytes:[0x83, 0xF1, 0x10, 0xC1, 0xEF, 0x8F, 0xC3], gap:30e-3}
+      ]});
+      k.label = 'K-Leitung 10 400 Bd'; return k;
+    }
+    if(bus === 'sent'){ var t = M_sent.synthSENT({}); t.label = 'SENT 3 µs Tick'; return t; }
+    return null;
+  }
+  return {
+    H:H, decode:decode, cycles:cycles, synth:synth, buses:['lin', 'can', 'kline', 'sent'],
+    modules:{lin:M_lin, can:M_can, kline:M_kline, sent:M_sent, cycles:M_cycles}
+  };
+})();
+if(typeof module!=='undefined'&&module.exports) module.exports=OsziDecode;
 </script>
 <script id="oszi-live-app">
 /* ===== OSZI LIVE-MODUS (OWON VDS1022I / Mock) =====
@@ -25575,6 +28153,7 @@ function draw(){
     ctx.fillStyle='#0c1118'; ctx.font='bold '+(8*dpr)+'px ui-monospace,monospace'; ctx.fillText('T',w-6*dpr,tyc+3*dpr);
     if(LV.syncTrigSlide) LV.syncTrigSlide();
   }
+  if(typeof anaOverlay==='function') anaOverlay(ctx,w,h,dpr,win);
   /* Cursor */
   if(LV.cursor.on){
     ctx.strokeStyle='#e0a4ff'; ctx.lineWidth=1*dpr;
@@ -26141,6 +28720,274 @@ function initLive(){
 }
 if(document.readyState!=='loading') initLive();
 else document.addEventListener('DOMContentLoaded',initLive);
+/* @ana-js-begin */
+/* ===== OSZI-LIVE: Serielle Entschlüsselung + Zyklus-Messung (Oberfläche) =====
+   Nutzt OsziDecode (DOM-frei) und die globalen Live-Funktionen (LV, windowSlices, xform …).
+   Ausgewertet wird immer die ganze Geräte-Aufnahme (bzw. die gestoppte/wiedergegebene Aufnahme);
+   im Demo-Strom ohne Aufnahmegrenzen das sichtbare Fenster. Bänder im Bild nur, wenn das
+   Ergebnis zur gerade gezeigten Aufnahme gehört – nie zu einer älteren. */
+var ANA={
+  dec:{bus:'',src:'1',baud:0,vbat:12.6,signal:'auto',tick:'',nibbles:0,key:'',res:null,ver:-1,base:0,dt:0,sel:-1,cost:0,last:0},
+  dm:{on:false,src:'1',range:'all',edge:'rise',ref:'10/90',thr:'',hyst:'',key:'',res:null,ver:-1,base:0,dt:0,sel:-1,cost:0,last:0,unit:'V'}
+};
+var ANA_BAUD={
+  lin:[[0,'automatisch'],[19200,'19 200 bit/s'],[10417,'10 417 bit/s'],[9600,'9 600 bit/s'],[2400,'2 400 bit/s']],
+  can:[[0,'automatisch'],[1000000,'1 Mbit/s'],[500000,'500 kbit/s'],[250000,'250 kbit/s'],[125000,'125 kbit/s'],[100000,'100 kbit/s'],[83333,'83,3 kbit/s'],[50000,'50 kbit/s'],[33333,'33,3 kbit/s']],
+  kline:[[0,'automatisch'],[10400,'10 400 Bd'],[9600,'9 600 Bd']],
+  sent:[]
+};
+var ANA_COL={start:'#ff6b6b',sync:'#4fd2ff',id:'#ffd24a',ctrl:'#c7b4ff',data:'#7dff9b',crc:'#ff7ad9',ack:'#3ecf8e',end:'#8ca0b6',err:'#ff6b6b'};
+var ANA_IC={ok:'✓',warn:'!',bad:'✕',info:'i'};
+
+/* Aktuelle Aufnahme: ganze Aufnahme + Lage des sichtbaren Fensters darin */
+function anaCapture(){
+  var view=windowSlices(),c1,c2,dt=LV.dt,off=0;
+  if(LV.frozen){c1=LV.frozen.ch1;c2=LV.frozen.ch2;dt=LV.frozen.dt;off=view.start||0;}
+  else if(LV.frameTrig!=null||LV.playback){c1=LV.frame1;c2=LV.frame2;off=view.start||0;}
+  else {c1=view.t1;c2=view.t2;}
+  return {view:view,c1:c1,c2:c2,dt:dt,off:off};
+}
+/* Signal einer Quelle; scaled = mit Zange/Invertierung wie angezeigt (für Zyklus-Messung) */
+function anaSignal(c1,c2,src,scaled){
+  if(src==='d'){
+    if(!LV.chOn[0]||!LV.chOn[1]||!c1||!c2||!c1.length||c1.length!==c2.length) return {err:'CH1−CH2 braucht beide Kanäle eingeschaltet und gleich lang.'};
+    return {v:OsziLogic.combine(c1,c2,'sub'),unit:'V'};
+  }
+  var i=src==='2'?1:0, a=i?c2:c1;
+  if(!LV.chOn[i]) return {err:'CH'+(i+1)+' ist ausgeschaltet.'};
+  if(!a||a.length<2) return {err:'Noch keine Messdaten auf CH'+(i+1)+'.'};
+  return scaled?{v:xform(a,i),unit:chUnit(i)}:{v:a,unit:'V'};
+}
+function anaDecodeOpt(){
+  var d=ANA.dec,o={baud:d.baud||0};
+  if(d.bus==='lin'||d.bus==='kline') o.vbat=d.vbat;
+  if(d.bus==='can') o.signal=d.signal==='auto'?(d.src==='d'?'diff':'canh'):d.signal;
+  if(d.bus==='sent'){ var tk=parseFloat(String(d.tick).replace(',','.')); if(tk>0) o.tick=tk*1e-6; if(d.nibbles>0) o.nibbles=d.nibbles; }
+  return o;
+}
+function anaDmOpt(){
+  var d=ANA.dm,o={edge:d.edge,ref:d.ref};
+  var t=parseFloat(String(d.thr).replace(',','.')), h=parseFloat(String(d.hyst).replace(',','.'));
+  if(Number.isFinite(t)) o.threshold=t;
+  if(Number.isFinite(h)&&h>=0) o.hyst=h;
+  return o;
+}
+/* Neu rechnen, wenn sich Aufnahme oder Einstellungen geändert haben. Kostet ein Durchlauf > 25 ms,
+   wird im laufenden Betrieb gedrosselt (höchstens alle 500 ms). */
+function anaUpdate(){
+  var now=performance.now(),cap=null,D=ANA.dec,M=ANA.dm;
+  if(D.bus){
+    var dk=[LV.frameVersion,D.bus,D.src,JSON.stringify(anaDecodeOpt())].join('|');
+    if(dk!==D.key&&(!LV.running||D.cost<25||now-D.last>500)){
+      cap=cap||anaCapture();
+      var s=anaSignal(cap.c1,cap.c2,D.src,false),t0=performance.now();
+      D.res=s.err?{ok:false,error:s.err,frames:[],checks:[]}:OsziDecode.decode(D.bus,s.v,cap.dt,anaDecodeOpt());
+      D.cost=performance.now()-t0;D.last=now;D.key=dk;D.ver=LV.frameVersion;D.base=0;D.dt=cap.dt;
+      if(D.sel>=D.res.frames.length) D.sel=-1;
+      anaRenderDec(now);
+    }
+  }
+  if(M.on){
+    var mk=[LV.frameVersion,M.src,M.range,JSON.stringify(anaDmOpt()),LV.inv.join(),LV.clamp.join()].join('|');
+    if(mk!==M.key&&(!LV.running||M.cost<25||now-M.last>500)){
+      cap=cap||anaCapture();
+      var whole=M.range==='all',src=whole?cap:{c1:cap.view.t1,c2:cap.view.t2};
+      var sg=anaSignal(src.c1,src.c2,M.src,true),t1=performance.now();
+      M.res=sg.err?{ok:false,error:sg.err,cycles:[],checks:[]}:OsziDecode.cycles(sg.v,cap.dt,anaDmOpt());
+      M.unit=sg.unit||'V';
+      M.cost=performance.now()-t1;M.last=now;M.key=mk;M.ver=LV.frameVersion;M.base=whole?0:cap.off;M.dt=cap.dt;
+      if(M.sel>=(M.res.cycles||[]).length) M.sel=-1;
+      anaRenderDm(now);
+    }
+  }
+}
+function anaChecks(list){
+  return '<ul class="lv-ana-checks">'+(list||[]).map(function(c){
+    return '<li class="st-'+c.st+'"><span class="lv-ana-ic" aria-label="'+({ok:'in Ordnung',warn:'Hinweis',bad:'Fehler',info:'Info'}[c.st]||'')+'">'+(ANA_IC[c.st]||'')+'</span><span><b>'+esc(c.name)+':</b> '+esc(c.val)+(c.hint?'<br><small>'+esc(c.hint)+'</small>':'')+'</span></li>';
+  }).join('')+'</ul>';
+}
+function anaWorst(list){ var r={ok:0,info:0,warn:1,bad:2},w='ok'; (list||[]).forEach(function(c){ if(r[c.st]>r[w]) w=c.st; }); return w; }
+/* Tabelle neu zeichnen – im laufenden Betrieb höchstens zweimal pro Sekunde (DOM schonen) */
+function anaRenderDec(now,force){
+  var D=ANA.dec,res=D.res,sum=$('lv-dec-sum'),rows=$('lv-dec-rows');
+  if(!sum) return;
+  if(!force&&LV.running&&now-(D.shownAt||0)<500) return;
+  D.shownAt=now||performance.now();
+  if(!D.bus){ sum.innerHTML=''; rows.innerHTML='<tr><td colspan="5">Bus wählen.</td></tr>'; $('lv-dec-detail').innerHTML=''; return; }
+  if(!res){ sum.innerHTML='<div class="note">Warte auf Messdaten …</div>'; return; }
+  var all=(res.checks||[]).slice(); (res.frames||[]).forEach(function(f){ all=all.concat(f.checks||[]); });
+  var w=res.ok?anaWorst(all):'bad', n=(res.frames||[]).length;
+  var bit=!res.info?'':(D.bus==='sent'&&res.info.bitTime?' · Tick '+fmtT(res.info.bitTime):(res.info.bitrate?' · '+fmtBaud(res.info.bitrate):''));
+  var unitTxt=D.bus==='sent'||D.bus==='kline'?['Botschaft','Botschaften']:['Frame','Frames'];
+  var head=!res.ok?(res.error||'Nicht auswertbar'):(n?n+' '+unitTxt[n>1?1:0]+' dekodiert':'Keine '+unitTxt[1]+' erkannt');
+  sum.innerHTML='<div class="lv-ana-sum st-'+w+'">'+(ANA_IC[w]||'')+' '+esc(head)+esc(bit)+'</div>'+anaChecks(res.checks);
+  if(!n){ rows.innerHTML='<tr><td colspan="5">'+(res.ok?'Keine '+unitTxt[1]+' in dieser Aufnahme.':'–')+'</td></tr>'; $('lv-dec-detail').innerHTML=''; return; }
+  rows.innerHTML=res.frames.map(function(f,i){
+    return '<tr class="lv-ana-row'+(i===D.sel?' sel':'')+'" data-i="'+i+'" tabindex="0"><td class="mono">'+(i+1)+'</td><td class="mono">'+fmtT(f.t0)+'</td><td class="mono">'+esc(f.title)+'</td><td class="mono">'+esc(f.text||'')+'</td><td><span class="lv-ana-ic st-'+f.status+'">'+(ANA_IC[f.status]||'')+'</span></td></tr>';
+  }).join('');
+  var fs=res.frames[D.sel];
+  $('lv-dec-detail').innerHTML=fs?'<h4>Frame '+(D.sel+1)+' · '+esc(fs.title)+'</h4>'+anaChecks(fs.checks):'';
+}
+function fmtBaud(b){ return b>=1e6?(b/1e6).toFixed(2).replace('.',',')+' Mbit/s':b>=1e3?(b/1e3).toFixed(b>=1e5?0:2).replace('.',',')+' kbit/s':Math.round(b)+' bit/s'; }
+function anaFmtCell(col,v,unit){
+  if(v==null||!Number.isFinite(v)) return '–';
+  if(col.unit==='s') return fmtT(v);
+  if(col.unit==='Hz') return fmtF(v);
+  if(col.unit==='%') return (v*(col.factor||100)).toFixed(1).replace('.',',')+' %';
+  if(col.unit==='V') return fmtVal(v,unit);
+  return String(Math.round(v*1000)/1000).replace('.',',');
+}
+function anaRenderDm(now,force){
+  var M=ANA.dm,res=M.res,sum=$('lv-dm-sum'),rows=$('lv-dm-rows'),head=$('lv-dm-head');
+  if(!sum) return;
+  if(!force&&LV.running&&now-(M.shownAt||0)<500) return;
+  M.shownAt=now||performance.now();
+  if(!M.on){ sum.innerHTML=''; head.innerHTML=''; rows.innerHTML='<tr><td>Einschalten, um jeden Zyklus der Aufnahme einzeln zu vermessen.</td></tr>'; return; }
+  if(!res){ sum.innerHTML='<div class="note">Warte auf Messdaten …</div>'; return; }
+  var cols=res.columns||[], cyc=res.cycles||[];
+  if(!res.ok){ sum.innerHTML='<div class="lv-ana-sum st-bad">✕ '+esc(res.error||'Nicht auswertbar')+'</div>'+anaChecks(res.checks); head.innerHTML=''; rows.innerHTML=''; return; }
+  var nOut=cyc.filter(function(c){ return c.outliers&&c.outliers.length; }).length;
+  var w=anaWorst(res.checks);
+  var st='<div class="lv-ana-sum st-'+(nOut&&w==='ok'?'warn':w)+'">'+cyc.length+' Zyklen'+(nOut?' · '+nOut+' mit Ausreißer':' · keine Ausreißer')+'</div>';
+  st+='<div class="twrap tsm"><table><tr><th>Messgröße</th><th>Min</th><th>Max</th><th>Mittel</th><th>Streuung σ</th></tr>'+cols.map(function(c){
+    var s=res.stats&&res.stats[c.key]; if(!s||!s.n) return '';
+    return '<tr><td>'+esc(c.label)+'</td><td class="mono">'+anaFmtCell(c,s.min,M.unit)+'</td><td class="mono">'+anaFmtCell(c,s.max,M.unit)+'</td><td class="mono">'+anaFmtCell(c,s.mean,M.unit)+'</td><td class="mono">'+anaFmtCell(c,s.sd,M.unit)+'</td></tr>';
+  }).join('')+'</table></div>'+anaChecks(res.checks);
+  sum.innerHTML=st;
+  head.innerHTML='<tr><th>Nr.</th>'+cols.map(function(c){ return '<th>'+esc(c.label)+'</th>'; }).join('')+'</tr>';
+  var LIM=500;
+  rows.innerHTML=cyc.slice(0,LIM).map(function(c,i){
+    var o=c.outliers||[];
+    return '<tr class="lv-ana-row'+(o.length?' out':'')+(i===M.sel?' sel':'')+'" data-i="'+i+'" tabindex="0"><td class="mono">'+c.n+'</td>'+cols.map(function(k){
+      return '<td class="mono'+(o.indexOf(k.key)>=0?' lv-ana-out':'')+'">'+anaFmtCell(k,c[k.key],M.unit)+'</td>'; }).join('')+'</tr>';
+  }).join('')+(cyc.length>LIM?'<tr><td colspan="'+(cols.length+1)+'">… '+(cyc.length-LIM)+' weitere Zyklen (vollständig im CSV-Export)</td></tr>':'');
+}
+/* Anzeige auf einen Zeitbereich der Aufnahme setzen (nur bei Stop/Wiedergabe) */
+function anaJump(t0,t1){
+  if(LV.running&&!LV.playback) return;
+  freezeCapture(); var f=LV.frozen; if(!f) return;
+  var n=Math.max(f.ch1.length,f.ch2.length), view=windowSlices();
+  if((t1-t0)/f.dt>view.nWin*0.9){
+    var need=(t1-t0)*1.25/10, td=TDIVS.filter(function(v){ return v>=need; })[0];
+    if(td){ changeTimebase(td); view=windowSlices(); }
+  }
+  var c=(t0+t1)/2/f.dt, start=Math.max(0,Math.min(n-view.nWin,Math.round(c-view.nWin/2)));
+  f.anchor=(start+view.nWin*f.position)/n; invalidateView(); updateTimeZoomUI();
+}
+/* Bänder und Markierungen ins Oszi-Bild (aus draw() aufgerufen) */
+function anaOverlay(ctx,w,h,dpr,win){
+  anaUpdate();
+  var nWin=win.nWin||((win.t1&&win.t1.length)||0); if(!nWin) return;
+  var vs=win.start||0;
+  /* t: Zeit im ausgewerteten Signal; base: dessen Lage in der Aufnahme (Samples); vs: Fensteranfang */
+  function X(t,base,dt){ return (t/dt+base-vs)/nWin*w; }
+  var M=ANA.dm;
+  if(M.on&&M.res&&M.res.ok&&M.ver===LV.frameVersion){
+    (M.res.cycles||[]).forEach(function(c,i){
+      var o=c.outliers&&c.outliers.length; if(!o&&i!==M.sel) return;
+      var xa=X(c.t0,M.base,M.dt), xb=X(c.t1,M.base,M.dt); if(xb<0||xa>w) return;
+      ctx.fillStyle=i===M.sel?'rgba(199,180,255,0.18)':'rgba(255,107,107,0.12)'; ctx.fillRect(Math.max(0,xa),0,Math.min(w,xb)-Math.max(0,xa),h);
+      ctx.fillStyle=i===M.sel?'#c7b4ff':'#ff6b6b'; ctx.fillRect(Math.max(0,xa),h-5*dpr,Math.min(w,xb)-Math.max(0,xa),4*dpr);
+    });
+  }
+  var D=ANA.dec;
+  if(!D.bus||!D.res||!D.res.frames||D.ver!==LV.frameVersion) return;
+  var y=2*dpr, bh=15*dpr;
+  ctx.font='bold '+(9.5*dpr)+'px ui-monospace,monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  D.res.frames.forEach(function(f,i){
+    var fx0=X(f.t0,D.base,D.dt), fx1=X(f.t1,D.base,D.dt); if(fx1<0||fx0>w) return;
+    if(i===D.sel){ ctx.fillStyle='rgba(199,180,255,0.10)'; ctx.fillRect(Math.max(0,fx0),0,Math.min(w,fx1)-Math.max(0,fx0),h); }
+    (f.fields||[]).forEach(function(fd){
+      var xa=Math.max(0,X(fd.t0,D.base,D.dt)), xb=Math.min(w,X(fd.t1,D.base,D.dt)); if(xb-xa<1) return;
+      var col=ANA_COL[fd.kind]||'#8ca0b6';
+      ctx.globalAlpha=0.28; ctx.fillStyle=col; ctx.fillRect(xa,y,xb-xa,bh); ctx.globalAlpha=1;
+      ctx.strokeStyle=fd.bad?'#ff6b6b':col; ctx.lineWidth=(fd.bad?2:1)*dpr; ctx.strokeRect(xa+.5,y+.5,xb-xa-1,bh-1);
+      var lbl=String(fd.label||''), tw=ctx.measureText(lbl).width;
+      if(tw>xb-xa-4){ lbl=lbl.split(' ')[0]; tw=ctx.measureText(lbl).width; }
+      if(tw<=xb-xa-4){ ctx.fillStyle=fd.bad?'#ff9d9d':col; ctx.fillText(lbl,(xa+xb)/2,y+bh/2+.5); }
+    });
+  });
+  ctx.textAlign='start'; ctx.textBaseline='alphabetic';
+}
+function anaFillBaud(){
+  var sel=$('lv-dec-baud'), list=ANA_BAUD[ANA.dec.bus]||[];
+  sel.innerHTML=list.map(function(o){ return '<option value="'+o[0]+'">'+o[1]+'</option>'; }).join('');
+  sel.parentNode.style.display=list.length?'':'none';
+  ANA.dec.baud=0; sel.value='0';
+  var ex=$('lv-dec-extra'), b=ANA.dec.bus, h='';
+  if(b==='lin'||b==='kline') h='<label>U<sub>Bat</sub> <input type="number" id="lv-dec-vbat" step="0.1" min="6" max="32" value="'+ANA.dec.vbat+'" style="width:4.6rem"> V</label>';
+  if(b==='can') h='<label>Signal <select id="lv-dec-signal"><option value="auto">automatisch</option><option value="canh">CAN-H gegen Masse</option><option value="canl">CAN-L gegen Masse</option><option value="diff">CAN-H − CAN-L</option></select></label>';
+  if(b==='sent') h='<label>Tick <input type="number" id="lv-dec-tick" step="0.5" min="0.5" max="90" placeholder="auto" style="width:4.6rem"> µs</label><label>Daten-Nibbles <select id="lv-dec-nib"><option value="0">automatisch</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>';
+  ex.innerHTML=h;
+  if($('lv-dec-signal')) $('lv-dec-signal').value=ANA.dec.signal;
+}
+/* Beispielsignal als Wiedergabe laden (ohne Gerät), wie eine Bibliotheksaufnahme */
+function anaLoadDemo(){
+  var bus=ANA.dec.bus||'lin', s=OsziDecode.synth(bus,{});
+  if(!s||!s.values) return;
+  if(LV.mock) LV.mock.stop();
+  if(!LV.playback) LV.beforePlayback={measurementMeta:LV.measurementMeta||null,secdiv:LV.secdiv,chOn:LV.chOn.slice(),clamp:LV.clamp.slice(),inv:LV.inv.slice()};
+  resetAcquisition();
+  var a=s.values instanceof Float32Array?s.values:new Float32Array(s.values);
+  LV.frame1=a;LV.frame2=null;LV.frameTrig=.5;LV.chOn=[true,false];LV.singleArm=false;R1.push(a);
+  LV.dt=s.dt;LV.secdiv=a.length*s.dt/10;LV.clamp=[0,0];LV.inv=[false,false];LV.lastHeader=null;LV.running=false;
+  LV.playback='Beispiel '+(s.label||bus.toUpperCase());LV.measurementMeta={system:'Simuliertes Beispielsignal',notiz:'Kein Messwert – Demonstration des Decoders'};
+  var mx=0; for(var i=0;i<a.length;i++) mx=Math.max(mx,Math.abs(a[i]));
+  LV.vdiv[0]=VDIVS.filter(function(v){ return v*4>=mx; })[0]||VDIVS[VDIVS.length-1]; LV.pos[0]=-3;
+  if(ANA.dec.src!=='1'){ ANA.dec.src='1'; $('lv-dec-src').value='1'; }
+  freezeCapture();syncLiveControls();updRunBtns();
+  var pb=$('lv-playbar'); if(pb){ pb.style.display='flex'; $('lv-playname').textContent=LV.playback; }
+  ANA.dec.key='';
+}
+function anaCsv(){
+  var M=ANA.dm,res=M.res; if(!res||!res.ok||!res.cycles||!res.cycles.length){ alert('Keine Zyklen zum Exportieren.'); return; }
+  var cols=res.columns, lines=['nr;t0_s;t1_s;'+cols.map(function(c){ return c.key+(c.unit?'_'+(c.unit==='%'?'anteil':c.unit==='V'?M.unit:c.unit):''); }).join(';')+';ausreisser'];
+  res.cycles.forEach(function(c){
+    lines.push([c.n,c.t0.toPrecision(9),c.t1.toPrecision(9)].concat(cols.map(function(k){ var v=c[k.key]; return v==null?'':(+v).toPrecision(7); })).join(';')+';'+(c.outliers||[]).join(' '));
+  });
+  download('zyklen-'+new Date().toISOString().replace(/[:.]/g,'-')+'.csv',lines.join('\n'));
+}
+function initAnalyse(){
+  if(!$('lv-dec-blk')||typeof OsziDecode==='undefined') return;
+  var D=ANA.dec,M=ANA.dm;
+  function decChanged(){ D.key=''; anaRenderDec(0,true); }
+  $('lv-dec-bus').addEventListener('change',function(){ D.bus=this.value; D.sel=-1; D.res=null; anaFillBaud(); decChanged(); });
+  $('lv-dec-src').addEventListener('change',function(){ D.src=this.value; decChanged(); });
+  $('lv-dec-baud').addEventListener('change',function(){ D.baud=+this.value||0; decChanged(); });
+  $('lv-dec-extra').addEventListener('change',function(e){
+    var t=e.target;
+    if(t.id==='lv-dec-vbat'){ var v=parseFloat(t.value); D.vbat=v>=6&&v<=32?v:12.6; }
+    if(t.id==='lv-dec-signal') D.signal=t.value;
+    if(t.id==='lv-dec-tick') D.tick=t.value;
+    if(t.id==='lv-dec-nib') D.nibbles=+t.value||0;
+    decChanged();
+  });
+  $('lv-dec-demo').addEventListener('click',function(){ if(!D.bus){ D.bus='lin'; $('lv-dec-bus').value='lin'; anaFillBaud(); } anaLoadDemo(); });
+  function rowPick(box,which){
+    function pick(e){
+      if(e.type==='keydown'&&e.key!=='Enter'&&e.key!==' ') return;
+      var r=e.target.closest('.lv-ana-row'); if(!r) return; e.preventDefault();
+      var i=+r.getAttribute('data-i'), S=ANA[which]; S.sel=S.sel===i?-1:i;
+      var item=S.sel<0?null:(which==='dec'?S.res.frames[i]:S.res.cycles[i]);
+      if(item) anaJump(item.t0+S.base*S.dt,item.t1+S.base*S.dt);
+      if(which==='dec') anaRenderDec(0,true); else anaRenderDm(0,true);
+    }
+    box.addEventListener('click',pick); box.addEventListener('keydown',pick);
+  }
+  rowPick($('lv-dec-rows'),'dec'); rowPick($('lv-dm-rows'),'dm');
+  function dmChanged(){ M.key=''; anaRenderDm(0,true); }
+  $('lv-dm-on').addEventListener('change',function(){ M.on=this.checked; M.res=null; M.sel=-1; dmChanged(); });
+  [['lv-dm-src','src'],['lv-dm-range','range'],['lv-dm-edge','edge'],['lv-dm-ref','ref']].forEach(function(p){
+    $(p[0]).addEventListener('change',function(){ M[p[1]]=this.value; M.sel=-1; dmChanged(); });
+  });
+  [['lv-dm-thr','thr'],['lv-dm-hyst','hyst']].forEach(function(p){
+    $(p[0]).addEventListener('change',function(){ M[p[1]]=this.value; dmChanged(); });
+  });
+  $('lv-dm-csv').addEventListener('click',anaCsv);
+  anaFillBaud();
+}
+if(document.readyState!=='loading') initAnalyse(); else document.addEventListener('DOMContentLoaded',initAnalyse);
+/* @ana-js-end */
 window.OsziLive={connect:connect,disconnect:disconnect,state:LV,exportMeasurement:exportMeasurement};
 window.addEventListener('pagehide',function(){disconnect();if(LV.mock)LV.mock.stop();});
 })();
