@@ -1800,7 +1800,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "eingeschränkt: Pegel und Aktivität ja (2 Kanäle gegen Masse, Math A−B). Flanken und Timing bei 25 MHz grenzwertig; Pico nutzt x10-High-Speed-Tastköpfe.",
     "sicherheit": "keine besonderen",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "ethernet-t1 (10BASE-T1S; 100BASE-T1/1000BASE-T1 nur als Abgrenzung, am VDS1022I nicht auflösbar)",
     "prioritaet": "niedrig",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/communication/10base-t1s/AGT-400-10base-t1s-physical-layer/",
@@ -1830,7 +1830,7 @@
     "oszirelevant": true,
     "messbarMitVDS1022": "ja",
     "sicherheit": "keine besonderen",
-    "abgedecktDurch": "fehlt",
+    "abgedecktDurch": "j1850",
     "prioritaet": "niedrig",
     "quellen": [
      "https://en.wikipedia.org/wiki/On-board_diagnostics"
@@ -2018,6 +2018,36 @@
     "prioritaet": "niedrig",
     "quellen": [
      "https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles"
+    ]
+   },
+   {
+    "name": "CAN XL (CiA 610, SIC-XL-Transceiver)",
+    "system": "Bussystem (neu, Nachfolger von CAN FD)",
+    "signalart": "differenziell; Arbitrierung wie CAN FD, Datenphase bis 20 Mbit/s mit Pegelumschaltung (FAST-Mode)",
+    "typischeWerte": "Arbitrierung 3,5/1,5 V dominant, 2,5 V rezessiv (wie CAN); Datenphase symmetrisch ±1 V um 2,5 V, Bits 50–200 ns (Quellen: CiA, TI/NXP/Infineon-Datenblätter, Hell iCC 2024)",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "Arbitrierungsphase ja; Datenphase bei 10–20 Mbit/s nur als Band/Aktivität (25 MHz, 100 MS/s)",
+    "sicherheit": "Niedervolt",
+    "abgedecktDurch": "can-xl",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://www.can-cia.org/can-knowledge/can-xl",
+     "https://www.ti.com/lit/ds/symlink/tcan1462.pdf"
+    ]
+   },
+   {
+    "name": "Proximity Pilot (PP) – Steckererkennung und Kabelcodierung (AC-Laden)",
+    "system": "Laden (IEC 61851-1 / SAE J1772)",
+    "signalart": "Gleichspannung aus Spannungsteiler; Stufen nach Codierwiderstand, Sprung beim Entriegelungstaster (Typ 1)",
+    "typischeWerte": "J1772: 5 V über 330 Ω, Stecker 150 Ω (+330 Ω Taster) und 2,7 kΩ → ~1,5 V eingerastet, ~2,8 V Taster gedrückt, ~4,5 V kein Stecker; Typ 2: 1,5 kΩ/680 Ω/220 Ω/100 Ω = 13/20/32/63 A (Wikipedia Type 2, Pico)",
+    "oszirelevant": true,
+    "messbarMitVDS1022": "ja, 1:1, Roll-Betrieb; Ablauf beim Stecken/Ziehen",
+    "sicherheit": "PP ist Niedervolt; am Ladestecker liegen Netzspannung/HV an – nur PP gegen PE am gesteckten Kabel messen",
+    "abgedecktDurch": "pp-laden",
+    "prioritaet": "niedrig",
+    "quellen": [
+     "https://en.wikipedia.org/wiki/SAE_J1772",
+     "https://en.wikipedia.org/wiki/Type_2_connector"
     ]
    }
   ]

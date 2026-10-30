@@ -7,13 +7,14 @@ OHNE GERÄT (Demo):
   als Live-Signal ein. Overlay, Metriken und Bibliothek voll nutzbar.
 
 MIT GERÄT:
-  1) pip install websockets numpy
+  1) python -m pip install -r requirements.txt
   2) Repo klonen: github.com/florentbr/OWON-VDS1022
      pip install <repo>/api/python        (Modul "vds1022")
-  3) python bridge.py                     (ws://localhost:8765)
+  3) python bridge.py                     (ws://127.0.0.1:8765)
   4) PWA lokal ausliefern, z. B.:  python -m http.server 8080
      -> http://localhost:8080  öffnen (Service Worker + WebSocket ok)
-  5) Kapitel "Live" -> Verbinden.
+  5) Im Bridge-Fenster den zufälligen Kopplungscode ablesen.
+     Kapitel "Live" -> Kopplungscode eingeben -> Verbinden.
 
   Hinweis Cloudflare-Deployment: Eine über HTTPS geladene Seite darf je
   nach Browser kein ws://localhost öffnen (Mixed Content). Für den
@@ -74,6 +75,10 @@ AUTO-SETUP (ab v6):
   Hinweiszeile nennt den Grund (Zangenfaktor).
 
 MEHR EINSTELLUNGEN (ab v8):
+  Schnellbedienung über dem Schirm (ab V13.4): V/div je Kanal, Zeitbasis,
+  Trigger (Kanal, Flanke, Pegel) und Run/Stop/Single – gespiegelt zur
+  Bedienung darunter. Trigger-Pegel auch als Schieber rechts am Schirm
+  (violett, Doppelklick = 1 Division), Marke „T“ am rechten Rand.
   Pro Kanal: Position (+-4 div; ab V13.2 auch als Schieber links/rechts
   neben dem Schirm, Doppelklick = Mitte, 0-V-Marke in Kanalfarbe am
   linken Rand), Invertieren, Zangenfaktor
@@ -85,3 +90,42 @@ MEHR EINSTELLUNGEN (ab v8):
   PNG-Screenshot und CSV-Export (Rohwerte in Volt) der aktuellen Kurve.
   Hinweis: Der Trigger-Pegel bezieht sich immer auf das Rohsignal in
   Volt (Geraeteseite), auch wenn die Anzeige per Zangenfaktor in A laeuft.
+
+V13.5: ABSICHERUNG UND KOMPATIBILITÄT
+====================================
+Code gilt nur bis zum Ende dieses Bridge-Prozesses; bei Neustart neu eingeben.
+Er wird weder in URLs noch in LocalStorage/IndexedDB gespeichert. Ein anderer
+Browser-Tab muss zuerst getrennt werden, bevor er die Steuerung übernehmen kann.
+Keine Codewerte in Supportmeldungen übernehmen. Die Bridge lauscht ausschließlich
+auf 127.0.0.1. Keine Freigabe ins LAN vornehmen.
+
+Exakte Standard-Origins: http://localhost:8080, http://127.0.0.1:8080,
+http://localhost:8000, http://127.0.0.1:8000. Für einen anderen lokalen Port z.B.:
+  python bridge.py --allow-origin http://localhost:8090
+Keine Wildcards, kein Origin null/file:// und keine fremden Webseiten.
+Kompendium und Demo als Einzeldatei bleiben nutzbar; Live-Verbindung benötigt
+einen erlaubten HTTP-Ursprung. HTTPS-Webseiten können lokale ws-Verbindungen
+zusätzlich durch Browserregeln einschränken; lokal per HTTP arbeiten.
+
+Limits: 4 KiB/Befehl, 100 Nachrichten/s, 128 wartende Befehle, eine steuernde
+Verbindung; OSZ1-/JSON-Frames bleiben kompatibel. Ungepaarte V13.4-Clients können
+die V13.5-Bridge absichtlich nicht steuern. App UND Bridge gemeinsam aktualisieren.
+Bei "Einstellung verworfen" Trigger zuerst in den gewünschten Messbereich
+setzen; die Bridge hat die letzte gültige Kombination wiederhergestellt.
+
+Aufnahmen speichern ein aktuelles Fenster, keinen aus separaten USB-Aufnahmen
+zusammengeklebten Dauerstrom. Lücken/verworfene Frames werden gekennzeichnet.
+Die Bildzeit folgt dem echten dt; ist eine Aufnahme kürzer als die angeforderte
+Zeitbasis, wird das ausdrücklich angezeigt. Single bleibt nächstes vollständiges
+AUTO-Sweep-Bild; ein echter Hardware-Trigger wird nicht garantiert.
+
+CSV exportiert alle Samples bis zum Pufferlimit, ohne Ausdünnung.
+Import unterstützt CH1/CH2 in Volt und gleichmäßige steigende Zeitachsen.
+"Messdaten JSON" exportiert das neutrale Analyseformat; siehe docs/MESSDATENFORMAT.md.
+Triggerpegel beziehen sich auf Tastkopf-Volt (Probe bereits eingerechnet), nicht
+auf die nachfolgende Stromzangen-Anzeige. Demo-Amperewerte sind synthetisch.
+
+Der geprüfte API-Vertrag stammt aus florentbr/OWON-VDS1022 Commit
+a21cee14fc0807ce804657a26772784c4e47b5ef. Kein echter USB-/Windows-/Kalibrierungs-
+oder Hochvolttest in dieser Version. Der Windows-USB-Workaround bleibt erhalten;
+Treiberinstallation und native Hardwareprüfung vor Werkstatteinsatz durchführen.

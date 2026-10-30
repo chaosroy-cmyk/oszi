@@ -40,14 +40,14 @@ Dafür in den Repository-Secrets hinterlegen:
 - `CLOUDFLARE_API_TOKEN` – Token mit der Berechtigung *Cloudflare Pages: Edit*
 - `CLOUDFLARE_ACCOUNT_ID` – die Account-ID aus dem Cloudflare-Dashboard
 
-Der Workflow triggert auf Push nach `main`. Ist Variante A aktiv, wird dieser
+Der Workflow ist seit V13.5 ausschließlich über `workflow_dispatch` manuell auslösbar. Ist Variante A aktiv, wird dieser
 Workflow nicht benötigt.
 
 ## Live-Modus (nicht Teil des Deploys)
 
 Der USB-Live-Modus (OWON VDS1022I) läuft lokal über `bridge.py`
 (`ws://localhost:8765`) und wird **nicht** deployt – siehe `README-LIVE.txt`.
-Die deployte PWA nutzt ohne Bridge automatisch den Mock/Demo-Modus.
+Die deployte PWA bietet ohne Bridge den manuell startbaren Mock/Demo-Modus.
 
 ## PWA prüfen
 
@@ -61,6 +61,8 @@ Die deployte PWA nutzt ohne Bridge automatisch den Mock/Demo-Modus.
 ## Cache-Version bei Updates erhöhen
 
 Nach inhaltlichen Änderungen die Konstante `CACHE_NAME` in `service-worker.js`
-(Schema `kfz-oszi-pwa-signed-803792f7bb4a6c59-vN`, aktuell **…-v10**)
+(Schema `kfz-oszi-pwa-signed-803792f7bb4a6c59-vN`, aktuell **…-v13.5**)
 hochzählen **und** den Footer „Stand vN" in `index.html` anpassen — sonst
 erscheint bei installierten Clients kein „Update verfügbar"-Banner.
+
+V13.5 wurde nicht veröffentlicht. Eine bereits im Cloudflare-Dashboard aktivierte Git-Automatik bleibt eine externe Einstellung; der lokale Workflow schaltet sie nicht um. Öffentlich ausschließlich `dist/` ausliefern, niemals das vollständige Quell-ZIP. Der Legacy-Pfad `sw.js` bleibt als Weiterleitung erhalten.

@@ -1,7 +1,8 @@
 /* KFZ Multimeter Profi – Service Worker
    Precache der App-Shell, network-first für Navigationen (frische index.html),
    cache-first für Assets. CACHE_NAME bei jedem Release erhöhen (passend zu APP_VERSION). */
-const CACHE_NAME = 'kfz-multimeter-profi-v7-3';
+const PREFIX = 'kfz-multimeter-profi-' + encodeURIComponent(new URL('./',self.registration.scope).pathname) + '-';
+const CACHE_NAME = PREFIX + 'v7-3-1';
 const ASSETS = [
   './',
   './index.html',
@@ -21,7 +22,7 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
+    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME && (k.startsWith(PREFIX) || /^kfz-multimeter-profi-v[0-9]/.test(k))).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -42,17 +43,18 @@ self.addEventListener('fetch', event => {
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req).then(resp => {
+        if(!resp.ok)return caches.open(CACHE_NAME).then(c=>c.match(req)).then(hit=>hit||resp);
         const copy = resp.clone();
         caches.open(CACHE_NAME).then(c => c.put(req, copy)).catch(() => {});
         return resp;
-      }).catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
+      }).catch(() => caches.open(CACHE_NAME).then(c=>c.match(req).then(r=>r||c.match('./index.html'))))
     );
     return;
   }
 
   // Assets: cache-first, bei Netz-Antwort Cache auffrischen
   event.respondWith(
-    caches.match(req).then(cached => cached || fetch(req).then(resp => {
+    caches.open(CACHE_NAME).then(c=>c.match(req)).then(cached => cached || fetch(req).then(resp => {
       if (resp.ok) {
         const copy = resp.clone();
         caches.open(CACHE_NAME).then(c => c.put(req, copy)).catch(() => {});

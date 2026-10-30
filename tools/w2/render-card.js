@@ -17,10 +17,14 @@ if (!cardFile || !outDir) { console.error('Aufruf: render-card.js <kartendatei.j
   const errs = [];
   p.on('pageerror', e => errs.push('Laufzeitfehler: ' + e.message));
   p.on('console', m => { if (m.type() === 'error') errs.push('Console: ' + m.text()); });
-  await p.goto('file://' + (process.env.OSZI_HTML || path.resolve(__dirname, '..', '..', 'index.html')), { waitUntil: 'networkidle' });
-  await p.evaluate(() => { window.CARDPATCH = {}; window.NEUKARTE = {}; });
+  const htmlFile=process.env.OSZI_HTML||path.resolve(__dirname,'..','..','index.html');
+  const server=process.env.OSZI_URL?null:await require('../local-server.cjs').start(path.dirname(htmlFile));
+  let rep;
+  try {
+  await p.goto(process.env.OSZI_URL||(server.url+'/'+path.basename(htmlFile)),{waitUntil:'networkidle'});
+  await p.evaluate(() => { window.CARDPATCH = {}; window.NEUKARTE = {}; window.FIGPATCH = {}; window.FDBPATCH = {}; });
   try { await p.addScriptTag({ path: path.resolve(cardFile) }); } catch (e) { errs.push('Kartendatei nicht ladbar: ' + e.message); }
-  const rep = await p.evaluate(() => {
+  rep = await p.evaluate(() => {
     const out = { cards: [], errors: [], neu: [] };
     /* Neue Karten (komplettes Kartenobjekt): in KARTEN einsetzen bzw. ersetzen, Bilder wie CARDPATCH prüfen */
     Object.keys(window.NEUKARTE || {}).forEach(id => {
@@ -45,6 +49,23 @@ if (!cardFile || !outDir) { console.error('Aufruf: render-card.js <kartendatei.j
       }));
       out.cards.push(card);
     });
+    /* Freistehende Erklärbilder (FIGPATCH["svg-…"]) und Fehlermuster-Bilder (FDBPATCH["<fdb-id>"]): einzeln prüfen,
+       als Pseudo-Karte "bilder" rendern. QUELLEN["<id>"] ist auch hier Pflicht (Physik-Begründung zählt als Quelle). */
+    const extra = [];
+    Object.keys(window.FIGPATCH || {}).forEach(id => { if (!document.getElementById(id)) out.errors.push('FIGPATCH: Container #' + id + ' fehlt in index.html'); extra.push([id, FIGPATCH[id]]); });
+    Object.keys(window.FDBPATCH || {}).forEach(id => { if (!(window.FEHLERDB || []).some(f => f.id === id)) out.errors.push('FDBPATCH: FEHLERDB-Eintrag ' + id + ' fehlt'); extra.push([id, FDBPATCH[id]]); });
+    if (extra.length) {
+      const card = { id: 'bilder', name: 'Erklärbilder / Fehlermuster', setup: null, quellen: [], images: [] };
+      extra.forEach(([id, img]) => {
+        let r;
+        if (!img || !img.w2) r = { err: ['kein W2-Bild'], warn: [] };
+        else { try { r = SIG.check(img.spec, OsziLogic); } catch (e) { r = { err: ['check: ' + e.message], warn: [] }; } }
+        if (!(window.QUELLEN && QUELLEN[id] && QUELLEN[id].length)) r.err.push('QUELLEN["' + id + '"] fehlt oder leer');
+        const sp = (img && img.spec) || {};
+        card.images.push({ tag: id, badge: sp.badge, title: sp.title, cond: sp.cond, err: r.err, warn: r.warn });
+      });
+      out.cards.push(card);
+    }
     const v = validateKompendium();
     const ids = Object.keys(window.CARDPATCH);
     out.setupWarnings = v.warnings.filter(w => ids.some(id => w.indexOf(id + ' ') === 0 && /Live-Referenz|Karten-Setup/.test(w)));
@@ -65,12 +86,14 @@ if (!cardFile || !outDir) { console.error('Aufruf: render-card.js <kartendatei.j
       figure{margin:0;background:#0b0f14;border-radius:10px;padding:4px} figure.g{outline:2px solid #2e6b4f} figure.b{outline:2px solid #6b2e35}
       svg{width:100%;height:auto;display:block} figcaption{padding:6px 8px;color:#cfe3f2;font-size:13px;line-height:1.4} .why{color:#9fb3c8}
       .tag{color:#8fb;font:600 12px ui-monospace,monospace;margin:2px 4px}`;
-    document.body.innerHTML = '<style>' + css + '</style>' + Object.keys(CARDPATCH).map(id => {
-      const c = KARTEN.find(k => k.id === id); if (!c) return '';
-      const items = [...c.gut.map((x, i) => ['G' + i, x]), ...c.schlecht.map((x, i) => ['F' + i, x])];
-      return '<div class="c" id="card-' + id + '"><div class="h">' + id + ' — ' + c.name + '</div><div class="grid">' +
-        items.map(([tag, x]) => '<div class="it" id="img-' + id + '-' + tag + '"><div class="tag">' + tag + '</div>' + x + '</div>').join('') + '</div></div>';
-    }).join('');
+    const blocks = Object.keys(CARDPATCH).map(id => {
+      const c = KARTEN.find(k => k.id === id); if (!c) return null;
+      return { id, name: c.name, items: [...c.gut.map((x, i) => ['G' + i, x]), ...c.schlecht.map((x, i) => ['F' + i, x])] };
+    }).filter(Boolean);
+    if (extra.length) blocks.push({ id: 'bilder', name: 'Erklärbilder / Fehlermuster', items: extra.map(([id, img]) => [id, String(img)]) });
+    document.body.innerHTML = '<style>' + css + '</style>' + blocks.map(b =>
+      '<div class="c" id="card-' + b.id + '"><div class="h">' + b.id + ' — ' + b.name + '</div><div class="grid">' +
+        b.items.map(([tag, x]) => '<div class="it" id="img-' + b.id + '-' + tag + '"><div class="tag">' + tag + '</div>' + x + '</div>').join('') + '</div></div>').join('');
     return out;
   });
   await p.waitForTimeout(150);
@@ -79,7 +102,7 @@ if (!cardFile || !outDir) { console.error('Aufruf: render-card.js <kartendatei.j
     const el = await p.$('#card-' + c.id); if (el) await el.screenshot({ path: path.join(outDir, c.id + '.png') });
     for (const im of c.images) { const e2 = await p.$('#img-' + c.id + '-' + im.tag); if (e2) await e2.screenshot({ path: path.join(outDir, c.id + '-' + im.tag + '.png') }); }
   }
-  await b.close();
+  } finally { await b.close(); if(server)await server.close(); }
   rep.runtime = errs;
   const nErr = rep.errors.length + errs.length + (rep.schemaErrors || []).length + rep.cards.reduce((s, c) => s + c.images.reduce((t, i) => t + i.err.length, 0), 0);
   rep.summary = { cards: rep.cards.length, images: rep.cards.reduce((s, c) => s + c.images.length, 0), errors: nErr,

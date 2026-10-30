@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* Datenvalidierung des Kompendiums (headless).
  *
- *   npm i -D playwright            # einmalig
+ *   npm ci                        # einmalig
  *   node tools/validate.js         # prüft ../index.html
  *
  * Lädt index.html im Browser. Existiert window.validateKompendium(), wird dessen
@@ -14,7 +14,7 @@
 const path = require("path");
 let chromium;
 try { ({ chromium } = require("playwright")); }
-catch (e) { console.error("Playwright fehlt – bitte 'npm i -D playwright' ausführen."); process.exit(2); }
+catch (e) { console.error("Playwright fehlt – bitte 'npm ci' ausführen."); process.exit(2); }
 
 (async () => {
   const exe = process.env.CHROME_PATH || process.env.PLAYWRIGHT_CHROMIUM_PATH;
@@ -24,10 +24,13 @@ catch (e) { console.error("Playwright fehlt – bitte 'npm i -D playwright' ausf
   page.on("pageerror", e => runtime.push("Laufzeitfehler: " + e.message));
   page.on("console", m => { if (m.type() === "error") runtime.push("Console: " + m.text()); });
 
-  const file = "file://" + path.resolve(__dirname, "..", "index.html") + "?validate";
+  const server=process.env.OSZI_BASE_URL?null:await require("./local-server.cjs").start(path.resolve(__dirname,".."));
+  const file=(process.env.OSZI_BASE_URL||server.url)+"/?validate";
+  let r;
+  try {
   await page.goto(file, { waitUntil: "networkidle" });
 
-  const r = await page.evaluate(() => {
+  r = await page.evaluate(() => {
     if (typeof window.validateKompendium === "function") return window.validateKompendium();
     // Fallback-Smoke-Test (v9 hat kein validateKompendium()):
     const errors = [], warnings = [];
@@ -50,14 +53,16 @@ catch (e) { console.error("Playwright fehlt – bitte 'npm i -D playwright' ausf
       warnings, errors, mode: "smoke"
     };
   });
-  await browser.close();
+  } finally { await browser.close(); if(server)await server.close(); }
 
   if (!r) { console.error("Weder validateKompendium() noch KARTEN verfügbar."); process.exit(2); }
   console.log(`Karten: ${r.cards} · Fehlerbilder: ${r.fdb} · Glossar: ${r.gloss}` + (r.images != null ? ` · Signalbilder: ${r.images} (W2: ${r.w2}, alt: ${r.w})` : "") + (r.mode === "smoke" ? " (Smoke-Test)" : ""));
+  if(r.staticImages!=null)console.log(`Zusätzlich: ${r.staticImages} Erklär-/Fehlermusterbilder geprüft`);
   (r.warnings || []).forEach(w => console.warn("  ! " + w));
   (r.errors || []).forEach(e => console.error("  ✗ " + e));
   runtime.forEach(e => console.error("  ✗ " + e));
+  if(!r.cards){console.error("Keine Karten validiert");process.exit(1);}
   const fail = (r.errors ? r.errors.length : 0) + runtime.length;
   console.log(fail ? `FEHLGESCHLAGEN – ${fail} Fehler` : "OK – keine Fehler");
   process.exit(fail ? 1 : 0);
-})();
+})().catch(e=>{console.error(e.message);process.exitCode=1;});

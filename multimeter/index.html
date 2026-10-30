@@ -465,7 +465,7 @@ body.beginner .beg-explain{display:block}
    + optional: warn[], table{head,rows}, beg(einsteiger-text)
    tag: mm (Multimeter reicht) | osz (Oszilloskop nötig) | gef (gefährlich)
    ============================================================ */
-const APP_VERSION = '7.3-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
+const APP_VERSION = '7.3.1-Profi';  // bei jedem Release erhöhen (passend zu sw.js CACHE_NAME)
 const CATS = [
   {id:"alle",  name:"Alle"},
   {id:"basis", name:"Grundmessungen"},
@@ -3049,6 +3049,7 @@ renderCats();renderHome();
 /* Service Worker + Update-Erkennung (PWA) */
 if('serviceWorker' in navigator){
   let refreshing=false;
+  const hadController=!!navigator.serviceWorker.controller;
   const ub=document.getElementById('updateBanner');
   const ubBtn=document.getElementById('ubBtn');
   const ubClose=document.getElementById('ubClose');
@@ -3070,7 +3071,7 @@ if('serviceWorker' in navigator){
 
   // Wenn der neue Worker aktiv wird -> Seite neu laden (einmalig)
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(refreshing)return;refreshing=true;window.location.reload();
+    if(refreshing||!hadController)return;refreshing=true;window.location.reload();
   });
 
   window.addEventListener('load',()=>{

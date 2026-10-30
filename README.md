@@ -1,4 +1,4 @@
-# KFZ-Oszilloskop-Kompendium
+# KFZ-Oszilloskop-Kompendium V13.5.1
 
 Offline-Diagnoseunterlage für die Werkstatt als installierbare **PWA**:
 Messkarten mit Oszi-Einstellungen, schematischen **und** fahrzeugspezifischen
@@ -49,7 +49,7 @@ Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
 ## Funktionen
 
 - **Messkarten** mit Gut-/Fehlerbild-Umschaltung, Einsteiger-/Profi-Modus.
-- **Quellenbelegte Signalbilder (Engine W2):** alle 78 Messkarten mit zusammen 1025 Bildern,
+- **Quellenbelegte Signalbilder (Engine W2):** alle 82 Messkarten mit zusammen 1087 Bildern,
   gerechnet aus Signalmodellen in echter Zeit:
   - V11: die 20 bestehenden Sensor- und Lambdakarten mit je 5–7 Zuständen und 6–12 Fehlerbildern;
   - V12: 16 neue Sensorkarten, z. B. Kältemitteldruck, Tankgeber, Bremslicht/Kupplung,
@@ -65,6 +65,12 @@ Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
   - V13.2: 6 neue Karten: Pumpe-Düse (VAG, Magnetventil), Magnetventile Automatikgetriebe,
     Leerlaufsteller (Drehsteller), Schrittmotor (IAC), Ionenstrom-Signal (Saab Trionic, nur Niedervolt-Seite),
     Kondensatorzündung (CDI, Primärseite nur mit 100:1).
+  - V13.3: 4 neue Buskarten: Automotive Ethernet (10BASE-T1S; 100BASE-T1 nur als Abgrenzung), SAE J1850
+    (VPW/PWM), CAN XL (Arbitrierung messbar, Datenphase als Band), Proximity Pilot (AC-Laden). Live-Modus:
+    Sweep AUTO, eine Geräte-Aufnahme je Fenster, Messbereich V/div × 10, Positionsschieber am Schirm.
+  - V13.4: die 27 Erklärbilder der Theoriekapitel (Grundlagen, Bussysteme, 5-V-Referenz, Masse, Komplex)
+    und die 18 Bilder der Fehlermuster-Datenbank ebenfalls aus Signalmodellen (W2), mit Quellen und
+    nachgemessenen Werten; die alte Bild-Engine ist entfernt. Werkzeuge: FIGPATCH/FDBPATCH.
   Achsen in echten Einheiten, Sollbild gestrichelt in jedem Fehlerbild, Quellen je Karte.
   Jedes Bild ist maschinell nachgemessen (`expect`) und von unabhängigen Prüfern abgenommen.
 - **Fahrzeugspezifische Signalbilder:** je Karte umschaltbare Varianten
@@ -82,14 +88,18 @@ Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
 Datenvalidierung (prüft Karten, Referenzen, Varianten-Generatoren):
 
 ```
-npm i -D playwright
-node tools/validate.js
+npm ci
+npm test
+npm run test:python
+# Vorhandenes Chromium: CHROME_PATH setzen; sonst npx playwright install chromium
+npm run test:browser
+npm run validate
 ```
 
 Im Browser: `index.html?validate` öffnen und die Konsole prüfen.
 
 Nach Änderungen an gecachten Dateien die Cache-Version in `service-worker.js`
-(Konstante `CACHE_NAME`, Schema `kfz-oszi-pwa-signed-…-vN`, aktuell **…-v13.2**)
+(Konstante `CACHE_NAME`, Schema `kfz-oszi-pwa-signed-…-vN`, aktuell **…-v13.5.1**)
 erhöhen **und** den Footer „Stand vN" in `index.html` anpassen — sonst
 erscheint bei installierten Clients kein „Update verfügbar"-Banner.
 
@@ -105,3 +115,20 @@ recherchiert und belegt die Werte, schreibt eine Kartendatei und prüft sie mit
 `tools/w2/render-card.js`, bis 0 Fehler gemeldet werden. Danach prüft ein unabhängiger Prüfer
 und der Autor korrigiert. Erst dann baut `tools/w2/integrate.js` die Datei in `index.html` ein.
 Welche Karten noch fehlen, steht in `docs/SIGNAL-KATALOG.md`.
+
+## V13.5: Start, Sicherheit und Dokumentation
+
+Die Oberfläche bleibt eine statische Einzeldatei. Kompendium/Demo benötigen keinen Build und keine Python-Pakete. Für PWA/Live die App lokal ausliefern (`python -m http.server 8080 --bind 127.0.0.1`) und `http://localhost:8080` öffnen.
+
+Für die echte Bridge Python >=3.10 (empfohlen 3.12), `python -m pip install -r requirements.txt` sowie den separat installierten OWON-Treiber verwenden. `python bridge.py` zeigt einen zufälligen Kopplungscode im lokalen Fenster. Im Live-Tab diesen Code eingeben und verbinden; der Code wird nicht gespeichert. Nur ausdrücklich erlaubte lokale Origins und genau eine steuernde Verbindung sind zugelassen. Details: `README-LIVE.txt`.
+
+- Änderungen: `CHANGELOG.md`. Bestätigte Fehler und offene Prüfgrenzen: `docs/FEHLERBERICHT-V13.5.md`.
+- Ausgeführte Prüfungen und Reproduktion: `docs/TESTREPORT-V13.5.md`.
+- Modulgrenzen und Zukunftstreiber: `docs/ARCHITEKTUR-V13.5.md`. Neutrale vierkanalfähige Datenstruktur: `docs/MESSDATENFORMAT.md`.
+- Paket bauen: `bash build-dist.sh`, danach `python tools/package-release.py /tmp/kfz-oszi-v13.5.1.zip`. Das ZIP enthält App, Bridge, Dokumentation, Tests, Original-V13.4-Testfixtures und öffentliches `dist/`; keine Abhängigkeiten oder Geheimnisse.
+
+Der GitHub-Deploy-Workflow ist nur manuell auslösbar. Eine bestehende automatische Cloudflare-Git-Integration ist eine externe Projekteinstellung und wurde nicht verändert; bei Bedarf dort deaktivieren. In diesem Auftrag wurde nichts veröffentlicht oder gepusht. Hardware-/Windows-/Hochvoltprüfungen sind ausdrücklich nicht erfolgt.
+
+## Zeitzoom bei Stop (V13.5.1)
+
+Aufnahme mit **Stop** anhalten oder **Single** abwarten. Die vorhandene Zeitbasis-Auswahl zoomt jetzt in diese Aufnahme; der Regler **Ausschnitt** verschiebt das Fenster. Die Anzeige nennt die gesamte und sichtbare Aufnahmedauer. Herauszoomen ist auf die vorhandenen Daten begrenzt. Beim Fortsetzen mit **Run** wird die neue Zeitbasis für weitere Aufnahmen übernommen. Siehe `docs/ZEITZOOM-V13.5.1.md`.

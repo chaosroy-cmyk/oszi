@@ -223,3 +223,28 @@ tk11:{stufe:"ok|einschr|nein", hinweis:"…"}
   ISO 17458 FlexRay, ISO 9141/14230 K-Leitung, SAE J2411, IEC 61851). Der VDS1022I dekodiert keine Protokolle:
   Karten zeigen Physik (Pegel, Flanken, Abschluss, Störungen) und Bitlängen per Cursor.
 - **Hochvolt:** nur die 12-V- bzw. Niedervolt-Seite darstellen; jede Messung am HV-Kreis ausdrücklich ausschließen.
+
+## 9. Erklärbilder und Fehlermuster (FIGPATCH / FDBPATCH)
+
+Neben den Karten gibt es **freistehende Erklärbilder** in den Theoriekapiteln (`<div id="svg-…">`, gefüllt über
+`fig("svg-…", …)` in `renderStatics()`) und die **Fehlermuster-Datenbank** `FEHLERDB` (je Eintrag ein `bild:`).
+Beide werden mit demselben Bildformat `W2({ … })` wie die Karten gebaut:
+
+```js
+/* @models */ … /* @end-models */        (Präfix z. B. figCan…, fdb…)
+/* @quellen */
+QUELLEN["svg-can-gut"] = ["… – belegt: …"];     // Schlüssel = Container-id bzw. FEHLERDB-id
+QUELLEN["unterbrechung"] = ["Physik (ohne Quelle): …"];
+/* @end-quellen */
+FIGPATCH["svg-can-gut"] = W2({ badge:"GUT", title:"…", cond:"…", tdiv:…, vdiv:…, ch:[…], expect:[…], caption:"…", why:"…" });
+FDBPATCH["unterbrechung"] = W2({ badge:"FEHLER", …, ghost:[…], caption:"…", why:"…" });
+```
+- Bestehende Modelle der Karten (`SIG.M.*`) dürfen und sollen wiederverwendet werden; neue nur, wenn nötig.
+- `QUELLEN["<id>"]` ist Pflicht (das Werkzeug meldet sonst einen Fehler). Für allgemeine Fehlermuster gilt eine
+  physikalische Begründung als Quelle („Physik (ohne Quelle): …“), konkrete Zahlen brauchen Beleg oder `expect`.
+- Erklärbilder dürfen **didaktisch vereinfacht** sein (z. B. ein Rahmen schematisch), müssen aber physikalisch
+  stimmen: Achsen in echten Einheiten, Pegel/Zeiten belegt, Skala am echten Oszi sinnvoll. Der bisherige
+  `caption`/`why`-Text ist Vorlage, darf aber verbessert werden – er wird mit dem Bild ersetzt.
+- Prüfen wie bei Karten: `render-card.js <datei> <ausgabe>` (Pseudo-Karte `bilder`, Einzelbilder `bilder-<id>.png`).
+- Einbau: `integrate.js index.html <datei>` ersetzt das Spec in `fig("<id>", …)` bzw. das `bild:` des
+  FEHLERDB-Eintrags durch das `W2(…)`-Literal (idempotent).

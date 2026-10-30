@@ -17,12 +17,16 @@ mkdir -p "$DIST"
 cp "$ROOT/index.html"           "$DIST/"
 cp "$ROOT/manifest.webmanifest" "$DIST/"
 cp "$ROOT/service-worker.js"    "$DIST/"
+cp "$ROOT/sw.js"                "$DIST/"
 cp "$ROOT/_headers"             "$DIST/"
 cp -r "$ROOT/icons"             "$DIST/"
 
 # --- Zweit-App: Multimeter (eigene PWA mit eigenem sw.js/manifest/icons) ---
 if [ -d "$ROOT/multimeter" ]; then
-  cp -r "$ROOT/multimeter"      "$DIST/"
+  mkdir -p "$DIST/multimeter"
+  for file in "$ROOT"/multimeter/*.html "$ROOT"/multimeter/*.webmanifest "$ROOT"/multimeter/*.js "$ROOT"/multimeter/*.png "$ROOT"/multimeter/*.svg; do
+    [ ! -f "$file" ] || cp "$file" "$DIST/multimeter/"
+  done
 fi
 
 echo "dist/ gebaut. Enthaltene Dateien:"

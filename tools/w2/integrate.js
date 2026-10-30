@@ -72,7 +72,45 @@ for (const f of files) {
   /* Karten-Arrays ersetzen */
   const ids = [...src.matchAll(/CARDPATCH\["([a-z0-9-]+)"\]\s*=/g)].map(m => m[1]);
   const neu = [...src.matchAll(/NEUKARTE\["([a-z0-9-]+)"\]\s*=/g)].map(m => m[1]);
-  if (!ids.length && !neu.length) throw new Error(base + ': weder CARDPATCH noch NEUKARTE gefunden');
+  const figIds = [...src.matchAll(/FIGPATCH\["([a-z0-9-]+)"\]\s*=/g)].map(m => m[1]);
+  const fdbIds = [...src.matchAll(/FDBPATCH\["([a-z0-9-]+)"\]\s*=/g)].map(m => m[1]);
+  if (!ids.length && !neu.length && !figIds.length && !fdbIds.length) throw new Error(base + ': weder CARDPATCH, NEUKARTE, FIGPATCH noch FDBPATCH gefunden');
+  /* W2(...)-Literal hinter PATCH["id"] = */
+  function w2Literal(key, id) {
+    const pi = src.indexOf(key + '["' + id + '"]'), w = src.indexOf('W2(', pi);
+    if (pi < 0 || w < 0) throw new Error(base + '/' + id + ': W2( nicht gefunden');
+    const c = matchBracket(src, w + 2); if (c < 0) throw new Error(base + '/' + id + ': W2( nicht geschlossen');
+    return src.slice(w, c + 1);
+  }
+  /* an Position p (nach Leerraum) steht W2(…), W(…) oder {…}: Ende liefern */
+  function imgSpan(h, p) {
+    while (/\s/.test(h[p])) p++;
+    if (h.startsWith('W2(', p)) return [p, matchBracket(h, p + 2)];
+    if (h.startsWith('W(', p)) return [p, matchBracket(h, p + 1)];
+    if (h[p] === '{') return [p, matchBracket(h, p)];
+    return [p, -1];
+  }
+  for (const id of figIds) {
+    const lit = w2Literal('FIGPATCH', id);
+    const fi = html.indexOf('fig("' + id + '",');
+    if (fi < 0 || html.indexOf('fig("' + id + '",', fi + 1) >= 0) throw new Error(id + ': fig("' + id + '",…) nicht eindeutig in index.html');
+    const [a, e] = imgSpan(html, fi + ('fig("' + id + '",').length);
+    if (e < 0) throw new Error(id + ': Bild-Spec in fig() nicht erkannt');
+    html = html.slice(0, a) + lit + html.slice(e + 1);
+    report.push({ datei: base, bild: id, ersetzt: 'fig' });
+  }
+  for (const id of fdbIds) {
+    const lit = w2Literal('FDBPATCH', id);
+    const fa = html.indexOf('var FEHLERDB=['), fb = matchBracket(html, fa + 'var FEHLERDB='.length);
+    if (fa < 0 || fb < 0) throw new Error('FEHLERDB-Array nicht gefunden');
+    const ii = html.indexOf('id:"' + id + '",', fa);
+    if (ii < 0 || ii > fb) throw new Error(id + ': FEHLERDB-Eintrag nicht gefunden');
+    const bi = html.indexOf('bild:', ii); if (bi < 0 || bi > fb) throw new Error(id + ': bild: nicht gefunden');
+    const [a, e] = imgSpan(html, bi + 5);
+    if (e < 0) throw new Error(id + ': Bild hinter bild: nicht erkannt');
+    html = html.slice(0, a) + lit + html.slice(e + 1);
+    report.push({ datei: base, fehlermuster: id, ersetzt: 'bild' });
+  }
   for (const id of neu) {
     const pi = src.indexOf('NEUKARTE["' + id + '"]'), o = src.indexOf('{', pi), c = matchBracket(src, o);
     if (o < 0 || c < 0) throw new Error(base + '/' + id + ': Objekt nicht geschlossen');

@@ -1,10 +1,10 @@
 # Signal-Katalog: am Fahrzeug messbare Signale
 
-Stand: V13.2 (Oktober 2026). Planungsgrundlage für die nächsten Messkarten des Kompendiums.
+Stand: V13.3 (Oktober 2026). Planungsgrundlage für die nächsten Messkarten des Kompendiums.
 
 **So ist der Katalog entstanden:** Zwei Recherche-Agenten haben den Katalog erstellt, getrennt nach Sensoren sowie Aktoren, Zündung, Versorgung, Bussen und Hochvolt. Als Quellen dienten Pico Technology (Guided Tests, Forum), Bosch, Hella, Normen und Herstellerunterlagen. Unter „Quellen“ steht nur, was tatsächlich geöffnet und gelesen wurde. Werte ohne Quelle sind als „nicht quellengeprüft“ bzw. „Fachwissen“ gekennzeichnet. Die Websuche war gegen Ende der Recherche ausgeschöpft, deshalb sind einige Randbereiche dünner belegt.
 
-**Wichtig:** Dieser Katalog ist eine Arbeitsliste, kein geprüfter Kartentext. In die App kommen Werte erst, wenn eine Karte nach dem Verfahren Autor → unabhängige Prüfung → Korrektur gebaut ist. So wurden auch die 20 Sensor- und Lambdakarten in V11 die 16 neuen Sensorkarten in V12 die 18 Aktor-, Bordnetz- und Buskarten in V13 sowie 6 weitere Aktor- und Zündungskarten in V13.2 erstellt.
+**Wichtig:** Dieser Katalog ist eine Arbeitsliste, kein geprüfter Kartentext. In die App kommen Werte erst, wenn eine Karte nach dem Verfahren Autor → unabhängige Prüfung → Korrektur gebaut ist. So wurden auch die 20 Sensor- und Lambdakarten in V11 die 16 neuen Sensorkarten in V12 die 18 Aktor-, Bordnetz- und Buskarten in V13 sowie 6 weitere Aktor- und Zündungskarten in V13.2 und 4 Buskarten in V13.3 erstellt.
 
 > **Sicherheit:** Airbag, Gurtstraffer, PSI5 und alle pyrotechnischen Kreise werden **niemals** angemessen, nur mit dem Diagnosetester nach Herstellervorgabe. Hochvolt nur mit HV-Qualifikation, Herstellervorgaben, PSA und CAT-bewertetem Zubehör. Der VDS1022I hat keine bekannte CAT-Einstufung, und seine Kanäle haben eine gemeinsame Masse.
 
@@ -12,10 +12,10 @@ Stand: V13.2 (Oktober 2026). Planungsgrundlage für die nächsten Messkarten des
 
 | | Anzahl |
 |---|---|
-| Signale gesamt | 146 |
-| davon mit dem Oszi sinnvoll diagnostizierbar | 117 |
-| durch eine Karte (ganz oder teilweise) abgedeckt | 109 |
-| noch ohne eigene Karte | 30 |
+| Signale gesamt | 148 |
+| davon mit dem Oszi sinnvoll diagnostizierbar | 119 |
+| durch eine Karte (ganz oder teilweise) abgedeckt | 113 |
+| noch ohne eigene Karte | 28 |
 | nicht anwendbar (kein Oszi-Thema oder Messverbot) | 7 |
 
 ## Fehlende Karten nach Priorität
@@ -24,8 +24,6 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 | Priorität | Signal | System | Messbar mit VDS1022I |
 |---|---|---|---|
-| niedrig | Automotive Ethernet 10BASE-T1S | Bussystem (Multidrop-Ethernet, neu) | eingeschränkt: Pegel und Aktivität ja (2 Kanäle gegen Masse, Math A−B). Flanken und Timing bei 25 MHz grenzwertig; Pico nutzt x10-High-Speed-Tastköpfe. |
-| niedrig | SAE J1850 PWM/VPW | Diagnose- und Fahrzeugbus (ältere US-Fahrzeuge) | ja |
 | niedrig | Resolver (Rotorlage E-Maschine) | Hochvolt/E-Antrieb | nur sehr eingeschränkt: Pico hält Oszis mit gemeinsamer Kanalmasse für ungeeignet (mehrere Differenzmessungen, Differenztastkopf 1400 V auf der Erregung). Der VDS1022I hat gemeinsame Masse und nur 2 Kanäle; höchstens 2 Signale, jeweils mit Differenztastkopf. |
 | niedrig | Phasenströme E-Maschine (Inverter-Ausgang) | Hochvolt/E-Antrieb | eingeschränkt: max. 2 von 3 Phasen, nur mit HV-tauglicher (CAT-bewerteter) Stromzange mit Spannungsausgang; keine galvanische Verbindung zum HV |
 | niedrig | HV-Batterie- und Zwischenkreisstrom (Antrieb/Rekuperation) | Hochvolt/E-Antrieb | nur mit HV-tauglicher DC-Hochstromzange (BNC-Ausgang) |
@@ -1101,7 +1099,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Bussystem (Multidrop-Ethernet, neu)
 
-**Automotive Ethernet 10BASE-T1S** · Differential-Manchester (DME), differenziell · Priorität niedrig · Karte: fehlt
+**Automotive Ethernet 10BASE-T1S** · Differential-Manchester (DME), differenziell · Priorität niedrig · Karte: ethernet-t1 (10BASE-T1S; 100BASE-T1/1000BASE-T1 nur als Abgrenzung, am VDS1022I nicht auflösbar)
 
 - Typische Werte: 10 Mbit/s (IEEE 802.3cg). Multidrop ähnlich CAN, Coordinator/Client. Differenzsignal ca. 1 Vss (Pico, Math A−B).
 - VDS1022I: eingeschränkt: Pegel und Aktivität ja (2 Kanäle gegen Masse, Math A−B). Flanken und Timing bei 25 MHz grenzwertig; Pico nutzt x10-High-Speed-Tastköpfe.
@@ -1119,7 +1117,7 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 
 ### Diagnose- und Fahrzeugbus (ältere US-Fahrzeuge)
 
-**SAE J1850 PWM/VPW** · PWM: differenziell; VPW: Eindraht · Priorität niedrig · Karte: fehlt
+**SAE J1850 PWM/VPW** · PWM: differenziell; VPW: Eindraht · Priorität niedrig · Karte: j1850
 
 - Typische Werte: PWM (Ford): 41,6 kbit/s, Pins 2/10, High +5 V. VPW (GM): 10,4/41,6 kbit/s, Pin 2, High +7 V, Entscheidungsschwelle 3,5 V (Wikipedia).
 - VDS1022I: ja
@@ -1227,3 +1225,21 @@ Signale, die mit dem Oszi sinnvoll messbar sind und noch keine eigene Karte habe
 - VDS1022I: nein
 - Sicherheit: HOCHVOLT: nur mit Qualifikation
 - Quellen: <https://www.picoauto.com/library/automotive-guided-tests/electric-vehicles>
+
+### Bussystem (neu, Nachfolger von CAN FD)
+
+**CAN XL (CiA 610, SIC-XL-Transceiver)** · differenziell; Arbitrierung wie CAN FD, Datenphase bis 20 Mbit/s mit Pegelumschaltung (FAST-Mode) · Priorität niedrig · Karte: can-xl
+
+- Typische Werte: Arbitrierung 3,5/1,5 V dominant, 2,5 V rezessiv (wie CAN); Datenphase symmetrisch ±1 V um 2,5 V, Bits 50–200 ns (Quellen: CiA, TI/NXP/Infineon-Datenblätter, Hell iCC 2024)
+- VDS1022I: Arbitrierungsphase ja; Datenphase bei 10–20 Mbit/s nur als Band/Aktivität (25 MHz, 100 MS/s)
+- Sicherheit: Niedervolt
+- Quellen: <https://www.can-cia.org/can-knowledge/can-xl> · <https://www.ti.com/lit/ds/symlink/tcan1462.pdf>
+
+### Laden (IEC 61851-1 / SAE J1772)
+
+**Proximity Pilot (PP) – Steckererkennung und Kabelcodierung (AC-Laden)** · Gleichspannung aus Spannungsteiler; Stufen nach Codierwiderstand, Sprung beim Entriegelungstaster (Typ 1) · Priorität niedrig · Karte: pp-laden
+
+- Typische Werte: J1772: 5 V über 330 Ω, Stecker 150 Ω (+330 Ω Taster) und 2,7 kΩ → ~1,5 V eingerastet, ~2,8 V Taster gedrückt, ~4,5 V kein Stecker; Typ 2: 1,5 kΩ/680 Ω/220 Ω/100 Ω = 13/20/32/63 A (Wikipedia Type 2, Pico)
+- VDS1022I: ja, 1:1, Roll-Betrieb; Ablauf beim Stecken/Ziehen
+- Sicherheit: PP ist Niedervolt; am Ladestecker liegen Netzspannung/HV an – nur PP gegen PE am gesteckten Kabel messen
+- Quellen: <https://en.wikipedia.org/wiki/SAE_J1772> · <https://en.wikipedia.org/wiki/Type_2_connector>

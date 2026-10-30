@@ -38,6 +38,13 @@ Verhalten: reconnect-sicher (Geraet ab-/anstecken), Fehler ins Log,
 kein Absturz. Die Bridge fuehrt Buch ueber die selbst gesetzten Einstellungen
 (SET) und nutzt sie als Quelle der Wahrheit fuer range/probe/dt im Header.
 """
+import copy
+import inspect
+import math
+import secrets
+from urllib.parse import urlsplit
+from bridge_protocol import (validate_command, DEFAULT_ORIGINS, MAX_MESSAGE, MAX_SAMPLES, MAX_COMMANDS)
+
 import argparse
 import asyncio
 import json
@@ -102,7 +109,12 @@ STOP = threading.Event()
 RUNNING = threading.Event()
 RUNNING.set()
 SINGLE = threading.Event()
-CMD_Q = queue.Queue()
+CMD_Q = queue.Queue(maxsize=MAX_COMMANDS)
+SET_LOCK = threading.RLock()
+CONTROL_ID = None
+AUTH_TOKEN = None
+PENDING_CLIENTS = 0
+DROPPED = 0
 
 SET = {
     "ch": [
@@ -110,7 +122,7 @@ SET = {
         {"on": False, "vdiv": 2.0, "coupling": "DC", "probe": 10},
     ],
     "secdiv": 1e-3,
-    "rate": 100_000,
+    "rate": 500_000,
     "trigger": {"ch": 1, "edge": "rise", "level": 1.0, "position": 0.2},
 }
 STATUS = {"device": "getrennt"}
@@ -149,7 +161,10 @@ def _volts(ch):
     except Exception:
         arr = ch
     try:
-        return np.asarray(arr, dtype=np.float32)
+        out = np.asarray(arr, dtype=np.float32)
+        if out.ndim != 1 or not 0 < out.size <= MAX_SAMPLES or not np.isfinite(out).all():
+            raise ValueError("invalid device samples")
+        return out.copy()
     except Exception:
         return None
 
@@ -162,11 +177,13 @@ def _dt(frames):
     global _dt_warned
     for name in ("sx", "hx", "dt"):
         v = getattr(frames, name, None)
-        if isinstance(v, (int, float)) and v > 0:
+        if isinstance(v, (int, float)) and math.isfinite(v) and v > 0:
             return float(v)
         ch = getattr(frames, "ch1", None)
+        if ch is None:
+            ch = getattr(frames, "ch2", None)
         v = getattr(ch, name, None) if ch is not None else None
-        if isinstance(v, (int, float)) and v > 0:
+        if isinstance(v, (int, float)) and math.isfinite(v) and v > 0:
             return float(v)
     if not _dt_warned:
         log.info("dt nicht aus Frames lesbar - nutze 1/Samplerate (%s S/s)", SET["rate"])
@@ -175,57 +192,70 @@ def _dt(frames):
 
 
 def apply_settings(dev):
-    """SET aufs Geraet schreiben (best effort, Fehler geloggt, kein Abbruch)."""
-    for i, chk in enumerate(("CH1", "CH2")):
-        c = SET["ch"][i]
-        try:
-            # Lib: "range" = Spannung am TASTKOPF fuer 10 Divisionen (nicht V/div!), Geraeteseite 50 mV..50 V.
-            # Vorher wurde V/div als Gesamtbereich uebergeben -> 2 V/div ergab +-1 V, ein 5-V-Signal lief
-            # bei 1,00 V in die Begrenzung.
-            pr = max(1, int(c["probe"]))
-            rng = min(50.0 * pr, max(0.05 * pr, float(c["vdiv"]) * 10.0))
-            kw = {"range": vdiv_str(rng), "probe": "x%d" % pr, "offset": 1 / 2}
-            cp = str(c.get("coupling", "DC")).upper()
-            if cp in NS:
-                kw["coupling"] = NS[cp]
-            dev.set_channel(NS.get(chk, i + 1), **kw)
-        except Exception as e:
-            log.warning("set_channel %s: %s", chk, e)
-    try:
-        fn = getattr(dev, "set_sampling", None) or getattr(dev, "set_timerange", None)
-        if fn:
-            fn(float(SET["rate"]))   # Zahl: die Lib rundet auf 100 MS/s / ganzzahliger Prescaler
-    except Exception as e:
-        log.warning("set_sampling: %s", e)
-    t = SET["trigger"]
-    # Sweep IMMER "AUTO": der Standard der vds1022-Lib ist sweep=ONCE (Einzelschuss).
-    # Damit nimmt das Geraet nach jedem Befehl genau EIN Bild auf und wartet dann
-    # auf einen neuen Trigger -> die Kurve laeuft kurz an und bleibt stehen.
-    # Mit AUTO laeuft das Geraet frei (bei Trigger-Ereignis getriggert, sonst frei).
-    # Run/Stop/Single uebernimmt die Bridge selbst (RUNNING/SINGLE), die Anzeige
-    # triggert in der App per Software - so kann kein Befehl im Trigger-Wartezustand
-    # haengen bleiben (in NORMAL/ONCE blockiert fetch_iter bis zum Trigger).
-    args = (NS.get("CH%d" % int(t["ch"]), int(t["ch"])), NS.get("EDGE", "edge"),
-            NS.get("RISE" if t["edge"] == "rise" else "FALL"))
-    # position = Pre-Trigger-Anteil der Aufnahme, gleich dem Trigger-Anteil der App-Anzeige
-    kw = {"position": float(t.get("position", 0.2)), "level": "%gv" % float(t["level"])}
-    try:
-        try:
-            dev.set_trigger(*args, sweep=NS.get("AUTO", 0), **kw)
-        except TypeError:  # alte Lib ohne sweep-Parameter
-            dev.set_trigger(*args, **kw)
-            log.warning("set_trigger ohne sweep-Parameter (alte vds1022-Lib) - bei stehender Kurve Lib aktualisieren")
-    except Exception as e:
-        log.warning("set_trigger: %s", e)
+    """Use the documented OWON API; failures force a clean reconnect, never a false ready status.
+
+    VDS channels are acquired by the driver; channel on/off selects transmitted data.
+    Both hardware channels retain their range/probe settings for fast switching.
+    """
+    with SET_LOCK:
+        for i, chk in enumerate(("CH1", "CH2")):
+            c = SET["ch"][i]
+            pr = c["probe"]
+            rng = min(50.0 * pr, max(0.05 * pr, c["vdiv"] * 10.0))
+            dev.set_channel(NS.get(chk, i), range=vdiv_str(rng), probe="x%d" % pr,
+                            offset=.5, coupling=NS.get(c["coupling"], c["coupling"]))
+        wanted = pick_rate(SET["secdiv"])
+        if callable(getattr(dev, "set_sampling", None)):
+            dev.set_sampling(wanted)
+        else:
+            # set_timerange expects seconds, NOT samples per second.
+            dev.set_timerange(SET["secdiv"] * 10)
+        actual = getattr(dev, "sampling_rate", wanted)
+        SET["rate"] = float(actual) if isinstance(actual, (int, float)) and math.isfinite(actual) and actual > 0 else wanted
+        t = SET["trigger"]
+        args = (NS.get("CH%d" % t["ch"], t["ch"] - 1), NS.get("EDGE", "edge"),
+                NS.get("RISE" if t["edge"] == "rise" else "FALL", t["edge"]))
+        dev.set_trigger(*args, sweep=NS.get("AUTO", 0), position=t["position"], level="%gv" % t["level"])
 
 
 def drain_cmds(dev):
+    with SET_LOCK:
+        return _drain_cmds(dev)
+
+
+def reject_settings():
+    if LOOP is not None and not LOOP.is_closed():
+        state = copy.deepcopy(SET)
+        def notify():
+            asyncio.create_task(broadcast_json({"cmd": "error", "code": "settings_rejected"}))
+            asyncio.create_task(broadcast_json({"cmd": "settings", "rejected": True, "set": state}))
+        LOOP.call_soon_threadsafe(notify)
+
+
+def validate_settings():
+    # Conservative supported trigger interval (driver ADC thresholds have a 10-count
+    # hysteresis margin). These are protocol limits, never probe safety ratings.
+    t = SET["trigger"]
+    c = SET["ch"][t["ch"] - 1]
+    rng = min(50 * c["probe"], max(.05 * c["probe"], c["vdiv"] * 10))
+    if abs(t["level"]) > .46 * rng:
+        raise ValueError("trigger outside selected input range")
+
+
+def _drain_cmds(dev):
+    previous = copy.deepcopy(SET)
     changed = False
     while True:
         try:
-            c = CMD_Q.get_nowait()
+            owner, c = CMD_Q.get_nowait()
+            if owner is not CONTROL_ID or owner is None:
+                continue
+            c = validate_command(c)
         except queue.Empty:
             break
+        except (TypeError, ValueError):
+            log.warning("Rejected invalid queued command")
+            continue
         k = c.get("cmd")
         if k == "channel":
             i = 0 if int(c.get("ch", 1)) == 1 else 1
@@ -244,14 +274,27 @@ def drain_cmds(dev):
             SET["trigger"]["position"] = min(0.9, max(0.05, float(SET["trigger"].get("position", 0.2))))
             changed = True
         elif k == "run":
+            SINGLE.clear()
             RUNNING.set()
         elif k == "stop":
+            SINGLE.clear()
             RUNNING.clear()
         elif k == "single":
             SINGLE.set()
             RUNNING.clear()
-    if changed and dev is not None:
-        apply_settings(dev)
+    if changed:
+        try:
+            validate_settings()
+            if dev is not None:
+                apply_settings(dev)
+        except (ValueError, AssertionError):
+            SET.clear()
+            SET.update(previous)
+            if dev is not None:
+                apply_settings(dev)
+            log.warning("Incompatible settings rejected; previous settings restored")
+            reject_settings()
+    return changed
 
 
 # ---------------- asyncio-Seite ----------------
@@ -267,8 +310,13 @@ def offer(header, ch1, ch2):
         try:
             FRAME_Q.put_nowait((header, ch1, ch2))
         except asyncio.QueueFull:
-            pass
-    LOOP.call_soon_threadsafe(_put)
+            global DROPPED
+            FRAME_Q.get_nowait()
+            DROPPED += 1
+            header["droppedOutbound"] = DROPPED
+            FRAME_Q.put_nowait((header, ch1, ch2))
+    if LOOP is not None and not LOOP.is_closed():
+        LOOP.call_soon_threadsafe(_put)
 
 
 def set_status(s):
@@ -288,9 +336,9 @@ async def broadcast_json(obj):
     msg = json.dumps(obj)
     for ws in list(CLIENTS):
         try:
-            await ws.send(msg)
+            await asyncio.wait_for(ws.send(msg), timeout=1)
         except Exception:
-            CLIENTS.pop(ws, None)
+            await ws.close(code=1013, reason="Client cannot keep up")
 
 
 def pack_binary(header, ch1, ch2):
@@ -316,17 +364,17 @@ async def sender():
                 if use_bin:
                     if bmsg is None:
                         bmsg = pack_binary(header, ch1, ch2)
-                    await ws.send(bmsg)
+                    await asyncio.wait_for(ws.send(bmsg), timeout=1)
                 else:
                     if jmsg is None:
                         j = dict(header)
                         j["cmd"] = "frame"
                         j["ch1"] = ch1.tolist() if ch1 is not None else []
                         j["ch2"] = ch2.tolist() if ch2 is not None else []
-                        jmsg = json.dumps(j)
-                    await ws.send(jmsg)
+                        jmsg = json.dumps(j, allow_nan=False)
+                    await asyncio.wait_for(ws.send(jmsg), timeout=1)
             except Exception:
-                CLIENTS.pop(ws, None)
+                await ws.close(code=1013, reason="Client cannot keep up")
 
 
 async def pinger():
@@ -335,40 +383,85 @@ async def pinger():
         now = time.time()
         for ws in list(CLIENTS):
             try:
-                await ws.send(json.dumps({"cmd": "ping", "t": now}))
+                CLIENTS[ws]["ping"] = now
+                await asyncio.wait_for(ws.send(json.dumps({"cmd": "ping", "t": now})), timeout=1)
             except Exception:
-                CLIENTS.pop(ws, None)
+                await ws.close(code=1013, reason="Client cannot keep up")
 
 
-async def handler(ws, path=None):  # path=None: kompatibel mit websockets alt+neu
-    CLIENTS[ws] = {"binary": FORCE_BINARY == "on", "rtt": None}
-    log.info("Client verbunden (%d aktiv)", len(CLIENTS))
+async def handler(ws, path=None):
+    """Origin is checked at upgrade; auth is the first bounded message (never URL/query).
+
+    One controller per bridge prevents conflicting device commands. Pairing lasts for
+    this bridge process; the random token is entered from its local console each session.
+    """
+    global CONTROL_ID, PENDING_CLIENTS
+    if PENDING_CLIENTS >= 4:
+        await ws.close(code=1013, reason="Too many connections")
+        return
+    PENDING_CLIENTS += 1
+    owner = object()
     try:
+        await ws.send(json.dumps({"cmd": "auth_required", "protocol": 2}))
+        try:
+            raw = await asyncio.wait_for(ws.recv(), timeout=5)
+            auth = json.loads(raw) if isinstance(raw, str) else None
+            if (not isinstance(auth, dict) or set(auth) != {"cmd", "token"} or auth["cmd"] != "auth"
+                or not isinstance(auth["token"], str) or len(auth["token"]) > 128
+                or not AUTH_TOKEN or not secrets.compare_digest(auth["token"], AUTH_TOKEN)):
+                raise ValueError("authentication failed")
+        except (ValueError, TypeError, asyncio.TimeoutError):
+            await ws.close(code=1008, reason="Authentication required")
+            return
+        if CONTROL_ID is not None:
+            await ws.close(code=1013, reason="Another controller is connected")
+            return
+        CONTROL_ID = owner
+        CLIENTS[ws] = {"binary": FORCE_BINARY == "on", "rtt": None}
+        await ws.send(json.dumps({"cmd": "authenticated", "protocol": 2}))
         await ws.send(json.dumps({"cmd": "status", "device": STATUS["device"]}))
-        await ws.send(json.dumps({"cmd": "settings", "set": SET}))
+        with SET_LOCK:
+            settings = copy.deepcopy(SET)
+        await ws.send(json.dumps({"cmd": "settings", "set": settings}))
+        count, start = 0, time.monotonic()
         async for raw in ws:
-            if isinstance(raw, (bytes, bytearray)):
-                continue
+            now = time.monotonic()
+            if now - start >= 1:
+                count, start = 0, now
+            count += 1
+            if count > 100:
+                await ws.close(code=1008, reason="Command rate limit")
+                break
             try:
-                c = json.loads(raw)
-            except Exception:
-                continue
-            if c.get("cmd") == "pong":
-                meta = CLIENTS.get(ws)
-                if meta is not None:
-                    rtt = time.time() - float(c.get("t", 0))
+                if not isinstance(raw, str):
+                    raise ValueError("JSON text required")
+                c = validate_command(json.loads(raw))
+                if c["cmd"] == "pong":
+                    meta = CLIENTS[ws]
+                    if c["t"] != meta.get("ping"):
+                        raise ValueError("unsolicited pong")
+                    rtt = max(0, time.time() - c["t"])
                     meta["rtt"] = rtt
                     if FORCE_BINARY == "auto":
-                        if rtt > 0.1 and not meta["binary"]:
+                        if rtt > .1:
                             meta["binary"] = True
-                            log.info("RTT %.0f ms -> Binaerframes", rtt * 1000)
-                        elif rtt < 0.05 and meta["binary"]:
+                        elif rtt < .05:
                             meta["binary"] = False
-                continue
-            CMD_Q.put(c)
+                    continue
+                CMD_Q.put_nowait((owner, c))
+            except (ValueError, TypeError, queue.Full):
+                # Never echo raw input, tokens, driver exceptions or device identifiers.
+                await ws.send(json.dumps({"cmd": "error", "code": "invalid_or_busy"}))
+    except websockets.exceptions.ConnectionClosed:
+        pass
     finally:
+        PENDING_CLIENTS -= 1
         CLIENTS.pop(ws, None)
-        log.info("Client getrennt (%d aktiv)", len(CLIENTS))
+        if CONTROL_ID is owner:
+            CONTROL_ID = None
+            RUNNING.clear()
+            SINGLE.clear()
+        log.info("Client disconnected (%d authenticated)", len(CLIENTS))
 
 
 # ---------------- Geraetethread ----------------
@@ -376,41 +469,52 @@ def frames_source(dev, fps):
     it = getattr(dev, "fetch_iter", None)
     if it is not None:
         try:
-            for fr in it(freq=fps):
-                yield fr
-            return
+            inspect.signature(it).bind(freq=fps)
         except TypeError:
-            for fr in it():
-                yield fr
-            return
+            source = it()
+        else:
+            source = it(freq=fps)
+        yield from source
+        return
     while True:
         yield dev.fetch()
         time.sleep(1.0 / max(fps, 1))
 
 
 def device_worker(fps):
+    sequence = 0
     while not STOP.is_set():
         if VDS is None:
             set_status("lib fehlt")
             drain_cmds(None)
-            time.sleep(3)
+            STOP.wait(1)
             continue
         dev = None
         try:
             dev = VDS(debug=0)
+            drain_cmds(None)
             apply_settings(dev)
             set_status("verbunden")
             for frames in frames_source(dev, fps):
                 if STOP.is_set():
                     break
-                drain_cmds(dev)
+                if drain_cmds(dev):
+                    # The frame was acquired BEFORE the new settings. Discard it.
+                    continue
                 if not RUNNING.is_set() and not SINGLE.is_set():
                     continue
                 ch1 = _volts(getattr(frames, "ch1", None)) if SET["ch"][0]["on"] else None
                 ch2 = _volts(getattr(frames, "ch2", None)) if SET["ch"][1]["on"] else None
                 if ch1 is None and ch2 is None:
                     continue
+                sequence += 1
                 header = {
+                    "sequence": sequence, "source": "owon-vds1022",
+                    "quality": {"discontinuous": True, "calibrationVerified": False},
+                    "sampleRateHz": 1 / _dt(frames),
+                    "measurementRangeVolts": [float(dev.voltrange[i] * dev.probe[i])
+                        if hasattr(dev, "voltrange") and hasattr(dev, "probe") else None for i in range(2)],
+                    "droppedOutbound": DROPPED,
                     "t": time.time(),
                     "dt": _dt(frames),
                     "range": [SET["ch"][0]["vdiv"], SET["ch"][1]["vdiv"]],
@@ -429,33 +533,55 @@ def device_worker(fps):
             log.warning("Geraetefehler: %s", e)
         finally:
             try:
-                if dev is not None and hasattr(dev, "stop"):
-                    dev.stop()
+                if dev is not None:
+                    if hasattr(dev, "dispose"):
+                        dev.dispose()
+                    elif hasattr(dev, "stop"):
+                        dev.stop()
             except Exception:
                 pass
         set_status("kein Geraet")
-        time.sleep(2)
+        STOP.wait(1)
 
 
-async def main(port, fps):
-    global FRAME_Q, LOOP
+async def main(port, fps, origins=DEFAULT_ORIGINS):
+    global FRAME_Q, LOOP, AUTH_TOKEN
     LOOP = asyncio.get_running_loop()
-    FRAME_Q = asyncio.Queue(maxsize=4)
-    threading.Thread(target=device_worker, args=(fps,), daemon=True).start()
-    async with websockets.serve(handler, "localhost", port, max_size=None):
-        log.info("Bridge laeuft: ws://localhost:%d (binary=%s)", port, FORCE_BINARY)
-        await asyncio.gather(sender(), pinger())
+    FRAME_Q = asyncio.Queue(maxsize=2)
+    AUTH_TOKEN = secrets.token_urlsafe(32)
+    print("Lokaler Kopplungscode (nur in der App eingeben): " + AUTH_TOKEN, flush=True)
+    worker = threading.Thread(target=device_worker, args=(fps,), daemon=True)
+    worker.start()
+    try:
+        async with websockets.serve(handler, "127.0.0.1", port, origins=list(origins),
+                                    max_size=MAX_MESSAGE, max_queue=8,
+                                    ping_interval=20, ping_timeout=10, close_timeout=2,
+                                    compression=None):
+            log.info("Bridge: ws://127.0.0.1:%d, explicit origins: %s", port, origins)
+            await asyncio.gather(sender(), pinger())
+    finally:
+        STOP.set()
+        await asyncio.to_thread(worker.join, 3)
 
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser(description="OWON VDS1022 WebSocket-Bridge")
+    ap = argparse.ArgumentParser(description="OWON VDS1022 authenticated local WebSocket bridge")
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--binary", choices=("auto", "on", "off"), default="auto")
-    ap.add_argument("--fps", type=int, default=20, help="Frames/s vom Geraet")
+    ap.add_argument("--fps", type=int, default=20)
+    ap.add_argument("--allow-origin", action="append", default=[],
+                    help="Additional exact local HTTP(S) origin (repeatable; no wildcards)")
     a = ap.parse_args()
+    if not 1 <= a.port <= 65535 or not 1 <= a.fps <= 100:
+        ap.error("port 1..65535, fps 1..100 required")
+    for origin in a.allow_origin:
+        u = urlsplit(origin)
+        if (u.scheme not in ("http", "https") or u.hostname not in ("localhost", "127.0.0.1", "::1")
+            or u.username or u.password or u.path or u.query or u.fragment):
+            ap.error("only exact loopback HTTP(S) origins allowed")
     FORCE_BINARY = a.binary
     try:
-        asyncio.run(main(a.port, a.fps))
+        asyncio.run(main(a.port, a.fps, (*DEFAULT_ORIGINS, *a.allow_origin)))
     except KeyboardInterrupt:
         STOP.set()
         log.info("Beendet.")

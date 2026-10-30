@@ -1,77 +1,47 @@
-// COPYRIGHT NOTICE
-// © 2026 Roy Sperlich – Alle Rechte vorbehalten
-// Eigentümer: Roy Sperlich
-// Unauthorized copying prohibited.
-
-// APP-EIGENTÜMER-SIGNATUR
-// Owner: Roy Sperlich
-// Signature-ID: KFZ-OSZI-RS-803792F7BB4A6C59
-// Copyright: Alle Rechte vorbehalten.
-// Entfernen oder Verändern dieser Signatur ist nicht autorisiert.
-
-// UPDATE-KONZEPT (v4):
-// - Neue SW-Version installiert sich im Hintergrund, aktiviert sich aber NICHT sofort
-//   (kein skipWaiting im install) -> die Seite zeigt ein "Update verfügbar"-Banner.
-// - Erst wenn der Nutzer "Aktualisieren" tippt, sendet die Seite SKIP_WAITING,
-//   der neue SW übernimmt (clients.claim) und die Seite lädt einmal sauber neu.
-// - Bei jeder neuen Version: NUR die Versionsnummer unten erhöhen (v4 -> v5 ...).
-const CACHE_NAME = 'kfz-oszi-pwa-signed-803792f7bb4a6c59-v13.2';
-const APP_SHELL = [
-  './',
-  './index.html',
-  './manifest.webmanifest',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/maskable-512.png'
-];
-
+// © 2026 Roy Sperlich – Alle Rechte vorbehalten.
+// Owner: Roy Sperlich · Signature-ID: KFZ-OSZI-RS-803792F7BB4A6C59
+// Activation requires the existing update button; never interrupt a measurement.
+const BASE = 'kfz-oszi-pwa-signed-803792f7bb4a6c59-';
+const ROOT = new URL('./', self.registration.scope);
+const PREFIX = BASE + encodeURIComponent(ROOT.pathname) + '-';
+const CACHE_NAME = PREFIX + 'v13.5.1';
+const APP_SHELL = ['./','./index.html','./manifest.webmanifest','./icons/icon-192.png',
+  './icons/icon-512.png','./icons/maskable-512.png','./icons/apple-touch-icon.png'];
 self.addEventListener('install', event => {
-  // Bewusst KEIN self.skipWaiting() hier – Update erst nach Nutzerbestätigung.
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)));
 });
-
-// Seite fordert Aktivierung an (Nutzer hat "Aktualisieren" getippt)
 self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  if(event.data && event.data.type === 'SKIP_WAITING') event.waitUntil(self.skipWaiting());
 });
-
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k =>
+    k !== CACHE_NAME && (k.startsWith(PREFIX) || (ROOT.pathname==='/' &&
+      (new RegExp('^'+BASE+'v[0-9]').test(k) || k.startsWith('kfzoszi-v2-'))))
+  ).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
-
 self.addEventListener('fetch', event => {
-  const req = event.request;
-
-  // Navigation: Netz zuerst (holt neue index.html, sobald online),
-  // Cache als Offline-Fallback.
-  if (req.mode === 'navigate') {
-    event.respondWith(
-      fetch(req)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
-          return response;
-        })
-        .catch(() => caches.match('./').then(r => r || caches.match('./index.html')))
-    );
-    return;
-  }
-
-  // Übrige Anfragen: Cache zuerst, sonst Netz (und nachcachen).
-  event.respondWith(
-    caches.match(req).then(cached => {
-      if (cached) return cached;
-      return fetch(req).then(response => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+  const req=event.request,url=new URL(req.url);
+  if(req.method!=='GET'||url.origin!==ROOT.origin)return;
+  const rel=url.pathname.startsWith(ROOT.pathname)?url.pathname.slice(ROOT.pathname.length):null;
+  // Never intercept the sibling PWA, backend files or arbitrary navigation URLs.
+  const nav=req.mode==='navigate'&&(rel===''||rel==='index.html');
+  const asset=rel==='manifest.webmanifest'||(rel&&rel.startsWith('icons/'));
+  if(!nav&&!asset)return;
+  event.respondWith((async()=>{
+    const cache=await caches.open(CACHE_NAME);
+    const key=nav?new URL('index.html',ROOT).href:new URL(url.pathname,ROOT.origin).href;
+    if(!nav){const hit=await cache.match(key);if(hit)return hit;}
+    try{
+      const response=await fetch(req);
+      // A 404/500 must not poison the known-good offline shell.
+      if(response.ok && (nav?(response.headers.get('content-type')||'').includes('text/html'):true)){
+        try{await cache.put(key,response.clone());}catch(e){/* quota: return the valid network response */}
         return response;
-      });
-    })
-  );
+      }
+      return nav?(await cache.match(key)||response):response;
+    }catch(error){
+      const hit=await cache.match(key);if(hit)return hit;
+      return new Response('Offline: Ressource nicht gespeichert',{status:503,headers:{'Content-Type':'text/plain;charset=utf-8'}});
+    }
+  })());
 });
