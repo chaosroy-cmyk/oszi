@@ -170,7 +170,11 @@ test('LIN component simulator drives decoder and bit monitor finds the pressed k
 });
 
 test('V13.4 to V13.5 user-confirmed offline update preserves stored recordings and sibling caches',async()=>{
- version='13.4';const context=await browser.newContext(),p=await context.newPage();await p.goto(base+'/',{waitUntil:'networkidle'});await p.evaluate(()=>navigator.serviceWorker.ready);await p.reload({waitUntil:'networkidle'});
+ version='13.4';const context=await browser.newContext(),p=await context.newPage();await p.goto(base+'/',{waitUntil:'networkidle'});
+ /* Die alte V13.4 lädt sich bei der Erstinstallation selbst neu (controllerchange); ein paralleles reload() bricht dann ab. Auf diesen Selbst-Reload warten, sonst selbst neu laden. */
+ const selfReload=p.waitForEvent('framenavigated',{timeout:8000}).catch(()=>null);await p.evaluate(()=>navigator.serviceWorker.ready);
+ if(await selfReload)await p.waitForLoadState('networkidle');else await p.reload({waitUntil:'networkidle'});
+ await p.waitForFunction(()=>!!navigator.serviceWorker.controller);
  await p.evaluate(async()=>{localStorage.setItem('v135-retained','yes');const c=await caches.open('kfz-multimeter-profi-v7-3');await c.put('/sibling-test',new Response('retained'));await caches.open('unrelated-cache');const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('oszi-live',1);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});await new Promise((resolve,reject)=>{const tx=db.transaction('aufnahmen','readwrite');tx.objectStore('aufnahmen').put({id:'retained',name:'V13.4',dt:.001,len1:3,len2:0,ch1:new Float32Array([1,2,3]).buffer,meta:{},created:1});tx.oncomplete=resolve;tx.onerror=reject;});db.close();});
  version='13.5';await p.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();});await p.locator('#updBanner button').waitFor();
  assert(await p.evaluate(async()=>!!(await navigator.serviceWorker.getRegistration()).waiting));
