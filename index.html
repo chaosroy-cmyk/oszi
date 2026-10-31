@@ -237,6 +237,22 @@ footer{text-align:center;color:var(--dim);font-size:.78rem;padding:1.5rem 1rem;f
 .lv-ana-row:focus-visible{outline:2px solid var(--acc2);outline-offset:-2px}
 td.lv-ana-out{color:var(--bad);font-weight:700}
 :root[data-theme="light"] .lv-ana-row.sel td{background:#e6e0f7}
+details.lv-ana-more{margin:.5rem 0;border:1px solid var(--line2);border-radius:8px;padding:.35rem .6rem}
+details.lv-ana-more>summary{cursor:pointer;font-weight:700}
+.lv-bits{font-family:var(--mono);letter-spacing:.1em;white-space:nowrap}
+.lv-bits .chg{background:var(--bad);color:#fff;border-radius:3px;font-weight:700}
+.lv-bits .busy{text-decoration:underline dotted;text-underline-offset:3px;color:var(--mut)}
+.lv-sim-panel{background:#0b0f14;border:1px solid #27364a;border-radius:18px;padding:.8rem;display:grid;grid-template-columns:auto 1fr auto;gap:.8rem;align-items:center;color:#dce6f2;margin:.5rem 0}
+.lv-sim-knob{width:96px;min-height:96px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a4656,#11161d 70%);border:3px solid #6b7a8c;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--mono);font-size:.7rem;text-align:center;padding:.3rem;color:#8ca0b6}
+.lv-sim-knob b{font-size:.95rem;color:#ffd24a}
+.lv-sim-knob input{width:84px;margin-top:.2rem}
+.lv-sim-keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:.45rem}
+.lv-sim-key{background:#1a2330;border:1px solid #3a4a5e;border-radius:8px;padding:.6rem .3rem;font-family:var(--mono);font-size:.78rem;color:#dce6f2;position:relative}
+.lv-sim-key[aria-pressed="true"]{background:#1f3324;border-color:#7dff9b;box-shadow:0 0 8px #7dff9b55}
+.lv-sim-key[aria-pressed="true"]::after{content:"";position:absolute;top:5px;right:6px;width:6px;height:6px;border-radius:50%;background:#7dff9b}
+.lv-sim-key:focus-visible{outline:2px solid #4fd2ff;outline-offset:2px}
+@media(max-width:600px){.lv-sim-panel{grid-template-columns:1fr 1fr;justify-items:center}.lv-sim-keys{grid-column:1/-1;order:3;width:100%}}
+#lv-sim label,#lv-sim select,#lv-dec-blk select{max-width:100%}
 /* @ana-css-end */
 .lv-rec{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem;margin:.45rem 0}
 .lv-recname{font-weight:700}
@@ -379,6 +395,17 @@ td.lv-ana-out{color:var(--bad);font-weight:700}
       <tbody id="lv-dec-rows"><tr><td colspan="5">Bus wählen.</td></tr></tbody>
     </table></div>
     <div id="lv-dec-detail"></div>
+    <details id="lv-bm" class="lv-ana-more"><summary>Bit-Monitor – welches Bit gehört zur Taste?</summary>
+      <p class="note">So geht's: Ohne Tastendruck aufnehmen und <b>Referenz merken</b>. Dann Taste oder Schalter betätigen und neu aufnehmen (z. B. Single). <span class="lv-bits"><span class="chg">Rot</span></span> = gegenüber der Referenz geändert. <span class="lv-bits"><span class="busy">Gepunktet</span></span> = ändert sich laufend (Zähler, Prüfsumme) – das ist nicht die Taste. Ohne Referenz wird mit der vorigen Aufnahme verglichen.</p>
+      <div class="lvrow"><button class="ibtn" id="lv-bm-ref">Referenz merken</button><button class="ibtn" id="lv-bm-clear">Referenz löschen</button><span id="lv-bm-info" class="mono" style="font-size:.8rem;color:var(--mut)"></span></div>
+      <div id="lv-bm-out"></div>
+    </details>
+    <details id="lv-sim" class="lv-ana-more" style="display:none"><summary>Bauteil-Simulator (Übung, LIN)</summary>
+      <p class="note">Simuliert ein LIN-Bauteil am Bus – zum Üben ohne Fahrzeug. Jede Bedienung erzeugt eine neue Aufnahme (als Wiedergabe gekennzeichnet); Decoder und Bit-Monitor zeigen, was sich ändert. IDs und Bit-Belegung sind frei gewählte Beispiele, keine Herstellerdaten.</p>
+      <div class="lvrow"><label>Bauteil <select id="lv-sim-prof"></select></label><label>Fehler <select id="lv-sim-fault"></select></label><button class="ibtn" id="lv-sim-start">Simulation starten</button></div>
+      <div id="lv-sim-panel"></div>
+      <div id="lv-sim-info"></div>
+    </details>
     <p class="note">Geprüft werden Physik (Pegel, Bitrate, Abtastung) und Protokoll (Rahmen, Prüfsumme, Bestätigung). Was die Datenbytes bedeuten, legt der Hersteller fest – dafür Herstellerunterlagen oder Tester. Eine Zeile antippen markiert den Frame im Bild; bei <b>Stop</b> springt die Anzeige dorthin.</p>
   </section>
 
@@ -1439,7 +1466,7 @@ Perfekt geometrische Signale sind im Fahrzeug selten realistisch.
 </div>
 <button class="up" id="upbtn" title="Nach oben">▲</button>
 <footer>
-<p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-PWA · Stand v13.6 (82 Messkarten · 1087 quellenbelegte Signalbilder · 45 Erklär- und Fehlermusterbilder · 1:1-Tastkopf-Hinweise · referenzgeprüft · Live-Modus · Auto-Setup · Auto-Deploy) · Alle Signalbilder schematisch.</p>
+<p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-PWA · Stand v13.6.1 (82 Messkarten · 1087 quellenbelegte Signalbilder · 45 Erklär- und Fehlermusterbilder · 1:1-Tastkopf-Hinweise · referenzgeprüft · Live-Modus · Auto-Setup · Auto-Deploy) · Alle Signalbilder schematisch.</p>
 <p>Richtwerte können je nach Hersteller, System, Motorsteuergerät und Messgerät abweichen. Herstellerdaten und Stromlaufplan haben Vorrang.</p>
 <p>Sicherheit zuerst: keine Messungen an Airbag-/PSI5-Zündkreisen, HV-Systemen nur mit Qualifikation.</p>
 <div class="owner-signature">
@@ -25043,7 +25070,7 @@ function measurement(input){
   var tr=input.trigger||{};if(tr.channel!=null&&!seen.has(tr.channel))throw new Error('Triggerkanal fehlt');
   if(tr.edge!=null&&!['rise','fall'].includes(tr.edge))throw new Error('Triggerflanke');
   var q=input.quality||{},meta=input.vehicle||{};
-  return {schema:'kfz-oszi.measurement',schemaVersion:1,appVersion:'13.6',captureId:text(input.id||('capture-'+Date.now()),128),source:text(input.source||'unknown',128),
+  return {schema:'kfz-oszi.measurement',schemaVersion:1,appVersion:'13.6.1',captureId:text(input.id||('capture-'+Date.now()),128),source:text(input.source||'unknown',128),
     capturedAtUnixSeconds:input.capturedAt==null?null:number(input.capturedAt,0,1e12),sampleIntervalSeconds:dt,channels:channels,
     trigger:{channel:tr.channel==null?null:tr.channel,edge:tr.edge||null,level:tr.level==null?null:number(tr.level,-3.4e38,3.4e38),unit:tr.unit||'V',position:tr.position==null?null:number(tr.position,0,1),confirmed:tr.confirmed===true},
     vehicle:{vehicle:text(meta.fahrzeug,256),engine:text(meta.motor,256),component:text(meta.system,256),measurementPoint:text(meta.messpunkt,256),conditions:text(meta.bedingung),notes:text(meta.notiz)},
@@ -27528,6 +27555,115 @@ var OsziDecode = (function(){
     }
     return {measureCycles:measureCycles, synthCycles:synthCycles};
   })();
+  var M_linsim = (function(){
+    /* LIN-Bauteil-Simulator (Übungsmodus). Die IDs und Bit-Belegungen sind frei gewählte Beispiele,
+       keine Herstellerdaten – die echte Belegung steht in der LDF des Fahrzeugherstellers.
+       Jedes Profil beschreibt Frames (wer antwortet, wie die Bytes aus den Bedienelementen entstehen)
+       und die Bedienelemente (Taste = Bit, Regler = Byte). */
+    function lsFmt(n, d){ return (+n).toFixed(d).replace('.', ','); }
+    var LS_KLIMA_KEYS = function(s){ return s.auto | s.off << 1 | s.front << 2 | s.umluft << 3 | s.ac << 4 | s.heck << 5; };
+    var LIN_SIM = [
+      {id:'klima', name:'Klimabedienteil', baud:19200, master:'Klima- bzw. Karosseriesteuergerät',
+        funktion:'Liest Tasten und Drehsteller ein und meldet sie auf Anfrage des Masters. Der Master schickt umgekehrt die LED- und Anzeigezustände.',
+        pins:'Kl. 30/15 (Versorgung) · Kl. 31 (Masse) · LIN · ggf. Kl. 58 (Beleuchtung)',
+        frames:[
+          {id:0x20, name:'LEDs/Anzeige (Master → Bedienteil)', slave:false, build:function(s){ return [LS_KLIMA_KEYS(s), s.gebl]; },
+            labels:{0:{name:'LEDs', bits:{0:'AUTO-LED', 1:'OFF-LED', 2:'FRONT-LED', 3:'Umluft-LED', 4:'A/C-LED', 5:'Heckscheibe-LED'}}, 1:{name:'Gebläse-Anzeige', bits:{}}}},
+          {id:0x21, name:'Tasten & Steller (Bedienteil → Master)', slave:true, build:function(s){ return [LS_KLIMA_KEYS(s), s.temp, s.gebl, s.alive & 0x0f]; },
+            labels:{3:{name:'Alive-Zähler (zählt je Botschaft)', bits:{}}}}],
+        ctrls:[
+          {k:'temp', t:'knob', l:'TEMP', f:0x21, b:1, min:32, max:58, def:44, fmt:function(v){ return lsFmt(v / 2, 1) + ' °C'; }},
+          {k:'auto', t:'key', l:'AUTO', f:0x21, b:0, bit:0}, {k:'off', t:'key', l:'OFF', f:0x21, b:0, bit:1},
+          {k:'front', t:'key', l:'FRONT', f:0x21, b:0, bit:2}, {k:'umluft', t:'key', l:'Umluft', f:0x21, b:0, bit:3},
+          {k:'ac', t:'key', l:'A/C', f:0x21, b:0, bit:4}, {k:'heck', t:'key', l:'Heckscheibe', f:0x21, b:0, bit:5},
+          {k:'gebl', t:'knob', l:'GEBLÄSE', f:0x21, b:2, min:0, max:7, def:3, fmt:function(v){ return 'Stufe ' + v; }}],
+        pruef:[
+          'Taste ohne Funktion, Rest geht: im Bit-Monitor prüfen, ob beim Drücken ein Bit kippt. Kippt nicht → Taster/Bedienteil defekt. Kippt → Bedienteil gut, weiter bei Master (Klimasteuergerät), Stellmotor oder Codierung.',
+          'LED-Frame des Masters beobachten: Übernimmt der Master den Tastendruck (LED-Bit folgt), funktioniert die Kommunikation in beide Richtungen.',
+          'Ganzes Bedienteil dunkel und ohne Antwort: Versorgung, Masse und LIN direkt am Stecker des Bedienteils messen.']},
+      {id:'gen', name:'Generator mit LIN-Regler', baud:19200, master:'Motorsteuergerät bzw. Energiemanagement',
+        funktion:'Der Master gibt die Soll-Ladespannung vor, der Regler meldet Auslastung und Fehlerbits zurück. Ohne LIN-Sollwert fällt der Regler je nach Hersteller auf eine Notlauf-Spannung zurück.',
+        pins:'B+ (Ladeleitung) · Gehäuse-Masse · LIN (Ein-Pin-Stecker)',
+        frames:[
+          {id:0x29, name:'Sollwert (Motorsteuergerät → Regler)', slave:false, build:function(s){ return [s.soll - 106, 0x01]; },
+            labels:{1:{name:'Steuerbits', bits:{0:'Regelung aktiv'}}}},
+          {id:0x2A, name:'Status (Regler → Motorsteuergerät)', slave:true, build:function(s){ return [s.last, s.tempf | s.mech << 1 | s.elek << 2, 0x50]; },
+            labels:{2:{name:'Regler-Temperatur (fest)', bits:{}}}}],
+        ctrls:[
+          {k:'soll', t:'knob', l:'SOLL', f:0x29, b:0, min:130, max:155, def:142, fmt:function(v){ return lsFmt(v / 10, 1) + ' V'; }},
+          {k:'tempf', t:'key', l:'Übertemp.', f:0x2A, b:1, bit:0}, {k:'mech', t:'key', l:'Mech. Fehler', f:0x2A, b:1, bit:1},
+          {k:'elek', t:'key', l:'Elektr. Fehler', f:0x2A, b:1, bit:2},
+          {k:'last', t:'knob', l:'LAST', f:0x2A, b:0, min:0, max:100, def:35, fmt:function(v){ return v + ' %'; }}],
+        pruef:[
+          'Generator lädt nicht: Kommt der Header für den Sollwert? Nein → Motorsteuergerät/Leitung. Ja, aber keine Status-Antwort → Regler ohne Versorgung (B+), Masse oder defekt.',
+          'Sollwert und Antwort kommen, Ladespannung folgt trotzdem nicht → Regler/Generator mechanisch oder elektrisch (Messkarte Generator, Ripple).',
+          'Fehlerbits in der Status-Antwort gesetzt → Fehlerspeicher des Motorsteuergeräts auslesen, Ursache (Temperatur, Keilriemen, Wicklung) prüfen.']},
+      {id:'ibs', name:'Intelligenter Batteriesensor (IBS)', baud:19200, master:'Energiemanagement bzw. Motorsteuergerät',
+        funktion:'Sitzt an der Minus-Polklemme und misst Batteriespannung, -strom und -temperatur. Der Master fragt die Werte zyklisch ab.',
+        pins:'Kl. 30 (Versorgung/Messung) · Polklemme Minus · Masseband · LIN',
+        frames:[
+          {id:0x2C, name:'Batteriedaten (IBS → Master)', slave:true, build:function(s){ var mv = s.u * 100; return [mv & 0xff, mv >> 8, (s.i + 128) & 0xff, s.tb + 40]; },
+            labels:{1:{name:'Spannung (High-Byte, mV)', bits:{}}}}],
+        ctrls:[
+          {k:'u', t:'knob', l:'U BATT', f:0x2C, b:0, min:110, max:148, def:126, fmt:function(v){ return lsFmt(v / 10, 1) + ' V'; }},
+          {k:'i', t:'knob', l:'STROM', f:0x2C, b:2, min:-100, max:100, def:-2, fmt:function(v){ return v + ' A'; }},
+          {k:'tb', t:'knob', l:'TEMP', f:0x2C, b:3, min:-20, max:60, def:20, fmt:function(v){ return v + ' °C'; }}],
+        pruef:[
+          'Der IBS sitzt an der Minus-Polklemme: Klemme, Masseband und Übergang zur Karosserie per Spannungsabfall prüfen.',
+          'Antwortet der IBS nicht, meldet das Energiemanagement oft Batterie-Fehler oder schaltet Verbraucher ab. Versorgung (Kl. 30) am IBS-Stecker prüfen.',
+          'Nach dem Batteriewechsel die Batterie im Steuergerät anlernen bzw. registrieren (herstellerspezifisch), sonst bewertet der Master die IBS-Werte falsch.']}
+    ];
+    var LIN_SIM_FAULTS = [
+      ['', 'Kein Fehler (Gutbild)'],
+      ['noresp', 'Bauteil antwortet nicht'],
+      ['cs', 'Übertragung gestört (Checksumme falsch)'],
+      ['masse', 'Massefehler am Bauteil (Low-Pegel zu hoch)'],
+      ['pullup', 'Ruhepegel zu niedrig (Übergangswiderstand/Pull-up)'],
+      ['drift', 'Takt des Bauteils weicht ab (+6 %)'],
+      ['kurzmasse', 'LIN-Leitung Kurzschluss nach Masse'],
+      ['still', 'Kein Verkehr (Master sendet nicht / Kurzschluss nach Plus)']
+    ];
+    function linSimProfile(id){
+      for(var i = 0; i < LIN_SIM.length; i++) if(LIN_SIM[i].id === id) return LIN_SIM[i];
+      return LIN_SIM[0];
+    }
+    function linSimDefaults(p){
+      var v = {alive:0};
+      p.ctrls.forEach(function(c){ v[c.k] = c.t === 'key' ? 0 : c.def; });
+      return v;
+    }
+    /* Frames für synthLIN; der Alive-Zähler läuft je gesendeter Botschaft weiter */
+    function linSimFrames(p, vals, repeat){
+      var out = [], n = repeat || 2, s = {};
+      for(var k in vals) if(Object.prototype.hasOwnProperty.call(vals, k)) s[k] = vals[k];
+      for(var r = 0; r < n; r++){
+        p.frames.forEach(function(f){ out.push({id:f.id, data:f.build(s), slave:f.slave}); });
+        s.alive = (s.alive + 1) & 0x0f;
+      }
+      return out;
+    }
+    /* Bedeutung je Byte/Bit einer ID (nur Simulation): {byte:{name, bits:{bit:Text}}} */
+    function linSimLabels(p, id){
+      var out = {};
+      p.frames.forEach(function(f){
+        if(f.id !== id || !f.labels) return;
+        for(var b in f.labels) if(Object.prototype.hasOwnProperty.call(f.labels, b)){
+          var bits = {}, src = f.labels[b].bits;
+          for(var k in src) if(Object.prototype.hasOwnProperty.call(src, k)) bits[k] = src[k];
+          out[b] = {name:f.labels[b].name, bits:bits};
+        }
+      });
+      p.ctrls.forEach(function(c){
+        if(c.f !== id) return;
+        out[c.b] = out[c.b] || {name:'', bits:{}};
+        if(c.t === 'key'){ out[c.b].bits[c.bit] = c.l; out[c.b].name = out[c.b].name || 'Tasten/Zustände'; }
+        else out[c.b].name = c.l;
+      });
+      return out;
+    }
+    function linSimExpect(p){ return p.frames.map(function(f){ return f.id; }); }
+    return {LIN_SIM:LIN_SIM, LIN_SIM_FAULTS:LIN_SIM_FAULTS, linSimProfile:linSimProfile, linSimDefaults:linSimDefaults, linSimFrames:linSimFrames, linSimLabels:linSimLabels, linSimExpect:linSimExpect};
+  })();
   var DEC = {lin:M_lin.decodeLIN, can:M_can.decodeCAN, kline:M_kline.decodeKLine, sent:M_sent.decodeSENT};
   function fail(bus, msg){ return {bus:bus, ok:false, error:msg, info:{bitrate:null, bitTime:null, samplesPerBit:null}, checks:[], frames:[]}; }
   /* Einstiegspunkt der Oberfläche. Ein Fehler im Decoder darf die Live-Anzeige nie anhalten. */
@@ -27544,6 +27680,12 @@ var OsziDecode = (function(){
   /* Beispielsignale (simuliert, im Bild als Wiedergabe gekennzeichnet). Bewusst gemischt: Gutframes und ein Fehler. */
   function synth(bus, o){
     o = o || {};
+    if(bus === 'lin' && o.sim){
+      /* Bauteil-Simulator: Frames aus Profil und Bedienelementen, Fehler zuschaltbar */
+      var p = M_linsim.linSimProfile(o.sim.profile);
+      var ss = M_lin.synthLIN(M_linsim.linSimFrames(p, o.sim.vals || M_linsim.linSimDefaults(p), 2), {baud:p.baud, fault:o.sim.fault || ''});
+      ss.label = 'Simulator ' + p.name; return ss;
+    }
     if(bus === 'lin'){
       var s = M_lin.synthLIN([
         {id:0x20, data:[0x01, 0x03], slave:false},
@@ -27571,9 +27713,73 @@ var OsziDecode = (function(){
     if(bus === 'sent'){ var t = M_sent.synthSENT({}); t.label = 'SENT 3 µs Tick'; return t; }
     return null;
   }
+  /* Bit-Monitor: vergleicht die Datenbytes je Kennung mit einer gemerkten Referenz (sonst mit der
+     vorigen Aufnahme) und markiert Bits, die sich laufend ändern (Alive-Zähler, Prüfsummen) – solche Bits
+     sind nicht die gesuchte Taste. „Laufend“ = Wechsel zwischen zwei Botschaften derselben Aufnahme
+     (dafür ist kein Mensch schnell genug) oder mindestens 3 Wechsel in den letzten 20 Botschaften.
+     state: {ref:{key:[…]}, hist:{key:[…]}, prev:{key:[…]}} wird fortgeschrieben; frames: Decoder-Frames einer Aufnahme. */
+  var BM_HIST = 20;
+  function bmKey(bus, f){ return bus + '|' + (f.title || ''); }
+  /* Zählt ein Byte bzw. Halbbyte zwischen zwei Botschaften um genau 1 weiter, ist es ein Zähler:
+     dann gelten alle seine Bits als laufend (sonst würden die selten wechselnden oberen Zählerbits
+     fälschlich als „Taste“ erscheinen). */
+  function bmCounterMask(a, b){
+    if(a === b) return 0;
+    var m = 0;
+    if((a & 0xf0) === (b & 0xf0) && (((b & 15) - (a & 15)) & 15) === 1) m |= 0x0f;
+    if((a & 0x0f) === (b & 0x0f) && ((((b >> 4) - (a >> 4)) & 15) === 1)) m |= 0xf0;
+    if(!m && ((b - a) & 0xff) === 1) m = 0xff;
+    return m;
+  }
+  function bitMonitor(state, bus, frames){
+    state.ref = state.ref || {}; state.hist = state.hist || {}; state.prev = state.prev || {}; state.busyIn = state.busyIn || {};
+    var cap = {}, order = [];
+    (frames || []).forEach(function(f){
+      if(!f.data || !f.data.length || f.status === 'bad') return;   /* fehlerhafte Frames nicht vergleichen */
+      var k = bmKey(bus, f);
+      if(!cap[k]){ cap[k] = []; order.push(k); }
+      cap[k].push({data:f.data.slice(), f:f});
+    });
+    var rows = [];
+    order.forEach(function(k){
+      var list = cap[k], last = list[list.length - 1].data, i, j;
+      var inCap = state.busyIn[k] || [];
+      for(i = 1; i < list.length; i++) for(j = 0; j < Math.min(list[i].data.length, list[i - 1].data.length); j++){
+        var a0 = list[i - 1].data[j], a1 = list[i].data[j];
+        inCap[j] = (inCap[j] || 0) | (a0 ^ a1) | bmCounterMask(a0, a1);
+      }
+      state.busyIn[k] = inCap;
+      var h = state.hist[k] || [];
+      list.forEach(function(x){ h.push(x.data); });
+      while(h.length > BM_HIST) h.shift();
+      state.hist[k] = h;
+      var cmp = state.ref[k] || state.prev[k] || null, basis = state.ref[k] ? 'ref' : (state.prev[k] ? 'prev' : null);
+      var bytes = last.map(function(v, b){
+        var toggles = [0, 0, 0, 0, 0, 0, 0, 0];
+        for(var q = 1; q < h.length; q++) if(h[q][b] != null && h[q - 1][b] != null){ var x = h[q][b] ^ h[q - 1][b]; for(var bit = 0; bit < 8; bit++) if((x >> bit) & 1) toggles[bit]++; }
+        var busy = inCap[b] || 0;
+        for(var bt = 0; bt < 8; bt++) if(toggles[bt] >= 3) busy |= 1 << bt;
+        var o = cmp && cmp[b] != null ? cmp[b] : v;
+        return {i:b, val:v, cmp:cmp && cmp[b] != null ? cmp[b] : null, changed:(v ^ o) & 0xff, busy:busy & 0xff};
+      });
+      rows.push({key:k, title:list[list.length - 1].f.title, id:list[list.length - 1].f.id, basis:basis,
+        lengthChanged:!!(cmp && cmp.length !== last.length), bytes:bytes});
+      state.prev[k] = last.slice();
+    });
+    return rows;
+  }
+  /* Referenz = letzter Stand je Kennung */
+  function bitReference(state){
+    state.ref = {};
+    for(var k in (state.prev || {})) if(Object.prototype.hasOwnProperty.call(state.prev, k)) state.ref[k] = state.prev[k].slice();
+    return state.ref;
+  }
   return {
     H:H, decode:decode, cycles:cycles, synth:synth, buses:['lin', 'can', 'kline', 'sent'],
-    modules:{lin:M_lin, can:M_can, kline:M_kline, sent:M_sent, cycles:M_cycles}
+    bitMonitor:bitMonitor, bitReference:bitReference,
+    linsim:{profiles:M_linsim.LIN_SIM, faults:M_linsim.LIN_SIM_FAULTS, profile:M_linsim.linSimProfile, defaults:M_linsim.linSimDefaults,
+      frames:M_linsim.linSimFrames, labels:M_linsim.linSimLabels, expect:M_linsim.linSimExpect},
+    modules:{lin:M_lin, can:M_can, kline:M_kline, sent:M_sent, cycles:M_cycles, linsim:M_linsim}
   };
 })();
 if(typeof module!=='undefined'&&module.exports) module.exports=OsziDecode;
@@ -28728,7 +28934,9 @@ else document.addEventListener('DOMContentLoaded',initLive);
    Ergebnis zur gerade gezeigten Aufnahme gehört – nie zu einer älteren. */
 var ANA={
   dec:{bus:'',src:'1',baud:0,vbat:12.6,signal:'auto',tick:'',nibbles:0,key:'',res:null,ver:-1,base:0,dt:0,sel:-1,cost:0,last:0},
-  dm:{on:false,src:'1',range:'all',edge:'rise',ref:'10/90',thr:'',hyst:'',key:'',res:null,ver:-1,base:0,dt:0,sel:-1,cost:0,last:0,unit:'V'}
+  dm:{on:false,src:'1',range:'all',edge:'rise',ref:'10/90',thr:'',hyst:'',key:'',res:null,ver:-1,base:0,dt:0,sel:-1,cost:0,last:0,unit:'V'},
+  bm:{state:{},rows:[],cap:null},
+  sim:{profile:'klima',vals:null,fault:'',label:''}
 };
 var ANA_BAUD={
   lin:[[0,'automatisch'],[19200,'19 200 bit/s'],[10417,'10 417 bit/s'],[9600,'9 600 bit/s'],[2400,'2 400 bit/s']],
@@ -28763,6 +28971,7 @@ function anaDecodeOpt(){
   if(d.bus==='lin'||d.bus==='kline') o.vbat=d.vbat;
   if(d.bus==='can') o.signal=d.signal==='auto'?(d.src==='d'?'diff':'canh'):d.signal;
   if(d.bus==='sent'){ var tk=parseFloat(String(d.tick).replace(',','.')); if(tk>0) o.tick=tk*1e-6; if(d.nibbles>0) o.nibbles=d.nibbles; }
+  if(anaSimActive()) o.expect=OsziDecode.linsim.expect(OsziDecode.linsim.profile(ANA.sim.profile));
   return o;
 }
 function anaDmOpt(){
@@ -28784,6 +28993,8 @@ function anaUpdate(){
       D.res=s.err?{ok:false,error:s.err,frames:[],checks:[]}:OsziDecode.decode(D.bus,s.v,cap.dt,anaDecodeOpt());
       D.cost=performance.now()-t0;D.last=now;D.key=dk;D.ver=LV.frameVersion;D.base=0;D.dt=cap.dt;
       if(D.sel>=D.res.frames.length) D.sel=-1;
+      /* Bit-Monitor nur mit neuen Aufnahmen füttern (nicht bei Ausschnitt/Einstellungen derselben Aufnahme) */
+      if(cap.c1!==ANA.bm.cap&&D.res.ok){ ANA.bm.cap=cap.c1; ANA.bm.rows=OsziDecode.bitMonitor(ANA.bm.state,D.bus,D.res.frames); }
       anaRenderDec(now);
     }
   }
@@ -28827,7 +29038,54 @@ function anaRenderDec(now,force){
   }).join('');
   var fs=res.frames[D.sel];
   $('lv-dec-detail').innerHTML=fs?'<h4>Frame '+(D.sel+1)+' · '+esc(fs.title)+'</h4>'+anaChecks(fs.checks):'';
+  anaRenderBm();
 }
+function anaSimActive(){ return ANA.dec.bus==='lin'&&!!ANA.sim.label&&LV.playback===ANA.sim.label; }
+/* Bit-Monitor: Byte-Tabelle je Kennung, geänderte Bits rot, laufend wechselnde gepunktet */
+function anaRenderBm(){
+  var out=$('lv-bm-out'); if(!out) return;
+  var rows=ANA.bm.rows||[], nRef=Object.keys(ANA.bm.state.ref||{}).length;
+  $('lv-bm-info').textContent=nRef?('Referenz: '+nRef+' Kennung'+(nRef>1?'en':'')):'keine Referenz – Vergleich mit voriger Aufnahme';
+  if(!rows.length){ out.innerHTML='<p class="note">Noch keine fehlerfreien Frames mit Daten.</p>'; return; }
+  var sim=anaSimActive()?OsziDecode.linsim.profile(ANA.sim.profile):null;
+  out.innerHTML=rows.map(function(r){
+    var lab=sim&&r.id!=null?OsziDecode.linsim.labels(sim,r.id):{}, changed=[];
+    var body=r.bytes.map(function(b){
+      var bits='';
+      for(var bit=7;bit>=0;bit--){
+        var v=(b.val>>bit)&1, ch=(b.changed>>bit)&1, busy=(b.busy>>bit)&1;
+        if(ch&&!busy){ var nm=lab[b.i]&&lab[b.i].bits[bit]?lab[b.i].bits[bit]:'Bit '+bit; changed.push('D'+b.i+'.'+bit+(nm?' ('+nm+')':'')+' '+((b.cmp>>bit)&1)+'→'+v); }
+        bits+=ch&&!busy?'<span class="chg">'+v+'</span>':(busy?'<span class="busy">'+v+'</span>':String(v));
+      }
+      return '<tr><td class="mono">D'+b.i+'</td><td class="mono">'+OsziDecode.H.hex(b.val)+'</td><td class="lv-bits">'+bits+'</td><td>'+(lab[b.i]?esc(lab[b.i].name):'')+'</td></tr>';
+    }).join('');
+    var basis=r.basis==='ref'?'Referenz':(r.basis==='prev'?'vorige Aufnahme':'–');
+    return '<h4>'+esc(r.title)+'</h4><p class="note" style="margin:.2rem 0">Vergleich mit: '+basis+(r.lengthChanged?' · Datenlänge hat sich geändert':'')+'</p>'+
+      '<div class="twrap tsm"><table><tr><th>Byte</th><th>Wert</th><th>Bits (7…0)</th><th>Bedeutung</th></tr>'+body+'</table></div>'+
+      (r.basis?'<p>'+(changed.length?'<b>Geändert:</b> '+esc(changed.join(' · ')):'Keine Bit-Änderung (ohne laufend wechselnde Bits).')+'</p>':'');
+  }).join('');
+}
+/* ---- Bauteil-Simulator (LIN, Übung) ---- */
+function anaSimProfile(){ return OsziDecode.linsim.profile(ANA.sim.profile); }
+function anaSimRender(){
+  var p=anaSimProfile(), v=ANA.sim.vals, panel=$('lv-sim-panel'); if(!panel) return;
+  var knobs=p.ctrls.filter(function(c){ return c.t==='knob'; }), keys=p.ctrls.filter(function(c){ return c.t==='key'; });
+  function knob(c){ return '<label class="lv-sim-knob">'+esc(c.l)+'<b id="lv-sim-kv-'+c.k+'">'+esc(c.fmt(v[c.k]))+'</b><input type="range" data-k="'+c.k+'" min="'+c.min+'" max="'+c.max+'" value="'+v[c.k]+'" aria-label="'+esc(c.l)+'"></label>'; }
+  panel.innerHTML='<div class="lv-sim-panel">'+(knobs[0]?knob(knobs[0]):'<span></span>')+'<div class="lv-sim-keys">'+
+    keys.map(function(c){ return '<button type="button" class="lv-sim-key" data-k="'+c.k+'" aria-pressed="'+(v[c.k]?'true':'false')+'">'+esc(c.l)+'</button>'; }).join('')+
+    knobs.slice(2).map(knob).join('')+'</div>'+(knobs[1]?knob(knobs[1]):'<span></span>')+'</div>';
+  $('lv-sim-info').innerHTML='<div class="twrap tsm"><table><tr><th colspan="2">'+esc(p.name)+' (Beispiel)</th></tr>'+
+    '<tr><td>Funktion</td><td>'+esc(p.funktion)+'</td></tr><tr><td>LIN-Rolle</td><td>Slave – antwortet nur auf Anfrage des Masters ('+esc(p.master)+')</td></tr>'+
+    '<tr><td>Anschlüsse</td><td>'+esc(p.pins)+'</td></tr><tr><td>Frames</td><td>'+p.frames.map(function(f){ return 'ID '+OsziDecode.H.hex(f.id)+': '+esc(f.name); }).join('<br>')+'</td></tr></table></div>'+
+    '<h4>Prüfschritte</h4><ol>'+p.pruef.map(function(t){ return '<li>'+esc(t)+'</li>'; }).join('')+'</ol>';
+}
+function anaSimLoad(){
+  var s=OsziDecode.synth('lin',{sim:{profile:ANA.sim.profile,vals:ANA.sim.vals,fault:ANA.sim.fault}});
+  anaLoadSignal(s,'lin');
+  ANA.sim.label=LV.playback;
+  ANA.sim.vals.alive=(ANA.sim.vals.alive+2)&0x0f;   /* zwei Botschaften je Aufnahme */
+}
+function anaSimReset(){ ANA.sim.vals=OsziDecode.linsim.defaults(anaSimProfile()); anaSimRender(); }
 function fmtBaud(b){ return b>=1e6?(b/1e6).toFixed(2).replace('.',',')+' Mbit/s':b>=1e3?(b/1e3).toFixed(b>=1e5?0:2).replace('.',',')+' kbit/s':Math.round(b)+' bit/s'; }
 function anaFmtCell(col,v,unit){
   if(v==null||!Number.isFinite(v)) return '–';
@@ -28920,10 +29178,11 @@ function anaFillBaud(){
   if(b==='sent') h='<label>Tick <input type="number" id="lv-dec-tick" step="0.5" min="0.5" max="90" placeholder="auto" style="width:4.6rem"> µs</label><label>Daten-Nibbles <select id="lv-dec-nib"><option value="0">automatisch</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>';
   ex.innerHTML=h;
   if($('lv-dec-signal')) $('lv-dec-signal').value=ANA.dec.signal;
+  if($('lv-sim')) $('lv-sim').style.display=b==='lin'?'':'none';
 }
 /* Beispielsignal als Wiedergabe laden (ohne Gerät), wie eine Bibliotheksaufnahme */
-function anaLoadDemo(){
-  var bus=ANA.dec.bus||'lin', s=OsziDecode.synth(bus,{});
+function anaLoadDemo(){ var bus=ANA.dec.bus||'lin'; anaLoadSignal(OsziDecode.synth(bus,{}),bus); }
+function anaLoadSignal(s,bus){
   if(!s||!s.values) return;
   if(LV.mock) LV.mock.stop();
   if(!LV.playback) LV.beforePlayback={measurementMeta:LV.measurementMeta||null,secdiv:LV.secdiv,chOn:LV.chOn.slice(),clamp:LV.clamp.slice(),inv:LV.inv.slice()};
@@ -28951,7 +29210,7 @@ function initAnalyse(){
   if(!$('lv-dec-blk')||typeof OsziDecode==='undefined') return;
   var D=ANA.dec,M=ANA.dm;
   function decChanged(){ D.key=''; anaRenderDec(0,true); }
-  $('lv-dec-bus').addEventListener('change',function(){ D.bus=this.value; D.sel=-1; D.res=null; anaFillBaud(); decChanged(); });
+  $('lv-dec-bus').addEventListener('change',function(){ D.bus=this.value; D.sel=-1; D.res=null; ANA.bm={state:{},rows:[],cap:null}; anaFillBaud(); decChanged(); });
   $('lv-dec-src').addEventListener('change',function(){ D.src=this.value; decChanged(); });
   $('lv-dec-baud').addEventListener('change',function(){ D.baud=+this.value||0; decChanged(); });
   $('lv-dec-extra').addEventListener('change',function(e){
@@ -28984,6 +29243,29 @@ function initAnalyse(){
     $(p[0]).addEventListener('change',function(){ M[p[1]]=this.value; dmChanged(); });
   });
   $('lv-dm-csv').addEventListener('click',anaCsv);
+  /* Bit-Monitor */
+  $('lv-bm-ref').addEventListener('click',function(){ OsziDecode.bitReference(ANA.bm.state); ANA.bm.cap=null; D.key=''; anaRenderBm(); });
+  $('lv-bm-clear').addEventListener('click',function(){ ANA.bm.state.ref={}; ANA.bm.cap=null; D.key=''; anaRenderBm(); });
+  /* Bauteil-Simulator */
+  var sp=$('lv-sim-prof'), sf=$('lv-sim-fault');
+  sp.innerHTML=OsziDecode.linsim.profiles.map(function(p){ return '<option value="'+p.id+'">'+esc(p.name)+'</option>'; }).join('');
+  sf.innerHTML=OsziDecode.linsim.faults.map(function(f){ return '<option value="'+f[0]+'">'+esc(f[1])+'</option>'; }).join('');
+  anaSimReset();
+  sp.addEventListener('change',function(){ ANA.sim.profile=this.value; anaSimReset(); ANA.bm={state:{},rows:[],cap:null}; if(anaSimActive()) anaSimLoad(); });
+  sf.addEventListener('change',function(){ ANA.sim.fault=this.value; if(anaSimActive()) anaSimLoad(); });
+  $('lv-sim-start').addEventListener('click',function(){ anaSimLoad(); });
+  var panel=$('lv-sim-panel');
+  panel.addEventListener('click',function(e){
+    var k=e.target.closest('.lv-sim-key'); if(!k) return;
+    var key=k.getAttribute('data-k'); ANA.sim.vals[key]=ANA.sim.vals[key]?0:1;
+    k.setAttribute('aria-pressed',ANA.sim.vals[key]?'true':'false'); anaSimLoad();
+  });
+  panel.addEventListener('input',function(e){
+    var r=e.target.closest('input[type=range]'); if(!r) return;
+    var key=r.getAttribute('data-k'), c=anaSimProfile().ctrls.filter(function(x){ return x.k===key; })[0];
+    ANA.sim.vals[key]=parseInt(r.value,10); var o=$('lv-sim-kv-'+key); if(o) o.textContent=c.fmt(ANA.sim.vals[key]);
+  });
+  panel.addEventListener('change',function(e){ if(e.target.closest('input[type=range]')) anaSimLoad(); });
   anaFillBaud();
 }
 if(document.readyState!=='loading') initAnalyse(); else document.addEventListener('DOMContentLoaded',initAnalyse);

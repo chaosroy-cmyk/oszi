@@ -1,4 +1,4 @@
-# Serielle Entschlüsselung und Zyklus-Messung (V13.6)
+# Serielle Entschlüsselung und Zyklus-Messung (V13.6.1)
 
 Beide Funktionen stehen im Kapitel **Live** direkt unter dem Oszi-Bild. Sie werten die aktuelle
 Aufnahme aus – live von der Bridge, gestoppt (mit Zeitzoom), aus der Bibliothek oder aus einem
@@ -24,6 +24,24 @@ Unter 4 Punkten pro Bit gibt der Decoder keine Inhalte aus.
 
 **Beispielsignal:** lädt ein simuliertes Signal des gewählten Busses als Wiedergabe (gekennzeichnet,
 keine Messung) – zum Kennenlernen ohne Gerät.
+
+## Bit-Monitor
+
+Unter der Frame-Tabelle. Zeigt je Kennung (LIN-ID, CAN-ID …) die Datenbytes bitweise. Ablauf in der
+Werkstatt: ohne Tastendruck aufnehmen → **Referenz merken** → Taste oder Schalter betätigen → neu
+aufnehmen (Single). Rot = gegenüber der Referenz geändert. Ohne Referenz wird mit der vorigen Aufnahme
+verglichen. Gepunktet = ändert sich laufend und ist deshalb nicht die gesuchte Taste: Wechsel zwischen
+zwei Botschaften derselben Aufnahme, mindestens 3 Wechsel in den letzten 20 Botschaften, oder ein
+Byte/Halbbyte zählt um genau 1 weiter (Alive-Zähler). Frames mit Prüfsummen- oder Rahmenfehler werden
+nicht verglichen.
+
+## Bauteil-Simulator (Übung, LIN)
+
+Erscheint bei Bus = LIN. Simuliert ein Klimabedienteil, einen Generator mit LIN-Regler oder einen
+Batteriesensor mit Tasten, Reglern und zuschaltbaren Fehlern. Jede Bedienung erzeugt eine neue,
+als Wiedergabe gekennzeichnete Aufnahme; Decoder und Bit-Monitor reagieren wie bei einer echten
+Messung. Steckbrief und Prüfschritte je Bauteil stehen darunter. IDs und Bit-Belegungen sind frei
+gewählte Beispiele – die echte Belegung steht in der LDF des Herstellers.
 
 ## Zyklus-Messung (DeepMeasure)
 

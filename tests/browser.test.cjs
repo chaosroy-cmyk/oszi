@@ -150,6 +150,25 @@ test('serial decoders and cycle measurement decode demo signals, mark frames and
  assert.deepEqual(errors,[]);await context.close();
 });
 
+test('LIN component simulator drives decoder and bit monitor finds the pressed key',async()=>{
+ const context=await browser.newContext({viewport:{width:1280,height:900}}),p=await context.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await live(p);
+ await p.selectOption('#lv-dec-bus','lin');assert(await p.locator('#lv-sim').isVisible());
+ await p.locator('#lv-sim summary').click();await p.locator('#lv-bm summary').click();
+ await p.click('#lv-sim-start');
+ await p.waitForFunction(()=>document.querySelector('#lv-playname').textContent.includes('Simulator Klimabedienteil'));
+ await p.waitForFunction(()=>document.querySelectorAll('#lv-dec-rows tr.lv-ana-row .st-ok').length===4);
+ await p.click('#lv-bm-ref');
+ await p.click('.lv-sim-key[data-k="auto"]');
+ await p.waitForFunction(()=>/D0\.0 \(AUTO\) 0→1/.test(document.querySelector('#lv-bm-out').textContent));
+ const txt=await p.locator('#lv-bm-out').innerText();
+ assert.match(txt,/D0\.0 \(AUTO-LED\) 0→1/);assert.doesNotMatch(txt,/D3\.\d/);   /* Alive-Zähler ist kein Tastenbit */
+ await p.selectOption('#lv-sim-fault','noresp');
+ await p.waitForFunction(()=>[...document.querySelectorAll('#lv-dec-rows tr.lv-ana-row')].some(r=>r.querySelector('.st-bad')));
+ assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ assert.deepEqual(errors,[]);await context.close();
+});
+
 test('V13.4 to V13.5 user-confirmed offline update preserves stored recordings and sibling caches',async()=>{
  version='13.4';const context=await browser.newContext(),p=await context.newPage();await p.goto(base+'/',{waitUntil:'networkidle'});await p.evaluate(()=>navigator.serviceWorker.ready);await p.reload({waitUntil:'networkidle'});
  await p.evaluate(async()=>{localStorage.setItem('v135-retained','yes');const c=await caches.open('kfz-multimeter-profi-v7-3');await c.put('/sibling-test',new Response('retained'));await caches.open('unrelated-cache');const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('oszi-live',1);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});await new Promise((resolve,reject)=>{const tx=db.transaction('aufnahmen','readwrite');tx.objectStore('aufnahmen').put({id:'retained',name:'V13.4',dt:.001,len1:3,len2:0,ch1:new Float32Array([1,2,3]).buffer,meta:{},created:1});tx.oncomplete=resolve;tx.onerror=reject;});db.close();});

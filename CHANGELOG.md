@@ -1,3 +1,9 @@
+# V13.6.1 – Bit-Monitor und LIN-Bauteil-Simulator (31. Oktober 2026)
+
+- **Bit-Monitor** in der Seriellen Entschlüsselung (alle Busse): Referenz merken, Taste/Schalter betätigen, neu aufnehmen – geänderte Bits werden rot markiert, mit Bedeutung, soweit bekannt. Bits, die sich laufend ändern (Alive-Zähler, Prüfsummen), werden gepunktet markiert und nicht als „Taste“ gemeldet: Wechsel innerhalb einer Aufnahme, ≥ 3 Wechsel in den letzten 20 Botschaften oder ein Byte/Halbbyte, das um genau 1 weiterzählt. Fehlerhafte Frames werden nicht verglichen.
+- **Bauteil-Simulator (Übung, LIN):** Klimabedienteil (Tasten AUTO/OFF/FRONT/Umluft/A/C/Heckscheibe, Temperatur, Gebläse, Alive-Zähler), Generator mit LIN-Regler und Batteriesensor (IBS), jeweils mit Steckbrief und Prüfschritten; sieben Fehler zuschaltbar (keine Antwort, Checksumme, Massefehler, Ruhepegel, Taktabweichung, Kurzschluss Masse, kein Verkehr). Jede Bedienung erzeugt eine gekennzeichnete Wiedergabe. IDs und Belegungen sind Beispiele, keine Herstellerdaten.
+- 7 neue Node-Tests (`tests/decode/linsim.test.js`), ein neuer Browser-Test.
+
 # V13.6 – Serielle Entschlüsselung und Zyklus-Messung (30. Oktober 2026)
 
 Basis: unveränderte V13.5.1 (`releases/kfz-oszi-v13.5.1.zip`, SHA-256 geprüft). Neu im Kapitel **Live**, direkt unter dem Oszi-Bild:

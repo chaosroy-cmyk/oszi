@@ -1,6 +1,6 @@
 {
   "name": "kfz-oszi",
-  "version": "13.6.0",
+  "version": "13.6.1",
   "private": true,
   "description": "KFZ-Oszilloskop-Kompendium – static offline PWA and local OWON bridge",
   "engines": {

@@ -4,7 +4,7 @@
 const BASE = 'kfz-oszi-pwa-signed-803792f7bb4a6c59-';
 const ROOT = new URL('./', self.registration.scope);
 const PREFIX = BASE + encodeURIComponent(ROOT.pathname) + '-';
-const CACHE_NAME = PREFIX + 'v13.6';
+const CACHE_NAME = PREFIX + 'v13.6.1';
 const APP_SHELL = ['./','./index.html','./manifest.webmanifest','./icons/icon-192.png',
   './icons/icon-512.png','./icons/maskable-512.png','./icons/apple-touch-icon.png'];
 self.addEventListener('install', event => {
