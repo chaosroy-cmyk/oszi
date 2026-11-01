@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<title>Drehstromgenerator-Quiz</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: eine schmale Lernspalte wie ein Werkstatt-Prüfprotokoll; Schaltpläne auf „Zeichenpapier“-Flächen, Kupfer als einziger Akzent. */
+:root{
+  --bg:#EDF0F2; --panel:#FFFFFF; --panel2:#E2E7EB; --fig:#FAFBFC;
+  --ink:#1B2631; --ink2:#55626E; --line:#C8D0D7;
+  --copper:#A9581F; --copper-soft:#E7C09C; --steel:#B3BDC6; --carbon:#3B4148;
+  --hover:rgba(169,88,31,.13);
+  --ok:#2C7A4B; --okbg:#DCEFE3; --okA:rgba(44,122,75,.24);
+  --bad:#B33A3A; --badbg:#F6DFDF; --badA:rgba(179,58,58,.22);
+  --vor:#DE8516; --err:#7A4CB0; --lade:#D23838; --lin:#2F8F52; --can:#3466A8;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161B; --panel:#192027; --panel2:#232D36; --fig:#151B21;
+  --ink:#E3E9EE; --ink2:#9AA7B3; --line:#33404B;
+  --copper:#E39457; --copper-soft:#5C3B22; --steel:#56636F; --carbon:#C9CED3;
+  --hover:rgba(227,148,87,.16);
+  --ok:#5CC68A; --okbg:#16301F; --okA:rgba(92,198,138,.26);
+  --bad:#F07474; --badbg:#3A1D1F; --badA:rgba(240,116,116,.24);
+  --vor:#F2A24A; --err:#B48BE8; --lade:#FF6A6A; --lin:#5FC584; --can:#6E9FE2;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161B; --panel:#192027; --panel2:#232D36; --fig:#151B21;
+  --ink:#E3E9EE; --ink2:#9AA7B3; --line:#33404B;
+  --copper:#E39457; --copper-soft:#5C3B22; --steel:#56636F; --carbon:#C9CED3;
+  --hover:rgba(227,148,87,.16);
+  --ok:#5CC68A; --okbg:#16301F; --okA:rgba(92,198,138,.26);
+  --bad:#F07474; --badbg:#3A1D1F; --badA:rgba(240,116,116,.24);
+  --vor:#F2A24A; --err:#B48BE8; --lade:#FF6A6A; --lin:#5FC584; --can:#6E9FE2;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.5 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{text-wrap:balance;margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2.5px solid var(--copper);outline-offset:2px}
+
+/* Kopf */
+.mast{display:flex;flex-direction:column;gap:6px}
+.kicker{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--copper)}
+.mast h1{font:700 clamp(34px,8vw,52px)/.95 var(--display);text-transform:uppercase;letter-spacing:.01em}
+.ripple{display:block;width:100%;max-width:300px;height:16px}
+.ripple path{fill:none;stroke:var(--copper);stroke-width:2}
+.lead{color:var(--ink2);margin:0;max-width:60ch}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+.sect{display:flex;flex-direction:column;gap:10px}
+.sect h3{font:600 13px/1 var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--ink2)}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 13px;cursor:pointer;font-size:15px;display:inline-flex;gap:7px;align-items:baseline}
+.chip .n{font:500 12px var(--mono);color:var(--ink2)}
+.chip[aria-pressed="true"]{border-color:var(--copper);background:var(--hover)}
+.chip[aria-pressed="true"]::before{content:"✓";color:var(--copper);font-weight:700}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:8px 16px;cursor:pointer;font-weight:600}
+.seg button+button{border-left:1.5px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.tog{display:flex;gap:10px;align-items:center;cursor:pointer;font-size:16px}
+.tog input{width:20px;height:20px;accent-color:var(--copper)}
+.btn{border:0;border-radius:8px;padding:13px 22px;font:700 19px/1 var(--display);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;background:var(--copper);color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.meta{font:500 13px var(--mono);color:var(--ink2)}
+
+/* Abbildungen */
+.fig{margin:0;background:var(--fig);border:1px solid var(--line);border-radius:8px;padding:10px;overflow-x:auto}
+.fig svg{display:block;width:100%;height:auto;max-width:100%;min-width:300px}
+.fig figcaption{font:500 12px/1.3 var(--mono);color:var(--ink2);margin-top:6px}
+.f text{font-family:var(--mono);font-size:10px;fill:var(--ink)}
+.f .tl{fill:var(--ink2);font-size:9.5px}
+.f .tlb{fill:var(--ink);font-weight:500;font-size:11px}
+.f .lbl{opacity:0;transition:opacity .25s;paint-order:stroke;stroke:var(--fig);stroke-width:3.5px;stroke-linejoin:round;font-size:9.5px}
+.f .lbl-ln{opacity:0;stroke:var(--ink2);stroke-width:.8;fill:none;transition:opacity .25s}
+.reveal .f .lbl,.labels .f .lbl,.reveal .f .lbl-ln,.labels .f .lbl-ln{opacity:1}
+.f .ln{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round}
+.f .lnb{fill:none;stroke:var(--ink);stroke-width:3.5}
+.f .thin{fill:none;stroke:var(--ink2);stroke-width:.7}
+.f .ax{fill:none;stroke:var(--ink2);stroke-width:1}
+.f .grid{fill:none;stroke:var(--line);stroke-width:.7}
+.f .dot{fill:var(--ink)}
+.f .dio{fill:var(--ink);stroke:var(--ink);stroke-width:1}
+.f .body{fill:var(--panel2);stroke:var(--ink);stroke-width:1.4}
+.f .box{fill:var(--panel);stroke:var(--ink);stroke-width:1.3}
+.f .dash{fill:none;stroke:var(--ink2);stroke-width:1;stroke-dasharray:5 4}
+.f .steel{fill:var(--steel);stroke:var(--ink);stroke-width:1}
+.f .cu{fill:var(--copper-soft);stroke:var(--copper);stroke-width:1.3}
+.f .cuw{fill:var(--copper)}
+.f .carbon{fill:var(--carbon);stroke:var(--ink);stroke-width:.8}
+.f .coil{fill:none;stroke:var(--copper);stroke-width:1.8;stroke-linejoin:round}
+.f .lamp{fill:var(--panel);stroke:var(--ink);stroke-width:1.4}
+.f .scr{fill:var(--panel);stroke:var(--ink);stroke-width:1.2}
+.f .trace{fill:none;stroke:var(--can);stroke-width:1.8;stroke-linejoin:round}
+.f .trace2{fill:none;stroke:var(--copper);stroke-width:1.8;stroke-dasharray:6 4}
+.f .ie{fill:none;stroke:var(--lade);stroke-width:2}
+.f .ug{fill:none;stroke:var(--can);stroke-width:2}
+.f .mean{fill:none;stroke:var(--lade);stroke-width:1.3;stroke-dasharray:5 4}
+.f .on{fill:var(--copper-soft);stroke:var(--ink2);stroke-width:.6}
+.f .off{fill:var(--panel2);stroke:var(--ink2);stroke-width:.6}
+.f .bus-lin{fill:none;stroke:var(--lin);stroke-width:2;stroke-dasharray:5 3}
+.f .bus-can{fill:none;stroke:var(--can);stroke-width:3}
+.f .pwr{fill:none;stroke:var(--lade);stroke-width:2.4}
+.f .num{fill:var(--ink);}
+.f .numt{fill:var(--bg);font-weight:500;font-size:10px}
+.f .hl{fill:none;stroke-width:8;stroke-linejoin:round;stroke-linecap:round;opacity:.5}
+.f .hl.vor{stroke:var(--vor)} .f .hl.err{stroke:var(--err)} .f .hl.lade{stroke:var(--lade)}
+.f .hit{fill:transparent;stroke:transparent;stroke-width:2}
+.f .hitp{fill:none;stroke:transparent;stroke-width:16;pointer-events:stroke;stroke-linecap:round}
+.pick .hs{cursor:pointer}
+.pick .hs:hover .hit,.pick .hs:focus-visible .hit{fill:var(--hover);stroke:var(--copper);stroke-dasharray:4 3}
+.pick .hs:hover .hitp,.pick .hs:focus-visible .hitp{stroke:var(--hover)}
+.pick .hs:focus{outline:none}
+.hs.mk .hit{fill:var(--hover);stroke:var(--copper);stroke-width:2.5;stroke-dasharray:6 3;animation:pulse 1.6s ease-in-out infinite}
+.hs.mk .hitp{stroke:var(--hover)}
+.hs.ok .hit{fill:var(--okA);stroke:var(--ok);stroke-width:2.5;stroke-dasharray:none;animation:none}
+.hs.bad .hit{fill:var(--badA);stroke:var(--bad);stroke-width:2.5;stroke-dasharray:none}
+.hs.ok .hitp{stroke:var(--okA)} .hs.bad .hitp{stroke:var(--badA)}
+@keyframes pulse{50%{stroke-opacity:.35}}
+
+/* Quiz */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.top .meta b{color:var(--ink);font-weight:500}
+.bar{display:flex;gap:3px;height:6px}
+.bar i{flex:1;border-radius:2px;background:var(--panel2)}
+.bar i.ok{background:var(--ok)} .bar i.bad{background:var(--bad)} .bar i.cur{background:var(--copper)}
+.qhead{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.eyebrow{font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--copper)}
+.qtext{font:600 21px/1.3 var(--body)}
+.hint{margin:0;font-size:14px;color:var(--ink2)}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;border:1.5px solid var(--line);background:var(--panel);border-radius:8px;padding:12px 14px;cursor:pointer;font-size:16.5px;line-height:1.35}
+.opt .k{font:500 13px/1.6 var(--mono);color:var(--ink2);min-width:1.2em}
+.opt:hover:not(:disabled){border-color:var(--copper)}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:var(--ok);background:var(--okbg)} .opt.bad{border-color:var(--bad);background:var(--badbg)}
+.opt.dim{opacity:.55}
+.ordlist{display:flex;flex-direction:column;gap:6px;counter-reset:o;margin:0;padding:0;list-style:none;min-height:44px;border:1.5px dashed var(--line);border-radius:8px;padding:8px}
+.ordlist:empty::before{content:"Tippe die Stationen unten der Reihe nach an.";color:var(--ink2);font-size:14px;padding:4px 6px}
+.ordlist li{counter-increment:o;display:flex;gap:10px;align-items:center;padding:6px 10px;border-radius:6px;background:var(--panel2);font-size:15.5px}
+.ordlist li::before{content:counter(o);font:500 12px var(--mono);color:var(--ink2);min-width:1.3em}
+.ordlist li.ok{background:var(--okbg)} .ordlist li.bad{background:var(--badbg)}
+.pool{display:flex;flex-wrap:wrap;gap:8px}
+.pool button{border:1.5px solid var(--line);background:var(--panel);border-radius:6px;padding:8px 12px;cursor:pointer;font-size:15.5px}
+.pool button:disabled{opacity:.3;cursor:default}
+.fb{border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;border:1.5px solid}
+.fb.ok{background:var(--okbg);border-color:var(--ok)} .fb.bad{background:var(--badbg);border-color:var(--bad)}
+.fb strong{font:700 20px/1 var(--display);letter-spacing:.04em;text-transform:uppercase}
+.fb.ok strong{color:var(--ok)} .fb.bad strong{color:var(--bad)}
+.fb p{margin:0;max-width:62ch}
+.fb .ans{font-weight:600}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* Ergebnis */
+.score{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.score .big{font:700 64px/1 var(--display);font-variant-numeric:tabular-nums}
+.score .big small{font-size:28px;color:var(--ink2)}
+.tbl{display:flex;flex-direction:column;gap:6px}
+.tr{display:grid;grid-template-columns:1fr auto;gap:10px;font-size:15px;padding:6px 0;border-bottom:1px solid var(--line)}
+.tr span:last-child{font:500 13px var(--mono);font-variant-numeric:tabular-nums;color:var(--ink2)}
+.wrong{display:flex;flex-direction:column;gap:10px}
+.wrong .card{padding:14px;display:flex;flex-direction:column;gap:6px}
+.wrong .q{font-weight:600}
+.wrong .a{color:var(--ok);font-weight:600}
+.src{font-size:13px;color:var(--ink2);margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+
+<script>
+"use strict";
+/* ---------- SVG-Bausteine ---------- */
+const sv=(vb,b)=>`<svg class="f" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg">${b}</svg>`;
+const L=(p,c="ln")=>`<polyline class="${c}" points="${p}"/>`;
+const R=(x,y,w,h,c,rx=0)=>`<rect class="${c}" x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}"/>`;
+const T=(x,y,t,a="middle",c="")=>`<text class="${c}" x="${x}" y="${y}" text-anchor="${a}">${t}</text>`;
+const tl=(x,y,t,a)=>T(x,y,t,a||"middle","tl");
+const tb=(x,y,t,a)=>T(x,y,t,a||"middle","tlb");
+const lb=(x,y,t,a)=>T(x,y,t,a||"middle","lbl");
+const lbl2=(x,y,t,a,dy=11)=>t.split("|").map((s,i)=>lb(x,y+i*dy,s,a)).join("");
+const lead=(x1,y1,x2,y2)=>`<line class="lbl-ln" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+const dot=(x,y)=>`<circle class="dot" cx="${x}" cy="${y}" r="2.6"/>`;
+const hs=(id,inner,hit)=>`<g class="hs" data-id="${id}">${inner}${hit}</g>`;
+const hr=(x,y,w,h,r=5)=>`<rect class="hit" x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"/>`;
+const hp=d=>`<path class="hitp" d="${d}"/>`;
+function diode(x,y,rot=0,s=7,z=false){
+  const h=s*.75;
+  const bar=z?`M${-s-3} ${-h+3}L${-s} ${-h}H${s}L${s+3} ${-h-3}`:`M${-s} ${-h}H${s}`;
+  return `<g transform="translate(${x} ${y}) rotate(${rot})"><polygon class="dio" points="${-s},${h} ${s},${h} 0,${-h}"/><path class="ln" d="${bar}"/></g>`;
+}
+/* Spule als Wellenlinie zwischen zwei Punkten */
+function coil(x1,y1,x2,y2,n=4,a=4){
+  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy),ux=dx/len,uy=dy/len,px=-uy,py=ux;let pts=[];
+  for(let i=0;i<=60;i++){const t=i/60;let off=0;if(t>.12&&t<.88){off=a*Math.sin((t-.12)/.76*n*2*Math.PI)}
+    pts.push(`${(x1+dx*t+px*off).toFixed(1)},${(y1+dy*t+py*off).toFixed(1)}`)}
+  return `<polyline class="coil" points="${pts.join(" ")}"/>`;
+}
+function npn(x,y){
+  return `<circle cx="${x}" cy="${y}" r="13" class="box"/>`+
+  `<path class="ln" d="M${x-20} ${y}H${x-5}M${x-5} ${y-8}V${y+8}M${x-5} ${y-4}L${x+6} ${y-11}V${y-20}M${x-5} ${y+4}L${x+6} ${y+11}V${y+20}"/>`+
+  `<polygon class="dio" points="${x+6},${y+11} ${x},${y+11} ${x+3},${y+6}"/>`;
+}
+
+/* ---------- Abbildungen ---------- */
+const FIG={};
+
+/* Drehstromgenerator, Schnitt (Prinzip) */
+FIG.gen=()=>{
+  let s=R(48,28,250,174,"body",16)+R(62,104,10,20,"steel")+R(276,104,10,20,"steel")+R(8,108,322,12,"steel",2);
+  let g="";for(let i=0;i<6;i++)g+=`<line class="thin" x1="10" x2="40" y1="${78+i*14}" y2="${78+i*14}"/>`;
+  s+=hs("pulley",R(10,70,30,88,"steel",3)+g,hr(5,65,40,98));
+  s+=hs("fan",R(54,40,4,62,"steel")+R(60,40,4,62,"steel")+R(54,126,4,62,"steel")+R(60,126,4,62,"steel"),hr(49,35,20,158));
+  let lam="";for(let x=124;x<192;x+=6)lam+=`<line class="thin" x1="${x}" x2="${x}" y1="38" y2="58"/><line class="thin" x1="${x}" x2="${x}" y1="170" y2="190"/>`;
+  s+=hs("stator",R(118,36,76,24,"steel")+R(118,168,76,24,"steel")+lam+R(107,40,11,16,"cu",3)+R(194,40,11,16,"cu",3)+R(107,172,11,16,"cu",3)+R(194,172,11,16,"cu",3),hr(103,32,106,32)+hr(103,164,106,32));
+  s+=hs("rotor",R(116,66,8,96,"steel")+R(188,66,8,96,"steel")+`<polygon class="steel" points="124,66 178,66 168,79 124,79"/><polygon class="steel" points="188,162 134,162 144,149 188,149"/>`,hr(112,62,88,104));
+  let w="";for(let i=0;i<6;i++)w+=`<circle class="cuw" cx="${136+i*8}" cy="94" r="2.2"/><circle class="cuw" cx="${136+i*8}" cy="134" r="2.2"/>`;
+  s+=hs("field",R(130,84,52,20,"cu",2)+R(130,124,52,20,"cu",2)+w,hr(126,80,60,28)+hr(126,120,60,28));
+  s+=hs("rings",R(236,100,6,28,"cu",1)+R(248,100,6,28,"cu",1),hr(229,98,32,34));
+  s+=`<line class="ln" x1="260" y1="77" x2="300" y2="77"/>`;
+  s+=hs("brushes",R(230,72,30,10,"box",2)+R(236,82,6,17,"carbon")+R(248,82,6,17,"carbon"),hr(226,66,38,31));
+  s+=`<line class="ln" x1="205" y1="180" x2="300" y2="180"/>`;
+  s+=hs("reg",R(300,40,46,44,"box",4)+`<path class="thin" d="M308 52h30M308 60h30M308 68h20"/>`,hr(296,35,55,54));
+  s+=hs("rect",R(300,136,46,52,"box",4)+diode(312,166,0,4)+diode(323,166,0,4)+diode(334,166,0,4)+`<path class="thin" d="M306 154h34M306 176h34"/>`,hr(296,131,55,62));
+  s+=`<line class="ln" x1="346" y1="150" x2="352" y2="150"/><circle class="box" cx="355" cy="150" r="3.5"/>`+tl(355,141,"B+");
+  s+=lb(4,62,"Riemenscheibe","start")+lb(58,216,"Lüfter")+lead(59,190,59,206)
+    +lb(156,22,"Ständerwicklung")+lb(138,216,"Erregerwicklung")+lead(150,145,138,206)
+    +lb(236,216,"Klauenpolläufer")+lead(186,160,228,206)+lb(245,145,"Schleifringe")+lb(245,63,"Kohlebürsten")
+    +lb(323,31,"Regler")+lb(323,205,"Gleichrichter");
+  return sv("0 0 362 226",s);
+};
+
+/* Innenschaltung mit Hybridregler und Erregerdioden */
+FIG.sch=(o={})=>{
+  const HL={vor:["30,108 30,20 60,20 60,55 140,55 140,175 142,215 142,235 350,235 350,270 30,270 30,132"],
+    err:["175,168 175,130 232,130 232,55 140,55 140,175 142,215 142,235 290,235 290,140 200,140 200,163"],
+    lade:["175,168 175,130 250,130 250,38 350,38 350,20 30,20 30,108","30,132 30,270 350,270 350,235 290,235 290,140 200,140 200,163"]};
+  let s="";
+  if(o.hl)HL[o.hl].forEach(p=>s+=`<polyline class="hl ${o.hl}" points="${p}"/>`);
+  s+=R(118,30,247,230,"dash",6);
+  s+=L("30,20 30,108")+L("60,20 350,20")+L("30,20 60,20")+L("30,132 30,270 350,270");
+  s+=hs("bat",`<path class="ln" d="M18 108H42M18 124H42"/><path class="lnb" d="M24 116H36M24 132H36"/>`+tl(46,106,"+","start"),hr(12,100,36,40));
+  s+=tb(14,24,"30","end")+tb(14,274,"31","end");
+  s+=L("60,20 60,30")+`<line class="ln" x1="60" y1="30" x2="63" y2="46"/>`+dot(60,30)+L("60,46 60,55 87,55")+tl(54,48,"15","end");
+  s+=hs("lamp",`<circle class="lamp" cx="95" cy="55" r="8"/><path class="ln" d="M89.5 49.5l11 11M100.5 49.5l-11 11"/>`,hr(83,43,24,24));
+  s+=L("103,55 312,55");
+  s+=`<circle class="box" cx="118" cy="55" r="3"/>`+tb(124,49,"D+","start");
+  s+=L("250,38 350,38")+L("350,38 350,20")+`<circle class="box" cx="350" cy="30" r="3"/>`+tb(334,50,"B+");
+  s+=L("142,235 350,235")+L("350,235 350,270")+`<circle class="box" cx="350" cy="260" r="3"/>`+tb(334,250,"B−");
+  const cols=[[250,130],[290,140],[330,150]];
+  let pl="",mi="",er="";
+  cols.forEach(([cx,ny])=>{const ex=cx-18;
+    s+=L(`${cx},38 ${cx},235`)+L(`${ex},55 ${ex},${ny}`)+dot(cx,ny)+dot(ex,ny)+dot(ex,55)+dot(cx,235)+(cx>250?dot(cx,38):"");
+    pl+=diode(cx,75,0);mi+=diode(cx,200,0);er+=diode(ex,112,0);});
+  s+=hs("plus",pl,hr(236,62,108,26))+hs("minus",mi,hr(236,187,108,26))+hs("erreg",er,hr(219,99,106,26));
+  s+=L("175,168 175,130 250,130")+L("200,163 200,140 290,140")+L("225,168 225,150 330,150");
+  s+=hs("stator",coil(200,205,175,168,3,3.5)+coil(200,205,200,163,3,3.5)+coil(200,205,225,168,3,3.5)+dot(200,205)+tl(170,166,"U","end")+tl(207,160,"V","start")+tl(230,170,"W","start"),hr(160,156,80,56));
+  s+=L("140,55 140,72")+L("140,128 140,175")+dot(140,55);
+  s+=hs("field",coil(140,72,140,128,4,4),hr(128,66,24,68));
+  s+=L("154,55 154,175")+dot(154,55);
+  s+=hs("reg",R(124,175,36,40,"box",3)+lb(142,199,"Regler"),hr(120,171,44,48));
+  s+=L("142,215 142,235")+tl(134,170,"DF","end")+tl(136,231,"D−","end");
+  s+=lb(52,124,"Batterie","start")+lb(95,39,"Kontrolllampe")+lbl2(114,96,"Erreger-|wicklung","end")+lead(116,99,135,99)
+    +lb(228,80,"Plusdioden","end")+lb(214,118,"Erregerdioden","end")+lb(290,226,"Minusdioden")+lb(196,227,"Ständerwicklung");
+  return sv("0 0 380 284",s);
+};
+
+/* Ladekennlinie Schnittstellenregelung */
+FIG.lk=()=>{
+  const X0=40,X1=330,Y=u=>170-(u-8)*18.75;let s="";
+  [8,10,12,14,16].forEach(u=>{s+=`<line class="grid" x1="${X0}" x2="${X1}" y1="${Y(u)}" y2="${Y(u)}"/>`+tl(X0-6,Y(u)+3,u,"end")});
+  s+=`<path class="ax" d="M${X0} 14V170H${X1+4}"/>`+tl(4,12,"U in V","start")+tl(X1,186,"Zeit t →","end");
+  const bands=[["A",40,60],["B",60,116],["C",116,186],["D",186,272],["E",272,300]];
+  bands.forEach(([k,a,b])=>{s+=hs(k,`<line class="grid" x1="${b}" x2="${b}" y1="18" y2="170" stroke-dasharray="3 3"/>`+tb((a+b)/2,30,k),hr(a+1,16,b-a-2,156,3))});
+  const pts=[[40,12.4],[56,12.4],[60,14.2],[64,15.5],[72,15.7],[90,15.6],[110,15.6],[116,15.0],[122,14.6],[150,14.45],[186,14.35],[192,13.95],[200,13.8],[210,13.95],[220,13.75],[232,13.9],[244,13.75],[256,13.9],[272,13.8],[276,14.9],[282,15.1],[294,15.1],[298,14.0],[310,13.85],[330,13.8]];
+  s+=`<polyline class="trace" points="${pts.map(p=>p[0]+","+Y(p[1]).toFixed(1)).join(" ")}"/>`;
+  s+=lb(50,160,"Start")+lb(90,50,"Schnellladung")+lb(150,62,"Temperatur")+lb(229,84,"Teillast")+lb(286,48,"Rekup.");
+  return sv("0 0 340 192",s);
+};
+
+/* Erregerstrom über Drehzahl */
+FIG.ie=()=>{
+  let s=`<path class="ax" d="M40 14V160H312"/>`+tl(312,176,"Drehzahl n →","end")+tl(98,174,"n₀")+`<line class="grid" x1="98" x2="98" y1="30" y2="160" stroke-dasharray="3 3"/>`;
+  s+=`<path class="ug" d="M40 158C70 150 86 40 102 30H306"/>`+tl(300,24,"U_G = 14 V","end");
+  const base="M40 160C70 155 88 72 98 40";
+  const C={a:"C112 52 200 56 300 62",b:"C112 64 180 84 300 92",c:"C112 78 170 112 300 124"};
+  Object.entries(C).forEach(([k,d])=>{s+=hs(k,`<path class="ie" d="${base}${d}"/>`+tb(308,{a:66,b:96,c:128}[k],k,"start"),hp("M98 40"+d))});
+  s+=tl(18,90,"I_E")+lb(196,148,"a groß · b mittel · c klein");
+  return sv("0 0 330 182",s);
+};
+
+/* Induzierte Spannung 2-polig / 12-polig */
+FIG.wave=()=>{
+  const X=a=>30+a/360*290,Y=v=>80-v*52;let s="";
+  [0,90,180,270,360].forEach(a=>{s+=`<line class="grid" x1="${X(a)}" x2="${X(a)}" y1="24" y2="136"/>`+tl(X(a),152,a+"°")});
+  s+=`<path class="ax" d="M30 80H322M30 22V138"/>`+tl(16,84,"0")+tl(320,168,"Drehwinkel α →","end");
+  const path=n=>{let p="";for(let a=0;a<=360;a+=3)p+=(a?"L":"M")+X(a).toFixed(1)+" "+Y(Math.sin(n*a*Math.PI/180)).toFixed(1);return p};
+  s+=hs("p2",`<path class="trace2" d="${path(1)}"/>`,hp(path(1)));
+  s+=hs("p12",`<path class="trace" d="${path(6)}"/>`,hp(path(6)));
+  s+=lb(80,16,"2-polig (gestrichelt)")+lb(250,16,"12-polig");
+  return sv("0 0 336 172",s);
+};
+
+/* Stern- und Dreieckschaltung */
+FIG.sd=()=>{
+  let s="";
+  const star=(cx,cy)=>{let r="";[-90,30,150].forEach(a=>{const t=a*Math.PI/180;r+=coil(cx,cy,cx+50*Math.cos(t),cy+50*Math.sin(t),3,3.5)+`<circle class="box" cx="${(cx+58*Math.cos(t)).toFixed(1)}" cy="${(cy+58*Math.sin(t)).toFixed(1)}" r="3"/>`});return r+dot(cx,cy)};
+  const tri=(cx,cy)=>{const P=[-90,30,150].map(a=>[cx+56*Math.cos(a*Math.PI/180),cy+56*Math.sin(a*Math.PI/180)]);let r="";
+    for(let i=0;i<3;i++){const [a,b]=[P[i],P[(i+1)%3]];r+=coil(a[0],a[1],b[0],b[1],3,3.5)+dot(a[0],a[1])}return r};
+  s+=hs("star",star(85,92),hr(12,16,148,150,6))+hs("delta",tri(255,98),hr(180,16,148,150,6));
+  s+=tb(20,30,"A","start")+tb(188,30,"B","start")+lb(85,178,"Sternschaltung")+lb(255,178,"Dreieckschaltung");
+  return sv("0 0 340 186",s);
+};
+
+/* Oszilloskop an D+ */
+function scope(x,y,w,h,kind){
+  let s=R(x,y,w,h,"scr",4);
+  for(let i=1;i<8;i++)s+=`<line class="grid" x1="${x+i*w/8}" x2="${x+i*w/8}" y1="${y}" y2="${y+h}"/>`;
+  for(let j=1;j<6;j++)s+=`<line class="grid" x1="${x}" x2="${x+w}" y1="${y+j*h/6}" y2="${y+j*h/6}"/>`;
+  let p=[];const hi=y+h*.32,lo=y+h*.86;
+  for(let i=0;i<=w-8;i+=1){const xx=x+4+i;let yy;
+    if(kind==="good"){yy=hi+2.4*Math.abs(Math.sin(i*Math.PI/7))}
+    else{const P=46,t=i%P;
+      if(t<30)yy=hi-1+5*Math.abs(Math.sin(t*Math.PI/10));
+      else if(t<33)yy=hi+(lo-hi)*(t-30)/3;
+      else if(t<37)yy=lo;
+      else yy=lo-(lo-hi)*Math.min(1,(t-37)/4);}
+    p.push(xx+","+yy.toFixed(1))}
+  s+=`<polyline class="trace" points="${p.join(" ")}"/>`+tl(x+w-4,y+11,"20 V/Div","end")+tl(x+w-4,y+h-4,"0","end");
+  return s;
+}
+FIG.osz=(o={})=>sv("0 0 300 130",scope(10,10,280,110,o.kind||"good"));
+FIG.osz2=()=>{let s=hs("bad",scope(8,22,156,104,"bad"),hr(4,18,164,112))+hs("good",scope(176,22,156,104,"good"),hr(172,18,164,112));
+  s+=tb(12,14,"A","start")+tb(180,14,"B","start")+lb(86,142,"Diode unterbrochen")+lb(254,142,"fehlerfrei");return sv("0 0 340 150",s)};
+
+/* PWM-Signal am DFM */
+FIG.pwm=()=>{
+  const sig=(x0,on)=>{let d=`M${x0} 40`,x=x0;const P=46;while(x<x0+140){const off=P-on;d+=`H${Math.min(x+off,x0+140)}`;if(x+off>=x0+140)break;d+=`V96H${Math.min(x+P,x0+140)}`;x+=P;if(x<x0+140)d+="V40"}return `<path class="trace" d="${d}"/>`};
+  let s="";[[20,"a",12],[182,"b",34]].forEach(([x0,k,on])=>{
+    s+=hs(k,`<path class="ax" d="M${x0} 24V108H${x0+146}"/>`+sig(x0,on)+tb(x0+6,20,k+")","start"),hr(x0-16,8,170,116))});
+  s+=tl(14,44,"Aus","end")+tl(14,100,"Ein","end")+tl(176,124,"Zeit t →","end")+tl(338,124,"Zeit t →","end");
+  s+=lb(92,136,"geringe Last")+lb(256,136,"hohe Last");
+  return sv("0 0 346 142",s);
+};
+
+/* Erregerstrom bei Ein/Aus-Takt */
+FIG.saw=()=>{
+  const X=t=>40+t*17,Y=i=>150-i*36;let s="";
+  const seg=[[0,4,"ein"],[4,6,"aus"],[6,10,"ein"],[10,12,"aus"],[12,16,"ein"]];
+  seg.forEach(([a,b,k])=>{s+=R(X(a),14,X(b)-X(a),14,k==="ein"?"on":"off")+tl((X(a)+X(b))/2,24.5,k)});
+  [0,2,4,6,8,10,12,14,16].forEach(t=>s+=tl(X(t),166,t));
+  [0,1,2,3].forEach(i=>{s+=`<line class="grid" x1="40" x2="${X(16)}" y1="${Y(i)}" y2="${Y(i)}"/>`+tl(32,Y(i)+3,i,"end")});
+  s+=`<path class="ax" d="M40 30V150H${X(16)+6}"/>`+tl(X(16),180,"t in ms","end")+tl(4,12,"I_E in A","start");
+  let d=`M${X(0)} ${Y(1.5)}`;
+  [[4,2.45],[6,1.6],[10,2.45],[12,1.6],[16,2.45]].forEach(([t,i],k)=>{d+=`Q${X(t-(k%2?1.2:2.4))} ${Y(k%2?1.75:i-.05)} ${X(t)} ${Y(i)}`});
+  s+=`<path class="ie" d="${d}"/><path class="mean" d="M40 ${Y(2)}H${X(16)}"/>`+tl(X(16)+4,Y(2)+3,"I_E","start");
+  s+=lb(X(2),39,"t_E = 4 ms")+lb(X(5)+4,39,"t_A = 2 ms")+lb(X(16)-2,Y(2)+14,"Mittelwert 2 A","end");
+  return sv("0 0 340 186",s);
+};
+
+/* Hybridregler (Transistorregler) */
+FIG.hy=(o={})=>{
+  const HL={ein:["200,24 200,84 200,170 222,170 248,190 248,216","290,24 290,120 248,120 248,216"],
+    aus:["50,24 50,120 110,120 136,140 136,216","200,24 200,84 136,84 136,100 136,216"]};
+  let s="";
+  if(o.hl)HL[o.hl].forEach(p=>s+=`<polyline class="hl ${o.hl==="ein"?"lade":"vor"}" points="${p}"/>`);
+  s+=L("30,24 322,24")+L("30,216 322,216")+tb(26,28,"D+","end")+tb(26,220,"D−","end");
+  s+=hs("div",L("50,24 50,40")+R(45,40,10,40,"box")+L("50,80 50,140")+R(45,140,10,40,"box")+L("50,180 50,216")+tl(62,64,"R1","start")+tl(62,164,"R2","start"),hr(38,36,34,148));
+  s+=dot(50,120)+dot(50,24)+dot(50,216);
+  s+=L("50,120 66,120")+L("94,120 110,120");
+  s+=hs("z",diode(80,120,-90,8,true),hr(64,106,32,28));
+  s+=hs("t2",npn(130,120),hr(108,98,40,44));
+  s+=L("136,100 136,84 200,84")+L("136,140 136,216")+dot(136,216)+dot(200,84);
+  s+=hs("r3",L("200,24 200,36")+R(195,36,10,36,"box")+L("200,72 200,84")+tl(212,58,"R3","start"),hr(188,32,34,44));
+  s+=dot(200,24);
+  s+=L("200,84 200,170 222,170");
+  s+=hs("t1",npn(242,170),hr(220,148,40,44));
+  s+=L("248,150 248,120 290,120")+L("248,190 248,216")+dot(248,216)+dot(290,120)+tl(256,114,"DF","start");
+  s+=L("290,24 290,44")+L("290,100 290,120")+dot(290,24);
+  s+=hs("coil",coil(290,44,290,100,4,5),hr(278,40,24,64));
+  s+=L("318,24 318,120 290,120")+dot(318,24);
+  s+=hs("fd",diode(318,72,0,7),hr(306,58,26,30));
+  s+=lb(80,104,"Z-Diode")+lb(122,150,"T2","end")+lb(262,174,"T1","start")+lbl2(276,64,"Erreger-|wicklung","end")+lb(318,138,"Freilauf")+lb(318,149,"diode");
+  return sv("0 0 340 232",s);
+};
+
+/* MFR-Anschlüsse */
+FIG.mfr=()=>{
+  let s=R(14,26,236,80,"body",8)+tl(132,20,"Stecker Kabelbaum");
+  ["W","L","15","S","DFM"].forEach((k,i)=>{const x=40+i*46;
+    s+=hs(k,R(x-12,46,24,30,"box",3)+R(x-4,52,8,16,"steel",1)+tb(x,94,k),hr(x-20,38,40,64))});
+  s+=hs("V",`<circle class="steel" cx="290" cy="48" r="13"/><circle class="box" cx="290" cy="48" r="5"/>`+tb(290,78,"V"),hr(268,26,44,58));
+  s+=hs("B+",`<circle class="steel" cx="290" cy="112" r="13"/><circle class="box" cx="290" cy="112" r="5"/>`+tb(290,142,"B+"),hr(268,90,44,58));
+  s+=tl(132,124,"MFR – Anschlüsse am Regler");
+  return sv("0 0 330 150",s);
+};
+
+/* Load-Response */
+FIG.lr=()=>{
+  let s="";
+  const pan=(x0,id,d,tag)=>hs(id,`<path class="ax" d="M${x0} 14V112H${x0+140}"/><path class="ie" d="${d}"/>`+tb(x0+8,26,tag,"start")+tl(x0+140,128,"Zeit t →","end"),hr(x0-14,4,162,130));
+  s+=pan(24,"lrs","M26 108H86C104 108 110 40 160 34","A");
+  s+=pan(194,"lrf","M196 108V96C220 60 250 40 330 36","B");
+  s+=tl(12,64,"I_Gen")+lb(92,148,"Start (t_LRS)")+lb(262,148,"Fahrt (t_LRF)");
+  return sv("0 0 346 156",s);
+};
+
+/* Typenschild */
+FIG.ts=()=>{
+  const big=(x,t,fs=22)=>`<text class="tlb" x="${x}" y="84" text-anchor="middle" style="font-size:${fs}px">${t}</text>`;
+  let s=R(14,14,272,112,"box",14)+tl(150,38,"Generator · Nr. 4 711 280 006")+`<line class="thin" x1="30" x2="270" y1="50" y2="50"/>`;
+  s+=hs("k",big(58,"KC"),hr(36,62,44,30));
+  s+=hs("dir",`<path class="ln" d="M88 77H116"/><polygon class="dio" points="116,72 124,77 116,82"/>`,hr(84,62,44,30));
+  s+=hs("u",big(156,"14V"),hr(132,62,48,30));
+  s+=hs("i0",big(200,"70"),hr(184,62,32,30))+big(222,"/");
+  s+=hs("in",big(254,"140A",18),hr(230,62,50,30));
+  s+=lb(58,104,"Bauweise")+lb(106,116,"Richtung")+lb(156,104,"Spannung")+lb(200,116,"Leerlauf")+lb(254,104,"6000 1/min");
+  return sv("0 0 300 140",s);
+};
+
+/* Bordnetz- und Energiemanagement */
+FIG.bn=()=>{
+  let s="";
+  s+=`<polyline class="bus-lin" points="51,62 51,76 229,76"/><polyline class="bus-lin" points="135,76 135,88"/><polyline class="bus-lin" points="229,62 229,140 149,140 149,150"/><polyline class="bus-lin" points="229,140 241,140 241,150"/>`;
+  s+=`<line class="bus-can" x1="264" y1="39" x2="284" y2="39"/>`+tl(274,32,"CAN")+tl(62,72,"LIN","start");
+  s+=`<polyline class="pwr" points="30,62 30,150"/><line class="pwr" x1="90" y1="173" x2="110" y2="173"/><line class="pwr" x1="188" y1="173" x2="206" y2="173"/><line class="pwr" x1="276" y1="173" x2="284" y2="173"/><line class="thin" x1="110" y1="132" x2="74" y2="150"/>`;
+  const box=(id,x,y,w,h,n,name)=>hs(id,R(x,y,w,h,"box",5)+`<circle class="num" cx="${x+11}" cy="${y+11}" r="8"/>`+T(x+11,y+14.5,n,"middle","numt")+lbl2(x+w/2+6,y+h/2+4-(name.split("|").length-1)*5.5,name,"middle"),hr(x-3,y-3,w+6,h+6,7));
+  s+=box("gen",12,16,78,46,1,"Generator");
+  s+=box("gw",186,16,78,46,2,"Gateway");
+  s+=box("sensor",98,88,82,44,3,"Batterie-|sensor");
+  s+=box("bat",12,150,78,46,4,"Starter-|batterie");
+  s+=box("fuse",110,150,78,46,5,"Hauptsich.-|box");
+  s+=box("dcdc",206,150,70,46,6,"DC/DC-|Wandler");
+  s+=R(284,16,68,46,"body",5)+tl(318,36,"Steuer-")+tl(318,48,"geräte");
+  s+=R(284,150,70,46,"body",5)+tl(319,176,"Verbraucher");
+  s+=tl(180,210,"rot: elektrische Energie · grün gestrichelt: LIN");
+  return sv("0 0 360 216",s);
+};
+
+/* ---------- Fragenkatalog ---------- */
+const TOPICS={aufbau:"Aufbau & Induktion",gleich:"Gleichrichtung & Dioden",regel:"Spannungsregelung",kreise:"Stromkreise",mfr:"Multifunktionsregler",bordnetz:"Bauformen & Bordnetz",werkstatt:"Werkstatt & Diagnose"};
+const Q=[];
+const mc=(t,p,q,o,x,fig,fo)=>Q.push({k:"mc",t,p,q,o,x,fig,fo});
+const hq=(t,p,q,fig,target,x,fo)=>Q.push({k:"hs",t,p,q,fig,target,x,fo});
+const oq=(t,p,q,items,x)=>Q.push({k:"ord",t,p,q,items,x});
+
+/* Aufbau */
+hq("aufbau",703,"In welchem Bauteil wird die Wechselspannung induziert? Tippe es an.","gen","stator","Die drei Ständerwicklungen im feststehenden Gehäuse sind die Induktionsspulen. Das drehende Magnetfeld des Läufers induziert dort die Wechselspannung.");
+hq("aufbau",703,"Tippe auf die Erregerwicklung.","gen","field","Die Erregerwicklung sitzt im Klauenpolläufer. Fließt Erregerstrom, entsteht das Magnetfeld, das in der Ständerwicklung die Spannung induziert.");
+hq("aufbau",703,"Über welche Bauteile auf der Läuferwelle gelangt der Erregerstrom in die drehende Erregerwicklung? Tippe sie an.","gen","rings","Die Schleifringe drehen sich mit der Welle. Feststehende Kohlebürsten schleifen darauf und führen den Erregerstrom zu.");
+hq("aufbau",703,"Über dieses Bauteil treibt der Motor den Generator an. Tippe es an.","gen","pulley","Riemenscheibe, ggf. mit Freilauf. Der Generator dreht mit dem 2- bis 3-Fachen der Motordrehzahl.");
+hq("aufbau",703,"Wo sitzen die sechs Leistungsdioden und die drei Erregerdioden?","gen","rect","Die Dioden sitzen auf der Diodenplatte (Gleichrichter). Sie machen aus der Drehstrom-Wechselspannung eine Gleichspannung.");
+hq("aufbau",703,"Tippe auf den Spannungsregler.","gen","reg","Der Regler ist meist direkt am Generator angebaut und hält die Betriebsspannung konstant.");
+mc("aufbau",703,"Wie heißt das markierte Bauteil?",["Kohlebürsten","Schleifringe","Erregerdioden","Leitstück"],"Kohlebürsten im Bürstenhalter. Sie liegen auf den Schleifringen und übertragen den Erregerstrom auf den drehenden Läufer.","gen",{mark:"brushes"});
+mc("aufbau",703,"Wie heißt das markierte Bauteil?",["Klauenpolläufer","Ständerpaket","Lüfterrad","Diodenplatte"],"Der Klauenpolläufer trägt die Erregerwicklung. Seine ineinandergreifenden Klauen bilden 6 Nord- und 6 Südpole.","gen",{mark:"rotor"});
+mc("aufbau",703,"Wie heißt das markierte Bauteil?",["Lüfter","Riemenscheibe","Freilauf","Lagerschild"],"Der Lüfter sitzt auf der Welle und kühlt den Generator.","gen",{mark:"fan"});
+mc("aufbau",703,"Wie viele Pole hat der Klauenpolläufer eines üblichen Kfz-Drehstromgenerators?",["12 (6 Nord-, 6 Südpole)","2 (1 Nord-, 1 Südpol)","6 (3 Nord-, 3 Südpole)","24 (12 Nord-, 12 Südpole)"],"Kfz-Drehstromgeneratoren haben einen 12-poligen rotierenden Klauenpolläufer.");
+mc("aufbau",703,"Um wie viel Grad sind die drei Wechselspannungen zueinander phasenverschoben?",["120°","90°","180°","60°"],"Die drei Spulen sind um 120° versetzt angeordnet. Deshalb sind auch ihre Wechselspannungen um 120° verschoben.");
+mc("aufbau",703,"Mit welcher Drehzahl dreht der Generator im Vergleich zum Motor?",["Etwa 2- bis 3-mal so schnell","Genau gleich schnell","Halb so schnell","Etwa 5- bis 6-mal so schnell"],"Über das Übersetzungsverhältnis der Riemenscheiben dreht der Generator mit dem 2- bis 3-Fachen der Motordrehzahl.");
+mc("aufbau",703,"Auf welchem Prinzip beruht die Spannungserzeugung im Generator?",["Induktion durch ein sich änderndes Magnetfeld","Thermoelektrischer Effekt","Piezoelektrischer Effekt","Elektrolyse"],"Ändert sich das Magnetfeld in einer Spule, wird darin eine Spannung induziert. Ein drehender Nord- und Südpol erzeugt eine sinusförmige Wechselspannung.");
+hq("aufbau",705,"Tippe auf die Spannungskurve einer Wicklung bei einem 12-poligen Läufer.","wave","p12","12 Pole = 6 Polpaare, also 6 volle Perioden pro Umdrehung. Ein 2-poliger Läufer erzeugt nur eine Periode.");
+mc("aufbau",705,"Wie viele Halbwellen entstehen beim 12-poligen Klauenpolläufer pro Umdrehung über alle drei Stränge?",["36","6","12","72"],"12 Pole × 3 Stränge = 36 Halbwellen. Beim zweipoligen Läufer wären es 2 × 3 = 6. Mehr Halbwellen ergeben eine geringere Restwelligkeit.");
+mc("aufbau",705,"Wovon hängt die Phasenspannung NICHT ab?",["Von der Batterietemperatur","Von der Drehzahl des Magnetfelds","Von der Magnetfeldstärke","Von der Windungszahl der Spule"],"Die Phasenspannung hängt von Drehzahl, Magnetfeldstärke und Windungszahl ab.");
+
+/* Gleichrichtung */
+hq("gleich",704,"Tippe auf die Plusdioden.","sch","plus","Die Plusdioden verbinden die drei Phasen mit B+. Über sie fließen die positiven Halbwellen.");
+hq("gleich",704,"Tippe auf die Minusdioden.","sch","minus","Die Minusdioden verbinden die Phasen mit B−. Über sie fließen die negativen Halbwellen.");
+hq("gleich",706,"Tippe auf die Erregerdioden.","sch","erreg","Die drei Erregerdioden richten den Erregerstrom gleich und führen ihn auf Klemme D+.");
+hq("gleich",706,"Tippe auf die Ständerwicklung.","sch","stator","Die Ständerwicklung ist hier im Stern geschaltet (U, V, W).");
+mc("gleich",703,"Warum muss die Generatorspannung gleichgerichtet werden?",["Batterie und Bordnetz brauchen Gleichspannung","Die Wechselspannung wäre zu hoch","Damit die Dioden gekühlt werden","Um die Generatordrehzahl zu begrenzen"],"Wechselspannung eignet sich nicht zum Laden der Batterie. Auch die Verbraucher im Bordnetz brauchen Gleichspannung.");
+mc("gleich",703,"Wie viele Dioden und Leitungen bräuchte eine Einzelgleichrichtung der drei Phasen?",["12 Dioden und 6 Leitungen","6 Dioden und 3 Leitungen","9 Dioden und 3 Leitungen","3 Dioden und 6 Leitungen"],"Deshalb werden die drei Wicklungen in einer Brückenschaltung (Stern oder Dreieck) zusammengeschaltet. Dann reichen 6 Leistungsdioden.");
+hq("gleich",704,"Tippe auf die Dreieckschaltung.","sd","delta","Bei der Dreieckschaltung liegen die drei Wicklungen ringförmig hintereinander.");
+hq("gleich",704,"Bei welcher Schaltung addieren sich zwei Phasenspannungen zur Generatorspannung? Tippe sie an.","sd","star","Sternschaltung: U_G = U_U + U_V. Die Generatorspannung ist größer als die Phasenspannung.");
+mc("gleich",704,"Wofür wird die Dreieckschaltung bevorzugt eingesetzt?",["Für Generatoren mit hohen Strömen","Für Generatoren mit besonders hoher Spannung","Für Generatoren ohne Regler","Für Generatoren mit zweipoligem Läufer"],"In der Dreieckschaltung addieren sich die Ströme (I_G = I_U + I_V). Das ergibt eine Stromverstärkung.");
+mc("gleich",704,"Sternschaltung, Drehwinkel 90°: U_U = 1 V, U_V = 0,5 V, U_W = 0,5 V. Wie groß ist U_G?",["1,5 V","2,0 V","1,0 V","0,5 V"],"U_G = U_U + U_V = 1 V + 0,5 V = 1,5 V. U_W zählt nicht, weil die Diodenschaltung den Stromfluss dort sperrt.");
+mc("gleich",705,"Wie groß ist die Schwellspannung einer Siliziumdiode ungefähr?",["0,7 V","0,2 V","1,4 V","5 V"],"Ab etwa 0,7 V leitet die Siliziumdiode in Durchlassrichtung. Diese Spannung fällt an ihr ab und erzeugt Verlustwärme.");
+mc("gleich",705,"Wohin wird die Verlustwärme der Dioden abgeführt?",["Über Kühlbleche","Über die Erregerwicklung","In die Batterie","Über den Keilrippenriemen"],"Die Dioden sitzen auf einer Diodenplatte. Kühlbleche führen ihre Verlustwärme ab.");
+mc("gleich",705,"Was bewirkt die Rückstromsperre?",["Die Plusdioden verhindern, dass sich die Batterie über den Generator entlädt","Die Z-Dioden begrenzen Spannungsspitzen","Der Regler schaltet den Erregerstrom ab","Ein Kondensator glättet die Spannung"],"Strom darf nur vom Generator zur Batterie fließen. Ist die Generatorspannung kleiner als die Batteriespannung, sperren die Plusdioden.");
+mc("gleich",705,"Warum werden heute Z-Dioden als Leistungsdioden eingesetzt?",["Als Überspannungsschutz: Sie begrenzen Spannungsspitzen","Damit die Ladespannung steigt","Damit weniger Halbwellen entstehen","Sie ersetzen den Spannungsregler"],"Spannungsspitzen entstehen z. B. durch Reglerausfall, durch das Abschalten induktiver Ströme oder durch Leitungsunterbrechung. Die Z-Dioden schützen den Gleichrichter und das Bordnetz.");
+mc("gleich",705,"Wie sind die Z-Dioden als Leistungsdioden eingebaut?",["In Durchlassrichtung, anders als bei der üblichen Z-Dioden-Schaltung","In Sperrrichtung wie üblich","Parallel zur Erregerwicklung","In Reihe mit der Kontrolllampe"],"Sie arbeiten im normalen Betrieb wie Gleichrichterdioden. Bei Überspannung bricht die Z-Diode durch und begrenzt.");
+mc("gleich",705,"Womit kann die Restwelligkeit zusätzlich geglättet werden?",["Mit einem Kondensator parallel zur Gleichrichterschaltung","Mit einem Widerstand in Reihe zu B+","Mit mehr Erregerstrom","Mit einer Z-Diode im Regler"],"Ein Glättungskondensator parallel zum Gleichrichter glättet die Ausgangsspannung weiter.");
+mc("gleich",710,"Welche Gleichrichter-Variante steigert den Wirkungsgrad durch aktive Gleichrichtung?",["MOSFET-Transistoren","Z-Dioden","Erregerdioden","Zusatzdioden am Sternpunkt"],"MOSFETs haben einen kleineren Spannungsabfall als Dioden. Zusatzdioden am Sternpunkt senken dagegen Verluste bei hoher Drehzahl.");
+
+/* Spannungsregelung */
+mc("regel",705,"Auf welchen Wert regelt der Regler die Spannung in einer 12-V-Anlage ungefähr?",["14 V","12 V","16 V","28 V"],"In 12-V-Anlagen etwa 14 V, in 24-V-Anlagen etwa 28 V.");
+mc("regel",705,"Warum liegt die Generatorspannung knapp unter der Gasungsspannung der Batterie?",["Die Batterie wird ausreichend geladen, aber nicht überladen","Damit der Generator kühler bleibt","Damit die Kontrolllampe erlischt","Damit weniger Halbwellen entstehen"],"So wird die Batterie gut geladen, ohne sie durch Überladen zu schädigen.");
+mc("regel",705,"Welche Größe verändert der Regler, um die Spannung konstant zu halten?",["Den Erregerstrom und damit das Erregerfeld","Die Generatordrehzahl","Die Windungszahl der Ständerwicklung","Die Anzahl der leitenden Dioden"],"Die Drehzahl ändert sich ständig mit dem Fahrzustand. Regeln lässt sich deshalb nur das Magnetfeld über den Erregerstrom.");
+hq("regel",705,"Tippe auf den Erregerstrom-Verlauf bei kleiner Belastung.","ie","c","Je kleiner die Belastung, desto weniger Erregerstrom braucht der Generator für 14 V. Kurve c liegt am niedrigsten.");
+mc("regel",705,"Die Drehzahl steigt bei gleicher Belastung. Wie ändert sich der nötige Erregerstrom?",["Er sinkt","Er steigt","Er bleibt gleich","Er fällt auf null"],"Bei höherer Drehzahl wird schon mit schwächerem Magnetfeld genug Spannung induziert. Alle drei Kurven fallen nach n₀ ab.","ie",{labels:true});
+mc("regel",705,"t_E = 4 ms, t_A = 2 ms. Welchen Anteil der Zeit ist der Erregerstrom eingeschaltet?",["≈ 67 %","50 %","≈ 33 %","200 %"],"Anteil = t_E / (t_E + t_A) = 4 / 6 ≈ 0,67. Daraus ergibt sich der mittlere Erregerstrom von 2 A.","saw",{labels:true});
+mc("regel",705,"Der Regler verlängert die Ausschaltdauer t_A. Was passiert?",["Der mittlere Erregerstrom sinkt, die Spannung sinkt","Der mittlere Erregerstrom steigt, die Spannung steigt","Nichts, nur die Frequenz ändert sich","Die Generatordrehzahl sinkt"],"Längeres Ausschalten schwächt das Erregerfeld. Dadurch wird weniger Spannung induziert.","saw",{labels:true});
+hq("regel",707,"Tippe auf den Transistor, der den Erregerstrom zur Erregerwicklung schaltet.","hy","t1","T1 liegt in Reihe mit der Erregerwicklung (zwischen DF und D−). Er schaltet den Erregerstrom ein und aus.");
+hq("regel",707,"Welches Bauteil wird bei Überschreiten des Sollwerts in Sperrrichtung leitend? Tippe es an.","hy","z","Die Z-Diode bricht beim Sollwert (z. B. 14,2 V) durch. Dann schaltet T2 durch und T1 sperrt.");
+hq("regel",707,"Tippe auf die Freilaufdiode parallel zur Erregerwicklung.","hy","fd","Beim Abschalten induziert die Erregerwicklung eine Gegenspannung. Die Freilaufdiode baut sie ab und schützt T1.");
+mc("regel",707,"Welcher Schaltzustand des Reglers ist markiert?",["„Ein“: Istwert unter Sollwert, T1 leitet","„Aus“: Istwert über Sollwert, T1 sperrt","Vorerregung über die Kontrolllampe","Rekuperation"],"Die Z-Diode sperrt T2. Die Basis von T1 liegt über R3 an D+, T1 schaltet durch. Der Erregerstrom fließt über Emitter und Kollektor von T1.","hy",{hl:"ein",labels:true});
+mc("regel",707,"Welcher Schaltzustand des Reglers ist markiert?",["„Aus“: Z-Diode leitet, T2 schaltet durch, T1 sperrt","„Ein“: Z-Diode sperrt, T1 leitet","Kurzschluss der Erregerwicklung","Vorerregung über die Kontrolllampe"],"Über dem Sollwert leitet die Z-Diode, und die Basis von T2 wird positiv. T2 zieht die Basis von T1 nach unten, T1 sperrt den Erregerstrom.","hy",{hl:"aus",labels:true});
+mc("regel",707,"Hybridregler: Was passiert mit der Sollspannung, wenn die Generatortemperatur steigt?",["Sie sinkt","Sie steigt","Sie bleibt konstant","Sie springt auf 16 V"],"Die Ladespannung ist temperaturabhängig: Mit steigender Temperatur sinkt die Generatorsollspannung.");
+mc("regel",707,"Welche Aussage passt zum Hybridregler?",["Alle Schaltkreise sitzen in einem gekapselten Gehäuse, meist direkt am Generator","Alle Funktionen auf einem Chip, Erregerstrom direkt von B+","Er braucht keine Bürsten und keine Schleifringe","Er wird über LIN vom Gateway gesteuert"],"Der Erregerstrom wird beim Hybridregler je nach Sollspannung ein- und ausgeschaltet. Er kann plus- oder minusseitig gesteuert sein.");
+
+/* Stromkreise */
+mc("kreise",706,"Welcher Stromkreis ist farbig markiert?",["Vorerregerstromkreis","Erregerstromkreis","Ladestromkreis","Sense-Messkreis"],"Batterie +/30 → Fahrtschalter → Kontrolllampe → D+ → Erregerwicklung → Regler DF → Masse D−/B− → Batterie −/31.","sch",{hl:"vor",labels:true});
+mc("kreise",706,"Welcher Stromkreis ist farbig markiert?",["Erregerstromkreis","Vorerregerstromkreis","Ladestromkreis","Sense-Messkreis"],"Ständerwicklung → Erregerdioden → D+ → Erregerwicklung → Regler DF → Regler D− → Minusdioden → Ständerwicklung.","sch",{hl:"err",labels:true});
+mc("kreise",706,"Welcher Stromkreis ist farbig markiert?",["Ladestromkreis (Hauptstromkreis)","Erregerstromkreis","Vorerregerstromkreis","Sense-Messkreis"],"Ständerwicklung → Plusdioden → B+ → Batterie/Verbraucher → Masse B− → Minusdioden → Ständerwicklung.","sch",{hl:"lade",labels:true});
+oq("kreise",706,"Bringe den Vorerregerstromkreis in die richtige Reihenfolge.",["Batterie +/30","Fahrtschalter","Kontrolllampe","Klemme D+","Erregerwicklung","Regler DF","Masse D−/B−","Batterie −/31"],"Nach dem Einschalten baut der Vorerregerstrom das erste Magnetfeld in der Erregerwicklung auf.");
+oq("kreise",706,"Bringe den Erregerstromkreis in die richtige Reihenfolge.",["Ständerwicklung","Erregerdioden","Klemme D+","Erregerwicklung","Regler DF","Regler D−","Minusdioden"],"Danach schließt sich der Kreis wieder in der Ständerwicklung. Ein Teil des erzeugten Stroms erregt den Generator selbst.");
+oq("kreise",706,"Bringe den Ladestromkreis in die richtige Reihenfolge.",["Ständerwicklung","Plusdioden","Klemme B+","Batterie/Verbraucher","Masse B−","Minusdioden"],"Der Ladestrom versorgt das Bordnetz und lädt die Batterie. Danach schließt sich der Kreis in der Ständerwicklung.");
+hq("kreise",706,"Ohne welches intakte Bauteil kommt bei diesem Generator keine Vorerregung zustande? Tippe es an.","sch","lamp","Die Kontrolllampe liegt im Vorerregerstromkreis. Ist sie defekt, ist der Kreis unterbrochen und der Generator erregt sich nicht.");
+mc("kreise",706,"Welche Spannung muss der Vorerregerstrom mindestens überwinden?",["1,4 V (2 × 0,7 V Schwellspannung)","0,7 V","12 V","14 V"],"Der Strom muss die Schwellspannung einer Plus- und einer Minusdiode überwinden: 2 × 0,7 V = 1,4 V.");
+mc("kreise",706,"Warum erlischt die Kontrolllampe nach dem Motorstart?",["An beiden Enden liegt das gleiche Potenzial","Ein Relais trennt die Lampe ab","Der Regler unterbricht Klemme 15","Die Lampe wird von der Erregerwicklung überbrückt"],"Nach dem Start erregt sich der Generator selbst. D+ hat dann etwa die gleiche Spannung wie Klemme 15, also fließt kein Strom durch die Lampe.");
+mc("kreise",706,"Wozu dient der Erregerstromkreis?",["Er baut das Magnetfeld in der Erregerwicklung des Läufers auf","Er lädt die Batterie","Er versorgt die Kontrolllampe","Er misst die Batteriespannung"],"Über den Regler wird der jeweils nötige Erregerstrom eingestellt. Davon hängt die Stärke des Magnetfelds ab.");
+
+/* Multifunktionsregler / Schnittstelle */
+hq("mfr",707,"Über welchen Anschluss erhält das Bordnetzsteuergerät das PWM-Signal des Erregerstroms?","mfr","DFM","DFM = Dynamo-Feld-Monitor. Aus dem Verhältnis von Ein- zu Ausschaltdauer ermittelt das Bordnetzsteuergerät die Auslastung.");
+hq("mfr",708,"Über welchen Anschluss misst der Regler die Ladespannung direkt an der Batterie?","mfr","S","S = Sense. So lässt sich der Spannungsabfall in der Ladeleitung ermitteln und die Ladespannung optimieren.");
+hq("mfr",708,"Welcher Anschluss liefert das Drehzahlsignal des Generators?","mfr","W","An W liegt das Drehzahlsignal. Davon hängt der Vorerregerstrom ab. Im Vergleich mit der Motordrehzahl wird Riemenschlupf erkannt.");
+hq("mfr",708,"Welcher Anschluss steuert Kontrollleuchte und Relais an?","mfr","L","L = Lampen- und Relaisendstufe. Im fehlerfreien Betrieb liefert L eine Ausgangsspannung, das Relais schaltet weitere Verbraucher zu.");
+hq("mfr",708,"Über welchen Anschluss erkennt der Regler an der Phasenspannung, ob sich der Generator dreht?","mfr","V","Über V (Phasenspannung) erkennt der Regler z. B. einen gerissenen Keilrippenriemen.");
+hq("mfr",707,"Woher bezieht der Multifunktionsregler den Erregerstrom?","mfr","B+","Beim MFR kommt der Erregerstrom direkt von B+. Erregerdioden sind nicht nötig.");
+hq("mfr",707,"Tippe auf das DFM-Signal bei hoher Generatorauslastung.","pwm","b","Je größer die Einschaltdauer des Erregerstroms, desto höher der benötigte Generatorstrom. Bei b ist der Strom lange eingeschaltet.");
+mc("mfr",707,"Was macht das Bordnetzsteuergerät bei hoher Generatorauslastung?",["Es erhöht z. B. die Leerlaufdrehzahl oder schaltet Verbraucher ab","Es schaltet den Generator ab","Es erhöht die Ladespannung auf 16 V","Es trennt die Batterie über die Pyrofuse"],"Die Auslastung wird aus dem DFM-Signal ermittelt. So bleibt die Energiebilanz positiv.");
+mc("mfr",708,"Wozu dient die gesteuerte Vorerregung über Transistor T5?",["Damit der Generator schon bei möglichst niedriger Drehzahl selbst erregt","Damit die Kontrolllampe heller leuchtet","Um die Batterie vor Überladung zu schützen","Um die Phasenspannung zu messen"],"Nach dem Einschalten der Zündung taktet der Regler den Vorerregerstrom per PWM.");
+mc("mfr",708,"Der MFR erkennt einen Fehler im Generatorbetrieb. Was passiert?",["L wird über T2 an Masse gelegt: Lampe leuchtet, Relais öffnet, Verbraucher werden abgeschaltet","Der Regler erhöht die Spannung auf 16 V","Die Pyrofuse trennt Klemme 30","Nur ein Fehlerspeichereintrag, sonst nichts"],"Die Lampe leuchtet, weil B+ an der einen und Masse an der anderen Seite liegt. Das Relais hat beidseitig Masse und öffnet.");
+mc("mfr",707,"Welches Merkmal gehört zum Multifunktionsregler (MFR)?",["Alle Funktionen auf einem Chip (Monolithregler)","Erregerstrom über drei Erregerdioden","Nur Ein/Aus ohne Diagnose","Feststehende Erregerwicklung ohne Bürsten"],"Weitere Merkmale: temperaturgesteuerte Ladespannung, Schutz gegen Überlast und Kurzschluss, Fehlerdiagnose, Batterieüberwachung und Unterstützung des Motormanagements.");
+hq("mfr",708,"Tippe auf das Diagramm „Load-Response-Start“.","lr","lrs","Beim Start wird die Generatorlast verzögert zugeschaltet (t_LRS). So bremst das Generatormoment den Motorstart nicht.");
+mc("mfr",708,"Warum wird bei „Load-Response-Fahrt“ ein großer Verbraucher verzögert auf den Generator geschaltet?",["Sonst stiege das Antriebsmoment des Generators schlagartig an","Damit die Sicherung nicht auslöst","Damit die Batterie schneller lädt","Weil die Dioden sonst überhitzen"],"Wird z. B. die Heckscheibenheizung eingeschaltet, steigt der Generatorstrom langsam (t_LRF). Der Motor wird nicht ruckartig belastet.");
+hq("mfr",709,"Ladekennlinie: Tippe auf die Phase „Schnellladung“.","lk","B","Phase B: Bei stark entladener Batterie lädt der Generator je nach Temperatur mit bis zu 16 V, bis die Batterie zu 80 % geladen ist.");
+hq("mfr",709,"Ladekennlinie: In welcher Phase wird beim Bremsen oder im Schubbetrieb voll erregt?","lk","E","Phase E, Rekuperation: maximale Ladespannung. Die Batterie speichert die zurückgewonnene Energie.");
+hq("mfr",709,"Ladekennlinie: In welcher Phase erzeugt der Generator keine Spannung, damit der Motor leichter anspringt?","lk","A","Phase A, optimierter Motorstart.");
+mc("mfr",709,"Was passiert in Phase D „Generator-Teillastung“?",["Der Ladezustand wird gehalten, der Generator liefert nur den Strom der Verbraucher","Volle Erregung beim Bremsen","Schnellladung mit 16 V","Der Generator ist ganz abgeschaltet"],"Phase D erhält den momentanen Batterieladezustand.","lk",{labels:true});
+mc("mfr",709,"Wie ist ein Generator mit Schnittstellenregelung an das Bordnetzsteuergerät angebunden?",["Über BSS (Bit-synchrone Schnittstelle) oder LIN-Bus","Über MOST","Über einen analogen D+-Draht","Über CAN-Antrieb direkt am Regler"],"Batteriesensor, Motorsteuergerät, Bordnetzsteuergerät und MFR sind vernetzt („intelligente Generatorregelung“).");
+mc("mfr",709,"Was ist der Vorteil der Schnittstellen-Generatorregelung?",["Bedarfsgerechte Stromerzeugung unter Berücksichtigung des Ladezustands (SOC)","Der Generator braucht keinen Regler mehr","Konstant 16 V Ladespannung","Kein Keilrippenriemen nötig"],"Erzeugt wird nur so viel, wie Verbraucher und Batterie-Ladezustand gerade erfordern.");
+
+/* Bauformen & Bordnetz */
+hq("bordnetz",710,"Tippe auf das Bauteil, das am Minuspol Spannung, Strom und Temperatur der Batterie misst.","bn","sensor","Der Batteriesensor sitzt am Minuspol. Er meldet seine Messwerte über LIN an das Energiemanagement im Gateway.");
+hq("bordnetz",711,"Tippe auf das Energiemanagement-Steuergerät.","bn","gw","Das Gateway überwacht den Ladezustand (SOC), den Energiebedarf und den Ruhestrom. Es steuert auch Generatorregelung und Start-Stopp.");
+hq("bordnetz",711,"In welchem Bauteil sitzt die Pyrofuse?","bn","fuse","Die Pyrofuse sitzt in der Hauptsicherungsbox. Nach einem Unfall trennt sie, vom Airbag-Steuergerät ausgelöst, das Bordnetz von Klemme 30.");
+hq("bordnetz",711,"Welches Bauteil stabilisiert beim Motorstart die Spannung mit einem Speicherkondensator?","bn","dcdc","Beim Starten bricht die Bordnetzspannung kurz ein. Der DC/DC-Wandler schützt so empfindliche Verbraucher wie Infotainment und Kombi-Instrument.");
+mc("bordnetz",710,"Was ist das markierte Bauteil?",["Starterbatterie","Zusätzliche Versorgungsbatterie","DC/DC-Wandler","Hauptsicherungsbox"],"An ihrem Minuspol sitzt der Batteriesensor.","bn",{mark:"bat"});
+hq("bordnetz",709,"Typenschild: Tippe auf den Nennstrom bei Nenndrehzahl (6000 1/min).","ts","in","140 A ist der Nennstrom bei Generator-Nenndrehzahl 6000 1/min.");
+hq("bordnetz",709,"Typenschild: Tippe auf die Angabe der Drehrichtung.","ts","dir","Der Pfeil zeigt die Drehrichtung an, hier rechts.");
+mc("bordnetz",709,"Was bedeutet „70“ in „70/140A“?",["Strom bei Leerlaufdrehzahl des Motors: 70 A","Nennstrom bei 6000 1/min","Maximale Temperatur in °C","Generatorleistung in W"],"Der kleinere Wert gilt bei Motorleerlauf, der größere bei Generator-Nenndrehzahl.","ts",{labels:true});
+mc("bordnetz",709,"Wofür steht „KC“ auf dem Typenschild?",["Bauweise, z. B. C für Kompaktgenerator","Kühlung mit Kühlflüssigkeit","Klauenpolläufer mit Kupferwicklung","Kennzahl des Reglers"],"Weitere Angaben: Drehrichtung, Nennspannung (14 V), Strom bei Leerlauf und Nennstrom.","ts",{labels:true});
+mc("bordnetz",710,"Was ist die Hauptaufgabe des Bordnetz- und Energiemanagements?",["Die Startfähigkeit unter allen Betriebsbedingungen sicherstellen","Die Höchstgeschwindigkeit begrenzen","Den Kraftstoffverbrauch messen","Die Generatordiode prüfen"],"Dazu gehören Starterbatterie, Batteriesensor, Generator, Gateway, Hauptsicherungsbox, DC/DC-Wandler und ggf. eine Zusatzbatterie.");
+mc("bordnetz",711,"Warum schaltet die Hauptsicherungsbox Verbraucher über Relais ab?",["Wenn der Ladezustand der Starterbatterie niedrig ist","Wenn der Motor zu heiß ist","Bei jeder Bremsung","Wenn der Generator rekuperiert"],"Das Steuergerät steuert die Relais über den LIN-Bus.");
+mc("bordnetz",709,"Welchen Vorteil hat ein Generator mit Leitstückläufer?",["Keine Bürsten und Schleifringe, daher verschleißfrei","Er braucht keinen Regler","Er erzeugt Gleichspannung ohne Dioden","Er hat einen 2-poligen Läufer"],"Die Erregerwicklung steht fest, nur Läufer mit Polrad und Leitstück drehen sich. Der Erregerstrom wird über feststehende Anschlüsse zugeführt.");
+mc("bordnetz",710,"Was bringt ein flüssigkeitsgekühlter Generator?",["Er führt die Wärme bei Strömen bis 200 A ab und läuft leiser","Er spart den Regler ein","Er arbeitet ohne Gleichrichter","Er braucht keinen Riemen"],"Der Kühlflüssigkeitsmantel des Motors führt die Wärme ab und dämpft das Laufgeräusch.");
+mc("bordnetz",710,"Generator mit Flachpaketwicklung: Wie ändert sich die Nutenzahl?",["Von 36 auf 48","Von 12 auf 36","Von 48 auf 36","Sie bleibt bei 36"],"Mehr Kupferdrähte erhöhen die induzierte Spannung. Ergebnis: mehr Leistung, geringere Drehzahl, leiser, kleiner und ein höherer Wirkungsgrad.");
+mc("bordnetz",711,"Welchen Vorteil bietet ein 48-V-Netz im Zwei-Spannungs-Bordnetz?",["Höherer Wirkungsgrad bei Start-Stopp und Bremsenergie-Rückgewinnung","Kein Generator mehr nötig","Keine 12-V-Verbraucher mehr","Höhere Ladespannung für die 12-V-Batterie"],"Der Generator versorgt die 48-V-Verbraucher direkt, die 12-V-Seite läuft über einen DC/DC-Wandler.");
+
+/* Werkstatt */
+hq("werkstatt",711,"Tippe auf das Oszillogramm mit einer unterbrochenen Diode.","osz2","bad","Fehlerfrei ist ein gleichmäßiger, nahezu linearer Verlauf mit leichter Oberwelligkeit. Regelmäßige tiefe Einbrüche deuten auf eine unterbrochene Diode hin.");
+mc("werkstatt",711,"Gemessen an D+/61. Wie bewertest du das Oszillogramm?",["Fehlerfrei: gleichmäßig mit leichter Oberwelligkeit","Diode unterbrochen","Regler defekt, Überspannung","Kein Signal, Generator steht"],"Das ist das Gutbild.","osz",{kind:"good"});
+mc("werkstatt",711,"Gemessen an D+/61. Wie bewertest du das Oszillogramm?",["Fehler im Gleichrichter: Diode unterbrochen","Fehlerfrei","Keilrippenriemen rutscht","Batterie tiefentladen"],"Weicht das Signal vom Gutbild ab, liegt ein Fehler in der Gleichrichterschaltung vor. Abhilfe: Regler oder Generator tauschen.","osz",{kind:"bad"});
+mc("werkstatt",711,"An welcher Klemme misst du mit dem Oszilloskop, um den Gleichrichter zu prüfen?",["D+/61","B−","DF","15"],"Die Spannung an D+/61 wird im zeitlichen Verlauf dargestellt.");
+mc("werkstatt",711,"Wo misst du die Ladespannung?",["Direkt an den Generatorklemmen B+ und D−","An Klemme 15 und 31","Zwischen D+ und DF","An W und L"],"Gemessen wird direkt an den Generatorklemmen.");
+mc("werkstatt",711,"Regelspannung bei 3500–4000 1/min: In welchem Bereich muss sie liegen?",["13,5 V bis 15 V","12,0 V bis 12,6 V","15,5 V bis 16,5 V","27 V bis 29 V"],"Der genaue Wert hängt von Generatortyp und Temperatur ab.");
+mc("werkstatt",711,"Alle Verbraucher an, 1800–2200 1/min: Welchen Wert darf die Spannung nicht unterschreiten?",["13 V","12 V","14,5 V","11,5 V"],"Je nach Generatortyp und Temperatur sollte sie nicht unter 13 V fallen.");
+mc("werkstatt",711,"Was gehört zu den Prüfvoraussetzungen?",["Batterie, Kabel, Steckverbindungen und Keilriemenspannung in Ordnung","Motor auf 6000 1/min","Batterie abgeklemmt","Regler ausgebaut"],"Erst wenn diese Punkte stimmen, sind Messungen am Generator aussagekräftig.");
+mc("werkstatt",711,"Die Ladekontrollleuchte bleibt bei laufendem Motor an. Was bedeutet das?",["Es liegt ein Fehler vor","Normal in der Warmlaufphase","Die Batterie ist voll","Rekuperation ist aktiv"],"Fehlerfrei: Die Leuchte brennt bei „Zündung ein“ und erlischt beim Motorstart.");
+mc("werkstatt",711,"Welcher Eintrag ist KEIN typischer Fehlerspeichereintrag eines Generators mit MFR?",["Klopfsensor Signal unplausibel","Unterbrechung der Sense-Leitung","Kurzschluss der Erregerwicklung","Überspannung im Bordnetz"],"Typisch sind: Keilriemen gebrochen oder zu locker, Unterbrechung im Erregerstromkreis, Kurz- oder Masseschluss der Erregerwicklung, Reglerfehler, Überspannung, Unterbrechung der Sense- oder Ladeleitung.");
+mc("werkstatt",711,"Ein Diodenfehler im Gleichrichter ist bestätigt. Welche Reparaturmaßnahme nennt das Buch?",["Regler oder den gesamten Generator tauschen","Einzelne Diode nachlöten","Batterie ersetzen","Keilriemen nachspannen"],"Instandsetzung im Generator ist nicht vorgesehen.");
+
+/* ---------- Ablauf ---------- */
+const app=document.getElementById("app");
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s);
+let cfg={topics:new Set(Object.keys(TOPICS)),len:15,img:false};
+let S=null;
+
+function pool(){return Q.filter(q=>cfg.topics.has(q.t)&&(!cfg.img||q.fig))}
+const RIPPLE=(()=>{let d="";for(let x=0;x<=300;x+=2)d+=(x?"L":"M")+x+" "+(5+6*Math.abs(Math.sin(x*Math.PI/25))).toFixed(1);return `<svg class="ripple" viewBox="0 0 300 16" aria-hidden="true"><path d="${d}"/></svg>`})();
+
+function home(){
+  const last=store.get("gq-last");
+  const n=pool().length;
+  app.innerHTML=`
+  <header class="mast"><span class="kicker">Kapitel 19.2.1 · Seiten 703–711</span><h1>Drehstrom&shy;generator</h1>${RIPPLE}
+  <p class="lead">Lernquiz zu Aufbau, Gleichrichtung, Regelung und Diagnose. Bei Bildfragen tippst du im Schaltplan oder Schnittbild auf die richtige Stelle.</p></header>
+  <figure class="fig labels">${FIG.gen()}<figcaption>Schnitt durch einen Drehstromgenerator (Prinzip). Im Quiz sind die Beschriftungen ausgeblendet.</figcaption></figure>
+  <section class="card sect"><h3>Themen</h3><div class="chips" id="tp">${Object.entries(TOPICS).map(([k,v])=>`<button class="chip" data-k="${k}" aria-pressed="${cfg.topics.has(k)}">${v}<span class="n">${Q.filter(q=>q.t===k).length}</span></button>`).join("")}</div></section>
+  <section class="card sect"><h3>Runde</h3><div class="row"><div class="seg" id="ln">${[10,15,30,0].map(v=>`<button data-v="${v}" aria-pressed="${cfg.len===v}">${v||"Alle"}</button>`).join("")}</div>
+  <label class="tog"><input type="checkbox" id="img" ${cfg.img?"checked":""}> Nur Bildfragen</label></div>
+  <div class="row"><button class="btn" id="go" ${n?"":"disabled"}>Quiz starten</button><span class="meta">${n} Fragen verfügbar</span></div>
+  ${last?`<span class="meta">Letzte Runde: ${last.c} von ${last.n} richtig (${Math.round(100*last.c/last.n)} %)</span>`:""}</section>
+  <p class="src">Inhalte nach dem Lehrbuch, Kapitel 19 „Elektrische Systeme“. Alle Abbildungen sind vereinfachte Prinzipskizzen.</p>`;
+  app.querySelectorAll("#tp .chip").forEach(b=>b.onclick=()=>{const k=b.dataset.k;cfg.topics.has(k)?cfg.topics.delete(k):cfg.topics.add(k);home()});
+  app.querySelectorAll("#ln button").forEach(b=>b.onclick=()=>{cfg.len=+b.dataset.v;home()});
+  document.getElementById("img").onchange=e=>{cfg.img=e.target.checked;home()};
+  document.getElementById("go").onclick=()=>start(pool());
+}
+
+function start(list){
+  let d=shuffle(list);if(cfg.len&&d.length>cfg.len)d=d.slice(0,cfg.len);
+  S={deck:d,i:0,res:[]};render();window.scrollTo(0,0);
+}
+
+function render(){
+  const q=S.deck[S.i],N=S.deck.length;
+  let h=`<div class="top"><button class="btn ghost" id="quit" style="padding:9px 14px;font-size:15px">Beenden</button><span class="meta">Frage <b>${S.i+1}</b> / ${N} · <b>${S.res.filter(r=>r.ok).length}</b> richtig</span></div>
+  <div class="bar">${S.deck.map((_,k)=>`<i class="${k<S.res.length?(S.res[k].ok?"ok":"bad"):k===S.i?"cur":""}"></i>`).join("")}</div>
+  <div class="qhead"><span class="eyebrow">${TOPICS[q.t]}</span><span class="meta">S. ${q.p}</span></div>
+  <h2 class="qtext">${q.q}</h2>`;
+  if(q.fig){const fo=q.fo||{};h+=`<figure class="fig${fo.labels?" labels":""}${q.k==="hs"?" pick":""}" id="fig">${FIG[q.fig](fo)}</figure>`}
+  if(q.k==="hs")h+=`<p class="hint">Tippe im Bild auf die richtige Stelle.</p>`;
+  if(q.k==="mc"){S.opts=shuffle(q.o.map((t,j)=>({t,ok:j===0})));
+    h+=`<div class="opts">${S.opts.map((o,j)=>`<button class="opt" data-j="${j}"><span class="k">${"ABCD"[j]}</span><span>${esc(o.t)}</span></button>`).join("")}</div>`}
+  if(q.k==="ord"){let p;do{p=shuffle(q.items)}while(p.join()===q.items.join());S.ordPool=p;S.ordSel=[];
+    h+=`<ol class="ordlist" id="ol"></ol><div class="pool" id="pool">${p.map((t,j)=>`<button data-j="${j}">${t}</button>`).join("")}</div><div class="actions"><button class="btn ghost" id="ordreset" style="padding:9px 14px;font-size:15px">Zurücksetzen</button></div>`}
+  h+=`<div id="fb"></div>`;
+  app.innerHTML=h;
+  document.getElementById("quit").onclick=()=>S.res.length?finish():home();
+  const fig=document.getElementById("fig");
+  if(q.fo&&q.fo.mark)fig.querySelector(`.hs[data-id="${q.fo.mark}"]`).classList.add("mk");
+  if(q.k==="hs"){let n=0;
+    fig.querySelectorAll(".hs").forEach(g=>{g.setAttribute("tabindex","0");g.setAttribute("role","button");g.setAttribute("aria-label","Bereich "+(++n));
+      g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pickHs(g)}})});
+    fig.addEventListener("click",e=>{const g=e.target.closest(".hs");if(g)pickHs(g)})}
+  if(q.k==="mc")app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>pickMc(+b.dataset.j));
+  if(q.k==="ord"){app.querySelectorAll("#pool button").forEach(b=>b.onclick=()=>pickOrd(b));document.getElementById("ordreset").onclick=()=>{S.ordSel=[];document.getElementById("ol").innerHTML="";app.querySelectorAll("#pool button").forEach(b=>b.disabled=false)}}
+}
+
+function answered(){return S.res.length>S.i}
+
+function pickHs(g){
+  if(answered())return;const q=S.deck[S.i],fig=document.getElementById("fig");
+  const ok=g.dataset.id===q.target;
+  fig.classList.remove("pick");fig.classList.add("reveal");
+  fig.querySelectorAll(".hs").forEach(x=>{x.removeAttribute("tabindex");x.removeAttribute("role")});
+  g.classList.add(ok?"ok":"bad");if(!ok)fig.querySelector(`.hs[data-id="${q.target}"]`).classList.add("ok");
+  done(ok,ok?"":"Die grün markierte Stelle ist richtig.");
+}
+function pickMc(j){
+  if(answered())return;const ok=S.opts[j].ok;
+  app.querySelectorAll(".opt").forEach((b,k)=>{b.disabled=true;if(S.opts[k].ok)b.classList.add("ok");else if(k===j)b.classList.add("bad");else b.classList.add("dim")});
+  const fig=document.getElementById("fig");if(fig)fig.classList.add("reveal");
+  done(ok,ok?"":`Richtig ist: <span class="ans">${S.opts.find(o=>o.ok).t}</span>`);
+}
+function pickOrd(b){
+  if(answered())return;const q=S.deck[S.i];b.disabled=true;S.ordSel.push(S.ordPool[+b.dataset.j]);
+  const ol=document.getElementById("ol");ol.insertAdjacentHTML("beforeend",`<li>${S.ordSel[S.ordSel.length-1]}</li>`);
+  if(S.ordSel.length===q.items.length){
+    const lis=[...ol.children];let ok=true;
+    S.ordSel.forEach((t,k)=>{const r=t===q.items[k];if(!r)ok=false;lis[k].classList.add(r?"ok":"bad")});
+    document.getElementById("ordreset").disabled=true;
+    done(ok,ok?"":`Richtige Reihenfolge: <span class="ans">${q.items.join(" → ")}</span>`);
+  }
+}
+function done(ok,extra){
+  const q=S.deck[S.i];S.res.push({q,ok});
+  const last=S.i===S.deck.length-1;
+  document.getElementById("fb").innerHTML=`<div class="fb ${ok?"ok":"bad"}" role="status"><strong>${ok?"Richtig":"Leider falsch"}</strong>${extra?`<p>${extra}</p>`:""}<p>${q.x}</p><div class="actions"><button class="btn" id="next">${last?"Auswertung":"Weiter"}</button></div></div>`;
+  const bar=app.querySelectorAll(".bar i");bar[S.i].className=ok?"ok":"bad";
+  app.querySelector(".top .meta").innerHTML=`Frage <b>${S.i+1}</b> / ${S.deck.length} · <b>${S.res.filter(r=>r.ok).length}</b> richtig`;
+  const nx=document.getElementById("next");nx.onclick=()=>{if(last)finish();else{S.i++;render();window.scrollTo(0,0)}};
+  nx.focus({preventScroll:true});document.getElementById("fb").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+function finish(){
+  const c=S.res.filter(r=>r.ok).length,n=S.res.length;store.set("gq-last",{c,n});
+  const by={};S.res.forEach(r=>{(by[r.q.t]=by[r.q.t]||[0,0]);by[r.q.t][1]++;if(r.ok)by[r.q.t][0]++});
+  const wrong=S.res.filter(r=>!r.ok).map(r=>r.q);
+  const right=q=>q.k==="mc"?q.o[0]:q.k==="ord"?q.items.join(" → "):"siehe Abbildung";
+  app.innerHTML=`<header class="mast"><span class="kicker">Auswertung</span><h1>Ergebnis</h1>${RIPPLE}</header>
+  <section class="card sect"><div class="score"><span class="big">${c}<small> / ${n}</small></span><span class="meta">${Math.round(100*c/n)} % richtig</span></div>
+  <div class="tbl">${Object.entries(by).map(([k,[a,b]])=>`<div class="tr"><span>${TOPICS[k]}</span><span>${a} / ${b}</span></div>`).join("")}</div>
+  <div class="actions">${wrong.length?`<button class="btn" id="rw">Falsche wiederholen (${wrong.length})</button>`:""}<button class="btn ghost" id="nw">Neue Runde</button></div></section>
+  ${wrong.length?`<section class="sect"><h3 class="meta" style="text-transform:uppercase;letter-spacing:.07em">Zum Nachlesen</h3><div class="wrong">${wrong.map(q=>`<div class="card"><span class="eyebrow">${TOPICS[q.t]} · S. ${q.p}</span><span class="q">${q.q}</span>${q.fig?`<figure class="fig labels">${FIG[q.fig](q.fo||{})}</figure>`:""}<span class="a">${right(q)}</span><span>${q.x}</span></div>`).join("")}</div></section>`:""}`;
+  app.querySelectorAll(".wrong .fig").forEach((f,k)=>{const q=wrong[k],id=q.k==="hs"?q.target:q.fo&&q.fo.mark;if(id){const g=f.querySelector(`.hs[data-id="${id}"]`);if(g)g.classList.add("ok")}});
+  if(wrong.length)document.getElementById("rw").onclick=()=>{const l=cfg.len;cfg.len=0;start(wrong);cfg.len=l};
+  document.getElementById("nw").onclick=home;window.scrollTo(0,0);
+}
+home();
+</script>
+</body>
+</html>
