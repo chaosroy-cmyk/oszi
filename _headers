@@ -29,3 +29,18 @@
   Cache-Control: public, max-age=3600
 /multimeter/icon*
   Cache-Control: public, max-age=604800
+
+# ---- Generator-Quiz (generator-quiz/) ----
+/generator-quiz/sw.js
+  Cache-Control: no-cache
+/generator-quiz/index.html
+  Cache-Control: no-cache
+/generator-quiz/
+  Cache-Control: no-cache
+/generator-quiz/manifest.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: public, max-age=3600
+/generator-quiz/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+/generator-quiz/icon*
+  Cache-Control: public, max-age=604800

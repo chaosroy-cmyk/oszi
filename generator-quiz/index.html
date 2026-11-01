@@ -3,13 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
 <title>Drehstromgenerator-Quiz</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&family=Source+Sans+3:wght@400;600;700&display=swap">
+<meta name="description" content="Lernquiz zum Kfz-Drehstromgenerator mit Bildfragen – offline nutzbar.">
+<meta name="theme-color" content="#A9581F">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Generator-Quiz">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
 <style>
+@font-face{font-family:"Barlow Condensed";font-weight:600;font-style:normal;font-display:swap;src:url(fonts/barlow-condensed-600.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:700;font-style:normal;font-display:swap;src:url(fonts/barlow-condensed-700.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-weight:500;font-style:normal;font-display:swap;src:url(fonts/ibm-plex-mono-500.woff2) format("woff2")}
+@font-face{font-family:"Source Sans 3";font-weight:400 700;font-style:normal;font-display:swap;src:url(fonts/source-sans-3.woff2) format("woff2")}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+.upd{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;gap:12px;align-items:center;justify-content:space-between;background:var(--ink);color:var(--bg);padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));font-size:15px}
+.upd button{border:0;border-radius:6px;background:var(--copper);color:#fff;padding:8px 14px;font-weight:700;cursor:pointer}
 /* Layout: eine schmale Lernspalte wie ein Werkstatt-Prüfprotokoll; Schaltpläne auf „Zeichenpapier“-Flächen, Kupfer als einziger Akzent. */
 :root{
   --bg:#EDF0F2; --panel:#FFFFFF; --panel2:#E2E7EB; --fig:#FAFBFC;
@@ -688,6 +701,23 @@ function finish(){
   document.getElementById("nw").onclick=home;window.scrollTo(0,0);
 }
 home();
+</script>
+
+<div class="upd" id="upd" hidden><span>Neue Version verfügbar.</span><button id="updbtn">Neu laden</button></div>
+<script>
+/* Service Worker: offline nutzbar; Update erst nach Bestätigung, damit keine laufende Runde verloren geht. */
+if("serviceWorker" in navigator&&location.protocol!=="file:"){
+  let reloading=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(reloading)return;reloading=true;location.reload()});
+  const show=w=>{const u=document.getElementById("upd");u.hidden=false;document.getElementById("updbtn").onclick=()=>w.postMessage("SKIP_WAITING")};
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("sw.js").then(reg=>{
+      if(reg.waiting&&navigator.serviceWorker.controller)show(reg.waiting);
+      reg.addEventListener("updatefound",()=>{const nw=reg.installing;if(!nw)return;
+        nw.addEventListener("statechange",()=>{if(nw.state==="installed"&&navigator.serviceWorker.controller)show(nw)})});
+    }).catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>
