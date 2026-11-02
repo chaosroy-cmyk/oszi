@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Drehstromgenerator-Quiz",
-  "short_name": "Generator-Quiz",
-  "description": "Lernquiz zum Kfz-Drehstromgenerator (Kap. 19.2.1) mit Bildfragen – offline nutzbar.",
+  "name": "Generator- & Starter-Quiz",
+  "short_name": "Kfz-E-Quiz",
+  "description": "Lernquiz zu Drehstromgenerator, Elektromotoren und Starter (Kap. 19, S. 703–720) mit Bildfragen – offline nutzbar.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -11,10 +11,35 @@
   "theme_color": "#A9581F",
   "lang": "de",
   "icons": [
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
   ]
 }

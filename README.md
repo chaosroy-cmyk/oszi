@@ -19,7 +19,7 @@ Für Smartphone optimiert, ohne externe Abhängigkeiten.
 | `tools/validate.js` | Datenvalidierung (headless, für CI) |
 | `DEPLOY.md` | Deployment über Cloudflare Pages |
 | `multimeter/` | Zweite, eigenständige PWA „KFZ Multimeter Profi" (s. u.) |
-| `generator-quiz/` | Dritte PWA „Drehstromgenerator-Quiz“ (Kap. 19.2.1, S. 703–711) mit Bildfragen; eigenes Manifest, eigener Service Worker, Schriften lokal – voll offline |
+| `generator-quiz/` | Dritte PWA „Generator- & Starter-Quiz“ (Kap. 19.2.1 + 19.4, S. 703–720) mit Bildfragen; eigenes Manifest, eigener Service Worker, Schriften lokal – voll offline |
 
 ## Zweite App: KFZ Multimeter Profi (`multimeter/`)
 

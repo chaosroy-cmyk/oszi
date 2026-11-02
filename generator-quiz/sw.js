@@ -1,7 +1,7 @@
 /* Drehstromgenerator-Quiz – Service Worker
    Precache der App-Shell (inkl. Schriften), network-first für Navigationen,
    cache-first für Assets. CACHE_NAME bei jeder Änderung erhöhen. */
-const CACHE_NAME = 'generator-quiz-v1';
+const CACHE_NAME = 'generator-quiz-v2';
 const ASSETS = [
   './',
   './index.html',

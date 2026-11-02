@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Drehstromgenerator-Quiz</title>
-<meta name="description" content="Lernquiz zum Kfz-Drehstromgenerator mit Bildfragen – offline nutzbar.">
+<title>Generator- & Starter-Quiz</title>
+<meta name="description" content="Lernquiz zu Drehstromgenerator, Elektromotoren und Starter mit Bildfragen – offline nutzbar.">
 <meta name="theme-color" content="#A9581F">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Generator-Quiz">
+<meta name="apple-mobile-web-app-title" content="Kfz-E-Quiz">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -31,6 +31,7 @@ body{margin:0;-webkit-text-size-adjust:100%}
   --hover:rgba(169,88,31,.13);
   --ok:#2C7A4B; --okbg:#DCEFE3; --okA:rgba(44,122,75,.24);
   --bad:#B33A3A; --badbg:#F6DFDF; --badA:rgba(179,58,58,.22);
+  --npole:#E38463; --spole:#7DBB89; --hall:#3466A8;
   --vor:#DE8516; --err:#7A4CB0; --lade:#D23838; --lin:#2F8F52; --can:#3466A8;
   --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
   --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
@@ -43,6 +44,7 @@ body{margin:0;-webkit-text-size-adjust:100%}
   --hover:rgba(227,148,87,.16);
   --ok:#5CC68A; --okbg:#16301F; --okA:rgba(92,198,138,.26);
   --bad:#F07474; --badbg:#3A1D1F; --badA:rgba(240,116,116,.24);
+  --npole:#B95A3E; --spole:#4E8E5C; --hall:#6E9FE2;
   --vor:#F2A24A; --err:#B48BE8; --lade:#FF6A6A; --lin:#5FC584; --can:#6E9FE2;
   color-scheme:dark}}
 :root[data-theme="dark"]{
@@ -52,6 +54,7 @@ body{margin:0;-webkit-text-size-adjust:100%}
   --hover:rgba(227,148,87,.16);
   --ok:#5CC68A; --okbg:#16301F; --okA:rgba(92,198,138,.26);
   --bad:#F07474; --badbg:#3A1D1F; --badA:rgba(240,116,116,.24);
+  --npole:#B95A3E; --spole:#4E8E5C; --hall:#6E9FE2;
   --vor:#F2A24A; --err:#B48BE8; --lade:#FF6A6A; --lin:#5FC584; --can:#6E9FE2;
   color-scheme:dark}
 
@@ -133,6 +136,23 @@ button{font:inherit;color:inherit}
 .f .numt{fill:var(--bg);font-weight:500;font-size:10px}
 .f .hl{fill:none;stroke-width:8;stroke-linejoin:round;stroke-linecap:round;opacity:.5}
 .f .hl.vor{stroke:var(--vor)} .f .hl.err{stroke:var(--err)} .f .hl.lade{stroke:var(--lade)}
+.f .np{fill:var(--npole);stroke:var(--ink);stroke-width:1}
+.f .sp{fill:var(--spole);stroke:var(--ink);stroke-width:1}
+.f .kl{fill:none;stroke:var(--ink2);stroke-width:2}
+.f .wire{fill:none;stroke:var(--copper);stroke-width:4;stroke-linejoin:round}
+.f .wdg{fill:var(--ink)}
+.f .mot{fill:var(--copper-soft);stroke:var(--ink);stroke-width:1.4}
+.f .cav{fill:var(--fig);stroke:var(--ink);stroke-width:1}
+.f .cu2{fill:var(--copper);fill-opacity:.45;stroke:var(--copper);stroke-width:1}
+.f .spring{fill:none;stroke:var(--ink);stroke-width:1.4;stroke-linejoin:round}
+.f .lever{fill:none;stroke:var(--ink);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.f .gear{fill:var(--panel);stroke:var(--ink);stroke-width:1.2}
+.f .trg{fill:var(--copper-soft);stroke:var(--copper);stroke-width:1.2}
+.f .nzl{fill:none;stroke:var(--copper);stroke-width:2;stroke-dasharray:7 4}
+.f .hall{fill:var(--hall);stroke:var(--ink);stroke-width:.8}
+.chap{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.chap h3{font:700 20px/1.1 var(--display);text-transform:uppercase;letter-spacing:.03em;color:var(--ink)}
+.linkbtn{border:0;background:none;color:var(--copper);font:500 13px var(--mono);cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
 .f .hit{fill:transparent;stroke:transparent;stroke-width:2}
 .f .hitp{fill:none;stroke:transparent;stroke-width:16;pointer-events:stroke;stroke-linecap:round}
 .pick .hs{cursor:pointer}
@@ -467,8 +487,187 @@ FIG.bn=()=>{
   return sv("0 0 360 216",s);
 };
 
+/* ===== Elektromotoren & Starter (Kap. 19.4) ===== */
+const pole=(x,y,w,h,k)=>R(x,y,w,h,k==="N"?"np":"sp",3)+tb(x+w/2,y+h/2+4,k);
+const hc=(cx,cy,r)=>`<circle class="hit" cx="${cx}" cy="${cy}" r="${r}"/>`;
+const hring=(cx,cy,r,w)=>`<circle class="hitp" cx="${cx}" cy="${cy}" r="${r}" style="stroke-width:${w}px"/>`;
+const PA=(cx,cy,r,a)=>[cx+r*Math.cos(a*Math.PI/180),cy+r*Math.sin(a*Math.PI/180)];
+function gear(cx,cy,r,n,cls="gear"){let p=[];for(let i=0;i<2*n;i++){const rr=i%2?r:r+4,a=i*180/n;const [x,y]=PA(cx,cy,rr,a);p.push(x.toFixed(1)+","+y.toFixed(1))}return `<polygon class="${cls}" points="${p.join(" ")}"/>`}
+
+/* Gleichstrommotor-Prinzip mit Kommutator */
+FIG.dcm=()=>{
+  let s="";
+  for(const y of [70,90,110,130,150])s+=`<line class="thin" x1="72" x2="268" y1="${y}" y2="${y}" stroke-dasharray="4 4"/>`;
+  s+=hs("n",pole(20,50,52,120,"N"),hr(16,46,60,128))+hs("s",pole(268,50,52,120,"S"),hr(264,46,60,128));
+  s+=`<line class="ax" x1="170" y1="30" x2="170" y2="182" stroke-dasharray="6 3"/>`;
+  s+=hs("loop",`<path class="wire" d="M120 172V62L218 76V172"/><path class="ln" d="M120 172H158V184M218 172H182V184"/>`,hr(108,54,122,124));
+  s+=hs("komm",R(150,184,18,22,"cu",2)+R(172,184,18,22,"cu",2),hr(150,180,40,30));
+  s+=hs("brush",R(126,188,22,14,"carbon",1)+R(192,188,22,14,"carbon",1),hr(120,184,30,22)+hr(190,184,30,22));
+  s+=L("126,195 100,195")+L("214,195 240,195")+tb(96,199,"+","end")+tb(244,199,"−","start");
+  s+=lb(170,48,"Ankerspule")+lb(170,222,"Stromwender (Kommutator)")+lb(296,214,"Kohlebürsten")+lead(214,200,262,208)+lb(46,40,"Polschuh")+lb(170,166,"Polfeld");
+  return sv("0 0 340 228",s);
+};
+
+/* Neutrale Zone */
+FIG.nz=()=>{
+  let s="";
+  for(let x=86;x<=174;x+=22)s+=`<line class="thin" x1="${x}" x2="${x}" y1="40" y2="180" stroke-dasharray="4 4"/>`;
+  s+=pole(70,10,120,30,"N")+pole(70,180,120,30,"S");
+  s+=`<circle class="box" cx="130" cy="110" r="42"/><line class="ln" x1="106" y1="84" x2="154" y2="136"/>`;
+  s+=hs("cond",`<circle class="box" cx="104" cy="82" r="8"/><path class="ln" d="M99 77l10 10M109 77l-10 10"/><circle class="box" cx="156" cy="138" r="8"/><circle class="dot" cx="156" cy="138" r="2.4"/>`,hc(104,82,11)+hc(156,138,11));
+  s+=hs("nz",`<line class="nzl" x1="22" x2="238" y1="110" y2="110"/>`,hr(18,101,224,18,4));
+  s+=lb(236,100,"neutrale Zone","end")+lb(196,150,"Ankerspule","start");
+  return sv("0 0 260 220",s);
+};
+
+/* Drehzahl-Drehmoment-Kennlinien */
+FIG.nm=()=>{
+  let s=`<path class="ax" d="M40 10V180H320"/>`+tl(320,196,"Drehmoment M →","end")+tl(14,96,"n")+`<path class="grid" d="M170 110V180M40 110H170" stroke-dasharray="3 3"/>`+tl(170,192,"M_N")+tl(36,113,"n_N","end");
+  const C={a:"M50 94L300 126",b:"M50 72Q110 92 170 110T300 142",c:"M50 52Q110 86 170 110T300 152",d:"M58 14C70 70 120 100 170 110S262 140 300 166"};
+  const yE={a:126,b:142,c:152,d:166};
+  Object.entries(C).forEach(([k,d])=>s+=hs(k,`<path class="kl" d="${d}"/>`+tb(308,yE[k]+4,k,"start"),hp(d)));
+  s+=dot(170,110)+lb(316,22,"a Nebenschluss · b permanenterregt","end")+lb(316,34,"c Doppelschluss · d Reihenschluss","end");
+  return sv("0 0 330 200",s);
+};
+
+/* Schaltbilder der Gleichstrommotoren */
+FIG.wire=()=>{
+  const pan=(x0,y0,id,tag,kind,name)=>{
+    let b=L(`${x0+16},${y0+36} ${x0+16},${y0+20} ${x0+150},${y0+20} ${x0+150},${y0+76} ${x0+16},${y0+76} ${x0+16},${y0+42}`);
+    b+=`<path class="ln" d="M${x0+6} ${y0+36}H${x0+26}"/><path class="lnb" d="M${x0+10} ${y0+42}H${x0+22}"/>`;
+    if(kind==="neben"||kind==="doppel")b+=L(`${x0+50},${y0+20} ${x0+50},${y0+76}`)+R(x0+46,y0+36,8,24,"wdg")+dot(x0+50,y0+20)+dot(x0+50,y0+76);
+    if(kind==="reihe"||kind==="doppel")b+=R(x0+104,y0+16,30,8,"wdg");
+    b+=`<circle class="mot" cx="${x0+80}" cy="${y0+20}" r="11"/>`+tb(x0+80,y0+24,"M");
+    if(kind==="perm")b+=R(x0+96,y0+30,14,12,"np")+R(x0+110,y0+30,14,12,"sp")+T(x0+103,y0+39.5,"N","middle","tl")+T(x0+117,y0+39.5,"S","middle","tl");
+    return hs(id,b+tb(x0+2,y0+10,tag,"start"),hr(x0-4,y0+2,166,82))+lb(x0+83,y0+94,name);
+  };
+  const s=pan(8,4,"reihe","A","reihe","Reihenschlussmotor")+pan(176,4,"neben","B","neben","Nebenschlussmotor")+pan(8,104,"doppel","C","doppel","Doppelschlussmotor")+pan(176,104,"perm","D","perm","Permanenterregter Motor");
+  return sv("0 0 344 204",s);
+};
+
+/* Schrittmotor, prinzipieller Aufbau */
+FIG.step=()=>{
+  const cx=130,cy=114;let s="";
+  s+=hs("stator",R(30,14,200,200,"steel",18)+R(52,36,156,156,"cav",10)+R(118,36,24,30,"steel")+R(118,162,24,30,"steel")+R(52,102,30,24,"steel")+R(178,102,30,24,"steel")+R(112,66,36,6,"steel")+R(112,156,36,6,"steel")+R(82,96,6,36,"steel")+R(172,96,6,36,"steel"),hr(26,10,208,208,18));
+  s+=hs("w1",R(110,42,40,16,"cu",3)+R(110,170,40,16,"cu",3),hr(106,38,48,24)+hr(106,166,48,24));
+  s+=hs("w2",R(58,94,16,40,"cu",3)+R(186,94,16,40,"cu",3),hr(54,90,24,48)+hr(182,90,24,48));
+  let t="";for(let i=0;i<18;i++){const [x,y]=PA(cx,cy,33,i*20);t+=`<circle class="${i%2?"sp":"np"}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.6"/>`}
+  s+=hs("rotor",`<circle class="box" cx="${cx}" cy="${cy}" r="30"/>`+t+`<circle class="dot" cx="${cx}" cy="${cy}" r="4"/>`,hc(cx,cy,39));
+  s+=tb(130,29,"W1")+tb(130,209,"W1")+tb(41,118,"W2")+tb(219,118,"W2");
+  s+=lb(240,40,"Ständer","start")+lead(238,36,222,30)+lb(240,150,"Zahnläufer","start")+lead(238,146,160,124);
+  return sv("0 0 300 228",s);
+};
+
+/* Bürstenloser Motor, elektronische Kommutierung */
+FIG.bldc=()=>{
+  const cx=220,cy=100;let s="";
+  let tr="";for(let i=0;i<6;i++)tr+=`<circle class="box" cx="47" cy="${46+i*22}" r="7"/><path class="thin" d="M44 ${42+i*22}v8M44 ${44+i*22}l6 -4M44 ${48+i*22}l6 4"/>`;
+  s+=hs("ecu",R(12,30,70,140,"box",6)+R(20,38,14,124,"cu2",2)+tr,hr(8,26,78,148));
+  s+=L("82,60 146,60")+L("82,100 146,100")+L("82,140 146,140");
+  s+=R(130,16,180,168,"steel",14)+R(146,32,148,136,"cav",10);
+  let w="";for(let i=0;i<6;i++){const a=i*60+30,[x,y]=PA(cx,cy,56,a);w+=`<rect class="wdg" x="-12" y="-5" width="24" height="10" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${a})"/>`}
+  s+=hs("wind",w,hring(cx,cy,57,22));
+  const q=(a0,cls)=>{const [x1,y1]=PA(cx,cy,34,a0),[x2,y2]=PA(cx,cy,34,a0+90);return `<path class="${cls}" d="M${cx} ${cy}L${x1.toFixed(1)} ${y1.toFixed(1)}A34 34 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}Z"/>`};
+  s+=hs("rotor",q(-135,"np")+q(-45,"sp")+q(45,"np")+q(135,"sp")+tb(cx,cy-16,"N")+tb(cx,cy+24,"N")+tb(cx-20,cy+4,"S")+tb(cx+20,cy+4,"S")+`<circle class="box" cx="${cx}" cy="${cy}" r="4"/>`,hc(cx,cy,37));
+  s+=hs("hall",`<rect class="hall" x="-6" y="-3" width="12" height="6" transform="translate(250 70) rotate(45)"/>`,hr(241,61,18,18,3));
+  s+=lb(47,190,"Steuerelektronik")+lb(180,10,"Wicklungen")+lead(186,14,196,50)+lb(334,10,"Rotorlagegeber","end")+lead(300,14,254,66)+lb(220,196,"Rotor mit Dauermagneten");
+  return sv("0 0 340 202",s);
+};
+
+/* Schub-Schraubtrieb-Starter, Schnitt (Prinzip) */
+FIG.starter=()=>{
+  let s="";
+  let z="M12 20H26";for(let y=20;y<200;y+=10)z+=`L32 ${y+5}L26 ${y+10}`;z+="H12Z";
+  s+=hs("kranz",`<path class="steel" d="${z}"/>`,hr(8,16,28,188));
+  s+=R(36,146,300,10,"steel",2);
+  let rt="";for(let x=42;x<=58;x+=4)rt+=`<line class="thin" x1="${x}" x2="${x}" y1="132" y2="170"/>`;
+  s+=hs("ritzel",R(38,130,24,42,"steel",2)+rt,hr(35,126,30,50));
+  s+=hs("freilauf",R(64,126,28,50,"box",3)+`<circle class="steel" cx="78" cy="138" r="4"/><circle class="steel" cx="78" cy="164" r="4"/>`,hr(63,122,30,58));
+  s+=hs("mitn",R(94,128,18,46,"steel",2)+R(98,128,10,6,"cav"),hr(93,122,20,56));
+  let g="";for(let x=118;x<=156;x+=6)g+=`<line class="ln" x1="${x}" y1="146" x2="${x+6}" y2="156"/>`;
+  s+=hs("gew",g,hr(114,140,50,22));
+  s+=hs("hebel",`<path class="lever" d="M103 128L124 84L134 48"/><path class="ln" d="M96 128H110"/><circle class="box" cx="124" cy="84" r="3.5"/>`,hp("M103 128L124 84L134 50"));
+  s+=hs("relais",R(140,22,112,48,"box",6)+R(150,28,92,10,"cu",2)+R(150,54,92,10,"cu",2)+R(132,42,40,8,"steel",1)+L("200,22 200,12")+L("236,22 236,12")+`<circle class="box" cx="200" cy="10" r="3"/><circle class="box" cx="236" cy="10" r="3"/>`,hr(136,4,120,70));
+  s+=tl(212,13,"50","start")+tl(248,13,"30","start");
+  s+=R(160,96,170,110,"body",8);
+  s+=hs("erreg",R(186,102,96,14,"cu",3)+R(186,188,96,14,"cu",3),hr(182,98,104,22)+hr(182,184,104,22));
+  let la="";for(let x=196;x<280;x+=8)la+=`<line class="thin" x1="${x}" x2="${x}" y1="126" y2="176"/>`;
+  s+=hs("anker",R(190,124,90,54,"steel",3)+la,hr(188,122,94,58));
+  s+=hs("komm",R(290,130,22,42,"cu",2)+`<path class="thin" d="M290 140h22M290 151h22M290 162h22"/>`+R(296,118,10,12,"carbon")+R(296,172,10,12,"carbon"),hr(286,114,30,74));
+  s+=lb(4,214,"Zahnkranz","start")+lb(50,190,"Ritzel")+lb(78,204,"Rollenfreilauf")+lb(104,186,"Mitnehmer","start")+lb(140,172,"Steilgewinde")
+    +lb(98,70,"Einrückhebel","end")+lead(100,67,122,80)+lb(196,86,"Einrückrelais")+lb(234,215,"Polschuh mit Erregerwicklung")+lb(235,154,"Anker")+lb(330,90,"Kommutator","end");
+  return sv("0 0 360 222",s);
+};
+
+/* Einrückrelais (Magnetschalter) */
+FIG.relay=()=>{
+  let s=R(40,30,200,120,"body",6);
+  s+=hs("halte",R(70,40,120,14,"cu",2)+R(70,126,120,14,"cu",2),hr(66,36,128,20)+hr(66,124,128,20));
+  s+=hs("einzug",R(70,56,120,12,"cu2",2)+R(70,112,120,12,"cu2",2),hr(66,56,128,14)+hr(66,110,128,14));
+  s+=hs("anker",R(64,74,96,32,"steel",3)+R(18,86,46,8,"steel"),hr(16,72,146,36));
+  let sp="M160 90";for(let i=0;i<8;i++)sp+=`L${164+i*4} ${i%2?80:100}`;sp+="L196 90";
+  s+=hs("feder",`<path class="spring" d="${sp}"/>`,hr(160,76,36,28));
+  s+=hs("kern",R(196,70,30,40,"steel",2),hr(194,66,34,48));
+  s+=R(226,87,30,6,"steel");
+  s+=hs("bruecke",R(256,60,8,60,"cu",2),hr(252,52,16,76));
+  s+=hs("kontakte",R(270,58,40,12,"steel",2)+R(270,110,40,12,"steel",2)+`<circle class="cu" cx="268" cy="64" r="4"/><circle class="cu" cx="268" cy="116" r="4"/>`,hr(262,50,52,24)+hr(262,102,52,24));
+  s+=tb(318,68,"30","start")+tb(318,120,"45","start")+L("120,30 120,16")+`<circle class="box" cx="120" cy="13" r="3"/>`+tb(130,17,"50","start");
+  s+=lb(130,34,"Haltewicklung")+lb(130,84,"Einzugwicklung","middle")+lb(40,82,"Anker","middle")+lb(178,124,"Rückstellfeder")+lb(211,64,"Magnetkern")+lb(260,160,"Kontaktbrücke")+lead(260,152,260,122)+lb(290,96,"Kontakte");
+  return sv("0 0 340 168",s);
+};
+
+/* Rollenfreilauf */
+FIG.freil=()=>{
+  const cx=130,cy=120;let cav="",rol="",fed="",fedh="",rolh="";
+  [-90,30,150].forEach(a=>{
+    let p="";for(let t=a-10;t<=a+40;t+=5){const r=62-(t-(a-10))/50*13,[x,y]=PA(cx,cy,r,t);p+=(p?"L":"M")+x.toFixed(1)+" "+y.toFixed(1)}
+    const [ix,iy]=PA(cx,cy,40,a+40),[jx,jy]=PA(cx,cy,40,a-10);
+    cav+=`<path class="cav" d="${p}L${ix.toFixed(1)} ${iy.toFixed(1)}A40 40 0 0 0 ${jx.toFixed(1)} ${jy.toFixed(1)}Z"/>`;
+    const [rx,ry]=PA(cx,cy,46,a+28);rol+=`<circle class="steel" cx="${rx.toFixed(1)}" cy="${ry.toFixed(1)}" r="5.8"/>`;rolh+=hc(rx.toFixed(1),ry.toFixed(1),10);
+    let f="";for(let k=0;k<=8;k++){const [fx,fy]=PA(cx,cy,k%2?51:44,a-8+k*3.5);f+=(f?"L":"M")+fx.toFixed(1)+" "+fy.toFixed(1)}
+    fed+=`<path class="spring" d="${f}"/>`;fedh+=hp(f);
+  });
+  let s=hs("ring",`<circle class="steel" cx="${cx}" cy="${cy}" r="96"/>`+cav,hring(cx,cy,79,34));
+  s+=hs("schaft",gear(cx,cy,36,12,"box")+`<circle class="cav" cx="${cx}" cy="${cy}" r="14"/>`,hc(cx,cy,39));
+  s+=hs("feder",fed,fedh)+hs("rolle",rol,rolh);
+  s+=lb(130,234,"Freilaufring mit Rollengleitkurven")+lb(130,124,"Ritzelschaft")+lb(204,22,"Rolle","start")+lead(202,22,156,76)+lb(10,22,"Schraubenfeder","start")+lead(60,26,128,70);
+  return sv("0 0 260 240",s);
+};
+
+/* Planetenrad-Vorgelege */
+FIG.planet=()=>{
+  const cx=120,cy=120;let s="";
+  let inner="";for(let i=0;i<72;i++){const [x,y]=PA(cx,cy,i%2?80:85,i*5);inner+=(inner?"L":"M")+x.toFixed(1)+" "+y.toFixed(1)}
+  s+=hs("hohl",`<path class="steel" fill-rule="evenodd" d="M${cx-104} ${cy}A104 104 0 1 0 ${cx+104} ${cy}A104 104 0 1 0 ${cx-104} ${cy}Z${inner}Z"/>`,hring(cx,cy,94,22));
+  s+=hs("traeger",`<circle class="trg" cx="${cx}" cy="${cy}" r="68"/>`,hc(cx,cy,72));
+  let pl="",ph="";[-90,30,150].forEach(a=>{const [x,y]=PA(cx,cy,51,a);pl+=gear(x,y,22,14)+`<circle class="dot" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4"/>`;ph+=hc(x.toFixed(1),y.toFixed(1),27)});
+  s+=hs("planet",pl,ph);
+  s+=hs("sonne",gear(cx,cy,19,12,"steel")+`<circle class="box" cx="${cx}" cy="${cy}" r="6"/>`,hc(cx,cy,23));
+  s+=lb(120,236,"Hohlrad")+lb(120,140,"Sonnenrad")+lb(120,72,"Planetenrad")+lb(120,184,"Planetenradträger");
+  return sv("0 0 240 240",s);
+};
+
+/* Prüfschaltung Kurzschlussprüfung */
+FIG.pruef=()=>{
+  let s=R(150,14,180,70,"dash",6)+`<circle class="mot" cx="186" cy="44" r="12"/>`+tb(186,48,"M")+R(204,40,26,8,"wdg")+R(262,34,30,20,"box",2)+`<path class="thin" d="M266 38l22 12"/>`+tl(240,28,"Starter");
+  s+=`<circle class="box" cx="200" cy="84" r="3"/><circle class="box" cx="270" cy="84" r="3"/>`+tl(194,80,"30","end")+tl(276,80,"50","start");
+  s+=hs("bat",`<path class="ln" d="M66 124H94"/><path class="lnb" d="M72 130H88"/><path class="ln" d="M66 136H94"/><path class="lnb" d="M72 142H88"/>`+tl(98,122,"+","start"),hr(62,118,36,30));
+  s+=L("80,110 80,124")+L("80,142 80,190")+L("80,110 128,110")+L("152,110 200,110 200,87")+dot(80,110)+dot(80,190);
+  s+=hs("amp",`<circle class="box" cx="140" cy="110" r="12"/>`+tb(140,114,"A"),hr(126,96,28,28));
+  s+=L("180,110 180,150 205,150")+`<line class="ln" x1="205" y1="150" x2="222" y2="141"/>`+dot(205,150)+L("224,150 270,150 270,87")+dot(180,110);
+  s+=hs("sw",`<circle class="box" cx="224" cy="150" r="2"/>`,hr(198,136,32,22));
+  s+=L("80,190 320,190 320,84");
+  s+=L("30,138 30,110 80,110")+L("30,162 30,190 80,190");
+  s+=hs("v_bat",`<circle class="box" cx="30" cy="150" r="12"/>`+tb(30,154,"V"),hr(16,136,28,28));
+  s+=L("300,128 300,100 200,100")+L("300,152 300,190")+dot(200,100)+dot(300,190);
+  s+=hs("v_st",`<circle class="box" cx="300" cy="140" r="12"/>`+tb(300,144,"V"),hr(286,126,28,28));
+  s+=lb(140,132,"Starterhauptleitung")+lb(236,168,"Startersteuerleitung")+lb(36,206,"Batterie","start");
+  return sv("0 0 340 214",s);
+};
+
 /* ---------- Fragenkatalog ---------- */
-const TOPICS={aufbau:"Aufbau & Induktion",gleich:"Gleichrichtung & Dioden",regel:"Spannungsregelung",kreise:"Stromkreise",mfr:"Multifunktionsregler",bordnetz:"Bauformen & Bordnetz",werkstatt:"Werkstatt & Diagnose"};
+const TOPICS={aufbau:"Aufbau & Induktion",gleich:"Gleichrichtung & Dioden",regel:"Spannungsregelung",kreise:"Stromkreise",mfr:"Multifunktionsregler",bordnetz:"Bauformen & Bordnetz",werkstatt:"Werkstatt & Diagnose",motor:"Gleichstrommotoren",schritt:"Schrittmotoren",bldc:"Bürstenlose Motoren",starter:"Starter",sprue:"Starter-Prüfung"};
+const CHAPTERS=[["Drehstromgenerator","Kap. 19.2.1 · S. 703–711",["aufbau","gleich","regel","kreise","mfr","bordnetz","werkstatt"]],["Elektromotoren & Starter","Kap. 19.4 · S. 714–720",["motor","schritt","bldc","starter","sprue"]]];
 const Q=[];
 const mc=(t,p,q,o,x,fig,fo)=>Q.push({k:"mc",t,p,q,o,x,fig,fo});
 const hq=(t,p,q,fig,target,x,fo)=>Q.push({k:"hs",t,p,q,fig,target,x,fo});
@@ -590,6 +789,117 @@ mc("werkstatt",711,"Die Ladekontrollleuchte bleibt bei laufendem Motor an. Was b
 mc("werkstatt",711,"Welcher Eintrag ist KEIN typischer Fehlerspeichereintrag eines Generators mit MFR?",["Klopfsensor Signal unplausibel","Unterbrechung der Sense-Leitung","Kurzschluss der Erregerwicklung","Überspannung im Bordnetz"],"Typisch sind: Keilriemen gebrochen oder zu locker, Unterbrechung im Erregerstromkreis, Kurz- oder Masseschluss der Erregerwicklung, Reglerfehler, Überspannung, Unterbrechung der Sense- oder Ladeleitung.");
 mc("werkstatt",711,"Ein Diodenfehler im Gleichrichter ist bestätigt. Welche Reparaturmaßnahme nennt das Buch?",["Regler oder den gesamten Generator tauschen","Einzelne Diode nachlöten","Batterie ersetzen","Keilriemen nachspannen"],"Instandsetzung im Generator ist nicht vorgesehen.");
 
+/* ===== Kapitel 19.4: Elektrische Motoren & Starter ===== */
+/* Gleichstrommotoren */
+mc("motor",714,"Wofür werden Gleichstrommotoren im Kraftfahrzeug vor allem eingesetzt?",["Als Starter und als Hilfsantriebe, z. B. Ventilator, Scheibenwischer, Sitzverstellung","Nur als Fahrantrieb von Elektroautos","Nur zur Leuchtweitenregulierung","Als Generator zum Laden der Batterie"],"Für genau definierte Strecken oder Winkel, z. B. die Leuchtweitenregulierung, nimmt man dagegen Schrittmotoren.");
+mc("motor",714,"Welche Motoren werden neben Gleichstrommotoren bei elektrischen Fahrzeugantrieben verwendet?",["Drehstromasynchron- und Synchronmotoren","Schrittmotoren","Nur Reihenschlussmotoren","Linearmotoren"],"Im Bereich der elektrischen Fahrzeugantriebe kommen Gleichstrom-, Drehstromasynchron- und Synchronmotoren zum Einsatz.");
+mc("motor",714,"Auf welchem Prinzip beruht der Gleichstrommotor?",["Auf einen stromdurchflossenen Leiter im Magnetfeld wirkt eine Kraft","Ein bewegter Leiter im Magnetfeld erzeugt Spannung","Wärme dehnt einen Bimetallstreifen","Ein Kondensator speichert Ladung"],"Diese Kraft dreht die Ankerspule. Spannung durch Bewegung (Induktion) ist dagegen das Generatorprinzip.");
+mc("motor",714,"Wovon hängt die Kraft auf den stromdurchflossenen Leiter NICHT ab?",["Von der Größe der Kohlebürsten","Von der Stärke des Stroms im Leiter","Von der Stärke des Magnetfelds (Flussdichte)","Von der wirksamen Leiterlänge (Windungszahl)"],"Die Kraft hängt von Stromstärke, Magnetfeldstärke und wirksamer Leiterlänge ab.");
+hq("motor",714,"Tippe auf den Stromwender (Kommutator).","dcm","komm","Am Kommutator sind Spulenanfänge und -enden angeschlossen. Er polt den Strom in der Ankerspule in der neutralen Zone um.");
+hq("motor",714,"Über welche feststehenden Bauteile wird der Strom dem drehenden Anker zugeführt? Tippe sie an.","dcm","brush","Zwei feststehende Kohlebürsten bilden mit dem Kommutator einen schleifenden Kontakt.");
+mc("motor",714,"Wie heißt das markierte Bauteil?",["Ankerspule (Leiterschleife)","Polschuh","Stromwender","Kohlebürste"],"Fließt Strom durch die Ankerspule, entsteht das Spulenfeld (Ankerfeld). Zusammen mit dem Polfeld entsteht ein Drehmoment.","dcm",{mark:"loop"});
+hq("motor",714,"Tippe auf die neutrale Zone des Polfeldes.","nz","nz","Die neutrale Zone liegt quer zu den Feldlinien zwischen Nord- und Südpol. Ohne Umpolen bliebe die Spule hier stehen.");
+mc("motor",714,"Welche beiden Felder ergeben das resultierende Magnetfeld im Motor?",["Polfeld (Hauptfeld) und Spulenfeld (Ankerfeld)","Erdmagnetfeld und Polfeld","Ankerfeld und Feld der Kohlebürsten","Elektrisches und magnetisches Feld der Batterie"],"Je nach Stromrichtung in der Leiterschleife entsteht ein links- oder rechtsdrehendes Moment.");
+mc("motor",714,"Wo bleibt eine Spule ohne Stromwender stehen?",["In der neutralen Zone, wenn Spulenfeld und Polfeld gleich gerichtet sind","Direkt vor dem Nordpol","Sie dreht sich ohne Ende weiter","Genau in der Mitte des Südpols"],"Die Spule dreht sich, bis ihr Feld die gleiche Richtung wie das Polfeld hat. Dann wirkt kein Drehmoment mehr.");
+mc("motor",714,"Wann muss die Stromrichtung in der Ankerspule umgekehrt werden?",["Wenn sie sich in der neutralen Zone befindet","Wenn sie direkt unter dem Nordpol steht","Nach jeder vollen Umdrehung","Nur beim Anlaufen des Motors"],"Die Umschaltung macht der Stromwender (Kommutator).");
+mc("motor",714,"Was erreicht der Stromwender?",["Der Strom in den Spulenseiten unter einem bestimmten Pol hat immer dieselbe Richtung","Die Drehzahl bleibt konstant","Die Spannung wird gleichgerichtet","Der Anker wird gekühlt"],"So wirkt die Kraft unter jedem Pol immer in die gleiche Drehrichtung.");
+mc("motor",714,"Warum hat ein Anker üblicherweise mehrere Spulen?",["Damit Drehkraft und Drehmoment über 360° gleichmäßig sind","Damit der Motor weniger Strom braucht","Damit keine Kohlebürsten nötig sind","Damit der Motor rückwärts laufen kann"],"Mit mehreren Spulen erzeugt der gesamte Ankerumfang eine Drehkraft.");
+mc("motor",715,"Welcher Motor gehört NICHT zur Einteilung der Gleichstrommotoren nach Art der Erregung?",["Asynchronmotor","Nebenschlussmotor","Reihenschlussmotor","Doppelschlussmotor"],"Die vier Arten: Nebenschluss-, permanenterregte, Reihenschluss- und Doppelschlussmotoren.");
+hq("motor",715,"Tippe auf die Kennlinie des Reihenschlussmotors.","nm","d","Kurve d: sehr hohe Drehzahl bei kleinem Moment, sehr großes Moment bei kleiner Drehzahl.");
+hq("motor",715,"Tippe auf die Kennlinie des Nebenschlussmotors.","nm","a","Kurve a ist flach: Die Drehzahl ändert sich mit der Last kaum.");
+hq("motor",715,"Tippe auf das Schaltbild des Reihenschlussmotors.","wire","reihe","Erreger- und Ankerwicklung liegen in Reihe, also hintereinander auf derselben Leitung.");
+hq("motor",715,"Tippe auf das Schaltbild des Nebenschlussmotors.","wire","neben","Die Erregerwicklung liegt parallel zum Anker an der Betriebsspannung.");
+hq("motor",715,"Tippe auf das Schaltbild des permanenterregten Motors.","wire","perm","Das Erregerfeld kommt von Dauermagneten (N/S) statt von einer Wicklung.");
+hq("motor",715,"Tippe auf das Schaltbild des Doppelschlussmotors.","wire","doppel","Er hat eine Reihenschluss- und eine Nebenschlusswicklung.");
+mc("motor",715,"Warum ist der Nebenschlussmotor als Starter weniger geeignet?",["Er hat ein geringes Anzugsmoment","Er dreht bei Entlastung unkontrolliert hoch","Er braucht Dauermagnete","Er hat keinen Kommutator"],"Die Erregerwicklung liegt parallel zum Anker und erzeugt ein konstantes Erregerfeld. Bei Entlastung steigt die Drehzahl nur wenig.");
+mc("motor",715,"Reihenschlussmotor, Anker blockiert: Was gilt?",["Anker- und Erregerstrom sind am größten, das Losbrechmoment ist sehr groß","Es fließt kaum Strom","Die Drehzahl ist am höchsten","Das Erregerfeld ist abgeschaltet"],"Darum eignet sich der Reihenschlussmotor gut als Startermotor.");
+mc("motor",715,"Warum nimmt beim Reihenschlussmotor der Strom mit steigender Drehzahl ab?",["Die Gegenspannung im Anker wird größer","Die Kohlebürsten verschleißen","Die Batterie wird geladen","Der Kommutator schaltet ab"],"Mit dem Strom wird auch das Erregerfeld schwächer. Deshalb steigt die Drehzahl bei Entlastung stark an.");
+mc("motor",715,"Welche Eigenschaft des Reihenschlussmotors ist beim Starter vorteilhaft?",["Er dreht rasch hoch, die Starterdrehzahl wird schnell erreicht","Seine Drehzahl ist lastunabhängig","Er hat ein kleines Anzugsmoment","Er läuft ohne Strom weiter"],"Hohes Losbrechmoment und schnelles Hochdrehen sind ideal zum Durchdrehen des Verbrennungsmotors.","nm",{labels:true});
+mc("motor",715,"Welche Aufgabe hat die Nebenschlusswicklung beim Doppelschlussmotor?",["Sie verstärkt das Drehmoment und verhindert starkes Hochdrehen bei Entlastung","Sie ersetzt den Kommutator","Sie lädt die Batterie","Sie senkt das Anzugsmoment"],"Wegen des großen Wicklungsaufwands wird er nur bei großen Startern eingesetzt.");
+mc("motor",715,"Wo liegt die Kennlinie des permanenterregten Motors?",["Zwischen der des Nebenschluss- und der des Reihenschlussmotors","Oberhalb der Reihenschluss-Kennlinie","Genau auf der Nebenschluss-Kennlinie","Waagrecht bei konstanter Drehzahl"],"Das Erregerfeld kommt von starken Dauermagneten.","nm",{labels:true});
+
+/* Schrittmotoren */
+mc("schritt",715,"Wie bewegt sich der Läufer eines Schrittmotors?",["Er dreht jeweils um einen bestimmten Winkel (Schritt) weiter","Er dreht immer mit konstanter Drehzahl","Er bewegt sich nur geradlinig","Er dreht nur, solange er mechanisch angeschoben wird"],"Je nach Auslegung sind Schritte bis 1,5° möglich.");
+mc("schritt",715,"Wie klein können die Winkelschritte eines Schrittmotors werden?",["Bis 1,5°","Bis 45°","Höchstens 90°","Bis 0,001°"],"Damit lassen sich genau definierte Strecken oder Winkel verstellen.");
+hq("schritt",715,"Tippe auf den Zahnläufer.","step","rotor","Der Zahnläufer ist ein axial magnetisierter Dauermagnet. Seine Zähne wechseln fortlaufend zwischen Nord- und Südpol.");
+hq("schritt",715,"Tippe auf den geblechten Ständer.","step","stator","Im Ständer liegen die Erregerwicklungen W1 und W2. Sie bilden zwei Ständerpolpaare.");
+mc("schritt",715,"Woraus besteht der Läufer eines Schrittmotors?",["Aus einem axial magnetisierten Dauermagneten mit wechselnden N- und S-Zähnen","Aus einer Kupferwicklung mit Schleifringen","Aus Blechen ohne Magnetisierung","Aus einem Kommutator mit Kohlebürsten"],"Zwischen zwei Zähnen ist z. B. eine Lücke von einer halben Zahnbreite.");
+mc("schritt",716,"Wie stellt sich das Polrad im Ruhezustand ein?",["So, dass z. B. ein Nordpol des Zahnläufers einem Südpol des Ständers gegenübersteht","Nordpol gegenüber Nordpol","Immer in waagrechter Lage","Zufällig"],"Ungleiche Pole ziehen sich an.");
+mc("schritt",716,"Was passiert, wenn der Strom in Wicklung W1 umgepolt wird?",["Der Läufer dreht sich um eine halbe Zahnteilung weiter","Der Läufer bleibt stehen","Der Läufer dreht eine volle Umdrehung","Der Läufer kehrt sofort die Drehrichtung um"],"Die Polarität im senkrechten Polpaar ändert sich, im waagrechten bleibt sie. Im Beispiel dreht der Läufer 10° weiter.");
+mc("schritt",716,"Wie erreicht man beim Schrittmotor eine Drehrichtungsumkehr?",["Durch eine entsprechende Polung der Ständerwicklungen W1 und W2","Durch Vertauschen der Kohlebürsten","Durch eine höhere Spannung","Gar nicht, er dreht nur in eine Richtung"],"Ein Schrittmotor kann beliebig viele Schritte in beide Richtungen ausführen.");
+mc("schritt",716,"Was legt das Steuergerät für einen Schrittmotor fest?",["Zahl der Schritte, Drehrichtung und Verstellgeschwindigkeit","Nur die Spannung","Nur die Temperatur des Motors","Die Polzahl des Läufers"],"Grundlage sind Sensorinformationen über die erforderliche Verstellung.");
+mc("schritt",716,"Die Ständerwicklung ist stromlos. Was passiert mit dem Läufer?",["Er bleibt durch die Rastwirkung in seiner letzten Position stehen","Er dreht frei weiter","Er springt in die Ausgangsstellung zurück","Er wird entmagnetisiert"],"Die Rastwirkung entsteht zwischen dem magnetischen Polrad und dem geblechten Ständer.");
+mc("schritt",716,"Wo wird ein Schrittmotor NICHT eingesetzt?",["Als Startermotor","Automatische Drosselklappenverstellung","Lüfterklappenverstellung bei Klimaanlagen","Sitzverstellung mit Memoryeffekt"],"Weitere Beispiele: elektrische Außenspiegelverstellung und Leuchtweitenregulierung.");
+mc("schritt",716,"Wozu dient ein Schneckengetriebe am Schrittmotor (Übersetzung ins Langsame, i > 1)?",["Viele Schritte ergeben nur einen kleinen, genau definierten Stellwinkel","Der Motor dreht schneller","Der Motor braucht keine Steuerung mehr","Die Rastwirkung wird aufgehoben"],"Pro Schritt wird der Aktor, z. B. die Drosselklappe, nur um einen kleinen Winkel ausgelenkt.");
+mc("schritt",716,"Wie arbeitet ein Schrittmotor bei schneller Impulsfolge?",["Als Synchronmotor: Der Anker dreht gleichlaufend mit dem Ständerfeld","Als Reihenschlussmotor","Als Generator","Er bleibt stehen"],"Der Läufer folgt dem umlaufenden Ständermagnetfeld synchron.");
+
+/* Bürstenlose Motoren */
+mc("bldc",716,"Wie ist ein bürstenloser Motor im Vergleich zum mechanisch kommutierten Motor aufgebaut?",["Wicklungen am Stator, Rotor mit Dauermagneten","Wicklungen am Rotor, Kohlebürsten am Stator","Ohne Magnete, nur mit Wicklungen","Mit Schleifringen statt Kommutator"],"Das Konstruktionsprinzip ist umgekehrt.");
+hq("bldc",717,"Tippe auf den Rotorlagegeber.","bldc","hall","Der Rotorlagegeber, z. B. ein Hallsensor, meldet der Elektronik die Position des Rotors.");
+hq("bldc",717,"Tippe auf die Steuerungselektronik.","bldc","ecu","Sie schaltet die Wicklungen drehwinkelabhängig ein und aus (elektronische Kommutierung).");
+hq("bldc",716,"Tippe auf den Rotor mit Dauermagneten.","bldc","rotor","Beim Innenläufermotor sitzt der Magnetrotor innen, der Stator umschließt ihn.");
+mc("bldc",716,"Was ist ein Außenläufermotor?",["Die umlaufende Rotorglocke umschließt die feststehenden Statorwicklungen innen","Der Stator liegt außen und umschließt den Rotor","Ein Motor mit außen liegenden Kohlebürsten","Ein Motor außerhalb der Karosserie"],"Beim Innenläufer ist es umgekehrt: Magnetrotor innen, Stator außen.");
+mc("bldc",716,"Wer übernimmt beim bürstenlosen Motor die Aufgabe des Kommutators?",["Eine Steuerungselektronik mit Rotorlagegeber","Zwei Kohlebürsten","Ein Fliehkraftschalter","Ein Relais an Klemme 50"],"Die Elektronik bestromt die Wicklungen abhängig vom Drehwinkel.");
+mc("bldc",717,"Wovon hängt die Drehzahl eines elektronisch kommutierten Motors ab?",["Von der Umschaltfrequenz der Kommutierungseinrichtung","Von der Anzahl der Kohlebürsten","Nur von der Batteriespannung","Von der Länge der Anschlusskabel"],"Elektronisch kommutierte Gleichstrommotoren haben meist drei oder mehr Wicklungsstränge.");
+mc("bldc",717,"Welche Aussage ist KEIN Vorteil bürstenloser Motoren?",["Regelmäßiger Bürstenwechsel nötig","Hohe Drehzahlen möglich","Geräuscharm und wartungsfrei","Diagnosefähig und kompakt"],"Bürstenlose Motoren haben keine Bürsten. Weitere Vorteile: gute elektromagnetische Verträglichkeit, leichtgängig, geringes Gewicht.");
+mc("bldc",717,"Wodurch ist die Höchstdrehzahl eines bürstenlosen Motors begrenzt?",["Durch die Lagerung und die Fliehkräfte auf die Magnetbefestigung","Durch den Verschleiß der Kohlebürsten","Durch den Kommutator","Durch die Batteriekapazität"],"Bürsten und Kommutator entfallen als Grenze.");
+mc("bldc",717,"Wo werden bürstenlose Motoren im Kfz z. B. eingesetzt?",["Motorkühlgebläse und Gebläsemotoren in Klimaanlagen","Als Starter","Zur Leuchtweitenregulierung","Als Generator"],"Wichtig sind dort hohe Laufzeit, geringe Geräusche und Wartungsfreiheit.");
+
+/* Starter */
+mc("starter",717,"Welche Widerstände muss der Starter beim Starten überwinden?",["Massenträgheit, Reibungs- und Verdichtungswiderstände","Nur den Luftwiderstand","Den Widerstand der Batterie","Den Rollwiderstand der Reifen"],"Verbrennungsmotoren müssen mit fremder Energie gestartet werden.");
+mc("starter",717,"Aus welchen Hauptbaugruppen besteht ein Starter?",["Startermotor, Einrückrelais, Einspurgetriebe","Generator, Regler, Gleichrichter","Anlasser, Zündspule, Verteiler","Batterie, Sicherung, Relais"],"Einrückrelais = Relais und Einrückmagnet. Einspurgetriebe = Ritzel und Rollenfreilauf.");
+hq("starter",717,"Tippe auf das Einrückrelais (Magnetschalter).","starter","relais","Es schiebt über den Einrückhebel das Ritzel vor und schließt mit der Kontaktbrücke den Starterhauptstrom.");
+hq("starter",718,"Tippe auf das Ritzel.","starter","ritzel","Das Ritzel überträgt die Kraft auf den Zahnkranz am Schwungrad und wandelt Drehzahl und Moment.");
+hq("starter",718,"Tippe auf den Rollenfreilauf.","starter","freilauf","Der Freilauf überträgt das Startmoment und trennt das Ritzel vom Anker, sobald der Motor anspringt.");
+hq("starter",718,"Tippe auf den Einrückhebel.","starter","hebel","Der Einrückhebel erzeugt den Einspurhub: Er schiebt den Mitnehmer mit Ritzel nach vorn.");
+hq("starter",718,"Tippe auf den Zahnkranz am Schwungrad.","starter","kranz","In den Zahnkranz spurt das Ritzel ein. Die Übersetzung liegt zwischen 10 und 15.");
+hq("starter",718,"Tippe auf das Steilgewinde der Ankerwelle.","starter","gew","Auf dem Steilgewinde wird der Mitnehmer beim Vorschieben in Drehung versetzt.");
+mc("starter",718,"Wie heißt das markierte Bauteil?",["Mitnehmer","Ritzel","Rollenfreilauf","Kommutator"],"Der Mitnehmer ist über den Rollenfreilauf mit dem Ritzel gekuppelt und bewegt sich auf dem Steilgewinde.","starter",{mark:"mitn"});
+mc("starter",717,"Wie heißt das markierte Bauteil?",["Anker","Polgehäuse","Einrückrelais","Zahnkranz"],"Der Anker trägt die Ankerwicklung in gestanzten Nuten.","starter",{mark:"anker"});
+mc("starter",717,"Warum ist das Polgehäuse aus magnetisch gut leitendem Stahl?",["Es dient als Rückschluss für die magnetischen Feldlinien","Es soll leicht sein","Es leitet den Starterstrom zur Masse","Es kühlt den Anker"],"Im Polgehäuse sitzen die Polschuhe mit Erregerwicklungen oder Dauermagnete.");
+mc("starter",717,"Warum besteht der Anker aus einzelnen, gegeneinander isolierten Blechen?",["Damit sich keine starken Wirbelströme bilden und der Anker nicht zu heiß wird","Damit er leichter auszutauschen ist","Damit er rostfrei bleibt","Damit er weniger Strom braucht"],"Durch das ständige Umpolen entsteht im Anker ein magnetisches Wechselfeld.");
+mc("starter",717,"Warum muss der Luftspalt zwischen Polschuhen und Anker möglichst klein sein?",["Damit die Feldlinien gut vom Nordpol über den Anker zum Südpol geleitet werden","Damit Kühlluft durchströmt","Damit der Anker leichter einbaubar ist","Damit kein Kurzschluss entsteht"],"Der Anker dient der besseren Leitung der magnetischen Feldlinien.");
+mc("starter",717,"Welche zwei Aufgaben hat das Einrückrelais?",["Ritzel in den Zahnkranz vorschieben und den Starterhauptstrom schließen","Batterie laden und Spannung regeln","Freilauf sperren und Anker bremsen","Drehzahl messen und Zündung einschalten"],"Es ist eine Kombination aus Relais und Einrückmagnet.");
+hq("starter",717,"Tippe auf die Haltewicklung.","relay","halte","Die Haltewicklung hält den Magnetschalter, nachdem der Hauptstrom eingeschaltet ist.");
+hq("starter",717,"Tippe auf die Einzugwicklung.","relay","einzug","Zum Einziehen wirken Einzug- und Haltewicklung zusammen.");
+hq("starter",717,"Tippe auf die Kontaktbrücke.","relay","bruecke","Die Kontaktbrücke verbindet die Kontakte und schließt so den Starterhauptstrom.");
+hq("starter",717,"Tippe auf die Rückstellfeder.","relay","feder","Wird das Relais stromlos, drückt die Rückstellfeder den Anker zurück.");
+mc("starter",718,"Was passiert mit der Einzugwicklung, sobald der Starterhauptstrom eingeschaltet ist?",["Sie wird kurzgeschlossen, weil an beiden Seiten Plus liegt; nur die Haltewicklung hält","Sie übernimmt allein das Halten","Sie wird umgepolt","Sie lädt die Batterie"],"Die Haltewicklung allein reicht, um den eingezogenen Anker zu halten.","relay",{labels:true});
+mc("starter",718,"In welchem Bereich liegt die Übersetzung zwischen Ritzel und Zahnkranz?",["10 bis 15","1 bis 2","2 bis 3","50 bis 100"],"Damit wird das am Schwungrad wirkende Drehmoment stark erhöht.");
+mc("starter",718,"Welche Aufgabe hat der Freilauf am Starter?",["Startmoment übertragen und nach dem Anspringen Ritzel und Anker trennen","Den Starter kühlen","Die Batteriespannung stabilisieren","Das Ritzel ausspuren"],"Sonst würde der Motor den Anker unzulässig hochdrehen und zerstören.");
+mc("starter",718,"Wo wird ein Lamellenfreilauf statt eines Rollenfreilaufs eingesetzt?",["Bei größeren Startern für Lkw","Bei kleinen Pkw-Startern","Bei Schrittmotoren","Bei Generatoren"],"Rollenfreiläufe gibt es bei kleineren Startern für Pkw und leichtere Lkw.");
+hq("starter",718,"Rollenfreilauf: Tippe auf eine Rolle.","freil","rolle","Die Rollen gleiten auf dem Ritzelschaft und klemmen im verengten Teil der Rollengleitkurve.");
+hq("starter",718,"Rollenfreilauf: Tippe auf eine Schraubenfeder.","freil","feder","Die Schraubenfedern drücken die Rollen in Richtung des verengten Teils der Gleitkurve.");
+hq("starter",718,"Rollenfreilauf: Tippe auf den Freilaufring mit den Rollengleitkurven.","freil","ring","Die Rollengleitkurven im Freilaufring verengen sich in einer Richtung.");
+mc("starter",718,"Wann kuppelt der Rollenfreilauf den Ritzelschaft mit dem Startermotor?",["Wenn die Rollen in den sich verengenden Teil der Gleitkurven gedrückt werden","Wenn die Rollen in den weiten Teil rollen","Wenn das Ritzel schneller dreht als der Anker","Wenn die Federn ausgebaut sind"],"Überholt nach dem Anspringen das Ritzel, rollen die Rollen in den weiteren Teil. Der Kraftschluss ist gelöst.","freil",{labels:true});
+mc("starter",718,"Wozu dient die Einspurfeder?",["Sie ermöglicht das Einspuren bei der Stellung Zahn auf Zahn","Sie dämpft das Ausspuren","Sie hält den Magnetschalter","Sie drückt die Kohlebürsten an"],"Stößt Zahn auf Zahn, wird sie zusammengedrückt, bis der Hauptstrom eingeschaltet ist und das Ritzel weiterdreht.");
+oq("starter",718,"Einspurvorgang bei Stellung „Zahn auf Zahn“: Bringe die Schritte in die richtige Reihenfolge.",["Magnetschalter zieht den Einrückhebel","Mitnehmer wird auf dem Steilgewinde vorgeschoben und gedreht","Zahn trifft auf Zahn, Einspurfeder wird zusammengedrückt","Magnetschalter schaltet den Hauptstrom ein","Anker dreht, Ritzel schiebt sich auf der Stirnfläche weiter","Ritzel spurt in den Zahnkranz ein"],"Steht ein Zahn vor einer Lücke, spurt das Ritzel sofort ein.");
+mc("starter",719,"Der Motor ist angesprungen, der Startschalter noch betätigt. Was macht das Ritzel?",["Es läuft wegen des Rollenfreilaufs frei und bleibt im Eingriff","Es spurt sofort aus","Es treibt den Anker an","Es blockiert den Motor"],"Erst wenn die Haltewicklung stromlos ist und der Einrückhebel zurückgeht, spurt das Ritzel aus.");
+mc("starter",719,"Welche Charakteristik hat ein Schub-Schraubtrieb-Starter mit Permanentfeld?",["Nebenschlusscharakteristik","Reihenschlusscharakteristik","Doppelschlusscharakteristik","Schrittmotor-Charakteristik"],"Weil das Losbrechmoment dadurch relativ gering ist, bekommt er ein Planetengetriebe als Vorgelege.");
+mc("starter",719,"Wie viel Gewicht spart ein Starter mit Permanentmagneten bei gleicher Leistung?",["Bis zu 20 %","Bis zu 2 %","Etwa 50 %","Nichts, er ist schwerer"],"Die Dauermagnete sitzen in einem dünnwandigen Rohr, das zugleich das Startergehäuse ist. Ein magnetisches Leitstück verstärkt ihre Wirkung.");
+hq("starter",719,"Planetenrad-Vorgelege: Tippe auf das Sonnenrad.","planet","sonne","Das Sonnenrad sitzt auf der Ankerwelle und bildet das Antriebsrad des Vorgeleges.");
+hq("starter",719,"Planetenrad-Vorgelege: Tippe auf das Hohlrad.","planet","hohl","Das Hohlrad ist im Startergehäuse befestigt und aus Kunststoff.");
+hq("starter",719,"Planetenrad-Vorgelege: Tippe auf die Planetenräder.","planet","planet","Die Planetenräder sind auf dem Planetenradträger gelagert.");
+hq("starter",719,"Planetenrad-Vorgelege: Tippe auf den Planetenradträger.","planet","traeger","Der Planetenradträger ist mit der Antriebswelle verbunden. Auf deren Steilgewinde sitzt das verschiebbare Ritzel.");
+mc("starter",719,"Welche Aufgabe hat das Planetengetriebe zwischen Startermotor und Ritzel?",["Hohe Motordrehzahl verringern und Drehmoment am Ritzel erhöhen","Die Drehzahl erhöhen","Den Freilauf ersetzen","Den Strom begrenzen"],"Einspur-, Ausspur- und Überholvorgang entsprechen dem Schub-Schraubtrieb-Starter.");
+mc("starter",719,"Was ist beim Planetenrad-Vorgelege fest mit dem Startergehäuse verbunden?",["Das Hohlrad","Das Sonnenrad","Der Planetenradträger","Das Ritzel"],"Weil das Hohlrad steht, treibt das Sonnenrad die Planetenräder an, und der Träger dreht langsamer mit höherem Moment.");
+
+/* Starter-Prüfung */
+hq("sprue",720,"Kurzschlussprüfung: Welches Messgerät zeigt den Kurzschlussstrom?","pruef","amp","Der Strom wird in der Starterhauptleitung gemessen, in der Praxis mit einer Stromzange.");
+hq("sprue",720,"Welches Messgerät zeigt die Klemmenspannung der Batterie?","pruef","v_bat","Die Klemmenspannung wird direkt an der Batterie gemessen.");
+hq("sprue",720,"Welches Messgerät zeigt die Spannung am Starter?","pruef","v_st","Die Differenz zur Batteriespannung ist der Spannungsabfall in der Starterhauptleitung.");
+mc("sprue",720,"Bei welchen Startern darf keine Kurzschlussprüfung gemacht werden?",["Bei Startern mit Vorgelege","Bei Startern mit Reihenschlussmotor","Bei Pkw-Startern","Bei Startern mit Rollenfreilauf"],"Der Hinweis steht ausdrücklich im Werkstatthinweis.");
+mc("sprue",720,"Wie wird das Fahrzeug für die Kurzschlussprüfung vorbereitet?",["Größten Gang einlegen, Handbremse anziehen, Fußbremse betätigen","Leerlauf einlegen, Motor warmlaufen lassen","Batterie abklemmen","Zündkerzen ausbauen"],"So wird der Anker des Starters blockiert. Die Prüfung gilt für Fahrzeuge mit Schaltgetriebe.");
+mc("sprue",720,"Wie lange darf der Starter bei der Kurzschlussprüfung höchstens betätigt werden?",["5 Sekunden","30 Sekunden","1 Minute","Bis der Motor läuft"],"Starter nur kurz betätigen und andere Verbraucher möglichst ausschalten.");
+mc("sprue",720,"Zulässiger Spannungsabfall in der Starterhauptleitung einer 12-V-Anlage?",["0,5 V","0,25 V","1 V","2 V"],"6-V-Anlage: 0,25 V, 12-V-Anlage: 0,5 V, 24-V-Anlage: 1 V.");
+mc("sprue",720,"Zulässiger Spannungsabfall in der Starterhauptleitung einer 24-V-Anlage?",["1 V","0,5 V","0,25 V","3,5 V"],"Der Wert verdoppelt sich mit der Nennspannung: 0,25 / 0,5 / 1 V.");
+mc("sprue",720,"Welche Klemmenspannung darf eine 12-V-Batterie bei Belastung mit dem zulässigen Kurzschlussstrom nicht unterschreiten?",["7 V","3,5 V","10,5 V","14 V"],"6-V-Anlage: 3,5 V, 12-V-Anlage: 7 V, 24-V-Anlage: 14 V.");
+mc("sprue",720,"Der Kurzschlussstrom ist zu klein, die Klemmenspannung aber richtig. Wo liegt der Fehler?",["Zusätzliche Widerstände im Stromkreis, z. B. am Pluspolkopf oder in der Masseleitung","Starter defekt","Batterie defekt","Generator defekt"],"Möglich sind auch ein vergrößerter Übergangswiderstand oder ein verringerter Querschnitt der Hauptleitung.");
+mc("sprue",720,"Der Starter erreicht den Kurzschlussstrom nicht, die Spannungsabfälle sind aber zulässig. Ergebnis?",["Der Starter ist defekt","Die Masseleitung ist schadhaft","Die Batterie ist überladen","Alles in Ordnung"],"Leitungen und Übergänge sind in Ordnung, also liegt der Fehler im Starter.");
+mc("sprue",720,"Strom nicht erreicht, Batteriespannung sinkt unter die Grenze, Spannungsabfälle zulässig. Ergebnis?",["Fehler kann im Starter oder in der Batterie liegen","Sicher die Batterie","Sicher der Starter","Die Leitungen sind schuld"],"Beide Ursachen sind möglich. Weitere Prüfung nötig, z. B. Batterietest.");
+mc("sprue",720,"Wovon hängt die Höhe des Kurzschlussstroms ab?",["Von Kapazität und Ladezustand der Batterie und der Leistungsaufnahme des Starters","Nur von der Motortemperatur","Von der Drehzahl des Generators","Vom eingelegten Gang"],"Deshalb vergleicht man mit dem vorgeschriebenen Wert für Batterie und Starter.");
+mc("sprue",720,"Oxidierte Polklemmen und lose Anschlüsse: Was ist zu tun?",["Oxidschichten entfernen, festziehen, Klemmen mit Polfett vor Korrosion schützen","Höhere Ladespannung einstellen","Starter tauschen","Nichts, das ist normal"],"Solche Fehler erhöhen den Leitungswiderstand. Bauteile mit verschmorten Kontakten werden ausgewechselt.");
+
 /* ---------- Ablauf ---------- */
 const app=document.getElementById("app");
 const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -604,17 +914,22 @@ const RIPPLE=(()=>{let d="";for(let x=0;x<=300;x+=2)d+=(x?"L":"M")+x+" "+(5+6*Ma
 function home(){
   const last=store.get("gq-last");
   const n=pool().length;
+  const chap=([name,pages,keys],ci)=>{const all=keys.every(k=>cfg.topics.has(k));
+    return `<section class="card sect"><div class="chap"><h3>${name}</h3><span class="meta">${pages}</span></div>
+    <div class="chips">${keys.map(k=>`<button class="chip" data-k="${k}" aria-pressed="${cfg.topics.has(k)}">${TOPICS[k]}<span class="n">${Q.filter(q=>q.t===k).length}</span></button>`).join("")}</div>
+    <div><button class="linkbtn" data-c="${ci}">${all?"Kapitel abwählen":"Ganzes Kapitel wählen"}</button></div></section>`};
   app.innerHTML=`
-  <header class="mast"><span class="kicker">Kapitel 19.2.1 · Seiten 703–711</span><h1>Drehstrom&shy;generator</h1>${RIPPLE}
-  <p class="lead">Lernquiz zu Aufbau, Gleichrichtung, Regelung und Diagnose. Bei Bildfragen tippst du im Schaltplan oder Schnittbild auf die richtige Stelle.</p></header>
-  <figure class="fig labels">${FIG.gen()}<figcaption>Schnitt durch einen Drehstromgenerator (Prinzip). Im Quiz sind die Beschriftungen ausgeblendet.</figcaption></figure>
-  <section class="card sect"><h3>Themen</h3><div class="chips" id="tp">${Object.entries(TOPICS).map(([k,v])=>`<button class="chip" data-k="${k}" aria-pressed="${cfg.topics.has(k)}">${v}<span class="n">${Q.filter(q=>q.t===k).length}</span></button>`).join("")}</div></section>
+  <header class="mast"><span class="kicker">Kapitel 19 · Elektrische Systeme · Seiten 703–720</span><h1>Generator &amp; Starter</h1>${RIPPLE}
+  <p class="lead">Lernquiz zu Drehstromgenerator, Elektromotoren und Starter. Bei Bildfragen tippst du im Schaltplan oder Schnittbild auf die richtige Stelle.</p></header>
+  <figure class="fig labels">${FIG.starter()}<figcaption>Schub-Schraubtrieb-Starter (Prinzip). Im Quiz sind die Beschriftungen ausgeblendet.</figcaption></figure>
+  ${CHAPTERS.map(chap).join("")}
   <section class="card sect"><h3>Runde</h3><div class="row"><div class="seg" id="ln">${[10,15,30,0].map(v=>`<button data-v="${v}" aria-pressed="${cfg.len===v}">${v||"Alle"}</button>`).join("")}</div>
   <label class="tog"><input type="checkbox" id="img" ${cfg.img?"checked":""}> Nur Bildfragen</label></div>
   <div class="row"><button class="btn" id="go" ${n?"":"disabled"}>Quiz starten</button><span class="meta">${n} Fragen verfügbar</span></div>
   ${last?`<span class="meta">Letzte Runde: ${last.c} von ${last.n} richtig (${Math.round(100*last.c/last.n)} %)</span>`:""}</section>
   <p class="src">Inhalte nach dem Lehrbuch, Kapitel 19 „Elektrische Systeme“. Alle Abbildungen sind vereinfachte Prinzipskizzen.</p>`;
-  app.querySelectorAll("#tp .chip").forEach(b=>b.onclick=()=>{const k=b.dataset.k;cfg.topics.has(k)?cfg.topics.delete(k):cfg.topics.add(k);home()});
+  app.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{const k=b.dataset.k;cfg.topics.has(k)?cfg.topics.delete(k):cfg.topics.add(k);home()});
+  app.querySelectorAll(".linkbtn").forEach(b=>b.onclick=()=>{const keys=CHAPTERS[+b.dataset.c][2],all=keys.every(k=>cfg.topics.has(k));keys.forEach(k=>all?cfg.topics.delete(k):cfg.topics.add(k));home()});
   app.querySelectorAll("#ln button").forEach(b=>b.onclick=()=>{cfg.len=+b.dataset.v;home()});
   document.getElementById("img").onchange=e=>{cfg.img=e.target.checked;home()};
   document.getElementById("go").onclick=()=>start(pool());
@@ -702,7 +1017,6 @@ function finish(){
 }
 home();
 </script>
-
 <div class="upd" id="upd" hidden><span>Neue Version verfügbar.</span><button id="updbtn">Neu laden</button></div>
 <script>
 /* Service Worker: offline nutzbar; Update erst nach Bestätigung, damit keine laufende Runde verloren geht. */
