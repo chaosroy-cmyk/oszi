@@ -1,3 +1,18 @@
+# V13.7 – Gerätefunktionen des VDS1022I über die Bridge (15. November 2026)
+
+Die Bridge nutzt jetzt alles, was der offene Treiber (florentbr/OWON-VDS1022, Modul `vds1022`) dokumentiert. Bedienung im Live-Tab unter „Bedienung“ (Zeilen „Trigger +“, „Gerät“, „Langzeit“). Die App schaltet die Elemente nur frei, wenn die verbundene Bridge die Funktionen ankündigt; eine ältere Bridge läuft unverändert weiter.
+
+- **Lückenlose Langzeitaufnahme** (Roll-Modus des Treibers, laut Treiber bis etwa 100 kS/s): bis 262 144 Punkte je Kanal, z. B. 5 s bei 50 kS/s oder 26 s bei 10 kS/s – statt 5 000 Punkten. Sofort oder ab Trigger mit Vorlauf. Die Aufnahme erscheint gestoppt in voller Länge; Zeitzoom, Decoder, Zyklus-Messung, Bit-Monitor, Bibliothek und CSV arbeiten darauf.
+- **Trigger:** Pulsbreite und Flankensteilheit (länger/gleich/kürzer als), Holdoff, Modus Normal (nur getriggerte Bilder; Single wartet auf das Ereignis), externer Trigger an der Multi-Buchse. **Voreinstellung „LIN-Break“** (Low länger als 11 Bitzeiten) stellt den LIN-Frame stabil an den Bildanfang.
+- **Spitzenwert-Erfassung (Peak)**, **Autoset** (Messbereich und Zeitbasis vom Gerät, Triggerpegel auf Signalmitte), **Frequenzzähler des Geräts** in der Messwertzeile.
+- **Eingangsfenster folgt der Position am Schirm:** Wird die Nulllinie verschoben, verschiebt die Bridge das Messfenster des Geräts mit. Ein einseitiges Signal (z. B. 0–14 V) nutzt den 8-Bit-Wandler damit besser aus (kleinerer Messbereich möglich).
+- **Zeitbasen 5, 10 und 20 s/div** (Roll-Modus des Geräts).
+- Bridge: blockierende Treiberaufrufe (Warten auf Trigger, lange Aufnahme) werden über `stop()` des Treibers sauber abgebrochen; gestoppt werden keine Bilder mehr abgeholt. Der Treiber schaltet in den Alternate-Trigger, wenn `set_trigger` zweimal direkt hintereinander aufgerufen wird – die Bridge hält deshalb immer die Reihenfolge Kanäle → Abtastung → Trigger ein.
+- **Bewusst nicht angeboten:** Kalibrieren und alles, was in den Gerätespeicher schreibt (Werks-Kalibrierdaten). Das Protokoll kennt dafür keinen Befehl; ein Test stellt sicher, dass der Schreibbefehl nie gesendet wird.
+- Tests: 6 neue Bridge-Tests ohne Treiber, 14 Tests der Bridge gegen den **echten Treiber-Code mit simuliertem USB-Gerät** (`tests/test_bridge_driver.py`, übersprungen, wenn der Treiber nicht installiert ist), ein neuer Browser-Test über die ganze Kette.
+
+**Nicht erfolgt: Test am echten VDS1022I.** Die Simulation bildet nur nach, was der Treiber-Quelltext beschreibt. Prüfliste für den ersten Versuch: `docs/HARDWARETEST-V13.7.md`.
+
 # V13.6.2 – Korrekturen nach Durchsicht (15. November 2026)
 
 - **Bit-Monitor, Fehler behoben:** Wer eine Taste mehrmals drückte und losließ, bekam das Bit ab dem dritten Mal als „laufend“ ausgeblendet. Jetzt gilt ein Bit nur noch als laufend, wenn es sich innerhalb einer Aufnahme ändert (in mindestens zwei Aufnahmen), wenn sein Byte/Halbbyte als Zähler weiterzählt oder wenn es schon vor dem Merken der Referenz oft gewechselt hat. „Referenz löschen“ setzt auch das Gelernte zurück.

@@ -460,6 +460,29 @@ details.lv-ana-more>summary{cursor:pointer;font-weight:700}
       <label><input type="checkbox" id="lv-trigdisp" checked> Anzeige-Trigger</label>
       <select id="lv-trigpos"><option value="0.1">Pos 10 %</option><option value="0.2" selected>Pos 20 %</option><option value="0.5">Pos 50 %</option><option value="0.8">Pos 80 %</option></select>
     </div>
+    <div class="lvrow lv-devx"><b>Trigger +</b>
+      <label>Art <select id="lv-trigmode"><option value="edge">Flanke</option><option value="pulse">Pulsbreite</option><option value="slope">Steilheit</option></select></label>
+      <label title="Bei Pulsbreite/Steilheit: Flanke ↑ = positiver Puls bzw. Anstieg, Flanke ↓ = negativer Puls bzw. Abfall">Bedingung <select id="lv-trigcond"><option value="gt">länger als</option><option value="eq">gleich</option><option value="lt">kürzer als</option></select></label>
+      <label>Zeit <input type="number" id="lv-trigwidth" value="1" min="0.00003" max="10000" step="any" style="width:5.2rem"> ms</label>
+      <label>2. Pegel <input type="number" id="lv-triglvl2" value="0" step="0.1" style="width:4.8rem"> V</label>
+      <label title="Wartezeit nach einem Trigger, bevor der nächste zählt (0 = kürzeste)">Holdoff <input type="number" id="lv-trigholdoff" value="0" min="0" max="10000" step="any" style="width:4.8rem"> ms</label>
+      <label title="Auto: zeigt auch ohne Trigger ein Bild. Normal: nur getriggerte Bilder; Single wartet auf das Ereignis.">Modus <select id="lv-sweep"><option value="auto">Auto</option><option value="normal">Normal</option></select></label>
+      <label title="Triggert auf das Signal an der Multi-Buchse (TTL). Nur Flanke."><input type="checkbox" id="lv-trigext"> Extern</label>
+      <button class="ibtn" id="lv-trig-linbreak" title="Pulsbreite: Low länger als 11 Bitzeiten – das ist nur der LIN-Break. Modus Normal, Position 10 %.">Voreinstellung LIN-Break</button>
+    </div>
+    <div class="lvrow lv-devx"><b>Gerät</b>
+      <label title="Jeder Punkt zeigt abwechselnd Maximum und Minimum: kurze Störspitzen bleiben bei langsamer Zeitbasis sichtbar. Für Zeitmessungen und Decoder ausschalten."><input type="checkbox" id="lv-peak"> Spitzenwert (Peak)</label>
+      <button class="ibtn" id="lv-autoset" title="Das Gerät sucht Messbereich und Zeitbasis selbst; der Triggerpegel kommt auf die Signalmitte">Autoset</button>
+    </div>
+    <div class="lvrow lv-devx"><b>Langzeit</b>
+      <label>Dauer <input type="number" id="lv-rec-dur" value="2" min="0.01" max="600" step="any" style="width:4.6rem"> s</label>
+      <label>Abtastrate <select id="lv-rec-rate"><option value="1000">1 kS/s</option><option value="2000">2 kS/s</option><option value="5000">5 kS/s</option><option value="10000">10 kS/s</option><option value="20000">20 kS/s</option><option value="50000" selected>50 kS/s</option><option value="100000">100 kS/s</option></select></label>
+      <label title="Die Aufnahme beginnt mit dem Trigger-Ereignis (Einstellungen oben), sonst sofort"><input type="checkbox" id="lv-rec-trig"> ab Trigger</label>
+      <label>Vorlauf <input type="number" id="lv-rec-pre" value="0" min="0" max="600" step="any" style="width:4.2rem"> s</label>
+      <button class="ibtn" id="lv-rec-go">Lückenlos aufnehmen</button>
+      <span id="lv-rec-info" class="mono" style="font-size:.78rem;color:var(--mut)"></span>
+    </div>
+    <div class="note" id="lv-devx-note">„Trigger +“, „Gerät“ und „Langzeit“ steuern das Oszilloskop selbst und brauchen die verbundene Bridge ab V13.7. Im Demo-Modus sind sie ohne Wirkung.</div>
     <div class="lvrow"><b>Ansicht</b>
       <select id="lv-mode" title="Darstellung"><option value="yt">Y-T (Zeit)</option><option value="fft">FFT (Spektrum)</option><option value="xy">X-Y</option></select>
       <label>Mathe <select id="lv-math"><option value="off">aus</option><option value="sub">CH1−CH2</option><option value="add">CH1+CH2</option><option value="mul">CH1×CH2</option><option value="div">CH1÷CH2</option></select></label>
@@ -1466,7 +1489,7 @@ Perfekt geometrische Signale sind im Fahrzeug selten realistisch.
 </div>
 <button class="up" id="upbtn" title="Nach oben">▲</button>
 <footer>
-<p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-PWA · Stand v13.6.2 (82 Messkarten · 1087 quellenbelegte Signalbilder · 45 Erklär- und Fehlermusterbilder · 1:1-Tastkopf-Hinweise · referenzgeprüft · Live-Modus · Auto-Setup · Auto-Deploy) · Alle Signalbilder schematisch.</p>
+<p><b>KFZ-Oszilloskop-Kompendium</b> · Offline-PWA · Stand v13.7 (82 Messkarten · 1087 quellenbelegte Signalbilder · 45 Erklär- und Fehlermusterbilder · 1:1-Tastkopf-Hinweise · referenzgeprüft · Live-Modus · Auto-Setup · Auto-Deploy) · Alle Signalbilder schematisch.</p>
 <p>Richtwerte können je nach Hersteller, System, Motorsteuergerät und Messgerät abweichen. Herstellerdaten und Stromlaufplan haben Vorrang.</p>
 <p>Sicherheit zuerst: keine Messungen an Airbag-/PSI5-Zündkreisen, HV-Systemen nur mit Qualifikation.</p>
 <div class="owner-signature">
@@ -25070,7 +25093,7 @@ function measurement(input){
   var tr=input.trigger||{};if(tr.channel!=null&&!seen.has(tr.channel))throw new Error('Triggerkanal fehlt');
   if(tr.edge!=null&&!['rise','fall'].includes(tr.edge))throw new Error('Triggerflanke');
   var q=input.quality||{},meta=input.vehicle||{};
-  return {schema:'kfz-oszi.measurement',schemaVersion:1,appVersion:'13.6.2',captureId:text(input.id||('capture-'+Date.now()),128),source:text(input.source||'unknown',128),
+  return {schema:'kfz-oszi.measurement',schemaVersion:1,appVersion:'13.7',captureId:text(input.id||('capture-'+Date.now()),128),source:text(input.source||'unknown',128),
     capturedAtUnixSeconds:input.capturedAt==null?null:number(input.capturedAt,0,1e12),sampleIntervalSeconds:dt,channels:channels,
     trigger:{channel:tr.channel==null?null:tr.channel,edge:tr.edge||null,level:tr.level==null?null:number(tr.level,-3.4e38,3.4e38),unit:tr.unit||'V',position:tr.position==null?null:number(tr.position,0,1),confirmed:tr.confirmed===true},
     vehicle:{vehicle:text(meta.fahrzeug,256),engine:text(meta.motor,256),component:text(meta.system,256),measurementPoint:text(meta.messpunkt,256),conditions:text(meta.bedingung),notes:text(meta.notiz)},
@@ -27855,7 +27878,10 @@ var LV={
   align:{lag:0,score:null,k:1,off:0,valid:false}, align2:{lag:0,score:null,k:1,off:0,valid:false}, lastAlign:0, lastMet:0,
   cursor:{on:false,a:0.3,b:0.7,drag:0},
   mode:'yt', math:{op:'off'}, fft:{win:'hann', db:true}, measAll:false,
-  playback:null,frozen:null,frameVersion:0, sequence:null, droppedFrames:0, rejectedFrames:0, lastHeader:null
+  playback:null,frozen:null,frameVersion:0, sequence:null, droppedFrames:0, rejectedFrames:0, lastHeader:null,
+  /* V13.7: Funktionen der Bridge (features), erweiterter Trigger, Peak, lange Aufnahme */
+  features:null, trigx:{mode:'edge',cond:'gt',width:1e-3,level2:0,holdoff:100e-9,sweep:'auto',ext:false}, peak:false,
+  recArm:false, longView:false
 };
 var MAXS=262144;
 function Ring(){ this.d=new Float32Array(MAXS); this.n=0; this.w=0; }
@@ -27960,7 +27986,8 @@ function resetAcquisition(){
   if(PHIST)PHIST.length=0;
 }
 function onFrame(h,a1,a2){
-  if(LV.playback||(!LV.running&&!LV.singleArm))return;
+  var isLong=!!(h&&h.long);
+  if(LV.playback||(!LV.running&&!LV.singleArm&&!(isLong&&LV.recArm)))return;
   var f;try{f=OsziData.frame(h,a1,a2);}catch(e){LV.rejectedFrames++;setStat('Ungültiger Messframe verworfen','bad');return;}
   h=f.header;a1=f.ch1;a2=f.ch2;
   if(LV.dt!==h.dt)resetAcquisition();
@@ -27974,6 +28001,12 @@ function onFrame(h,a1,a2){
   if(LV.chOn[1]&&a2.length)R2.push(a2);else R2.clear();
   LV.frame1=LV.chOn[0]&&a1.length?a1:null;LV.frame2=LV.chOn[1]&&a2.length?a2:null;
   LV.frameTrig=typeof h.trig==='number'?h.trig:null;LV.frameVersion++;
+  if(isLong){
+    /* Lückenlose Aufnahme: ganze Länge zeigen und anhalten; Zoom/Ausschnitt wie bei Stop */
+    LV.recArm=false;LV.singleArm=false;LV.longView=true;LV.secdiv=Math.max(a1.length,a2.length)*h.dt/10;
+    LV.frozen=null;freezeCapture();LV.running=false;updRunBtns();syncLiveControls();setRecInfo('fertig: '+Math.max(a1.length,a2.length)+' Punkte, '+fmtT(Math.max(a1.length,a2.length)*h.dt));
+    return;
+  }
   if(LV.singleArm){freezeCapture();LV.singleArm=false;LV.running=false;updRunBtns();}
 }
 
@@ -27983,11 +28016,48 @@ function send(o){
   if(o.cmd==='timebase')LV.acquisitionSecdiv=o.secdiv;
   if(LV.authenticated && LV.ws && LV.ws.readyState===1){ try{ LV.ws.send(JSON.stringify(o)); }catch(e){} }
 }
+/* Erweiterte Felder nur senden, wenn die Bridge sie ankündigt (ältere Bridges lehnen unbekannte Felder ab). */
+function hasFeat(f){return !!(LV.features&&LV.features.indexOf(f)>=0);}
+/* Nulllage des Eingangsfensters = Position am Schirm: was man sieht, ist der Wandlerbereich. */
+function chanOffset(i){return Math.max(-.4,Math.min(.4,(LV.inv[i]?-1:1)*(LV.pos[i]||0)/10));}
+function chanCmd(i){
+  var o={cmd:'channel',ch:i+1,on:LV.chOn[i],vdiv:LV.vdiv[i],coupling:LV.coup[i],probe:LV.probeUi[i]};
+  if(hasFeat('offset'))o.offset=chanOffset(i);
+  return o;
+}
+function timeCmd(secdiv){var o={cmd:'timebase',secdiv:secdiv};if(hasFeat('peak'))o.peak=!!LV.peak;return o;}
+function trigCmd(){
+  var o={cmd:'trigger',ch:LV.trig.ch,edge:LV.trig.edge==='r'?'rise':'fall',level:LV.trig.level,position:LV.trigPos||0.2},x=LV.trigx;
+  if(hasFeat('trigger2')){o.mode=x.mode;o.cond=x.cond;o.width=x.width;o.level2=x.level2;o.holdoff=x.holdoff;}
+  if(hasFeat('sweep'))o.sweep=x.sweep;
+  if(hasFeat('ext'))o.ext=x.ext;
+  return o;
+}
 function sendAll(){
-  send({cmd:'channel',ch:1,on:LV.chOn[0],vdiv:LV.vdiv[0],coupling:LV.coup[0],probe:LV.probeUi[0]});
-  send({cmd:'channel',ch:2,on:LV.chOn[1],vdiv:LV.vdiv[1],coupling:LV.coup[1],probe:LV.probeUi[1]});
-  send({cmd:'timebase',secdiv:LV.running&&!LV.playback?LV.secdiv:LV.acquisitionSecdiv});
-  send({cmd:'trigger',ch:LV.trig.ch,edge:LV.trig.edge==='r'?'rise':'fall',level:LV.trig.level,position:LV.trigPos||0.2});
+  send(chanCmd(0));send(chanCmd(1));
+  send(timeCmd(LV.running&&!LV.playback&&!LV.longView?LV.secdiv:LV.acquisitionSecdiv));
+  send(trigCmd());
+}
+function setRecInfo(t){var e=$('lv-rec-info');if(e)e.textContent=t||'';}
+/* Geräte-Bedienelemente nur mit verbundener, passender Bridge freigeben */
+function updFeatureUI(){
+  var live=!!(LV.authenticated&&LV.features&&LV.features.length);
+  document.querySelectorAll('.lv-devx input,.lv-devx select,.lv-devx button').forEach(function(el){
+    var need={'lv-trigmode':'trigger2','lv-trigcond':'trigger2','lv-trigwidth':'trigger2','lv-triglvl2':'trigger2','lv-trigholdoff':'trigger2',
+      'lv-sweep':'sweep','lv-trigext':'ext','lv-trig-linbreak':'trigger2','lv-peak':'peak','lv-autoset':'autoset',
+      'lv-rec-dur':'record','lv-rec-rate':'record','lv-rec-trig':'record','lv-rec-pre':'record','lv-rec-go':'record'}[el.id];
+    el.disabled=!(live&&(!need||hasFeat(need)));
+  });
+  var x=LV.trigx,edge=x.mode==='edge';
+  if(live){
+    $('lv-trigcond').disabled=$('lv-trigcond').disabled||edge;$('lv-trigwidth').disabled=$('lv-trigwidth').disabled||edge;
+    $('lv-triglvl2').disabled=$('lv-triglvl2').disabled||x.mode!=='slope';
+    $('lv-rec-pre').disabled=$('lv-rec-pre').disabled||!$('lv-rec-trig').checked;
+    if(x.ext){$('lv-trigmode').disabled=true;}
+  }
+  var n=$('lv-devx-note');
+  if(n)n.style.display=live?'none':'';
+  if(n&&LV.authenticated&&!live)n.textContent='Diese Bridge kennt die erweiterten Gerätefunktionen noch nicht. Bitte die bridge.py aus dem aktuellen Paket (ab V13.7) starten.';
 }
 function devTxt(){ return 'Bridge: '+LV.devStatus; }
 function setStat(txt,cls){
@@ -28012,7 +28082,7 @@ function connect(url){
   function current(){return generation===connectionGeneration&&LV.ws===ws;}
   ws.onopen=function(){if(!current())return;setStat('Kopplung wird geprüft …','warn');};
   ws.onclose=function(ev){
-    if(!current())return;LV.connected=false;LV.authenticated=false;LV.ws=null;
+    if(!current())return;LV.connected=false;LV.authenticated=false;LV.ws=null;LV.features=null;LV.recArm=false;updFeatureUI();
     if(ev.code===1008||ev.code===1013){LV.wantConn=false;setStat(ev.code===1008?'Kopplung abgelehnt – Code und Origin prüfen':'Bridge belegt oder überlastet','bad');return;}
     if(LV.wantConn){setStat('getrennt – neuer Versuch …','bad');reconnT=setTimeout(function(){if(LV.wantConn)connect(url);},2000);}
     else setStat('getrennt','');
@@ -28025,12 +28095,12 @@ function connect(url){
     var m;try{m=JSON.parse(ev.data);}catch(e){return;}
     if(!m||typeof m!=='object'||Array.isArray(m))return;
     if(m.cmd==='auth_required'){if(m.protocol!==2){LV.wantConn=false;ws.close(1008,'Protocol 2 required');return;}ws.send(JSON.stringify({cmd:'auth',token:$('lv-token').value}));return;}
-    if(m.cmd==='authenticated'){LV.connected=true;LV.authenticated=true;sendAll();send({cmd:LV.singleArm?'single':(LV.running?'run':'stop')});return;}
+    if(m.cmd==='authenticated'){LV.connected=true;LV.authenticated=true;LV.features=Array.isArray(m.features)?m.features.filter(function(x){return typeof x==='string'&&x.length<32;}).slice(0,32):[];updFeatureUI();sendAll();send({cmd:LV.singleArm?'single':(LV.running?'run':'stop')});return;}
     if(!LV.authenticated)return;
     if(m.cmd==='frame'){try{var f=OsziData.jsonFrame(m);onFrame(f.header,f.ch1,f.ch2);}catch(e){LV.rejectedFrames++;setStat('Ungültiger Messframe verworfen','bad');}}
     else if(m.cmd==='status'&&typeof m.device==='string'&&m.device.length<128){LV.devStatus=m.device;setStat(devTxt(),m.device==='verbunden'?'ok':'warn');}
     else if(m.cmd==='ping'&&Number.isFinite(m.t))send({cmd:'pong',t:m.t});
-    else if(m.cmd==='settings'&&m.rejected&&m.set){
+    else if(m.cmd==='settings'&&(m.rejected||m.applied)&&m.set){
       var st=m.set;
       try{
         if(!Array.isArray(st.ch)||st.ch.length!==2||!Number.isFinite(st.secdiv)||st.secdiv<1e-6||st.secdiv>200||!st.trigger)throw new Error();
@@ -28038,13 +28108,33 @@ function connect(url){
         st.ch.forEach(function(c){if(!c||typeof c.on!=='boolean'||!Number.isFinite(c.vdiv)||c.vdiv<.005||c.vdiv>500||!['AC','DC'].includes(c.coupling)||![1,10,100].includes(c.probe))throw new Error();});
       }catch(e){LV.rejectedFrames++;return;}
       LV.secdiv=st.secdiv;LV.acquisitionSecdiv=st.secdiv;LV.trig={ch:st.trigger.ch,edge:st.trigger.edge==='rise'?'r':'f',level:st.trigger.level,disp:LV.trig.disp};LV.trigPos=st.trigger.position;
-      st.ch.forEach(function(c,i){LV.chOn[i]=c.on;LV.vdiv[i]=c.vdiv;LV.coup[i]=c.coupling;LV.probeUi[i]=c.probe;});resetAcquisition();syncLiveControls();
+      st.ch.forEach(function(c,i){LV.chOn[i]=c.on;LV.vdiv[i]=c.vdiv;LV.coup[i]=c.coupling;LV.probeUi[i]=c.probe;
+        if(Number.isFinite(c.offset)&&Math.abs(c.offset)<=.4)LV.pos[i]=Math.round((LV.inv[i]?-1:1)*c.offset*100)/10;});
+      /* erweiterte Felder (V13.7) nur übernehmen, wenn sie gültig sind */
+      var x=LV.trigx,t2=st.trigger;
+      if(['edge','pulse','slope'].includes(t2.mode))x.mode=t2.mode;
+      if(['gt','eq','lt'].includes(t2.cond))x.cond=t2.cond;
+      if(Number.isFinite(t2.width)&&t2.width>=30e-9&&t2.width<=10)x.width=t2.width;
+      if(Number.isFinite(t2.level2)&&Math.abs(t2.level2)<=5000)x.level2=t2.level2;
+      if(Number.isFinite(t2.holdoff)&&t2.holdoff>=100e-9&&t2.holdoff<=10)x.holdoff=t2.holdoff;
+      if(['auto','normal'].includes(t2.sweep))x.sweep=t2.sweep;
+      if(typeof t2.ext==='boolean')x.ext=t2.ext;
+      if(typeof st.peak==='boolean')LV.peak=st.peak;
+      LV.longView=false;resetAcquisition();syncLiveControls();
+      if(m.applied)setStat('Autoset übernommen','ok');
     }
-    else if(m.cmd==='error')setStat(m.code==='settings_rejected'?'Einstellung verworfen: Trigger und Messbereich müssen zusammenpassen':'Bridge: Befehl ungültig oder Warteschlange voll','bad');
+    else if(m.cmd==='record'&&typeof m.state==='string'){
+      var rs={waiting:'wartet auf Trigger …',running:'läuft …',aborted:'abgebrochen',done:'fertig, Daten werden übertragen …',
+        failed:m.code==='missed'?'fehlgeschlagen: Daten gingen verloren – kleinere Abtastrate wählen':(m.code==='unsupported'?'fehlgeschlagen: Treiber kann das nicht':'fehlgeschlagen')}[m.state];
+      /* „done“ kann nach dem Datenframe eintreffen – dann steht das Ergebnis schon da */
+      if(rs&&!(m.state==='done'&&!LV.recArm))setRecInfo(rs);
+      if(m.state==='aborted'||m.state==='failed'){LV.recArm=false;}
+    }
+    else if(m.cmd==='error')setStat(m.code==='settings_rejected'?'Einstellung verworfen: Trigger und Messbereich müssen zusammenpassen':(m.code==='autoset_failed'?'Autoset nicht möglich – Einstellungen unverändert':'Bridge: Befehl ungültig oder Warteschlange voll'),'bad');
   };
 }
 function disconnect(){
-  connectionGeneration++;LV.wantConn=false;clearTimeout(reconnT);LV.authenticated=false;
+  connectionGeneration++;LV.wantConn=false;clearTimeout(reconnT);LV.authenticated=false;LV.features=null;LV.recArm=false;updFeatureUI();
   var old=LV.ws;LV.ws=null;if(old){old.onclose=null;old.onmessage=null;old.onopen=null;try{old.close();}catch(e){}}
   LV.connected=false;setStat('getrennt','');
 }
@@ -28165,13 +28255,16 @@ function changeTimebase(value){
     invalidateView();syncLiveControls();updateTimeZoomUI();
     return;
   }
-  resetAcquisition();send({cmd:'timebase',secdiv:LV.secdiv});
+  resetAcquisition();send(timeCmd(LV.secdiv));
 }
 function resumeCapture(command){
   if(LV.playback)exitPlayback(false);
+  /* Nach einer langen Aufnahme gilt wieder die Zeitbasis von vorher, nicht die Länge der Aufnahme */
+  if(LV.longView){LV.longView=false;LV.secdiv=LV.acquisitionSecdiv;syncLiveControls();}
+  LV.recArm=false;
   var changed=Math.abs(LV.secdiv-LV.acquisitionSecdiv)>Math.max(1e-15,Math.abs(LV.acquisitionSecdiv)*1e-10);
   LV.frozen=null;updateTimeZoomUI();
-  if(changed){resetAcquisition();send({cmd:'timebase',secdiv:LV.secdiv});}
+  if(changed){resetAcquisition();send(timeCmd(LV.secdiv));}
   LV.singleArm=command==='single';LV.running=true;updRunBtns();send({cmd:command});
 }
 
@@ -28257,6 +28350,9 @@ function doMetrics(win){
       var a=xform(arrRaw,idx), p=OsziLogic.peakToPeak(a), u=chUnit(idx);
       var base='CH'+(idx+1)+': Vpp '+fmtVal(p.pp,u)+' · Max '+fmtVal(p.max,u)+' · Min '+fmtVal(p.min,u)+
                ' · Ø '+fmtVal(OsziLogic.mean(a),u)+' · RMS '+fmtVal(OsziLogic.rms(a),u);
+      /* Frequenzzähler des Geräts (zählt am Triggerpegel, unabhängig von der Zeitbasis) */
+      var fz=LV.lastHeader&&Array.isArray(LV.lastHeader.freqHz)?LV.lastHeader.freqHz[idx]:null;
+      if(typeof fz==='number'&&Number.isFinite(fz)&&fz>0&&!LV.playback) base+=' · Zähler '+fmtF(fz);
       if(!LV.measAll) return base;
       var lv=OsziLogic.levels(a), pw=OsziLogic.pulseWidths(a,dtm), ov=OsziLogic.overshoot(a);
       return base+' · Top '+fmtVal(lv.top,u)+' · Base '+fmtVal(lv.base,u)+' · Vamp '+fmtVal(lv.top-lv.base,u)+
@@ -28425,6 +28521,9 @@ function draw(){
   if(LV.chOn[1]) st+='  ·  CH2 '+fmtVal(LV.vdiv[1]*Math.abs(chMul(1)),chUnit(1))+'/div';
   st+='  ·  '+fmtT(win.T/10)+'/div';
   if(win.short)st+=' · verkürzte Aufnahme';
+  var hh=LV.lastHeader;
+  if(hh&&hh.long)st+=' · lückenlos';else if(hh&&hh.roll)st+=' · Roll';
+  if(hh&&hh.peak)st+=' · Peak';if(hh&&hh.sweep==='normal')st+=' · Trigger Normal';
   if(LV.droppedFrames||LV.rejectedFrames)st+=' · Lücken '+LV.droppedFrames+' / verworfen '+LV.rejectedFrames;
   if(LV.math.op!=='off') st+='  ·  M:CH1'+({sub:'−',add:'+',mul:'×',div:'÷'}[LV.math.op]||'')+'CH2';
   if(LV.playback) st+='  ·  WIEDERGABE: '+LV.playback;
@@ -28692,7 +28791,7 @@ function updRunBtns(){
   var topRun=$('lv-top-run'),topStop=$('lv-top-stop');if(topRun)topRun.classList.toggle('on',LV.running);if(topStop)topStop.classList.toggle('on',!LV.running);
 }
 var VDIVS=[0.01,0.02,0.05,0.1,0.2,0.5,1,2,5,10,20,50];
-var TDIVS=[1e-6,2e-6,5e-6,1e-5,2e-5,5e-5,1e-4,2e-4,5e-4,1e-3,2e-3,5e-3,1e-2,2e-2,5e-2,0.1,0.2,0.5,1,2];
+var TDIVS=[1e-6,2e-6,5e-6,1e-5,2e-5,5e-5,1e-4,2e-4,5e-4,1e-3,2e-3,5e-3,1e-2,2e-2,5e-2,0.1,0.2,0.5,1,2,5,10,20];   /* ab 0,5 s/div läuft das Gerät im Roll-Modus */
 function fillSel(sel,vals,fmt,cur){
   sel.innerHTML=vals.map(function(v){return '<option value="'+v+'"'+(v===cur?' selected':'')+'>'+fmt(v)+'</option>';}).join('');
 }
@@ -28707,6 +28806,9 @@ function syncLiveControls(){
   [1,2].forEach(function(ch){var i=ch-1;$('lv-ch'+ch+'v').value=String(LV.vdiv[i]);$('lv-ch'+ch+'k').value=LV.coup[i];$('lv-ch'+ch+'p').value=String(LV.probeUi[i]);$('lv-ch'+ch+'on').checked=LV.chOn[i];$('lv-ch'+ch+'inv').checked=LV.inv[i];$('lv-ch'+ch+'clamp').value=String(LV.clamp[i]);var bar=$('lv-ch'+ch+'slide');if(bar)bar.parentNode.classList.toggle('off',!LV.chOn[i]);});
   $('lv-trigch').value=String(LV.trig.ch);$('lv-trigedge').value=LV.trig.edge;$('lv-triglvl').value=String(LV.trig.level);$('lv-trigpos').value=String(LV.trigPos);
   ['ch1v','ch2v','trigch','trigedge','triglvl'].forEach(function(id){if($('lv-top-'+id))$('lv-top-'+id).value=$('lv-'+id).value;});
+  if($('lv-trigmode')){var x=LV.trigx;$('lv-trigmode').value=x.mode;$('lv-trigcond').value=x.cond;$('lv-trigwidth').value=String(+(x.width*1000).toPrecision(4));
+    $('lv-triglvl2').value=String(x.level2);$('lv-trigholdoff').value=x.holdoff<=100e-9?'0':String(+(x.holdoff*1000).toPrecision(4));
+    $('lv-sweep').value=x.sweep;$('lv-trigext').checked=x.ext;$('lv-peak').checked=LV.peak;updFeatureUI();}
   if($('lv-top-tdiv')&&time){$('lv-top-tdiv').innerHTML=time.innerHTML;$('lv-top-tdiv').value=time.value;}
 }
 function initLive(){
@@ -28754,12 +28856,15 @@ function initLive(){
     var i=ch-1;
     /* Position: Zahlenfeld (Bedienung) und Schieber neben dem Schirm halten denselben Wert */
     var posN=$('lv-ch'+ch+'pos'), posS=$('lv-ch'+ch+'slide');
+    var posT=null;
     function setPos(v,from){ v=Math.max(-4,Math.min(4,Math.round(v*10)/10)); LV.pos[i]=v;
-      if(from!==posN) posN.value=String(v); if(posS && from!==posS) posS.value=String(v); }
+      if(from!==posN) posN.value=String(v); if(posS && from!==posS) posS.value=String(v);
+      /* Eingangsfenster des Geräts mitziehen (gebündelt, damit der Schieber nicht jeden Schritt sendet) */
+      if(hasFeat('offset')){ clearTimeout(posT); posT=setTimeout(function(){ send({cmd:'channel',ch:ch,offset:chanOffset(i)}); },200); } }
     posN.addEventListener('change',function(){ setPos(parseFloat(this.value)||0,posN); });
     if(posS){ posS.addEventListener('input',function(){ setPos(parseFloat(this.value)||0,posS); });
       posS.addEventListener('dblclick',function(){ setPos(0,null); }); }
-    $('lv-ch'+ch+'inv').addEventListener('change',function(){ LV.inv[i]=this.checked; });
+    $('lv-ch'+ch+'inv').addEventListener('change',function(){ LV.inv[i]=this.checked; if(hasFeat('offset')) send({cmd:'channel',ch:ch,offset:chanOffset(i)}); });
     $('lv-ch'+ch+'clamp').addEventListener('change',function(){ LV.clamp[i]=parseFloat(this.value)||0; });
   });
   $('lv-trigpos').addEventListener('change',function(){ LV.trigPos=parseFloat(this.value)||0.2; sendTrig(); });
@@ -28814,6 +28919,8 @@ function initLive(){
     if(p.trigEdge||p.trigLevel!=null)
       info.push('Trigger '+(LV.trig.edge==='r'?'\u2191':'\u2193')+
         (p.trigLevel!=null?(' '+fmtV(p.trigLevel)):''));
+    /* Karten-Setup meint einen einfachen Flankentrigger: Sondereinstellungen des Geräts zurücknehmen */
+    LV.trigx.mode='edge';LV.trigx.sweep='auto';LV.trigx.ext=false;LV.peak=false;LV.longView=false;
     syncLiveControls();resetAcquisition();
     ['lv-ch1v','lv-ch2v','lv-tdiv','lv-trigch','lv-trigedge','lv-triglvl'].forEach(function(id){var el=$(id),mirror=$('lv-top-'+id.slice(3));if(mirror)mirror.value=el.value;});
     sendAll();
@@ -28841,7 +28948,45 @@ function initLive(){
   $('lv-trigedge').addEventListener('change',function(){ LV.trig.edge=this.value; sendTrig(); });
   $('lv-triglvl').addEventListener('change',function(){ LV.trig.level=parseFloat(this.value)||0; sendTrig(); });
   $('lv-trigdisp').addEventListener('change',function(){ LV.trig.disp=this.checked; });
-  function sendTrig(){ send({cmd:'trigger',ch:LV.trig.ch,edge:LV.trig.edge==='r'?'rise':'fall',level:LV.trig.level,position:LV.trigPos||0.2}); }
+  function sendTrig(){ send(trigCmd()); }
+  /* ---- V13.7: erweiterter Trigger, Peak, Autoset, lange Aufnahme ---- */
+  function ms(id,lo,hi,def){ var v=parseFloat(String($(id).value).replace(',','.')); return Number.isFinite(v)?Math.max(lo,Math.min(hi,v)):def; }
+  $('lv-trigmode').addEventListener('change',function(){ LV.trigx.mode=this.value; updFeatureUI(); sendTrig(); });
+  $('lv-trigcond').addEventListener('change',function(){ LV.trigx.cond=this.value; sendTrig(); });
+  $('lv-trigwidth').addEventListener('change',function(){ LV.trigx.width=ms('lv-trigwidth',0.00003,10000,1)/1000; sendTrig(); });
+  $('lv-triglvl2').addEventListener('change',function(){ LV.trigx.level2=ms('lv-triglvl2',-5000,5000,0); sendTrig(); });
+  $('lv-trigholdoff').addEventListener('change',function(){ LV.trigx.holdoff=Math.max(100e-9,ms('lv-trigholdoff',0,10000,0)/1000); sendTrig(); });
+  $('lv-sweep').addEventListener('change',function(){ LV.trigx.sweep=this.value; resetAcquisition(); sendTrig(); });
+  $('lv-trigext').addEventListener('change',function(){ LV.trigx.ext=this.checked; if(this.checked){ LV.trigx.mode='edge'; } syncLiveControls(); sendTrig(); });
+  $('lv-trig-linbreak').addEventListener('click',function(){
+    /* Break = mind. 13 Bit Low, längste normale Low-Phase = 9 Bit (Startbit + 0x00). Schwelle dazwischen: 11 Bitzeiten. */
+    var baud=(typeof ANA!=='undefined'&&ANA.dec.bus==='lin'&&ANA.dec.baud)||19200, vb=(typeof ANA!=='undefined'&&ANA.dec.vbat)||12.6;
+    LV.trigx.mode='pulse'; LV.trigx.cond='gt'; LV.trigx.width=11/baud; LV.trigx.sweep='normal'; LV.trigx.ext=false;
+    LV.trig.edge='f'; LV.trig.level=Math.round(vb*5)/10; LV.trigPos=0.1;
+    syncLiveControls(); resetAcquisition(); sendTrig();
+  });
+  $('lv-peak').addEventListener('change',function(){ LV.peak=this.checked; resetAcquisition(); send(timeCmd(LV.acquisitionSecdiv)); });
+  $('lv-autoset').addEventListener('click',function(){ if(LV.playback)exitPlayback(false); setStat('Autoset läuft …','warn'); send({cmd:'autoset'}); });
+  function recPlan(){
+    var dur=ms('lv-rec-dur',0.01,600,2), rate=parseFloat($('lv-rec-rate').value)||50000, trig=$('lv-rec-trig').checked, pre=trig?ms('lv-rec-pre',0,600,0):0;
+    var n=Math.round((dur+pre)*rate), ok=n>=50&&n<=262144&&pre<=dur;
+    return {dur:dur,rate:rate,trig:trig,pre:pre,n:n,ok:ok};
+  }
+  function recHint(){
+    var p=recPlan();
+    setRecInfo(p.ok?(p.n+' Punkte'):(p.pre>p.dur?'Vorlauf darf nicht länger als die Dauer sein':'zu lang: höchstens 262144 Punkte – Dauer oder Abtastrate verringern (jetzt '+p.n+')'));
+    updFeatureUI();
+  }
+  ['lv-rec-dur','lv-rec-rate','lv-rec-trig','lv-rec-pre'].forEach(function(id){ $(id).addEventListener('change',recHint); });
+  $('lv-rec-go').addEventListener('click',function(){
+    var p=recPlan(); if(!p.ok){ recHint(); return; }
+    if(LV.playback)exitPlayback(false);
+    LV.frozen=null;updateTimeZoomUI();resetAcquisition();
+    LV.recArm=true;LV.singleArm=false;LV.running=false;updRunBtns();
+    var c={cmd:'record',duration:p.dur,rate:p.rate}; if(p.trig){ c.trigger=true; if(p.pre>0)c.pre=p.pre; }
+    setRecInfo(p.trig?'wartet auf Trigger …':'läuft …'); send(c);
+  });
+  updFeatureUI();
   /* Run/Stop/Single */
   $('lv-run').addEventListener('click',function(){resumeCapture('run');});
   $('lv-stop').addEventListener('click',function(){freezeCapture();LV.singleArm=false;LV.running=false;updRunBtns();send({cmd:'stop'});});

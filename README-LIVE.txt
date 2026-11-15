@@ -129,3 +129,24 @@ Der geprüfte API-Vertrag stammt aus florentbr/OWON-VDS1022 Commit
 a21cee14fc0807ce804657a26772784c4e47b5ef. Kein echter USB-/Windows-/Kalibrierungs-
 oder Hochvolttest in dieser Version. Der Windows-USB-Workaround bleibt erhalten;
 Treiberinstallation und native Hardwareprüfung vor Werkstatteinsatz durchführen.
+
+
+GERAETEFUNKTIONEN (ab V13.7):
+  Zeilen "Trigger +", "Geraet" und "Langzeit" in der Bedienung. Nur mit
+  verbundener Bridge ab V13.7 bedienbar (die Bridge meldet ihre Funktionen
+  nach der Kopplung als "features"; aeltere Bridges laufen unveraendert).
+  - Trigger: Flanke / Pulsbreite / Steilheit, Bedingung laenger/gleich/
+    kuerzer, Holdoff, Modus Auto oder Normal, Extern (Multi-Buchse).
+    "Voreinstellung LIN-Break": Low laenger als 11 Bitzeiten, Normal, 10 %.
+    Im Modus Normal liefert das Geraet nur getriggerte Bilder; Single
+    wartet auf das Ereignis. Befehle (z. B. Stop) brechen das Warten ab.
+  - Spitzenwert (Peak), Autoset, Frequenzzaehler (Messwertzeile "Zaehler").
+  - Position am Schirm verschiebt das Messfenster des Geraets mit.
+  - Langzeit: lueckenlose Aufnahme bis 262144 Punkte je Kanal, laut Treiber
+    bis ca. 100 kS/s. Sofort oder ab Trigger (mit Vorlauf). Meldet die
+    Bridge "Daten gingen verloren", kleinere Abtastrate waehlen.
+  - Zeitbasen 5/10/20 s/div laufen im Roll-Modus des Geraets.
+  Nicht enthalten: Kalibrieren / Schreiben in den Geraetespeicher.
+  Ungetestet am echten Geraet - Pruefliste: docs/HARDWARETEST-V13.7.md
+  Protokoll: Kopf von bridge.py. Tests: tests/test_bridge.py und
+  tests/test_bridge_driver.py (braucht das Modul vds1022 + pyusb).

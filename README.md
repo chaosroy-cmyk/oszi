@@ -1,4 +1,4 @@
-# KFZ-Oszilloskop-Kompendium V13.6.2
+# KFZ-Oszilloskop-Kompendium V13.7
 
 Offline-Diagnoseunterlage für die Werkstatt als installierbare **PWA**:
 Messkarten mit Oszi-Einstellungen, schematischen **und** fahrzeugspezifischen
@@ -141,3 +141,12 @@ Kurve, Frame-Tabelle und Prüfungen sowie die **Zyklus-Messung** (jeder Zyklus e
 CSV-Export). Dazu der **Bit-Monitor** (welches Bit gehört zur Taste?) und für LIN ein **Bauteil-Simulator** zum Üben. Funktioniert live, bei Stop, in der Bibliothek und mit CSV-Importen; „Beispielsignal“ zeigt
 jeden Bus ohne Gerät. Bedienung, Grenzen und Normbezüge: `docs/DECODER.md`.
 
+
+
+## Gerätefunktionen des VDS1022I (V13.7)
+
+Über die Bridge steuert die App jetzt auch: Pulsbreiten- und Steilheits-Trigger, Holdoff, Trigger-Modus
+Normal, externen Trigger, Spitzenwert-Erfassung, Autoset, den Frequenzzähler des Geräts und eine
+**lückenlose Langzeitaufnahme** bis 262 144 Punkte (laut Treiber bis etwa 100 kS/s). Kalibrieren und
+Schreiben in den Gerätespeicher sind bewusst nicht enthalten. Am echten Gerät noch ungetestet –
+Prüfliste: `docs/HARDWARETEST-V13.7.md`, Einzelheiten: `README-LIVE.txt`.

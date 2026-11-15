@@ -68,6 +68,73 @@ test('authenticated real WebSocket transport with synthetic driver, binary frame
  assert.deepEqual(errors,[]);await context.close();
 });
 
+test('extended device functions: features, trigger modes, normal sweep, peak, autoset, gap-free long capture',async()=>{
+ const context=await browser.newContext({viewport:{width:1280,height:900}});const p=await context.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await live(p);
+ /* ohne Bridge gesperrt */
+ assert(await p.locator('#lv-rec-go').isDisabled());assert(await p.locator('#lv-devx-note').isVisible());
+ await p.locator('#lv-url').fill('ws://127.0.0.1:'+bridgePort);await p.locator('#lv-token').fill(token);await p.locator('#lv-connect').click();
+ await p.waitForFunction(()=>OsziLive.state.authenticated&&OsziLive.state.frame1);
+ assert(await p.evaluate(()=>['trigger2','sweep','ext','offset','peak','record','autoset','freq'].every(f=>OsziLive.state.features.includes(f))));
+ assert(await p.locator('#lv-rec-go').isEnabled());assert(await p.locator('#lv-devx-note').isHidden());
+ assert(await p.locator('#lv-trigwidth').isDisabled());                       /* Flanke: keine Zeitbedingung */
+ /* Frequenzzähler und Kopfdaten */
+ await p.waitForFunction(()=>/Zähler 1\.00 kHz|Zähler 1000/.test(document.querySelector('#lv-meas').textContent));
+ assert.equal(await p.evaluate(()=>OsziLive.state.lastHeader.sweep),'auto');
+ /* Peak */
+ await p.check('#lv-peak');await p.waitForFunction(()=>OsziLive.state.lastHeader&&OsziLive.state.lastHeader.peak===true);
+ await p.uncheck('#lv-peak');await p.waitForFunction(()=>OsziLive.state.lastHeader&&OsziLive.state.lastHeader.peak===false);
+ /* Sweep Normal: Pegel ausserhalb des Signals (+-2 V) -> keine Bilder; Befehle wirken trotzdem; Pegel im Signal -> Bilder */
+ await p.selectOption('#lv-sweep','normal');await p.locator('#lv-triglvl').fill('3');await p.locator('#lv-triglvl').dispatchEvent('change');
+ await p.waitForTimeout(700);const seq=await p.evaluate(()=>OsziLive.state.sequence);await p.waitForTimeout(500);
+ assert.equal(await p.evaluate(()=>OsziLive.state.sequence),seq);
+ await p.locator('#lv-triglvl').fill('1');await p.locator('#lv-triglvl').dispatchEvent('change');
+ await p.waitForFunction(()=>OsziLive.state.lastHeader&&OsziLive.state.lastHeader.sweep==='normal'&&OsziLive.state.frame1);
+ /* Pulsbreite: Voreinstellung LIN-Break */
+ await p.click('#lv-trig-linbreak');
+ const lb=await p.evaluate(()=>({x:OsziLive.state.trigx,edge:OsziLive.state.trig.edge,level:OsziLive.state.trig.level,pos:OsziLive.state.trigPos,w:document.querySelector('#lv-trigwidth').value}));
+ assert.equal(lb.x.mode,'pulse');assert.equal(lb.x.cond,'gt');assert.equal(lb.x.sweep,'normal');assert.equal(lb.edge,'f');assert(Math.abs(lb.x.width-11/19200)<1e-9);assert.equal(lb.pos,.1);assert(await p.locator('#lv-trigwidth').isEnabled());
+ /* unzulässig: Pegel ausserhalb des Eingangsfensters -> Bridge verwirft, App zeigt wieder den alten Stand */
+ await p.selectOption('#lv-trigmode','edge');await p.selectOption('#lv-sweep','auto');await p.locator('#lv-triglvl').fill('1');await p.locator('#lv-triglvl').dispatchEvent('change');
+ await p.waitForFunction(()=>OsziLive.state.lastHeader&&OsziLive.state.lastHeader.sweep==='auto');
+ await p.locator('#lv-triglvl').fill('400');await p.locator('#lv-triglvl').dispatchEvent('change');
+ await p.waitForFunction(()=>OsziLive.state.trig.level===1&&/verworfen/.test(document.querySelector('#lv-stat').textContent));
+ /* Position am Schirm zieht das Eingangsfenster mit */
+ await p.locator('#lv-ch1pos').fill('-3');await p.locator('#lv-ch1pos').dispatchEvent('change');await p.waitForTimeout(400);
+ assert.equal(await p.evaluate(()=>OsziLive.state.pos[0]),-3);
+ await p.locator('#lv-ch1pos').fill('0');await p.locator('#lv-ch1pos').dispatchEvent('change');await p.waitForTimeout(300);
+ /* Lückenlose Aufnahme: 2 s bei 50 kS/s = 100000 Punkte, danach gestoppt, Zyklus-Messung über die ganze Aufnahme */
+ await p.locator('#lv-rec-dur').fill('6');await p.locator('#lv-rec-dur').dispatchEvent('change');
+ assert.match(await p.locator('#lv-rec-info').innerText(),/zu lang/);
+ await p.locator('#lv-rec-dur').fill('2');await p.locator('#lv-rec-dur').dispatchEvent('change');
+ assert.match(await p.locator('#lv-rec-info').innerText(),/100000 Punkte/);
+ await p.click('#lv-rec-go');
+ await p.waitForFunction(()=>OsziLive.state.lastHeader&&OsziLive.state.lastHeader.long===true&&OsziLive.state.frozen);
+ const rec=await p.evaluate(()=>({n:OsziLive.state.frozen.ch1.length,dt:OsziLive.state.frozen.dt,running:OsziLive.state.running,secdiv:OsziLive.state.secdiv,info:document.querySelector('#lv-rec-info').textContent}));
+ assert.equal(rec.n,100000);assert(Math.abs(rec.dt-1/50000)<1e-12);assert.equal(rec.running,false);assert(Math.abs(rec.secdiv-.2)<1e-9);assert.match(rec.info,/fertig/);
+ await p.check('#lv-dm-on');await p.waitForFunction(()=>/Zyklen/.test(document.querySelector('#lv-dm-sum').textContent));
+ const cyc=parseInt(await p.locator('#lv-dm-sum .lv-ana-sum').innerText(),10);assert(cyc>=1998&&cyc<=2000,String(cyc));
+ await p.uncheck('#lv-dm-on');
+ /* Run danach: wieder die Zeitbasis von vorher, nicht die Länge der Aufnahme */
+ await p.click('#lv-run');await p.waitForFunction(()=>OsziLive.state.running&&OsziLive.state.frame1&&OsziLive.state.frame1.length===5000&&!OsziLive.state.lastHeader.long);
+ assert.equal(await p.evaluate(()=>OsziLive.state.secdiv),await p.evaluate(()=>OsziLive.state.acquisitionSecdiv));
+ /* Aufnahme ab Trigger wartet; Stop bricht ab */
+ await p.locator('#lv-triglvl').fill('5');await p.locator('#lv-triglvl').dispatchEvent('change');await p.waitForTimeout(300);
+ await p.check('#lv-rec-trig');await p.click('#lv-rec-go');
+ await p.waitForFunction(()=>/wartet auf Trigger/.test(document.querySelector('#lv-rec-info').textContent));
+ await p.waitForTimeout(600);await p.click('#lv-stop');
+ await p.waitForFunction(()=>/abgebrochen/.test(document.querySelector('#lv-rec-info').textContent));
+ assert.equal(await p.evaluate(()=>OsziLive.state.recArm),false);
+ await p.uncheck('#lv-rec-trig');await p.locator('#lv-triglvl').fill('1');await p.locator('#lv-triglvl').dispatchEvent('change');
+ /* Autoset: Bridge meldet neue Einstellungen, App übernimmt sie */
+ await p.click('#lv-run');await p.waitForFunction(()=>OsziLive.state.running&&OsziLive.state.frame1);
+ await p.click('#lv-autoset');
+ await p.waitForFunction(()=>/Autoset übernommen/.test(document.querySelector('#lv-stat').textContent)||OsziLive.state.vdiv[0]===.05);
+ const au=await p.evaluate(()=>({v:OsziLive.state.vdiv[0],ch2:OsziLive.state.chOn[1],sd:OsziLive.state.secdiv,lvl:OsziLive.state.trig.level,mode:OsziLive.state.trigx.mode}));
+ assert.equal(au.v,.05);assert.equal(au.ch2,false);assert(Math.abs(au.sd-.002)<1e-12);assert(Math.abs(au.lvl)<.2);assert.equal(au.mode,'edge');
+ assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ assert.deepEqual(errors,[]);await context.close();
+});
+
 test('stopped capture time zoom preserves both channels and dt without device commands',async()=>{
  const context=await browser.newContext();const p=await context.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await live(p);
  await p.locator('#lv-url').fill('ws://127.0.0.1:'+bridgePort);await p.locator('#lv-token').fill(token);await p.locator('#lv-connect').click();
