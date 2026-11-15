@@ -1,4 +1,4 @@
-# KFZ-Oszilloskop-Kompendium V13.6.1
+# KFZ-Oszilloskop-Kompendium V13.6.2
 
 Offline-Diagnoseunterlage für die Werkstatt als installierbare **PWA**:
 Messkarten mit Oszi-Einstellungen, schematischen **und** fahrzeugspezifischen
@@ -19,7 +19,7 @@ Für Smartphone optimiert, ohne externe Abhängigkeiten.
 | `tools/validate.js` | Datenvalidierung (headless, für CI) |
 | `bridge.py` | Live-Modus: WebSocket-Bridge zum OWON VDS1022I (lokal, **nicht** deployt) |
 | `tests/live-logic.test.js` | Node-Tests der Live-Logik (`OsziLogic`, 39 Tests) |
-| `tests/decode/` | Node-Tests der Bus-Decoder, Zyklus-Messung, Bit-Monitor und Simulator (`OsziDecode`, 155 Tests, laufen gegen `index.html`) |
+| `tests/decode/` | Node-Tests der Bus-Decoder, Zyklus-Messung, Bit-Monitor und Simulator (`OsziDecode`, 159 Tests, laufen gegen `index.html`) |
 | `tests/signal-engine.test.js` | Node-Tests der Signalbild-Engine W2 und aller Kartenmodelle |
 | `tools/w2/` | Kit für neue Signalbilder: Regeln (`API.md`), Prüf-/Render-Werkzeug, Einbau, Textkorrektur |
 | `docs/SIGNAL-KATALOG.md` | Katalog aller am Fahrzeug messbaren Signale (146) mit Abdeckung, Priorität, Quellen; `docs/signal-katalog.json` maschinenlesbar |

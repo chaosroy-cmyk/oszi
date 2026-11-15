@@ -1,4 +1,4 @@
-# Serielle Entschlüsselung und Zyklus-Messung (V13.6.1)
+# Serielle Entschlüsselung und Zyklus-Messung (V13.6.2)
 
 Beide Funktionen stehen im Kapitel **Live** direkt unter dem Oszi-Bild. Sie werten die aktuelle
 Aufnahme aus – live von der Bridge, gestoppt (mit Zeitzoom), aus der Bibliothek oder aus einem
@@ -9,7 +9,7 @@ CSV-Import. Es werden keine Daten übertragen.
 | Bus | Quelle | Bitrate | Geprüft |
 |---|---|---|---|
 | LIN (LIN 2.x / ISO 17987) | LIN-Leitung gegen Masse | automatisch aus dem Sync-Feld oder fest | Break, Sync 0x55, PID-Parität, Checksumme klassisch/erweitert, Antwort vorhanden, Takt der Antwort (±2 %), Ruhe- und Low-Pegel bezogen auf U_Bat |
-| CAN (ISO 11898, klassisch) | CAN-H, CAN-L oder CH1−CH2 | automatisch oder fest | Bit-Stuffing, CRC-15, Delimiter, ACK, Error-Frames, Pegel; CAN-FD-Frames werden erkannt, die Datenphase aber nicht dekodiert |
+| CAN (ISO 11898, klassisch) | CAN-H, CAN-L (wird bei „automatisch“ erkannt) oder CH1−CH2 | automatisch oder fest | Bit-Stuffing, CRC-15, Delimiter, ACK, Error-Frames, Pegel; CAN-FD-Frames werden erkannt, die Datenphase aber nicht dekodiert |
 | K-Leitung (ISO 9141-2 / ISO 14230) | K-Leitung gegen Masse | automatisch oder fest | Byte-Rahmen, KWP2000-/ISO-9141-Kopf, Länge, Checksumme, Fast-Init, Pegel |
 | SENT (SAE J2716) | Signalleitung gegen Masse | Tick automatisch aus dem Sync-Puls oder fest | Sync, Nibble-Bereich, CRC-4, Tick-Abweichung, Pausenpuls |
 
@@ -28,12 +28,17 @@ keine Messung) – zum Kennenlernen ohne Gerät.
 ## Bit-Monitor
 
 Unter der Frame-Tabelle. Zeigt je Kennung (LIN-ID, CAN-ID …) die Datenbytes bitweise. Ablauf in der
-Werkstatt: ohne Tastendruck aufnehmen → **Referenz merken** → Taste oder Schalter betätigen → neu
-aufnehmen (Single). Rot = gegenüber der Referenz geändert. Ohne Referenz wird mit der vorigen Aufnahme
-verglichen. Gepunktet = ändert sich laufend und ist deshalb nicht die gesuchte Taste: Wechsel zwischen
-zwei Botschaften derselben Aufnahme, mindestens 3 Wechsel in den letzten 20 Botschaften, oder ein
-Byte/Halbbyte zählt um genau 1 weiter (Alive-Zähler). Frames mit Prüfsummen- oder Rahmenfehler werden
-nicht verglichen.
+Werkstatt: zwei- bis dreimal ohne Tastendruck aufnehmen → **Referenz merken** → Taste oder Schalter
+betätigen → neu aufnehmen (Single). Rot = gegenüber der Referenz geändert; die Taste darf beliebig oft
+gedrückt und losgelassen werden. Ohne Referenz wird mit der vorigen Aufnahme verglichen.
+
+Gepunktet = ändert sich von selbst und ist deshalb nicht die gesuchte Taste. Als „laufend“ gilt ein Bit, wenn
+- es sich zwischen zwei Botschaften derselben Aufnahme ändert, und zwar in mindestens zwei Aufnahmen,
+- sein Byte oder Halbbyte innerhalb einer Aufnahme um genau 1 weiterzählt (Alive-Zähler), oder
+- es beim Merken der Referenz in den letzten 20 Botschaften mindestens dreimal gewechselt hat.
+
+Frames mit Prüfsummen- oder Rahmenfehler werden nicht verglichen. **Referenz löschen** setzt auch das
+Gelernte zurück – sinnvoll, wenn vor dem Merken der Referenz schon Tasten gedrückt wurden.
 
 ## Bauteil-Simulator (Übung, LIN)
 

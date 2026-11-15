@@ -1,3 +1,13 @@
+# V13.6.2 – Korrekturen nach Durchsicht (15. November 2026)
+
+- **Bit-Monitor, Fehler behoben:** Wer eine Taste mehrmals drückte und losließ, bekam das Bit ab dem dritten Mal als „laufend“ ausgeblendet. Jetzt gilt ein Bit nur noch als laufend, wenn es sich innerhalb einer Aufnahme ändert (in mindestens zwei Aufnahmen), wenn sein Byte/Halbbyte als Zähler weiterzählt oder wenn es schon vor dem Merken der Referenz oft gewechselt hat. „Referenz löschen“ setzt auch das Gelernte zurück.
+- **Bit-Monitor:** SENT-Botschaften bilden eine gemeinsame Zeile (vorher eine Zeile je Datenwert, damit unbrauchbar), Anzeige in 4-Bit-Nibbles. Decodierung an CH2 füttert den Monitor jetzt zuverlässig. Unbekannte Werte werden nicht als 0 verglichen.
+- **CAN „Signal: automatisch“** erkennt an einer Einzelleitung jetzt CAN-H oder CAN-L (vorher wurde immer CAN-H angenommen; CAN-L ergab „keine Frames“). Die erkannte Leitung steht als Hinweis über der Tabelle.
+- **Beispielsignal/Simulator:** V/div und Position von CH1 werden beim Verlassen der Wiedergabe wiederhergestellt.
+- `SHA256SUMS` passte seit der Test-Korrektur vom 31.10. nicht mehr zu `tests/browser.test.cjs` – neu erzeugt.
+- Nachgeprüft: CRC-15/CAN-Prüfwert 0x059E (Polynom 0x4599) gegen öffentliche Kataloge; ISO-11898-2-Werte dominant 1,5–3,0 V und Empfängerschwellen 0,5/0,9 V gegen Hersteller-Datenblätter. Nicht belegt bleibt das rezessive Sender-Fenster −0,5…+0,05 V (Normtext kostenpflichtig); Abweichungen dort sind deshalb nur Hinweise.
+- 4 neue Node-Tests, Browser-Tests erweitert.
+
 # V13.6.1 – Bit-Monitor und LIN-Bauteil-Simulator (31. Oktober 2026)
 
 - **Bit-Monitor** in der Seriellen Entschlüsselung (alle Busse): Referenz merken, Taste/Schalter betätigen, neu aufnehmen – geänderte Bits werden rot markiert, mit Bedeutung, soweit bekannt. Bits, die sich laufend ändern (Alive-Zähler, Prüfsummen), werden gepunktet markiert und nicht als „Taste“ gemeldet: Wechsel innerhalb einer Aufnahme, ≥ 3 Wechsel in den letzten 20 Botschaften oder ein Byte/Halbbyte, das um genau 1 weiterzählt. Fehlerhafte Frames werden nicht verglichen.

@@ -135,11 +135,16 @@ test('serial decoders and cycle measurement decode demo signals, mark frames and
  await p.click('#lv-dec-rows tr.lv-ana-row >> nth=2');
  assert.match(await p.locator('#lv-dec-detail').innerText(),/ACK/);
  assert.notEqual(await p.evaluate(()=>window.OsziLive.state.frozen.anchor),before);
+ /* CAN-L an CH1 wird bei „automatisch“ erkannt */
+ const auto=await p.evaluate(()=>{const c=OsziDecode.modules.can.synthCAN({baud:500000,signal:'canl',spb:12,frames:[{id:0x316,data:[1,2,3]}]});const r=OsziDecode.decode('can',c.values,c.dt,{signal:'auto'});return [r.frames.map(f=>f.title+':'+f.status).join(),r.checks[0].val];});
+ assert.deepEqual(auto,['ID 0x316:ok','CAN-L erkannt']);
  /* zu grobe Abtastung: klare Meldung statt erfundener Inhalte */
  const coarse=await p.evaluate(()=>{const s=OsziDecode.synth('can');const v=s.values.filter((_,i)=>i%6===0);return OsziDecode.decode('can',v,s.dt*6,{signal:'canh'});});
  assert.equal(coarse.ok,false);assert.equal(coarse.frames.length,0);assert.match(coarse.error,/µs\/div/);
  /* Zyklus-Messung am Hall-Demo: Zahnlücken als Ausreißer */
+ const vBefore=await p.evaluate(()=>window.OsziLive.state.beforePlayback.vdiv.join());
  await p.click('#lv-playback-exit');await p.selectOption('#lv-dec-bus','');
+ assert.equal(await p.evaluate(()=>window.OsziLive.state.vdiv.join()),vBefore);assert.equal(await p.evaluate(()=>window.OsziLive.state.pos[0]),0);
  const hall=await p.evaluate(()=>{const o=[...document.querySelectorAll('#lv-karte option')].find(x=>/Hall/.test(x.textContent));return o&&o.value;});assert(hall);
  await p.selectOption('#lv-karte',hall);await p.click('#lv-mock');await p.waitForTimeout(1200);await p.click('#lv-stop');
  await p.check('#lv-dm-on');await p.waitForFunction(()=>/Zyklen/.test(document.querySelector('#lv-dm-sum').textContent));
@@ -163,6 +168,10 @@ test('LIN component simulator drives decoder and bit monitor finds the pressed k
  await p.waitForFunction(()=>/D0\.0 \(AUTO\) 0→1/.test(document.querySelector('#lv-bm-out').textContent));
  const txt=await p.locator('#lv-bm-out').innerText();
  assert.match(txt,/D0\.0 \(AUTO-LED\) 0→1/);assert.doesNotMatch(txt,/D3\.\d/);   /* Alive-Zähler ist kein Tastenbit */
+ /* Taste loslassen und wieder drücken: bleibt sichtbar (früher fälschlich als „laufend“ ausgeblendet) */
+ await p.click('.lv-sim-key[data-k="auto"]');await p.waitForFunction(()=>/Keine Bit-Änderung/.test(document.querySelector('#lv-bm-out').textContent));
+ await p.click('.lv-sim-key[data-k="auto"]');await p.waitForFunction(()=>/D0\.0 \(AUTO\) 0→1/.test(document.querySelector('#lv-bm-out').textContent));
+ await p.click('.lv-sim-key[data-k="auto"]');await p.click('.lv-sim-key[data-k="auto"]');await p.waitForFunction(()=>/D0\.0 \(AUTO\) 0→1/.test(document.querySelector('#lv-bm-out').textContent));
  await p.selectOption('#lv-sim-fault','noresp');
  await p.waitForFunction(()=>[...document.querySelectorAll('#lv-dec-rows tr.lv-ana-row')].some(r=>r.querySelector('.st-bad')));
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
