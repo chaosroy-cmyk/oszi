@@ -20,7 +20,7 @@
 :root{
   --bg:#eef1f4; --surface:#ffffff; --surface2:#f5f7f9; --ink:#17202a; --muted:#566372; --line:#d2d9e1;
   --flow:#ff6a00; --flow-soft:rgba(255,106,0,.22);
-  --c-sun:#d29e00; --c-pl:#2f9a59; --c-tr:#2c68cf; --c-ring:#c2385a; --c-t2:#7656d1; --c-in:#5b6878; --c-gnd:#8693a3;
+  --c-sun:#d29e00; --c-pl:#2f9a59; --c-tr:#2c68cf; --c-ring:#c2385a; --c-t2:#7656d1; --c-in:#5b6878; --c-gnd:#8693a3; --c-teal:#0e8f8f; --c-olive:#9a6a1c; --c-mag:#b83aa6;
   --edge:rgba(10,20,30,.38); --hatch:rgba(15,25,35,.55); --engaged:#17202a;
   --font-head:"Avenir Next","Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,sans-serif;
   --font-body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
@@ -31,7 +31,7 @@
   :root:not([data-theme="light"]){
     --bg:#0f141a; --surface:#171e27; --surface2:#1d2631; --ink:#e6ecf2; --muted:#9aa8b7; --line:#2c3745;
     --flow:#ff7a1a; --flow-soft:rgba(255,122,26,.25);
-    --c-sun:#f0c02c; --c-pl:#46bf76; --c-tr:#5b93f2; --c-ring:#e25a7c; --c-t2:#9c83ef; --c-in:#8796a8; --c-gnd:#6b7888;
+    --c-sun:#f0c02c; --c-pl:#46bf76; --c-tr:#5b93f2; --c-ring:#e25a7c; --c-t2:#9c83ef; --c-in:#8796a8; --c-gnd:#6b7888; --c-teal:#33c2c2; --c-olive:#cf9d4c; --c-mag:#df72cf;
     --edge:rgba(0,0,0,.55); --hatch:rgba(230,236,242,.6); --engaged:#e6ecf2;
     color-scheme:dark;
   }
@@ -39,7 +39,7 @@
 :root[data-theme="dark"]{
   --bg:#0f141a; --surface:#171e27; --surface2:#1d2631; --ink:#e6ecf2; --muted:#9aa8b7; --line:#2c3745;
   --flow:#ff7a1a; --flow-soft:rgba(255,122,26,.25);
-  --c-sun:#f0c02c; --c-pl:#46bf76; --c-tr:#5b93f2; --c-ring:#e25a7c; --c-t2:#9c83ef; --c-in:#8796a8; --c-gnd:#6b7888;
+  --c-sun:#f0c02c; --c-pl:#46bf76; --c-tr:#5b93f2; --c-ring:#e25a7c; --c-t2:#9c83ef; --c-in:#8796a8; --c-gnd:#6b7888; --c-teal:#33c2c2; --c-olive:#cf9d4c; --c-mag:#df72cf;
   --edge:rgba(0,0,0,.55); --hatch:rgba(230,236,242,.6); --engaged:#e6ecf2;
   color-scheme:dark;
 }
@@ -159,6 +159,21 @@ tr.cur td{background:var(--flow-soft)}
 /* SVG-Bauteile */
 .mc-sun{--mc:var(--c-sun)} .mc-pl{--mc:var(--c-pl)} .mc-tr{--mc:var(--c-tr)} .mc-ring{--mc:var(--c-ring)}
 .mc-t2{--mc:var(--c-t2)} .mc-in{--mc:var(--c-in)} .mc-gnd{--mc:var(--c-gnd)}
+.mc-teal{--mc:var(--c-teal)} .mc-olive{--mc:var(--c-olive)} .mc-mag{--mc:var(--c-mag)}
+/* Markierungen direkt am Zahnrad: Bremse, Stillstand, Verblockung */
+.badge rect{fill:var(--ink)} .badge text{fill:var(--surface);font-family:var(--font-body);font-size:12.5px;font-weight:800}
+.badge .ic{fill:var(--surface)} .badge .icl{fill:none;stroke:var(--surface);stroke-width:1.8}
+.badge.still rect{fill:var(--surface);stroke:var(--line);stroke-width:1.2} .badge.still text{fill:var(--muted);font-weight:700}
+.badge.block rect{fill:var(--surface);stroke:var(--ink);stroke-width:1.6} .badge.block text{fill:var(--ink)} .badge.block .icl{stroke:var(--ink)}
+.pad{fill:none;stroke:var(--ink);stroke-width:9;stroke-linecap:round}
+.padarm{stroke:var(--ink);stroke-width:2.5}
+.blockring{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-dasharray:7 5}
+.fronts.f4{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:560px){.fronts.f4{grid-template-columns:minmax(0,1fr)}}
+.front .sub{font-size:12px;color:var(--muted);text-align:center;padding:0 4px 4px;min-height:1.5em}
+.front .sub b{color:var(--ink)}
+.gearsel button{min-width:44px;justify-content:center;font-family:var(--font-data)}
+
 .gear{fill:var(--mc);stroke:var(--edge);stroke-width:.8;stroke-linejoin:round}
 .hub{fill:var(--surface2);stroke:var(--edge);stroke-width:.8}
 .mark{fill:var(--surface)}
@@ -242,8 +257,9 @@ footer{font-size:12px;color:var(--muted);padding-block:10px 30px}
     </div>
     <div class="tabs" role="tablist" aria-label="Lernstufen">
       <button class="tab" role="tab" id="tab-satz" aria-controls="p-satz" aria-selected="true"><span class="st">1</span>Planetensatz</button>
-      <button class="tab" role="tab" id="tab-auto" aria-controls="p-auto" aria-selected="false"><span class="st">2</span>Automatikgetriebe</button>
-      <button class="tab" role="tab" id="tab-wissen" aria-controls="p-wissen" aria-selected="false"><span class="st">3</span>Wissen &amp; Quiz</button>
+      <button class="tab" role="tab" id="tab-auto" aria-controls="p-auto" aria-selected="false"><span class="st">2</span>3-Gang-Automatik</button>
+      <button class="tab" role="tab" id="tab-acht" aria-controls="p-acht" aria-selected="false"><span class="st">3</span>8-Gang-Automatik</button>
+      <button class="tab" role="tab" id="tab-wissen" aria-controls="p-wissen" aria-selected="false"><span class="st">4</span>Wissen &amp; Quiz</button>
     </div>
   </div>
 </header>
@@ -258,7 +274,7 @@ footer{font-size:12px;color:var(--muted);padding-block:10px 30px}
   <div class="grid">
     <div class="stage">
       <div class="fronts">
-        <div class="front"><span class="cap">Vorderansicht</span><svg id="f1" viewBox="-150 -150 300 300" role="img" aria-label="Animierter Planetensatz in Vorderansicht"></svg></div>
+        <div class="front"><span class="cap">Vorderansicht</span><svg id="f1" viewBox="-165 -165 330 330" role="img" aria-label="Animierter Planetensatz in Vorderansicht"></svg></div>
       </div>
       <div class="card" style="padding:10px">
         <h2 style="margin-bottom:4px">Getriebeschema (Halbschnitt)</h2>
@@ -340,8 +356,8 @@ footer{font-size:12px;color:var(--muted);padding-block:10px 30px}
   <div class="grid">
     <div class="stage">
       <div class="fronts">
-        <div class="front"><span class="cap">Satz 1 (vorn)</span><svg id="f2a" viewBox="-150 -150 300 300" role="img" aria-label="Vorderer Planetensatz"></svg></div>
-        <div class="front"><span class="cap">Satz 2 (hinten)</span><svg id="f2b" viewBox="-150 -150 300 300" role="img" aria-label="Hinterer Planetensatz"></svg></div>
+        <div class="front"><span class="cap">Satz 1 (vorn)</span><svg id="f2a" viewBox="-165 -165 330 330" role="img" aria-label="Vorderer Planetensatz"></svg></div>
+        <div class="front"><span class="cap">Satz 2 (hinten)</span><svg id="f2b" viewBox="-165 -165 330 330" role="img" aria-label="Hinterer Planetensatz"></svg></div>
       </div>
       <div class="card" style="padding:10px">
         <h2 style="margin-bottom:4px">Getriebeschema Simpson-Satz (Halbschnitt)</h2>
@@ -414,7 +430,76 @@ footer{font-size:12px;color:var(--muted);padding-block:10px 30px}
   </div>
 </section>
 
-<!-- ===================== Stufe 3: Wissen & Quiz ===================== -->
+<!-- ===================== Stufe 3: 8-Gang-Automatik ===================== -->
+<section role="tabpanel" id="p-acht" aria-labelledby="tab-acht" hidden>
+  <p class="intro">Heutige Pkw-Automatikgetriebe haben meist <b>8 oder mehr Gänge</b>. Dieses Modell folgt der Bauart des weit verbreiteten
+    8-Gang-Getriebes <b>ZF 8HP</b>: <b>vier einfache Planetensätze</b>, <b>zwei Bremsen (A, B)</b> und <b>drei Kupplungen (C, D, E)</b>.
+    In jedem Gang sind genau <b>drei der fünf Schaltelemente geschlossen</b>. Beim Wechsel in den Nachbargang öffnet nur eines, ein anderes schließt.</p>
+  <div class="grid">
+    <div class="stage">
+      <div class="fronts f4">
+        <div class="front"><span class="cap">Satz 1</span><svg id="f8a" viewBox="-165 -165 330 330" role="img" aria-label="Planetensatz 1"></svg><div class="sub" id="c8-0"></div></div>
+        <div class="front"><span class="cap">Satz 2</span><svg id="f8b" viewBox="-165 -165 330 330" role="img" aria-label="Planetensatz 2"></svg><div class="sub" id="c8-1"></div></div>
+        <div class="front"><span class="cap">Satz 3</span><svg id="f8c" viewBox="-165 -165 330 330" role="img" aria-label="Planetensatz 3"></svg><div class="sub" id="c8-2"></div></div>
+        <div class="front"><span class="cap">Satz 4</span><svg id="f8d" viewBox="-165 -165 330 330" role="img" aria-label="Planetensatz 4"></svg><div class="sub" id="c8-3"></div></div>
+      </div>
+      <div class="card" style="padding:10px">
+        <h2 style="margin-bottom:4px">Getriebeschema 8-Gang (Halbschnitt)</h2>
+        <div class="schem"><svg id="s8" viewBox="0 0 1000 262" role="img" aria-label="Schema des 8-Gang-Automatikgetriebes mit Kraftfluss"></svg></div>
+        <div class="schem-cap">
+          <span class="lg"><span class="sw flow"></span>Kraftfluss</span>
+          <span class="lg"><span class="sw hatch"></span>steht und stützt ab</span>
+          <span class="lg"><span class="sw idle"></span>steht lastfrei</span>
+          <span class="lg"><span class="sw" style="background:var(--engaged)"></span>Schaltelement geschlossen</span>
+        </div>
+        <div class="schem-cap">
+          <span class="lg"><span class="dot" style="background:var(--c-in)"></span>Antrieb = Träger 2</span>
+          <span class="lg"><span class="dot" style="background:var(--c-sun)"></span>Sonnenrad 1/2</span>
+          <span class="lg"><span class="dot" style="background:var(--c-ring)"></span>Hohlrad 1</span>
+          <span class="lg"><span class="dot" style="background:var(--c-t2)"></span>Träger 1 + Hohlrad 4</span>
+          <span class="lg"><span class="dot" style="background:var(--c-teal)"></span>Hohlrad 2 + Sonne 3</span>
+          <span class="lg"><span class="dot" style="background:var(--c-olive)"></span>Träger 3</span>
+          <span class="lg"><span class="dot" style="background:var(--c-mag)"></span>Hohlrad 3 + Sonne 4</span>
+          <span class="lg"><span class="dot" style="background:var(--c-tr)"></span>Abtrieb = Träger 4</span>
+        </div>
+        <p class="note">Gleiche Farbe = fest verbunden, auch in den Vorderansichten. So erkennst du, welches Zahnrad eines Satzes mit welchem Zahnrad eines anderen Satzes gekoppelt ist.</p>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card ctl">
+        <div>
+          <div class="lbl" id="l-g8">Gang wählen</div>
+          <div class="seg gearsel" id="sel8" role="group" aria-labelledby="l-g8">
+            <button data-v="R">R</button><button data-v="N">N</button><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="5">5</button><button data-v="6">6</button><button data-v="7">7</button><button data-v="8">8</button>
+          </div>
+          <label class="switch" style="margin-top:10px"><input type="checkbox" id="auto8"> Automatisch durch alle 8 Gänge schalten</label>
+        </div>
+        <div>
+          <div class="lbl">Schaltelemente</div>
+          <div class="elems" id="elems8"></div>
+        </div>
+      </div>
+      <div class="card" aria-live="polite">
+        <div class="ratio"><span class="big" id="m8-i">4,70</span><span class="chip" id="m8-gear">1. Gang</span></div>
+        <div class="formula" id="m8-form"></div>
+        <div class="kv" id="m8-kv" style="margin-top:10px"></div>
+        <h3>Was passiert?</h3>
+        <p class="expl" id="m8-expl"></p>
+        <h3>Drehzahlen</h3>
+        <div class="tblwrap"><table id="m8-tbl"><thead><tr><th>Bauteil</th><th class="num">Drehzahl</th><th>Zustand</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Schaltmatrix 8-Gang: drei von fünf Elementen sind immer geschlossen</h2>
+    <div class="tblwrap"><table class="matrix" id="matrix8"><thead><tr><th>Gang</th><th>A<br><span class="muted">Bremse</span></th><th>B<br><span class="muted">Bremse</span></th><th>C<br><span class="muted">Kupplung</span></th><th>D<br><span class="muted">Kupplung</span></th><th>E<br><span class="muted">Kupplung</span></th><th class="num">i</th><th class="num">Gangsprung</th></tr></thead><tbody></tbody></table></div>
+    <p class="note">Gangsprung = Übersetzung dieses Gangs ÷ Übersetzung des nächsten Gangs. Spreizung 1. ÷ 8. Gang = 4,70 ÷ 0,67 ≈ 7,0
+      (beim 3-Gang-Getriebe nur 2,4). Zähnezahlen nach veröffentlichten Daten: Satz 1 und 2 je 48/96, Satz 3 69/111, Satz 4 23/85 (Sonne/Hohlrad).</p>
+  </div>
+</section>
+
+<!-- ===================== Stufe 4: Wissen & Quiz ===================== -->
 <section role="tabpanel" id="p-wissen" aria-labelledby="tab-wissen" hidden>
   <div class="know">
     <div class="card">
@@ -445,6 +530,15 @@ footer{font-size:12px;color:var(--muted);padding-block:10px 30px}
         <li><b>Zwei Glieder verbunden</b> → alles dreht als Block, i = 1 (Direktgang).</li>
         <li><b>Nichts festgehalten</b> → keine Kraftübertragung (Leerlauf).</li>
         <li>Je <b>kleiner das Sonnenrad</b>, desto größer die Übersetzung.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Warum heute 8 und mehr Gänge?</h2>
+      <ul>
+        <li><b>Kleinere Gangsprünge:</b> Der Motor bleibt öfter im sparsamen Drehzahlbereich, die Schaltungen sind kaum spürbar.</li>
+        <li><b>Große Spreizung:</b> kurzer 1. Gang (i = 4,70) zum kräftigen Anfahren, langer 8. Gang (i = 0,67) für niedrige Drehzahl bei hohem Tempo.</li>
+        <li><b>Der Trick:</b> vier Planetensätze, aber nur fünf Schaltelemente. Je Gang sind drei geschlossen. Wenige offene Lamellen bedeuten wenig Schleppverlust.</li>
+        <li>Die gleiche Grundidee wie beim 3-Gang-Getriebe: <b>Antreiben, Festhalten, Verblocken</b>. Nur mehr Sätze werden hintereinander geschaltet.</li>
       </ul>
     </div>
     <div class="card">
@@ -524,25 +618,27 @@ const frac = x => x - Math.floor(x);
 
 /* ---------- Vorderansicht eines Planetensatzes ---------- */
 class GearSet {
-  constructor(svg, zs, members){
+  constructor(svg, zs, members, zh = ZH){
     this.svg = svg; this.members = members; // {S:'sun',T:'tr',H:'ring',P:'pl'} -> Farbklassen
+    this.zh = zh;
     this.build(zs);
   }
   build(zs){
     const svg = this.svg; svg.textContent = '';
-    this.zs = zs; this.zp = (ZH - zs)/2; this.k = ZH/zs;
-    const rs = MOD*zs/2, rp = MOD*this.zp/2, rh = MOD*ZH/2;
+    const zh = this.zh, m = 240/zh; // Hohlrad immer gleich groß gezeichnet (Teilkreis r = 120)
+    this.zs = zs; this.zp = (zh - zs)/2; this.k = zh/zs;
+    const rs = m*zs/2, rp = m*this.zp/2, rh = m*zh/2;
     this.orbit = rs + rp;
     const mk = (cls) => el('g', {class:'mc-' + cls}, svg);
     // Hohlrad
     this.gH = mk(this.members.H);
-    const ringD = circ(rh + 20) + gearPath(ZH, MOD, true);
+    const ringD = circ(rh + 20) + gearPath(zh, m, true);
     el('path', {d:ringD, class:'gear', 'fill-rule':'evenodd'}, this.gH);
     el('path', {d:ringD, class:'hatchov', 'fill-rule':'evenodd'}, this.gH);
     el('circle', {cx:rh+12, cy:0, r:4, class:'mark'}, this.gH);
     // Planeten
     this.gP = []; this.pWrap = el('g', {class:'mc-' + this.members.P}, svg);
-    const pD = gearPath(this.zp, MOD, false);
+    const pD = gearPath(this.zp, m, false);
     for (let i = 0; i < NPL; i++){
       const g = el('g', {}, this.pWrap);
       el('path', {d:pD, class:'gear'}, g);
@@ -560,7 +656,7 @@ class GearSet {
     // Sonnenrad (unter dem Träger)
     this.gS = el('g', {class:'mc-' + this.members.S});
     svg.insertBefore(this.gS, this.gT);
-    const sD = gearPath(zs, MOD, false);
+    const sD = gearPath(zs, m, false);
     el('path', {d:sD, class:'gear'}, this.gS);
     el('path', {d:sD, class:'hatchov'}, this.gS);
     el('circle', {cx:rs*.62, cy:0, r:3.5, class:'mark'}, this.gS);
@@ -574,10 +670,38 @@ class GearSet {
       this.aP0.push(phi + Math.PI - (0.5 - fS)*TAU/this.zp);
     }
     const fP = frac((0 - this.aP0[0])*this.zp/TAU);
-    this.aH0 = -(fP + 0.5)*TAU/ZH;
+    this.aH0 = -(fP + 0.5)*TAU/zh;
+    this.ov = el('g', {}, svg); // Markierungen liegen über allen Rädern und drehen nicht mit
+    this.tBadge = null; this.thT = 0;
+  }
+  /* Zeigt direkt am Zahnrad, was gebremst ist, was stillsteht und ob der Satz verblockt ist.
+     mk: {S|T|H: {t:'brake'|'still', txt}, set:'block'|'stand', setTxt} */
+  setMarks(mk){
+    const ov = this.ov; ov.textContent = ''; this.tBadge = null;
+    if (mk.set === 'block') el('circle', {r:157, class:'blockring'}, ov);
+    if (mk.H && mk.H.t === 'brake'){
+      // zwei Bremsbacken greifen von außen ans Hohlrad
+      [0, Math.PI].forEach(c => {
+        const a1 = c - 0.32, a2 = c + 0.32, R = 147;
+        el('path', {d:`M${(R*Math.cos(a1)).toFixed(1)},${(R*Math.sin(a1)).toFixed(1)}A${R},${R} 0 0 1 ${(R*Math.cos(a2)).toFixed(1)},${(R*Math.sin(a2)).toFixed(1)}`, class:'pad'}, ov);
+        const x = Math.cos(c);
+        el('line', {x1:x*152, y1:0, x2:x*162, y2:0, class:'padarm'}, ov);
+        el('rect', {x: x > 0 ? 158 : -165, y:-14, width:7, height:28, class:'gnd'}, ov);
+      });
+    }
+    if (mk.H) badge(ov, 0, -151, mk.H.txt, mk.H.t);
+    if (mk.S) badge(ov, 0, 0, mk.S.txt, mk.S.t);
+    if (mk.T){ this.tBadge = badge(ov, 0, 0, mk.T.txt, mk.T.t); this.placeT(); }
+    if (mk.set) badge(ov, 0, 151, mk.setTxt, mk.set === 'block' ? 'block' : 'still');
+  }
+  placeT(){
+    if (!this.tBadge) return;
+    // am Bolzen von Planet 1, der bei festem Träger nicht wandert
+    this.tBadge.setAttribute('transform', `translate(${(this.orbit*Math.cos(this.thT)).toFixed(1)},${(this.orbit*Math.sin(this.thT)).toFixed(1)})`);
   }
   render(thS, thT, thH){
     const deg = a => (a*180/Math.PI).toFixed(3);
+    this.thT = thT; this.placeT();
     this.gS.setAttribute('transform', `rotate(${deg(thS)})`);
     this.gT.setAttribute('transform', `rotate(${deg(thT)})`);
     this.gH.setAttribute('transform', `rotate(${deg(this.aH0 + thH)})`);
@@ -591,6 +715,37 @@ class GearSet {
     const set = (g, s) => { g.classList.remove('st-flow','st-fixed','st-idle'); if (s && s !== 'turn') g.classList.add('st-' + s); };
     set(this.gS, st.S); set(this.gT, st.T); set(this.gH, st.H); set(this.pWrap, st.P);
   }
+}
+
+function badge(parent, x, y, txt, kind){
+  const g = el('g', {class:'badge ' + kind, transform:`translate(${x},${y})`}, parent);
+  const icon = kind === 'brake' || kind === 'block';
+  const w = txt.length*7.2 + (icon ? 34 : 18), h = 23;
+  el('rect', {x:-w/2, y:-h/2, width:w, height:h, rx:11.5}, g);
+  if (icon){
+    const ix = -w/2 + 15;
+    if (kind === 'brake'){ // Schloss
+      el('rect', {x:ix-5.5, y:-2, width:11, height:8.5, rx:1.5, class:'ic'}, g);
+      el('path', {d:`M${ix-3.4},-2V-5a3.4,3.4 0 0 1 6.8,0V-2`, class:'icl'}, g);
+    } else { // Kettenglieder
+      el('rect', {x:ix-8, y:-3.5, width:9, height:7, rx:3.5, class:'icl'}, g);
+      el('rect', {x:ix-1, y:-3.5, width:9, height:7, rx:3.5, class:'icl'}, g);
+    }
+  }
+  const t = el('text', {x: icon ? 9 : 0, y:4.5, 'text-anchor':'middle'}, g); t.textContent = txt;
+  return g;
+}
+/* Markierungen für einen Satz aus seinen Drehzahlen: brakes = {S|T|H: 'Bremse A', ...} */
+function marksFor(sp, brakes, blockName, stillTxt = {}){
+  const z = v => Math.abs(v) < 0.5, mk = {};
+  const stand = z(sp.S) && z(sp.T) && z(sp.H);
+  for (const m of ['S','T','H']){
+    if (brakes[m]) mk[m] = {t:'brake', txt:brakes[m]};
+    else if (z(sp[m]) && !stand) mk[m] = {t:'still', txt: stillTxt[m] || 'steht'};
+  }
+  if (stand){ mk.set = 'stand'; mk.setTxt = 'Satz steht still'; }
+  else if (Math.abs(sp.S - sp.T) < 0.5 && Math.abs(sp.H - sp.T) < 0.5){ mk.set = 'block'; mk.setTxt = blockName ? 'verblockt durch ' + blockName : 'dreht als Block'; }
+  return mk;
 }
 
 /* ---------- Schema-Bausteine (Halbschnitt) ---------- */
@@ -648,7 +803,9 @@ function syncCommon(){
   $('#tin-o').textContent = fmt(ui.tIn) + ' Nm';
   $('#spd-o').textContent = '1 : ' + Math.round(1000/+spdEl.value);
 }
-[ninEl, tinEl, spdEl].forEach(e => e.addEventListener('input', () => { syncCommon(); if (e === ninEl) M2.auto && stopAuto(); refresh(); }));
+[ninEl, tinEl, spdEl].forEach(e => e.addEventListener('input', () => { syncCommon(); if (e === ninEl){ stopAuto(false); stopAuto8(false); } refresh(); }));
+/* Demo setzt die Drehzahl direkt (der Regler rastet in 50er-Schritten und würde kleine Schritte verschlucken). */
+function setNin(n){ ui.nIn = n; ninEl.value = n; $('#nin-o').textContent = fmt(n) + ' /min'; }
 const playBtn = $('#play');
 function syncPlay(){
   playBtn.textContent = ui.playing ? '⏸ Pause' : '▶ Abspielen';
@@ -804,6 +961,7 @@ function m1Update(){
   st.P = (flowOn && M1.fixed !== 'block') ? 'flow' : (plMoving ? 'turn' : 'idle');
   if (M1.fixed === 'block' && flowOn) st.P = 'flow';
   M1.set.setStates(st);
+  M1.set.setMarks(marksFor(tgt, ['S','T','H'].includes(M1.fixed) ? {[M1.fixed]:'Bremse'} : {}, M1.fixed === 'block' ? 'Kupplung' : null));
   const linkOf = {S:'lS', T:'lT', H:'lH'};
   ['S','T','H'].forEach(m => {
     S1.setState(m, st[m]);
@@ -1079,6 +1237,9 @@ function m2Update(){
   const fs = (seg, m) => F[seg] ? 'flow' : memState(m);
   M2.setA.setStates({S: fs('S1','sun'), T: F.t1 ? 'flow' : memState('out'), H: fs('H1','h1'), P: fs('P1','p1')});
   M2.setB.setStates({S: fs('S2','sun'), T: memState('t2'), H: fs('H2','out'), P: fs('P2','p2')});
+  const brk = {D1:[{}, {T:'Freilauf F'}], L:[{}, {T:'B2 + F'}], R:[{}, {T:'Bremse B2'}], D2:[{S:'Bremse B1'}, {S:'Bremse B1'}], P:[{T:'Parksperre'}, {H:'Parksperre'}]}[g] || [{}, {}];
+  M2.setA.setMarks(marksFor({S:tgt.s, T:tgt.out, H:tgt.h1}, brk[0], g === 'D3' ? 'K1 + K2' : null));
+  M2.setB.setMarks(marksFor({S:tgt.s, T:tgt.t2, H:tgt.out}, brk[1], null));
 }
 $('#gate').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; M2.sel = b.dataset.v; if (M2.sel !== 'D') stopAuto(false); m2Update(); });
 $('#sel-gear').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.disabled) return; M2.gear = +b.dataset.v; stopAuto(false); m2Update(); });
@@ -1090,7 +1251,7 @@ $('#matrix').addEventListener('click', e => { const tr = e.target.closest('tr[da
 $('#matrix').addEventListener('keydown', e => { if (e.key !== 'Enter' && e.key !== ' ') return; const tr = e.target.closest('tr[data-g]'); if (!tr) return; e.preventDefault(); pickGear(tr.dataset.g); });
 $('#auto').addEventListener('change', e => {
   M2.auto = e.target.checked;
-  if (M2.auto){ M2.sel = 'D'; M2.gear = 1; M2.hold = 0; ninEl.value = 1000; syncCommon(); }
+  if (M2.auto){ M2.sel = 'D'; M2.gear = 1; M2.hold = 0; setNin(1000); }
   m2Update();
 });
 function stopAuto(update=true){ if (!M2.auto) return; M2.auto = false; $('#auto').checked = false; if (update) m2Update(); }
@@ -1099,7 +1260,7 @@ function stopAuto(update=true){ if (!M2.auto) return; M2.auto = false; $('#auto'
    die Motordrehzahl fällt um das Verhältnis der Übersetzungen. */
 function autoTick(dt){
   if (!M2.auto || M2.sel !== 'D') return;
-  let n = +ninEl.value;
+  let n = ui.nIn;
   if (M2.gear === 3 && n >= 3000){
     M2.hold += dt;
     if (M2.hold > 3){ M2.gear = 1; M2.hold = 0; n = 1000; }
@@ -1110,7 +1271,251 @@ function autoTick(dt){
       M2.gear++; n = 3000 * iNew / iOld;
     }
   }
-  ninEl.value = n; syncCommon(); m2Update();
+  setNin(n); m2Update();
+}
+
+/* ======================================================================
+   Stufe 3: 8-Gang-Automatik (Bauart ZF 8HP)
+   Allgemeiner Löser: Drehzahlen aus Willis-Gleichungen + Schaltelementen,
+   Drehmomente aus dem Momentengleichgewicht jedes Bauteils. Daraus folgt die
+   Leistung an jedem Anschluss und damit Weg und Richtung des Kraftflusses.
+   ====================================================================== */
+function gauss(A, b){
+  const n = b.length, M = A.map((r, i) => r.concat([b[i]]));
+  for (let c = 0; c < n; c++){
+    let p = c;
+    for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+    if (Math.abs(M[p][c]) < 1e-12) return null;
+    [M[c], M[p]] = [M[p], M[c]];
+    for (let r = 0; r < n; r++) if (r !== c){ const f = M[r][c]/M[c][c]; if (f) for (let j = c; j <= n; j++) M[r][j] -= f*M[c][j]; }
+  }
+  return M.map((r, i) => r[n]/r[i]);
+}
+const HP8 = {
+  members: ['in','s12','h1','t1h4','h2s3','t3','h3s4','out'],
+  // Zähnezahlen nach veröffentlichten Daten (Sonne/Hohlrad)
+  sets: [
+    {S:'s12', T:'t1h4', H:'h1', zs:48, zh:96},
+    {S:'s12', T:'in', H:'h2s3', zs:48, zh:96},
+    {S:'h2s3', T:'t3', H:'h3s4', zs:69, zh:111},
+    {S:'h3s4', T:'out', H:'t1h4', zs:23, zh:85}
+  ],
+  elems: {
+    A:{type:'brake', m:'s12', name:'Bremse A', what:'hält Sonnenrad 1/2'},
+    B:{type:'brake', m:'h1', name:'Bremse B', what:'hält Hohlrad 1'},
+    C:{type:'clutch', a:'in', b:'h3s4', name:'Kupplung C', what:'Antrieb ↔ Sonne 4'},
+    D:{type:'clutch', a:'t3', b:'out', name:'Kupplung D', what:'Träger 3 ↔ Träger 4'},
+    E:{type:'clutch', a:'h2s3', b:'h3s4', name:'Kupplung E', what:'Sonne 3 ↔ Hohlrad 3'}
+  },
+  gears: {R:'ABD', N:'', 1:'ABC', 2:'ABE', 3:'BCE', 4:'BDE', 5:'BCD', 6:'CDE', 7:'ACD', 8:'ADE'},
+  published: {R:-3.297, 1:4.696, 2:3.130, 3:2.104, 4:1.667, 5:1.285, 6:1.000, 7:0.839, 8:0.667}
+};
+HP8.sets.forEach(s => { s.k = s.zh/s.zs; });
+function solveTrans(T, closed, nIn, tIn){
+  const mi = {}; T.members.forEach((m, i) => { mi[m] = i; });
+  const n = T.members.length, els = closed.split('').filter(Boolean);
+  const sp = {}, tq = {}, pm = {};
+  T.members.forEach(m => { sp[m] = 0; });
+  // Anschlüsse (Ports) und zu welchem Bauteil sie gehören
+  T.sets.forEach((s, j) => { pm[j + 'S'] = s.S; pm[j + 'T'] = s.T; pm[j + 'H'] = s.H; });
+  Object.keys(T.elems).forEach(e => { const E = T.elems[e]; if (E.type === 'brake') pm[e] = E.m; else { pm[e + 'a'] = E.a; pm[e + 'b'] = E.b; } });
+  pm.in = 'in'; pm.out = 'out';
+  Object.keys(pm).forEach(k => { tq[k] = 0; });
+  const row = len => Array(len).fill(0);
+  const A = [], b = [];
+  let r = row(n); r[mi.in] = 1; A.push(r); b.push(nIn);
+  T.sets.forEach(s => { const r = row(n); r[mi[s.S]] += 1; r[mi[s.H]] += s.k; r[mi[s.T]] -= 1 + s.k; A.push(r); b.push(0); });
+  els.forEach(e => { const E = T.elems[e], r = row(n); if (E.type === 'brake') r[mi[E.m]] = 1; else { r[mi[E.a]] = 1; r[mi[E.b]] = -1; } A.push(r); b.push(0); });
+  if (A.length !== n){ // Neutral: keine eindeutige Lage, nur der Antrieb dreht
+    sp.in = nIn;
+    return {sp, tq, pm, P:{}, neutral:true, i:null};
+  }
+  const x = gauss(A, b);
+  T.members.forEach((m, i) => { sp[m] = x[i]; });
+  // Momente: je Satz λ (Sonne λ, Hohlrad k·λ, Träger −(1+k)·λ), je Element τ, Abtriebsmoment L
+  const ns = T.sets.length, nu = ns + els.length + 1;
+  const TA = T.members.map(() => row(nu)), tb = row(n);
+  T.sets.forEach((s, j) => { TA[mi[s.S]][j] += 1; TA[mi[s.H]][j] += s.k; TA[mi[s.T]][j] -= 1 + s.k; });
+  els.forEach((e, q) => { const E = T.elems[e], c = ns + q; if (E.type === 'brake') TA[mi[E.m]][c] += 1; else { TA[mi[E.a]][c] += 1; TA[mi[E.b]][c] -= 1; } });
+  TA[mi.out][nu - 1] = 1; tb[mi.in] = -tIn;
+  const y = gauss(TA, tb);
+  T.sets.forEach((s, j) => { tq[j + 'S'] = y[j]; tq[j + 'H'] = s.k*y[j]; tq[j + 'T'] = -(1 + s.k)*y[j]; });
+  els.forEach((e, q) => { const E = T.elems[e]; if (E.type === 'brake') tq[e] = y[ns + q]; else { tq[e + 'a'] = y[ns + q]; tq[e + 'b'] = -y[ns + q]; } });
+  tq.in = tIn; tq.out = y[nu - 1];
+  const P = {}; Object.keys(tq).forEach(k => { P[k] = tq[k]*sp[pm[k]]; }); // Leistung, die über den Port ins Bauteil fließt
+  return {sp, tq, pm, P, neutral:false, i: Math.abs(sp.out) > 1e-12 ? nIn/sp.out : null, L:tq.out};
+}
+const hp8Ratio = g => { const r = solveTrans(HP8, HP8.gears[g], 1, 1); return r.neutral ? null : r.i; };
+
+const M8TXT = {
+  N: 'Neutral: Kein Kraftweg vom Antrieb zum Abtrieb ist geschlossen. Nur die Turbinenwelle mit Träger 2 dreht. (Vereinfacht: alle fünf Schaltelemente offen.)',
+  R: 'A und B legen Satz 1 komplett still, damit steht auch Hohlrad 4. Der Motor treibt Träger 2; weil Sonne 2 fest ist, dreht Hohlrad 2 (und Sonne 3) 1,5-mal so schnell. Kupplung D verbindet Träger 3 mit dem Abtrieb. In den Sätzen 3 und 4 kehrt sich die Drehrichtung um: rückwärts mit i = −3,30.',
+  1: 'A und B halten Sonne 1/2 und Hohlrad 1 fest: Satz 1 steht komplett still, damit steht auch Hohlrad 4. Kupplung C treibt Sonne 4 direkt mit Motordrehzahl an. Satz 4 arbeitet wie in Stufe 1 „Hohlrad fest, Sonne treibt, Träger Abtrieb“: i = 1 + 85/23 = 4,70.',
+  2: 'Satz 1 steht weiter still (A + B), Hohlrad 4 bleibt fest. Statt C ist jetzt E geschlossen und verblockt Satz 3. Der Motor treibt Träger 2, Sonne 2 ist fest, also dreht Hohlrad 2 1,5-mal so schnell. Über den verblockten Satz 3 kommt diese Drehzahl an Sonne 4. Satz 4 untersetzt wieder: i = 4,70 ÷ 1,5 = 3,13.',
+  3: 'A öffnet, C schließt. Sonne 4 dreht wieder mit Motordrehzahl (C), Satz 3 bleibt verblockt (E). Dadurch läuft Satz 2 als Block mit, und Sonne 1 dreht mit Motordrehzahl. Weil Hohlrad 1 fest ist (B), dreht Träger 1 langsam vorwärts und nimmt Hohlrad 4 mit. Satz 4 bekommt jetzt zwei Antriebe: i = 2,10.',
+  4: 'D und E verbinden die Sätze 3 und 4 so, dass beide als Block mit Abtriebsdrehzahl laufen. Abgestützt wird nur noch über B an Hohlrad 1. Der Motor treibt Träger 2, die Sonnenräder 1/2 drehen schneller als der Motor. Ergebnis: i = 1,67.',
+  5: 'C treibt Sonne 4 und Hohlrad 3 mit Motordrehzahl, D verbindet Träger 3 mit dem Abtrieb, B hält Hohlrad 1. Alle vier Sätze arbeiten zusammen, die Kraft verzweigt sich auf mehrere Wege: i = 1,29.',
+  6: 'C, D und E sind geschlossen, beide Bremsen offen. Nichts wird abgestützt, alles ist miteinander gekuppelt: Das ganze Getriebe dreht als Block. Direktgang i = 1, kein Zahnrad wälzt ab.',
+  7: 'A hält Sonne 1/2 fest. Der Motor treibt Träger 2, dadurch läuft Hohlrad 2 1,5-mal schneller. C koppelt Sonne 4 an den Motor, D verbindet Träger 3 mit dem Abtrieb. Der Abtrieb dreht schneller als der Motor: Schnellgang (Overdrive), i = 0,84.',
+  8: 'A hält Sonne 1/2 fest, Hohlrad 2 läuft 1,5-mal so schnell wie der Motor. E und D verblocken die Sätze 3 und 4, also dreht der Abtrieb mit dieser Drehzahl: i = 1 ÷ 1,5 = 0,67. Größter Schnellgang: niedrige Motordrehzahl bei Autobahntempo spart Kraftstoff.'
+};
+const M8NAME = {in:'Antrieb = Träger 2', s12:'Sonnenrad 1/2', h1:'Hohlrad 1', t1h4:'Träger 1 + Hohlrad 4', h2s3:'Hohlrad 2 + Sonne 3', t3:'Träger 3', h3s4:'Hohlrad 3 + Sonne 4', out:'Abtrieb = Träger 4'};
+const M8COL = {in:'in', s12:'sun', h1:'ring', t1h4:'t2', h2s3:'teal', t3:'olive', h3s4:'mag', out:'tr'};
+const M8 = {
+  sel:'1', auto:false, hold:0, cur:{}, th:{},
+  sets: ['#f8a','#f8b','#f8c','#f8d'].map((id, j) => {
+    const s = HP8.sets[j];
+    return new GearSet($(id), s.zs, {S:M8COL[s.S], T:M8COL[s.T], H:M8COL[s.H], P:'pl'}, s.zh);
+  })
+};
+HP8.members.forEach(m => { M8.cur[m] = 0; M8.th[m] = 0; });
+
+/* Schema 8-Gang: jede Linie läuft von einem Anschluss (Port) zum Knoten ihres Bauteils */
+const S8 = makeSchem($('#s8'), r => 236 - r);
+const S8SEG = [];
+(function buildS8(){
+  const s = S8, Y = s.Y;
+  el('line', {x1:10, y1:Y(0), x2:990, y2:Y(0), class:'axis'}, s.L.axis);
+  const L = (id, m, port, d, layer, halo) => { s.link(id, M8COL[m], d, layer, halo); S8SEG.push({id, m, port}); };
+  const R = (id, m, port, x, r1, w, r2) => { s.rect(id, M8COL[m], x, r1, w, r2); S8SEG.push({id, m, port}); };
+  // Antrieb
+  L('in_ext', 'in', 'in', `M20,${Y(6)}H465`);
+  L('in_c', 'in', 'Ca', `M643,${Y(38)}V${Y(6)}H465`);
+  // Sonne 1/2 mit Bremse A
+  L('s12_a', 's12', 'A', `M186,${Y(30)}H280`);
+  L('s12_s2', 's12', '1S', `M400,${Y(30)}H320`);
+  // Hohlrad 1 mit Bremse B
+  L('h1_b', 'h1', 'B', `M220,${Y(109)}H280`);
+  // Hohlrad 2 + Sonne 3
+  L('h2s3_h2', 'h2s3', '1H', `M440,${Y(109)}H490`);
+  L('h2s3_s3', 'h2s3', '2S', `M540,${Y(30)}H490V${Y(109)}`);
+  L('h2s3_e', 'h2s3', 'Ea', `M504,${Y(140)}H490V${Y(109)}`);
+  // Hohlrad 3 + Sonne 4
+  L('h3s4_h3', 'h3s4', '2H', `M580,${Y(109)}H660`);
+  L('h3s4_s4', 'h3s4', '3S', `M760,${Y(30)}H660V${Y(109)}`);
+  L('h3s4_c', 'h3s4', 'Cb', `M656,${Y(48)}H660`);
+  L('h3s4_e', 'h3s4', 'Eb', `M520,${Y(140)}H560V${Y(118)}`);
+  // Sätze
+  R('S1', 's12', '0S', 280, 22, 40, 38); R('S2', 's12', '1S', 400, 22, 40, 38);
+  R('S3', 'h2s3', '2S', 540, 22, 40, 38); R('S4', 'h3s4', '3S', 760, 22, 40, 38);
+  R('H1', 'h1', '0H', 280, 100, 40, 118); R('H2', 'h2s3', '1H', 400, 100, 40, 118);
+  R('H3', 'h3s4', '2H', 540, 100, 40, 118); R('H4', 't1h4', '3H', 760, 100, 40, 118);
+  [285, 405, 545, 765].forEach((x, j) => { s.rect('P' + j, 'pl', x, 46, 30, 94); S8SEG.push({id:'P' + j, m:null, port:'P' + j}); });
+  // Schaltelemente
+  R('a_r', 's12', 'A', 180, 18, 6, 42); s.gap('gA', 174, 20, 6, 40); s.rect('a_g', 'gnd', 168, 18, 6, 42); s.gnd(158, 16, 10, 44);
+  R('b_r', 'h1', 'B', 214, 97, 6, 121); s.gap('gB', 208, 99, 6, 119); s.rect('b_g', 'gnd', 202, 97, 6, 121); s.gnd(192, 95, 10, 123);
+  R('c_i', 'in', 'Ca', 640, 38, 6, 58); s.gap('gC', 646, 40, 4, 56); R('c_o', 'h3s4', 'Cb', 650, 38, 6, 58);
+  R('d_i', 't3', 'Da', 612, 60, 6, 80); s.gap('gD', 618, 62, 4, 78); R('d_o', 'out', 'Db', 622, 60, 6, 80);
+  R('e_i', 'h2s3', 'Ea', 504, 128, 6, 152); s.gap('gE', 510, 130, 4, 150); R('e_o', 'h3s4', 'Eb', 514, 128, 6, 152);
+  // Träger (über den Planeten gezeichnet)
+  L('t1h4_t1', 't1h4', '0T', `M285,${Y(70)}H345V${Y(170)}H560`, 'top');
+  L('t1h4_h4', 't1h4', '3H', `M780,${Y(118)}V${Y(170)}H560`, 'top');
+  L('in_t2', 'in', '1T', `M405,${Y(70)}H465V${Y(6)}`, 'top');
+  L('t3_d', 't3', '2T', `M545,${Y(70)}H612`, 'top');
+  L('out_d', 'out', 'Db', `M628,${Y(70)}H765`, 'top', true);
+  L('out_t4', 'out', '3T', `M765,${Y(70)}H795`, 'top');
+  L('out_ext', 'out', 'out', `M985,${Y(6)}H840V${Y(70)}H795`, 'top');
+  [[300, 't1h4'], [420, 'in'], [560, 't3'], [780, 'out']].forEach(([x, m]) => {
+    const g = el('g', {class:'mc-' + M8COL[m]}, s.L.top); el('circle', {cx:x, cy:Y(70), r:4.5, class:'part'}, g);
+  });
+  // Beschriftung
+  s.text(20, -14, 'Antrieb (Turbinenwelle)', 't s', 'start');
+  s.text(985, -14, 'Abtrieb', 't s', 'end');
+  s.text(163, 50, 'A', 't'); s.text(207, 129, 'B', 't'); s.text(648, 64, 'C', 't'); s.text(620, 86, 'D', 't'); s.text(512, 158, 'E', 't');
+  [[300, '1'], [420, '2'], [560, '3'], [780, '4']].forEach(([x, n]) => { s.text(x, 190, 'Satz ' + n, 't s'); s.text(x - 22, 124, 'H' + n, 't s', 'end'); s.text(x, 10, 'S' + n, 't s'); });
+})();
+
+function m8Update(){
+  const g = M8.sel, closed = HP8.gears[g];
+  const res = solveTrans(HP8, closed, ui.nIn, ui.tIn); M8.res = res;
+  const sp = res.sp, i = res.i;
+  // Bedienung
+  $$('#sel8 button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === g)));
+  $('#auto8').checked = M8.auto;
+  $('#elems8').innerHTML = Object.keys(HP8.elems).map(e => {
+    const on = closed.includes(e), E = HP8.elems[e];
+    return `<span class="el${on ? ' on' : ''}" title="${E.what}">${e} <i>${E.type === 'brake' ? 'Bremse' : 'Kupplung'} · ${on ? 'zu' : 'offen'}</i></span>`;
+  }).join('');
+  // Kennzahlen
+  const gname = g === 'R' ? 'Rückwärtsgang' : (g === 'N' ? 'Neutral' : g + '. Gang');
+  $('#m8-i').textContent = i === null ? 'i = –' : 'i = ' + fmt(i, 2);
+  const chip = $('#m8-gear'); chip.textContent = gname; chip.className = 'chip ' + kindOf(i)[1];
+  $('#m8-form').innerHTML = i === null ? 'Keine Verbindung zwischen Antrieb und Abtrieb' :
+    `n<sub>ab</sub> = ${fmt(ui.nIn)} ÷ ${fmt(i, 3)} = ${fmt(sp.out)} /min · geschlossen: ${closed.split('').join(', ')}`;
+  const v = sp.out / 3.15 * 2.0 * 60 / 1000; // Beispiel: Achsantrieb 3,15, Radumfang 2,0 m
+  const order = ['1','2','3','4','5','6','7','8'], gi = order.indexOf(g);
+  const step = gi >= 0 && gi < 7 ? hp8Ratio(g)/hp8Ratio(order[gi + 1]) : null;
+  $('#m8-kv').innerHTML =
+    `<div><span>Abtrieb</span><b>${fmt(sp.out)} /min</b></div>` +
+    `<div><span>Abtriebsmoment</span><b>${res.neutral ? 0 : fmt(Math.abs(res.L))} Nm</b></div>` +
+    `<div><span>Tempo (Beispiel)</span><b>${res.neutral ? '–' : fmt(Math.abs(v)) + ' km/h'}${g === 'R' ? ' rückw.' : ''}</b></div>` +
+    `<div><span>Gangsprung zum nächsten</span><b>${step ? fmt(step, 2) : '–'}</b></div>`;
+  $('#m8-expl').textContent = M8TXT[g];
+  // Bauteil-Zustände: gebremst / steht und stützt ab / steht lastfrei / dreht
+  const braked = {}; closed.split('').forEach(e => { const E = HP8.elems[e]; if (E.type === 'brake') braked[E.m] = E.name; });
+  const memTq = {}; HP8.members.forEach(m => { memTq[m] = 0; });
+  Object.keys(res.tq).forEach(k => { memTq[res.pm[k]] = Math.max(memTq[res.pm[k]], Math.abs(res.tq[k])); });
+  const eps = 1e-6*ui.tIn;
+  const memState = m => (braked[m] || (Math.abs(sp[m]) < 0.5 && memTq[m] > eps)) ? 'fixed' : (Math.abs(sp[m]) < 0.5 ? 'idle' : 'turn');
+  const flows = k => ui.nIn > 0 && !res.neutral && Math.abs(res.tq[k] || 0) > eps && Math.abs(sp[res.pm[k]] || 0) > 0.5;
+  const setFlow = j => ['S','T','H'].some(x => flows(j + x));
+  S8SEG.forEach(({id, m, port}) => {
+    if (port[0] === 'P'){ const j = +port[1]; S8.setState(id, setFlow(j) ? 'flow' : (HP8.sets[j] && Math.abs(sp[HP8.sets[j].T]) + Math.abs(sp[HP8.sets[j].S]) > 0.5 ? 'turn' : 'idle')); return; }
+    if (flows(port)) S8.setState(id, 'flow', res.P[port] < 0); else S8.setState(id, memState(m));
+  });
+  ['A','B','C','D','E'].forEach(e => S8.setState('g' + e, closed.includes(e)));
+  // Drehzahltabelle
+  $('#m8-tbl tbody').innerHTML = HP8.members.map(m => {
+    const st = braked[m] ? `<span class="role fest">${braked[m]}</span>` : memState(m) === 'fixed' ? '<span class="role fest">steht, stützt ab</span>' : memState(m) === 'idle' ? '<span class="muted">steht</span>' : dirTxt(sp[m]);
+    return `<tr><td><span class="dot" style="background:var(--c-${M8COL[m]})"></span> ${M8NAME[m]}</td><td class="num">${fmt(sp[m])} /min</td><td>${st}</td></tr>`;
+  }).join('');
+  // Vorderansichten + Markierungen direkt am Rad
+  HP8.sets.forEach((s, j) => {
+    const fs = (x, m) => flows(j + x) ? 'flow' : memState(m);
+    M8.sets[j].setStates({S:fs('S', s.S), T:fs('T', s.T), H:fs('H', s.H), P: setFlow(j) ? 'flow' : 'turn'});
+    const br = {}; ['S','T','H'].forEach(x => { if (braked[s[x]]) br[x] = braked[s[x]]; });
+    let blockBy = null;
+    closed.split('').forEach(e => { const E = HP8.elems[e]; if (E.type === 'clutch'){ const ms = [s.S, s.T, s.H]; if (ms.includes(E.a) && ms.includes(E.b)) blockBy = E.name; } });
+    const n3 = {S:sp[s.S], T:sp[s.T], H:sp[s.H]};
+    const stx = {}; ['S','T','H'].forEach(x => { if (memState(s[x]) === 'fixed') stx[x] = 'steht, stützt ab'; });
+    M8.sets[j].setMarks(marksFor(n3, br, blockBy, stx));
+    const lam = Math.abs(res.tq[j + 'S'] || 0) > eps;
+    const stand = ['S','T','H'].every(x => Math.abs(n3[x]) < 0.5);
+    const block = !stand && Math.abs(n3.S - n3.T) < 0.5 && Math.abs(n3.H - n3.T) < 0.5;
+    const what = res.neutral ? 'ohne Last' : stand ? (lam ? 'steht still und stützt ab' : 'steht still') : block ? 'dreht als Block' : (lam ? '<b>überträgt Kraft</b> (Planeten wälzen)' : 'dreht lastfrei mit');
+    $('#c8-' + j).innerHTML = `Z ${s.zs}/${s.zh} · ${what}`;
+  });
+  // Schaltmatrix
+  $('#matrix8 tbody').innerHTML = ['R','N','1','2','3','4','5','6','7','8'].map(key => {
+    const c = HP8.gears[key], ii = hp8Ratio(key), k = order.indexOf(key);
+    const stp = k >= 0 && k < 7 ? fmt(ii/hp8Ratio(order[k + 1]), 2) : '–';
+    const cell = e => c.includes(e) ? '●' : '<span class="muted">–</span>';
+    return `<tr class="clk${key === g ? ' cur' : ''}" data-g="${key}" tabindex="0"><td>${key === 'R' ? 'R' : key === 'N' ? 'N' : key + '. Gang'}</td>${['A','B','C','D','E'].map(cell).join('')}<td class="num">${ii === null ? '–' : fmt(ii, 3)}</td><td class="num">${stp}</td></tr>`;
+  }).join('');
+}
+function pick8(v){ M8.sel = v; stopAuto8(false); m8Update(); }
+$('#sel8').addEventListener('click', e => { const b = e.target.closest('button'); if (b) pick8(b.dataset.v); });
+$('#matrix8').addEventListener('click', e => { const tr = e.target.closest('tr[data-g]'); if (tr) pick8(tr.dataset.g); });
+$('#matrix8').addEventListener('keydown', e => { if (e.key !== 'Enter' && e.key !== ' ') return; const tr = e.target.closest('tr[data-g]'); if (!tr) return; e.preventDefault(); pick8(tr.dataset.g); });
+$('#auto8').addEventListener('change', e => {
+  M8.auto = e.target.checked;
+  if (M8.auto){ M8.sel = '1'; M8.hold = 0; setNin(1000); }
+  m8Update();
+});
+function stopAuto8(update = true){ if (!M8.auto) return; M8.auto = false; $('#auto8').checked = false; if (update) m8Update(); }
+/* Demo: hochdrehen bis 2400 /min, dann Gang wechseln; die Abtriebsdrehzahl bleibt dabei gleich. */
+function auto8Tick(dt){
+  if (!M8.auto) return;
+  let n = ui.nIn, g = +M8.sel;
+  if (!(g >= 1)){ g = 1; n = 1000; }
+  if (g === 8 && n >= 2400){
+    M8.hold += dt;
+    if (M8.hold > 3){ g = 1; M8.hold = 0; n = 1000; }
+  } else {
+    n = Math.min(2400, n + 650*dt);
+    if (n >= 2400 && g < 8){ n = 2400*hp8Ratio(String(g + 1))/hp8Ratio(String(g)); g++; }
+  }
+  M8.sel = String(g); setNin(n); m8Update();
 }
 
 /* ======================================================================
@@ -1124,6 +1529,8 @@ const QUIZ = [
   {q:'Wozu dienen Kupplungen und Bremsen im Automatikgetriebe?', o:['Sie verschieben Zahnräder','Sie verbinden Glieder mit dem Antrieb oder halten sie am Gehäuse fest','Sie kühlen das Getriebeöl'], a:1, e:'Die Zahnräder bleiben immer im Eingriff. Geschaltet wird, indem man festlegt, welches Glied angetrieben und welches abgestützt wird.'},
   {q:'Im 2. Gang des Simpson-Satzes hält B1 die Sonnenräder fest. Welche Schaltung des Planetensatzes ist das?', o:['Hohlrad treibt, Sonne fest, Träger ist Abtrieb','Sonne treibt, Hohlrad fest, Träger ist Abtrieb','Träger fest, Sonne treibt'], a:0, e:'Das ergibt die kleine Untersetzung i = 1 + 1/k = 1,4.'},
   {q:'Warum hat der 1. Gang in D einen Freilauf statt nur der Bremse B2?', o:['Damit das Getriebe leiser ist','Er gibt beim Hochschalten in den 2. Gang von selbst frei – die Schaltung wird weich','Damit der Rückwärtsgang schneller einlegt'], a:1, e:'Beim Wechsel 1→2 muss nur B1 schließen. Der Freilauf überholt dann automatisch. Nachteil: keine Motorbremse im 1. Gang, dafür gibt es Stellung L.'},
+  {q:'Wie viele der fünf Schaltelemente sind beim 8-Gang-Getriebe in jedem Gang geschlossen?', o:['eines','zwei','drei'], a:2, e:'Immer drei. Beim Wechsel in den Nachbargang öffnet genau eines und ein anderes schließt. Schau dir die Schaltmatrix in Stufe 3 an.'},
+  {q:'Im 6. Gang des 8-Gang-Getriebes sind die Kupplungen C, D und E geschlossen, beide Bremsen offen. Was bedeutet das?', o:['Rückwärtsgang','Alles dreht als Block: Direktgang, i = 1','Leerlauf'], a:1, e:'Ohne Bremse wird nichts abgestützt, die drei Kupplungen verbinden alles miteinander. Wie der 3. Gang beim Simpson-Satz.'},
   {q:'Der Motor dreht mit 2400 /min im 1. Gang (i = 2,4). Wie schnell dreht der Abtrieb?', o:['5760 /min','2400 /min','1000 /min'], a:2, e:'n_ab = n_an ÷ i = 2400 ÷ 2,4 = 1000 /min. Das Drehmoment steigt dafür um den Faktor 2,4.'}
 ];
 const quizState = QUIZ.map(() => null);
@@ -1154,17 +1561,18 @@ function showTab(id){
   $$('section[role=tabpanel]').forEach(p => { p.hidden = p.id !== 'p-' + id; });
   $('#common').hidden = id === 'wissen';
   if (id !== 'auto') stopAuto(false);
+  if (id !== 'acht') stopAuto8(false);
   try { localStorage.setItem('pg-tab', id); } catch (e) {}
   refresh();
 }
 $$('.tab').forEach(t => t.addEventListener('click', () => showTab(t.id.slice(4))));
 $('.tabs').addEventListener('keydown', e => {
   if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-  const ids = ['satz','auto','wissen'], i = ids.indexOf(active);
-  const n = ids[(i + (e.key === 'ArrowRight' ? 1 : 2)) % 3];
+  const ids = ['satz','auto','acht','wissen'], i = ids.indexOf(active);
+  const n = ids[(i + (e.key === 'ArrowRight' ? 1 : ids.length - 1)) % ids.length];
   showTab(n); $('#tab-' + n).focus();
 });
-function refresh(){ if (active === 'satz') m1Update(); else if (active === 'auto') m2Update(); }
+function refresh(){ if (active === 'satz') m1Update(); else if (active === 'auto') m2Update(); else if (active === 'acht') m8Update(); }
 
 // Drehzahlen weich nachführen: eine Linearkombination zulässiger Zustände erfüllt die Willis-Gleichung weiterhin.
 function ease(cur, tgt, dt){ const a = 1 - Math.exp(-dt/0.28); for (const k in tgt) cur[k] += (tgt[k] - cur[k])*a; }
@@ -1180,22 +1588,28 @@ function frame(t){
       autoTick(dt);
       ease(M2.cur, M2.tgt, dt);
       for (const m in M2.cur) M2.th[m] += w(M2.cur[m])*dt;
+    } else if (active === 'acht' && M8.res){
+      auto8Tick(dt);
+      ease(M8.cur, M8.res.sp, dt);
+      for (const m in M8.cur) M8.th[m] += w(M8.cur[m])*dt;
     }
   }
   if (active === 'satz') M1.set.render(M1.th.S, M1.th.T, M1.th.H);
   else if (active === 'auto'){
     M2.setA.render(M2.th.s, M2.th.out, M2.th.h1);
     M2.setB.render(M2.th.s, M2.th.t2, M2.th.out);
+  } else if (active === 'acht'){
+    HP8.sets.forEach((s, j) => M8.sets[j].render(M8.th[s.S], M8.th[s.T], M8.th[s.H]));
   }
   requestAnimationFrame(frame);
 }
 
 syncCommon(); syncPlay(); renderQuiz();
 let startTab = 'satz';
-try { const s = localStorage.getItem('pg-tab'); if (s === 'auto' || s === 'wissen') startTab = s; } catch (e) {}
+try { const s = localStorage.getItem('pg-tab'); if (['auto','acht','wissen'].includes(s)) startTab = s; } catch (e) {}
 const hashTab = (location.hash || '').slice(1);
-if (['satz','auto','wissen'].includes(hashTab)) startTab = hashTab;
-m2Update(); showTab(startTab);
+if (['satz','auto','acht','wissen'].includes(hashTab)) startTab = hashTab;
+m2Update(); m8Update(); showTab(startTab);
 requestAnimationFrame(frame);
 
 /* Service Worker (nur über http/https, nicht als lokale Datei) */
@@ -1217,6 +1631,21 @@ window.validatePlanetengetriebe = function(){
   });
   [18,24,30,36].forEach(z => { if ((z + ZH) % NPL) errs.push(`Zähnezahl ${z}: Montagebedingung verletzt`); if ((ZH - z) % 2) errs.push(`Zähnezahl ${z}: Planeten nicht ganzzahlig`); });
   if (simpsonRatio('P') !== null || simpsonRatio('N') !== null) errs.push('P/N dürfen kein Drehmoment übertragen');
+  // 8-Gang: Übersetzungen gegen veröffentlichte Werte, Momente und Leistung im Gleichgewicht
+  Object.keys(HP8.published).forEach(g => {
+    const r = solveTrans(HP8, HP8.gears[g], 1000, 100);
+    if (HP8.gears[g].length !== 3) errs.push(`8-Gang ${g}: nicht genau drei Elemente geschlossen`);
+    if (Math.abs(r.i - HP8.published[g]) > 0.0015) errs.push(`8-Gang ${g}: i=${r.i}, veröffentlicht ${HP8.published[g]}`);
+    if (Math.abs(r.L + r.i*100) > 1e-6) errs.push(`8-Gang ${g}: Abtriebsmoment ${r.L} passt nicht zu i`);
+    if (Math.abs(r.P.in + r.P.out) > 1e-6) errs.push(`8-Gang ${g}: Leistungsbilanz verletzt`);
+    HP8.sets.forEach((s, j) => { if (Math.abs(r.sp[s.S] + s.k*r.sp[s.H] - (1 + s.k)*r.sp[s.T]) > 1e-6) errs.push(`8-Gang ${g}: Satz ${j + 1} verletzt Willis`); });
+  });
+  ['1','2','3','4','5','6','7'].forEach((g, k) => {
+    const a = HP8.gears[g], b = HP8.gears[String(k + 2)];
+    const diff = a.split('').filter(e => !b.includes(e)).length;
+    if (diff !== 1) errs.push(`8-Gang ${g}→${k + 2}: mehr als ein Element wechselt`);
+  });
+  if (!solveTrans(HP8, '', 1000, 100).neutral) errs.push('8-Gang N darf kein Drehmoment übertragen');
   return {ok: errs.length === 0, errors: errs};
 };
 </script>

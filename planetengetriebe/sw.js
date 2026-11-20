@@ -1,7 +1,7 @@
 /* Planetengetriebe – Service Worker
    Precache der App-Shell, network-first für Navigationen, cache-first für Assets.
    CACHE_NAME bei jedem Release erhöhen. */
-const CACHE_NAME = 'planetengetriebe-v1';
+const CACHE_NAME = 'planetengetriebe-v2';
 const ASSETS = [
   './',
   './index.html',

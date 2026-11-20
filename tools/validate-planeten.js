@@ -4,7 +4,8 @@
  *   npm i -D playwright                  # einmalig
  *   node tools/validate-planeten.js      # prüft ../planetengetriebe/index.html
  *
- * Rechnet alle Übersetzungen gegen die Formeln nach (Willis-Gleichung, Simpson-Satz),
+ * Rechnet alle Übersetzungen gegen die Formeln nach (Willis-Gleichung, Simpson-Satz,
+ * 8-Gang gegen veröffentlichte Werte),
  * prüft Montagebedingungen der Zähnezahlen, klickt alle Schaltzustände durch und
  * meldet Laufzeitfehler. Exit-Code 1 bei Fehlern. CHROME_PATH überschreibt den Browser.
  */
@@ -38,7 +39,15 @@ catch (e) { console.error("Playwright fehlt – bitte 'npm i -D playwright' ausf
   await page.click("#tab-auto");
   for (const g of ["P", "R", "N", "D1", "D2", "D3", "L"]) await page.click(`#matrix tr[data-g="${g}"]`);
   await page.check("#auto");
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(4500);
+  const g3 = await page.evaluate(() => document.querySelector("#sel-gear button[aria-pressed=true]")?.dataset.v);
+  if (g3 === "1") runtime.push("3-Gang-Demo schaltet nicht hoch");
+  await page.click("#tab-acht");
+  for (const g of ["R", "N", "1", "2", "3", "4", "5", "6", "7", "8"]) await page.click(`#sel8 button[data-v="${g}"]`);
+  await page.check("#auto8");
+  await page.waitForTimeout(3500);
+  const demo = await page.evaluate(() => document.querySelector("#sel8 button[aria-pressed=true]").dataset.v);
+  if (demo === "1") runtime.push("8-Gang-Demo schaltet nicht hoch");
   await page.click("#tab-wissen");
   await page.click('#quiz button[data-q="0"][data-o="0"]');
   await browser.close();

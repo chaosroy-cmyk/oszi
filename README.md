@@ -43,11 +43,21 @@ mit eigenem Manifest, Service Worker und Scope (`/planetengetriebe/`):
   Antrieb wählen, Zähnezahl ändern. Animierte Vorderansicht mit korrekt
   kämmenden Zahnrädern, Getriebeschema mit Kraftfluss, Drehzahlplan,
   Drehmomente und alle acht Schaltmöglichkeiten im Überblick.
-- **Stufe 2 – Automatikgetriebe (Simpson-Satz):** Wählhebel P R N D L,
+- **Stufe 2 – 3-Gang-Automatik (Simpson-Satz):** Wählhebel P R N D L,
   Gänge 1–3, Kupplungen K1/K2, Bremsen B1/B2, Freilauf F und Parksperre.
   Kraftfluss inkl. Leistungsverzweigung im 1. Gang, Schaltmatrix,
   Anfahr-Demo mit automatischem Hochschalten.
-- **Stufe 3 – Wissen & Quiz:** Aufbau, Willis-Gleichung, Merksätze, 8 Fragen.
+- **Stufe 3 – 8-Gang-Automatik (Bauart ZF 8HP):** vier Planetensätze,
+  Bremsen A/B, Kupplungen C/D/E, je Gang drei geschlossen. Gänge R, N, 1–8,
+  Schaltmatrix mit Gangsprüngen, Demo durch alle Gänge. Drehzahlen,
+  Drehmomente und Kraftfluss rechnet ein allgemeiner Löser
+  (Willis-Gleichungen + Momentengleichgewicht je Bauteil); die
+  Übersetzungen stimmen mit den veröffentlichten Werten überein.
+- **Direkt am Zahnrad sichtbar:** Schloss-Markierung „Bremse …“ (beim
+  Hohlrad zusätzlich Bremsbacken), „steht“ bzw. „steht, stützt ab“,
+  gestrichelter Ring „verblockt durch …“ und „Satz steht still“.
+- **Stufe 4 – Wissen & Quiz:** Aufbau, Willis-Gleichung, Merksätze,
+  warum 8 Gänge, 10 Fragen.
 
 Prüfung (rechnet alle Übersetzungen nach und klickt alle Zustände durch):
 `node tools/validate-planeten.js`. Nach Änderungen `CACHE_NAME` in
