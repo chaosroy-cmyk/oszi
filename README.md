@@ -19,6 +19,8 @@ Für Smartphone optimiert, ohne externe Abhängigkeiten.
 | `tools/validate.js` | Datenvalidierung (headless, für CI) |
 | `DEPLOY.md` | Deployment über Cloudflare Pages |
 | `multimeter/` | Zweite, eigenständige PWA „KFZ Multimeter Profi" (s. u.) |
+| `planetengetriebe/` | Dritte PWA: Planetengetriebe-Lernmodell (s. u.) |
+| `tools/validate-planeten.js` | Rechen- und Klickprüfung des Lernmodells |
 
 ## Zweite App: KFZ Multimeter Profi (`multimeter/`)
 
@@ -31,6 +33,25 @@ Prüfbericht und Änderungshistorie: `multimeter/REVIEW.md`.
 
 Nach Änderungen dort `APP_VERSION` in `multimeter/index.html` **und**
 `CACHE_NAME` in `multimeter/sw.js` gemeinsam erhöhen.
+
+## Dritte App: Planetengetriebe-Lernmodell (`planetengetriebe/`)
+
+Interaktives Lernmodell für Schule und Ausbildung, ebenfalls eigenständige PWA
+mit eigenem Manifest, Service Worker und Scope (`/planetengetriebe/`):
+
+- **Stufe 1 – Planetensatz:** Sonnenrad, Träger oder Hohlrad festhalten,
+  Antrieb wählen, Zähnezahl ändern. Animierte Vorderansicht mit korrekt
+  kämmenden Zahnrädern, Getriebeschema mit Kraftfluss, Drehzahlplan,
+  Drehmomente und alle acht Schaltmöglichkeiten im Überblick.
+- **Stufe 2 – Automatikgetriebe (Simpson-Satz):** Wählhebel P R N D L,
+  Gänge 1–3, Kupplungen K1/K2, Bremsen B1/B2, Freilauf F und Parksperre.
+  Kraftfluss inkl. Leistungsverzweigung im 1. Gang, Schaltmatrix,
+  Anfahr-Demo mit automatischem Hochschalten.
+- **Stufe 3 – Wissen & Quiz:** Aufbau, Willis-Gleichung, Merksätze, 8 Fragen.
+
+Prüfung (rechnet alle Übersetzungen nach und klickt alle Zustände durch):
+`node tools/validate-planeten.js`. Nach Änderungen `CACHE_NAME` in
+`planetengetriebe/sw.js` erhöhen.
 
 ## Nutzung
 

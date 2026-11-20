@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Planetengetriebe Lernmodell</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Interaktives Lernmodell: Planetensatz und Automatikgetriebe (Simpson-Satz) mit Animation, Kraftfluss, Übersetzungen und Schaltlogik – für Schule und Ausbildung.">
+<meta name="theme-color" content="#1b2531">
+<meta name="color-scheme" content="light dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Planetengetriebe">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+/* Layout: Kopfzeile mit drei Lernstufen (Tabs); je Stufe eine Bühne (Vorderansicht + Getriebeschema)
+   neben einem Bedien- und Erklärpanel. Farben = Bauteile; Orange ist ausschließlich der Kraftfluss. */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --surface2:#f5f7f9; --ink:#17202a; --muted:#566372; --line:#d2d9e1;
+  --flow:#ff6a00; --flow-soft:rgba(255,106,0,.22);
+  --c-sun:#d29e00; --c-pl:#2f9a59; --c-tr:#2c68cf; --c-ring:#c2385a; --c-t2:#7656d1; --c-in:#5b6878; --c-gnd:#8693a3;
+  --edge:rgba(10,20,30,.38); --hatch:rgba(15,25,35,.55); --engaged:#17202a;
+  --font-head:"Avenir Next","Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --font-data:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f141a; --surface:#171e27; --surface2:#1d2631; --ink:#e6ecf2; --muted:#9aa8b7; --line:#2c3745;
+    --flow:#ff7a1a; --flow-soft:rgba(255,122,26,.25);
+    --c-sun:#f0c02c; --c-pl:#46bf76; --c-tr:#5b93f2; --c-ring:#e25a7c; --c-t2:#9c83ef; --c-in:#8796a8; --c-gnd:#6b7888;
+    --edge:rgba(0,0,0,.55); --hatch:rgba(230,236,242,.6); --engaged:#e6ecf2;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f141a; --surface:#171e27; --surface2:#1d2631; --ink:#e6ecf2; --muted:#9aa8b7; --line:#2c3745;
+  --flow:#ff7a1a; --flow-soft:rgba(255,122,26,.25);
+  --c-sun:#f0c02c; --c-pl:#46bf76; --c-tr:#5b93f2; --c-ring:#e25a7c; --c-t2:#9c83ef; --c-in:#8796a8; --c-gnd:#6b7888;
+  --edge:rgba(0,0,0,.55); --hatch:rgba(230,236,242,.6); --engaged:#e6ecf2;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--flow);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* Kopf */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--surface);border-bottom:1px solid var(--line)}
+.hrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;padding-block:10px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{flex:0 0 auto}
+.brand h1{font-family:var(--font-head);font-size:18px;font-weight:700;margin:0;letter-spacing:.2px}
+.brand p{margin:0;font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:4px;margin-left:auto;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:3px;overflow-x:auto;max-width:100%}
+.tab{border:0;background:transparent;padding:7px 12px;border-radius:7px;cursor:pointer;font-weight:600;font-size:14px;white-space:nowrap;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--surface)}
+.tab .st{font-family:var(--font-data);font-size:11px;opacity:.7;margin-right:4px}
+
+main{padding-block:18px 40px}
+section[role="tabpanel"]{display:grid;gap:16px}
+.intro{max-width:78ch;margin:0;color:var(--muted)}
+.intro b{color:var(--ink)}
+.grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.card h2{font-family:var(--font-head);font-size:15px;margin:0 0 10px;font-weight:700;text-wrap:balance}
+.card h3{font-size:13px;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.stack{display:grid;gap:16px;min-width:0}
+
+/* Bühne */
+.stage{display:grid;gap:10px}
+.fronts{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.front{position:relative;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:6px}
+.front svg{display:block;width:100%;height:auto;max-height:440px}
+.front .cap{position:absolute;left:10px;top:8px;font-size:12px;font-weight:700;color:var(--muted)}
+.schem{overflow-x:auto;background:var(--surface2);border:1px solid var(--line);border-radius:10px}
+.schem svg{display:block;width:100%;min-width:640px;height:auto}
+.schem-cap{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);padding:6px 2px 0}
+.lg{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:10px;border-radius:2px;display:inline-block}
+.sw.flow{background:repeating-linear-gradient(90deg,var(--flow) 0 6px,transparent 6px 9px);height:5px}
+.sw.hatch{background:repeating-linear-gradient(45deg,var(--hatch) 0 2px,transparent 2px 5px);border:1px solid var(--line)}
+.sw.idle{background:var(--muted);opacity:.3}
+
+/* Bedienelemente */
+.ctl{display:grid;gap:12px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button,.btn{border:1px solid var(--line);background:var(--surface2);padding:7px 11px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.seg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.seg button:disabled{opacity:.35;cursor:not-allowed}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.lbl{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.sl{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px}
+.sl label{font-size:13px;font-weight:600;white-space:nowrap}
+.sl output{font-family:var(--font-data);font-size:13px;min-width:8.5ch;text-align:right;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--flow);min-width:0}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn.play{min-width:118px;justify-content:center}
+
+/* Kennzahlen */
+.ratio{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+.ratio .big{font-family:var(--font-data);font-size:38px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.chip{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--line);background:var(--surface2)}
+.chip.k-under{border-color:var(--c-tr);color:var(--c-tr)}
+.chip.k-over{border-color:var(--c-pl);color:var(--c-pl)}
+.chip.k-rev{border-color:var(--c-ring);color:var(--c-ring)}
+.chip.k-direct{border-color:var(--ink)}
+.chip.k-none{color:var(--muted)}
+.formula{font-family:var(--font-data);font-size:13px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+td.num,th.num{text-align:right;font-family:var(--font-data);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tblwrap{overflow-x:auto}
+tr.clk{cursor:pointer}
+tr.clk:hover td{background:var(--surface2)}
+tr.cur td{background:var(--flow-soft)}
+.role{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:5px;white-space:nowrap}
+.role.an{background:var(--flow);color:#fff}
+.role.ab{background:var(--ink);color:var(--surface)}
+.role.fest{background:repeating-linear-gradient(45deg,var(--hatch) 0 2px,transparent 2px 5px);border:1px solid var(--line)}
+.role.frei{color:var(--muted);border:1px dashed var(--line)}
+.role.block{border:1px solid var(--ink)}
+.dir{font-size:15px}
+.muted{color:var(--muted)}
+.expl{margin:0;max-width:70ch}
+.appl{margin:8px 0 0;font-size:13px;color:var(--muted)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.kv div{background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.kv span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.kv b{font-family:var(--font-data);font-size:17px;font-variant-numeric:tabular-nums}
+.split{display:flex;height:24px;border-radius:6px;overflow:hidden;border:1px solid var(--line);font-size:11px;font-weight:700}
+.split div{display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;color:#fff}
+.note{font-size:12px;color:var(--muted);margin:6px 0 0}
+
+/* Wählhebel */
+.shifter{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.gate{display:grid;gap:4px;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:6px}
+.gate button{width:52px;height:40px;border-radius:8px;border:1px solid transparent;background:transparent;font-family:var(--font-data);font-size:18px;font-weight:800;cursor:pointer;color:var(--muted)}
+.gate button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.elems{display:flex;flex-wrap:wrap;gap:6px}
+.el{font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:7px;padding:4px 8px;display:inline-flex;gap:6px;align-items:center;background:var(--surface2)}
+.el i{font-style:normal;font-weight:600;color:var(--muted)}
+.el.on{border-color:var(--engaged);box-shadow:inset 0 0 0 1px var(--engaged)}
+.el.on i{color:var(--ink)}
+.switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;font-weight:600}
+.switch input{width:18px;height:18px;accent-color:var(--flow)}
+.matrix td,.matrix th{text-align:center}
+.matrix td:first-child,.matrix th:first-child{text-align:left}
+
+/* SVG-Bauteile */
+.mc-sun{--mc:var(--c-sun)} .mc-pl{--mc:var(--c-pl)} .mc-tr{--mc:var(--c-tr)} .mc-ring{--mc:var(--c-ring)}
+.mc-t2{--mc:var(--c-t2)} .mc-in{--mc:var(--c-in)} .mc-gnd{--mc:var(--c-gnd)}
+.gear{fill:var(--mc);stroke:var(--edge);stroke-width:.8;stroke-linejoin:round}
+.hub{fill:var(--surface2);stroke:var(--edge);stroke-width:.8}
+.mark{fill:var(--surface)}
+.pin{fill:var(--c-tr);stroke:var(--edge);stroke-width:.8}
+.hatchov{fill:url(#hatch);display:none;pointer-events:none}
+.st-fixed .hatchov{display:inline}
+.st-idle{opacity:.38}
+.st-flow .gear{stroke:var(--flow);stroke-width:1.8}
+.st-flow .part{stroke:var(--flow);stroke-width:3}
+.link{fill:none;stroke:var(--mc);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.halo{fill:none;stroke:var(--surface2);stroke-width:11}
+.part{fill:var(--mc);stroke:var(--edge);stroke-width:.8}
+.gap{fill:transparent}
+.gap.on{fill:var(--engaged)}
+.gnd{fill:url(#hatch);stroke:var(--c-gnd);stroke-width:1}
+.flow-glow,.flow-dash{display:none;fill:none;pointer-events:none}
+.flow-glow{stroke:var(--flow-soft);stroke-width:13;stroke-linecap:round;stroke-linejoin:round}
+.flow-dash{stroke:var(--flow);stroke-width:4;stroke-dasharray:10 9;stroke-linecap:round;stroke-linejoin:round;animation:dash .7s linear infinite}
+.st-flow .flow-glow,.st-flow .flow-dash{display:inline}
+.st-rev .flow-dash{animation-direction:reverse}
+@keyframes dash{to{stroke-dashoffset:-19}}
+.paused .flow-dash{animation-play-state:paused}
+.t{fill:var(--ink);font-family:var(--font-body);font-size:13px;font-weight:700}
+.t.s{font-size:11px;font-weight:600;fill:var(--muted)}
+.t.w{fill:#fff;font-size:11px}
+.axis{stroke:var(--muted);stroke-width:1;stroke-dasharray:14 4 3 4;opacity:.7}
+.arrow{fill:var(--flow)}
+.arrow.out{fill:var(--ink)}
+.pawl{stroke:var(--c-gnd);stroke-width:4;stroke-linecap:round}
+.pawl.on{stroke:var(--ink)}
+.lev-line{stroke:var(--ink);stroke-width:2.5}
+.lev-grid{stroke:var(--line);stroke-width:1}
+.lev-zero{stroke:var(--muted);stroke-width:1.2}
+
+/* Wissen & Quiz */
+.know{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px}
+.know p,.know li{max-width:68ch}
+.know ul{padding-left:18px;margin:6px 0}
+.eq{font-family:var(--font-data);background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:14px;overflow-x:auto;white-space:nowrap}
+.q{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.q:first-of-type{border-top:0;margin-top:0;padding-top:0}
+.q p{margin:0 0 8px;font-weight:600}
+.q .opts{display:grid;gap:6px}
+.q .opts button{text-align:left;border:1px solid var(--line);background:var(--surface2);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:14px}
+.q .opts button.right{border-color:var(--c-pl);box-shadow:inset 0 0 0 1px var(--c-pl)}
+.q .opts button.wrong{border-color:var(--c-ring);box-shadow:inset 0 0 0 1px var(--c-ring)}
+.q .fb{font-size:13px;margin:6px 0 0;color:var(--muted)}
+.score{font-family:var(--font-data);font-weight:700}
+footer{font-size:12px;color:var(--muted);padding-block:10px 30px}
+@media (prefers-reduced-motion:reduce){.flow-dash{animation:none}}
+@media (max-width:520px){
+  .ratio .big{font-size:32px}
+  .shifter{grid-template-columns:1fr}
+  .gate{grid-auto-flow:column;justify-content:start}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="2.4" height="6" style="fill:var(--hatch)"></rect>
+    </pattern>
+  </defs>
+</svg>
+
+<header>
+  <div class="wrap hrow">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="29" fill="none" stroke="var(--c-ring)" stroke-width="6"></circle>
+        <circle cx="32" cy="32" r="8" fill="var(--c-sun)"></circle>
+        <circle cx="32" cy="15" r="7" fill="var(--c-pl)"></circle>
+        <circle cx="46.7" cy="40.5" r="7" fill="var(--c-pl)"></circle>
+        <circle cx="17.3" cy="40.5" r="7" fill="var(--c-pl)"></circle>
+      </svg>
+      <div>
+        <h1>Planetengetriebe</h1>
+        <p>Lernmodell: vom Planetensatz zum Automatikgetriebe</p>
+      </div>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Lernstufen">
+      <button class="tab" role="tab" id="tab-satz" aria-controls="p-satz" aria-selected="true"><span class="st">1</span>Planetensatz</button>
+      <button class="tab" role="tab" id="tab-auto" aria-controls="p-auto" aria-selected="false"><span class="st">2</span>Automatikgetriebe</button>
+      <button class="tab" role="tab" id="tab-wissen" aria-controls="p-wissen" aria-selected="false"><span class="st">3</span>Wissen &amp; Quiz</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ===================== Stufe 1: Ein Planetensatz ===================== -->
+<section role="tabpanel" id="p-satz" aria-labelledby="tab-satz">
+  <p class="intro">Ein Planetensatz hat <b>drei Glieder</b>: Sonnenrad, Planetenträger (mit den Planetenrädern) und Hohlrad.
+    Hältst du eines davon fest und treibst ein zweites an, wird das dritte zum Abtrieb. Je nach Kombination entstehen
+    <b>Untersetzung, Schnellgang, Rückwärtsgang, Direktgang oder Leerlauf</b>. Probiere es aus.</p>
+  <div class="grid">
+    <div class="stage">
+      <div class="fronts">
+        <div class="front"><span class="cap">Vorderansicht</span><svg id="f1" viewBox="-150 -150 300 300" role="img" aria-label="Animierter Planetensatz in Vorderansicht"></svg></div>
+      </div>
+      <div class="card" style="padding:10px">
+        <h2 style="margin-bottom:4px">Getriebeschema (Halbschnitt)</h2>
+        <div class="schem"><svg id="s1" viewBox="0 0 820 230" role="img" aria-label="Schema des Planetensatzes mit Kraftfluss"></svg></div>
+        <div class="schem-cap">
+          <span class="lg"><span class="sw flow"></span>Kraftfluss</span>
+          <span class="lg"><span class="sw hatch"></span>festgehalten (Bremse/Gehäuse)</span>
+          <span class="lg"><span class="sw idle"></span>steht</span>
+          <span class="lg"><span class="dot" style="background:var(--c-sun)"></span>Sonnenrad</span>
+          <span class="lg"><span class="dot" style="background:var(--c-pl)"></span>Planetenräder</span>
+          <span class="lg"><span class="dot" style="background:var(--c-tr)"></span>Planetenträger</span>
+          <span class="lg"><span class="dot" style="background:var(--c-ring)"></span>Hohlrad</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card ctl">
+        <div>
+          <div class="lbl" id="l-fix">1. Was wird festgehalten?</div>
+          <div class="seg" id="sel-fix" role="group" aria-labelledby="l-fix">
+            <button data-v="S"><span class="dot" style="background:var(--c-sun)"></span>Sonnenrad</button>
+            <button data-v="T"><span class="dot" style="background:var(--c-tr)"></span>Träger</button>
+            <button data-v="H"><span class="dot" style="background:var(--c-ring)"></span>Hohlrad</button>
+            <button data-v="block">Zwei Glieder verblockt</button>
+            <button data-v="none">Nichts</button>
+          </div>
+        </div>
+        <div>
+          <div class="lbl" id="l-in">2. Was wird angetrieben?</div>
+          <div class="seg" id="sel-in" role="group" aria-labelledby="l-in">
+            <button data-v="S"><span class="dot" style="background:var(--c-sun)"></span>Sonnenrad</button>
+            <button data-v="T"><span class="dot" style="background:var(--c-tr)"></span>Träger</button>
+            <button data-v="H"><span class="dot" style="background:var(--c-ring)"></span>Hohlrad</button>
+          </div>
+        </div>
+        <div>
+          <div class="lbl" id="l-z">Zähnezahl Sonnenrad (Hohlrad immer 60 Zähne)</div>
+          <div class="seg" id="sel-z" role="group" aria-labelledby="l-z">
+            <button data-v="18">18</button><button data-v="24">24</button><button data-v="30">30</button><button data-v="36">36</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" aria-live="polite">
+        <div class="ratio"><span class="big" id="m1-i">3,50</span><span class="chip" id="m1-kind">Untersetzung</span></div>
+        <div class="formula" id="m1-form"></div>
+        <h3>Die drei Glieder</h3>
+        <div class="tblwrap"><table id="m1-tbl"><thead><tr><th>Glied</th><th class="num">Zähne</th><th>Rolle</th><th class="num">Drehzahl</th><th>Richtung</th></tr></thead><tbody></tbody></table></div>
+        <h3>Drehmoment (ohne Reibungsverluste)</h3>
+        <div class="kv" id="m1-kv"></div>
+        <h3>Was passiert?</h3>
+        <p class="expl" id="m1-expl"></p>
+        <p class="appl" id="m1-appl"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Drehzahlplan</h2>
+      <svg id="lever" viewBox="0 0 340 210" style="width:100%;max-width:520px;height:auto;display:block;margin:0 auto" role="img" aria-label="Drehzahlplan der drei Glieder"></svg>
+      <p class="note">Trägt man die Drehzahlen von Sonnenrad, Träger und Hohlrad als Punkte auf, liegen sie <b>immer auf einer Geraden</b>.
+        Der Träger sitzt näher am Hohlrad, weil das Hohlrad mehr Zähne hat. Ein festgehaltenes Glied liegt auf der Null-Linie.</p>
+    </div>
+    <div class="card">
+      <h2>Alle Schaltmöglichkeiten im Überblick</h2>
+      <div class="tblwrap"><table id="m1-all"><thead><tr><th>Fest</th><th>Antrieb</th><th>Abtrieb</th><th class="num">i</th><th>Wirkung</th></tr></thead><tbody></tbody></table></div>
+      <p class="note">Zeile anklicken, um die Schaltung zu übernehmen. i = Antriebsdrehzahl ÷ Abtriebsdrehzahl. Minus heißt: Drehrichtung kehrt sich um.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== Stufe 2: Automatikgetriebe ===================== -->
+<section role="tabpanel" id="p-auto" aria-labelledby="tab-auto" hidden>
+  <p class="intro">So arbeitet ein klassisches <b>3-Gang-Automatikgetriebe mit Simpson-Satz</b>: zwei Planetensätze teilen sich ein gemeinsames
+    Sonnenrad. Geschaltet wird nicht durch Verschieben von Zahnrädern, sondern durch <b>Lamellenkupplungen (K)</b>, die Glieder mit dem Antrieb
+    verbinden, und <b>Bremsen (B)</b> bzw. einen <b>Freilauf (F)</b>, die Glieder am Gehäuse festhalten. Alle Zahnräder bleiben ständig im Eingriff.</p>
+  <div class="grid">
+    <div class="stage">
+      <div class="fronts">
+        <div class="front"><span class="cap">Satz 1 (vorn)</span><svg id="f2a" viewBox="-150 -150 300 300" role="img" aria-label="Vorderer Planetensatz"></svg></div>
+        <div class="front"><span class="cap">Satz 2 (hinten)</span><svg id="f2b" viewBox="-150 -150 300 300" role="img" aria-label="Hinterer Planetensatz"></svg></div>
+      </div>
+      <div class="card" style="padding:10px">
+        <h2 style="margin-bottom:4px">Getriebeschema Simpson-Satz (Halbschnitt)</h2>
+        <div class="schem"><svg id="s2" viewBox="0 0 1000 250" role="img" aria-label="Schema des Automatikgetriebes mit Kraftfluss"></svg></div>
+        <div class="schem-cap">
+          <span class="lg"><span class="sw flow"></span>Kraftfluss</span>
+          <span class="lg"><span class="sw hatch"></span>festgehalten</span>
+          <span class="lg"><span class="sw" style="background:var(--engaged)"></span>Kupplung/Bremse geschlossen</span>
+          <span class="lg"><span class="dot" style="background:var(--c-in)"></span>Antrieb (Turbine)</span>
+          <span class="lg"><span class="dot" style="background:var(--c-ring)"></span>Hohlrad 1</span>
+          <span class="lg"><span class="dot" style="background:var(--c-sun)"></span>Sonnenräder</span>
+          <span class="lg"><span class="dot" style="background:var(--c-tr)"></span>Abtrieb (T1 + H2)</span>
+          <span class="lg"><span class="dot" style="background:var(--c-t2)"></span>Träger 2</span>
+          <span class="lg"><span class="dot" style="background:var(--c-pl)"></span>Planeten</span>
+        </div>
+        <p class="note">Gleiche Farbe = fest miteinander verbunden. Der vordere Träger T1 und das hintere Hohlrad H2 sitzen beide auf der Abtriebswelle.</p>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <div class="shifter">
+          <div>
+            <div class="lbl" id="l-gate">Wählhebel</div>
+            <div class="gate" id="gate" role="group" aria-labelledby="l-gate">
+              <button data-v="P" aria-label="P – Parken">P</button>
+              <button data-v="R" aria-label="R – Rückwärts">R</button>
+              <button data-v="N" aria-label="N – Neutral">N</button>
+              <button data-v="D" aria-label="D – Fahren">D</button>
+              <button data-v="L" aria-label="L – 1. Gang mit Motorbremse">L</button>
+            </div>
+          </div>
+          <div class="ctl">
+            <div id="dbox">
+              <div class="lbl" id="l-gear">Gang in D</div>
+              <div class="seg" id="sel-gear" role="group" aria-labelledby="l-gear">
+                <button data-v="1">1. Gang</button><button data-v="2">2. Gang</button><button data-v="3">3. Gang</button>
+              </div>
+              <label class="switch" style="margin-top:10px"><input type="checkbox" id="auto"> Automatisch hochschalten (Anfahr-Demo)</label>
+            </div>
+            <div>
+              <div class="lbl">Schaltelemente</div>
+              <div class="elems" id="elems"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" aria-live="polite">
+        <div class="ratio"><span class="big" id="m2-i">2,40</span><span class="chip" id="m2-gear">1. Gang</span></div>
+        <div class="formula" id="m2-form"></div>
+        <div class="kv" id="m2-kv" style="margin-top:10px"></div>
+        <div id="m2-splitbox">
+          <h3>Leistungsaufteilung</h3>
+          <div class="split" id="m2-split"></div>
+          <p class="note" id="m2-splitnote"></p>
+        </div>
+        <h3>Was passiert?</h3>
+        <p class="expl" id="m2-expl"></p>
+        <h3>Drehzahlen</h3>
+        <div class="tblwrap"><table id="m2-tbl"><thead><tr><th>Bauteil</th><th class="num">Drehzahl</th><th>Richtung</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Schaltmatrix: welches Element ist in welchem Gang aktiv?</h2>
+    <div class="tblwrap"><table class="matrix" id="matrix"><thead><tr><th>Stellung</th><th>K1<br><span class="muted">vorwärts</span></th><th>K2<br><span class="muted">direkt/rückw.</span></th><th>B1<br><span class="muted">2. Gang</span></th><th>B2<br><span class="muted">1./R</span></th><th>F<br><span class="muted">Freilauf</span></th><th class="num">i</th></tr></thead><tbody></tbody></table></div>
+    <p class="note">● = geschlossen bzw. sperrt. Zeile anklicken, um den Gang zu wählen. Bei jedem Hochschalten wechselt nur <b>ein</b> Element:
+      1→2 schließt B1 (der Freilauf gibt von selbst frei), 2→3 öffnet B1 und schließt K2.</p>
+  </div>
+</section>
+
+<!-- ===================== Stufe 3: Wissen & Quiz ===================== -->
+<section role="tabpanel" id="p-wissen" aria-labelledby="tab-wissen" hidden>
+  <div class="know">
+    <div class="card">
+      <h2>Aufbau</h2>
+      <ul>
+        <li><b>Sonnenrad</b> – das kleine Zahnrad in der Mitte.</li>
+        <li><b>Planetenräder</b> – kreisen wie Planeten um die Sonne. Sie kämmen gleichzeitig mit Sonnenrad und Hohlrad.</li>
+        <li><b>Planetenträger</b> – hält die Achsen der Planetenräder. Er ist das dritte „Glied“; die Planeten selbst sind kein Anschluss nach außen.</li>
+        <li><b>Hohlrad</b> – der Ring mit Innenverzahnung außen herum.</li>
+      </ul>
+      <p>Weil alle Räder ständig im Eingriff sind, kann man <b>unter Last schalten</b>, ohne Zahnräder zu verschieben. Das ist der Grund,
+        warum fast alle Automatikgetriebe Planetensätze verwenden.</p>
+    </div>
+    <div class="card">
+      <h2>Rechnen mit dem Planetensatz</h2>
+      <p>Mit der Standübersetzung <b>k = Z<sub>Hohlrad</sub> ÷ Z<sub>Sonne</sub></b> gilt für die Drehzahlen immer (Willis-Gleichung):</p>
+      <div class="eq">n<sub>S</sub> + k · n<sub>H</sub> = (1 + k) · n<sub>T</sub></div>
+      <p>Beispiel: Z<sub>S</sub> = 24, Z<sub>H</sub> = 60 → k = 2,5. Hohlrad fest (n<sub>H</sub> = 0), Sonne treibt mit 1500 /min:</p>
+      <div class="eq">n<sub>T</sub> = 1500 ÷ 3,5 ≈ 429 /min  →  i = 3,5</div>
+      <p>Die Zähnezahlen hängen zusammen: Z<sub>H</sub> = Z<sub>S</sub> + 2 · Z<sub>P</sub>. Drehmoment ohne Verluste: M<sub>ab</sub> = i · M<sub>an</sub>.</p>
+    </div>
+    <div class="card">
+      <h2>Merksätze</h2>
+      <ul>
+        <li><b>Träger fest</b> → Drehrichtung kehrt sich um (Rückwärtsgang).</li>
+        <li><b>Träger ist Abtrieb</b> → Untersetzung: langsamer, mehr Drehmoment.</li>
+        <li><b>Träger ist Antrieb</b> → Übersetzung ins Schnelle (Schongang/Overdrive).</li>
+        <li><b>Zwei Glieder verbunden</b> → alles dreht als Block, i = 1 (Direktgang).</li>
+        <li><b>Nichts festgehalten</b> → keine Kraftübertragung (Leerlauf).</li>
+        <li>Je <b>kleiner das Sonnenrad</b>, desto größer die Übersetzung.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Begriffe im Automatikgetriebe</h2>
+      <ul>
+        <li><b>Lamellenkupplung (K)</b> – verbindet zwei drehende Teile, hydraulisch betätigt.</li>
+        <li><b>Bremse (B)</b> – Lamellen oder Bremsband; hält ein Glied am Gehäuse fest.</li>
+        <li><b>Freilauf (F)</b> – sperrt in einer Drehrichtung, läuft in der anderen frei. Er erlaubt weiche Schaltungen ohne exaktes Timing.</li>
+        <li><b>Parksperre</b> – Klinke greift in ein Zahnrad auf der Abtriebswelle.</li>
+        <li><b>Drehmomentwandler</b> – sitzt vor dem Getriebe und ermöglicht das Anfahren (nicht dargestellt).</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Quiz <span class="score" id="score"></span></h2>
+    <div id="quiz"></div>
+    <div class="row" style="margin-top:12px"><button class="btn" id="qreset">Quiz zurücksetzen</button></div>
+  </div>
+</section>
+
+<!-- gemeinsame Steuerung -->
+<div class="card ctl" id="common" style="margin-top:16px">
+  <div class="row">
+    <button class="btn play" id="play" aria-pressed="false">⏸ Pause</button>
+    <span class="muted" style="font-size:13px">Die Animation läuft in Zeitlupe. Alle Zahlen zeigen die echten Werte.</span>
+  </div>
+  <div class="sl"><label for="nin">Antriebsdrehzahl</label><input type="range" id="nin" min="0" max="4000" step="50" value="1500"><output id="nin-o" for="nin">1500 /min</output></div>
+  <div class="sl"><label for="tin">Antriebsmoment</label><input type="range" id="tin" min="50" max="400" step="10" value="200"><output id="tin-o" for="tin">200 Nm</output></div>
+  <div class="sl"><label for="spd">Zeitlupe</label><input type="range" id="spd" min="2" max="60" step="1" value="20"><output id="spd-o" for="spd">1 : 50</output></div>
+</div>
+</main>
+<footer class="wrap">Vereinfachtes Lernmodell: verlustfrei gerechnet, Drehmomentwandler nicht dargestellt. Zähnezahlen Automatik: Z<sub>S</sub> = 24, Z<sub>P</sub> = 18, Z<sub>H</sub> = 60 in beiden Sätzen.</footer>
+
+<script>
+'use strict';
+const NS = 'http://www.w3.org/2000/svg';
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+function el(tag, attrs, parent){
+  const e = document.createElementNS(NS, tag);
+  if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+const fmt = (n, d=0) => (Math.abs(n) < 0.5 && d === 0 ? 0 : n).toLocaleString('de-DE', {minimumFractionDigits:d, maximumFractionDigits:d});
+const TAU = Math.PI * 2;
+const ZH = 60, NPL = 3, MOD = 4;
+const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Kinematik ----------
+   Willis-Gleichung des einfachen Planetensatzes mit k = ZH/ZS:  nS + k·nH = (1+k)·nT  */
+function solve3(known, k){ // known: zwei von {S,T,H} -> fehlendes ergänzen
+  const r = Object.assign({}, known);
+  if (r.S === undefined) r.S = (1+k)*r.T - k*r.H;
+  else if (r.H === undefined) r.H = ((1+k)*r.T - r.S)/k;
+  else if (r.T === undefined) r.T = (r.S + k*r.H)/(1+k);
+  return r;
+}
+
+/* ---------- Zahnrad-Geometrie ---------- */
+function gearPath(Z, m, internal){
+  const r = m*Z/2, p = TAU/Z;
+  const rr = internal ? r + 1.25*m : r - 1.25*m;
+  const rt = internal ? r - m : r + m;
+  const pt = (R, a) => (R*Math.cos(a)).toFixed(2) + ',' + (R*Math.sin(a)).toFixed(2);
+  let d = '';
+  for (let i = 0; i < Z; i++){
+    const a = i*p;
+    const pts = [[rr,a-.30*p],[r,a-.21*p],[rt,a-.12*p],[rt,a+.12*p],[r,a+.21*p],[rr,a+.30*p]];
+    pts.forEach(([R,A], j) => { d += (i===0 && j===0 ? 'M' : 'L') + pt(R,A); });
+    d += 'A' + rr + ',' + rr + ' 0 0 1 ' + pt(rr, a + .70*p);
+  }
+  return d + 'Z';
+}
+const circ = r => `M${r},0A${r},${r} 0 1 1 ${-r},0A${r},${r} 0 1 1 ${r},0Z`;
+const frac = x => x - Math.floor(x);
+
+/* ---------- Vorderansicht eines Planetensatzes ---------- */
+class GearSet {
+  constructor(svg, zs, members){
+    this.svg = svg; this.members = members; // {S:'sun',T:'tr',H:'ring',P:'pl'} -> Farbklassen
+    this.build(zs);
+  }
+  build(zs){
+    const svg = this.svg; svg.textContent = '';
+    this.zs = zs; this.zp = (ZH - zs)/2; this.k = ZH/zs;
+    const rs = MOD*zs/2, rp = MOD*this.zp/2, rh = MOD*ZH/2;
+    this.orbit = rs + rp;
+    const mk = (cls) => el('g', {class:'mc-' + cls}, svg);
+    // Hohlrad
+    this.gH = mk(this.members.H);
+    const ringD = circ(rh + 20) + gearPath(ZH, MOD, true);
+    el('path', {d:ringD, class:'gear', 'fill-rule':'evenodd'}, this.gH);
+    el('path', {d:ringD, class:'hatchov', 'fill-rule':'evenodd'}, this.gH);
+    el('circle', {cx:rh+12, cy:0, r:4, class:'mark'}, this.gH);
+    // Planeten
+    this.gP = []; this.pWrap = el('g', {class:'mc-' + this.members.P}, svg);
+    const pD = gearPath(this.zp, MOD, false);
+    for (let i = 0; i < NPL; i++){
+      const g = el('g', {}, this.pWrap);
+      el('path', {d:pD, class:'gear'}, g);
+      el('circle', {cx:rp*.55, cy:0, r:3, class:'mark'}, g);
+      this.gP.push(g);
+    }
+    // Träger (Stern mit Bolzen)
+    this.gT = mk(this.members.T);
+    let tD = circ(15);
+    for (let i = 0; i < NPL; i++){
+      const a = TAU*i/NPL, w = 6, c = Math.cos(a), s = Math.sin(a), o = this.orbit;
+      tD += `M${(-s*w).toFixed(2)},${(c*w).toFixed(2)}L${(o*c - s*w).toFixed(2)},${(o*s + c*w).toFixed(2)}L${(o*c + s*w).toFixed(2)},${(o*s - c*w).toFixed(2)}L${(s*w).toFixed(2)},${(-c*w).toFixed(2)}Z`;
+      tD += `M${(o*c+8).toFixed(2)},${(o*s).toFixed(2)}A8,8 0 1 1 ${(o*c-8).toFixed(2)},${(o*s).toFixed(2)}A8,8 0 1 1 ${(o*c+8).toFixed(2)},${(o*s).toFixed(2)}Z`;
+    }
+    // Sonnenrad (unter dem Träger)
+    this.gS = el('g', {class:'mc-' + this.members.S});
+    svg.insertBefore(this.gS, this.gT);
+    const sD = gearPath(zs, MOD, false);
+    el('path', {d:sD, class:'gear'}, this.gS);
+    el('path', {d:sD, class:'hatchov'}, this.gS);
+    el('circle', {cx:rs*.62, cy:0, r:3.5, class:'mark'}, this.gS);
+    el('path', {d:tD, class:'gear', 'fill-rule':'nonzero'}, this.gT);
+    el('path', {d:tD, class:'hatchov'}, this.gT);
+    el('circle', {cx:0, cy:0, r:5, class:'hub'}, this.gT);
+    // Zahn-Phasen, damit die Räder sauber kämmen (Herleitung: Zahn-Lücke-Bedingung an jedem Eingriffspunkt)
+    this.aP0 = [];
+    for (let i = 0; i < NPL; i++){
+      const phi = TAU*i/NPL, fS = frac(i*zs/NPL);
+      this.aP0.push(phi + Math.PI - (0.5 - fS)*TAU/this.zp);
+    }
+    const fP = frac((0 - this.aP0[0])*this.zp/TAU);
+    this.aH0 = -(fP + 0.5)*TAU/ZH;
+  }
+  render(thS, thT, thH){
+    const deg = a => (a*180/Math.PI).toFixed(3);
+    this.gS.setAttribute('transform', `rotate(${deg(thS)})`);
+    this.gT.setAttribute('transform', `rotate(${deg(thT)})`);
+    this.gH.setAttribute('transform', `rotate(${deg(this.aH0 + thH)})`);
+    for (let i = 0; i < NPL; i++){
+      const phi = TAU*i/NPL + thT;
+      const aP = this.aP0[i] + thT - (this.zs/this.zp)*(thS - thT);
+      this.gP[i].setAttribute('transform', `translate(${(this.orbit*Math.cos(phi)).toFixed(2)},${(this.orbit*Math.sin(phi)).toFixed(2)}) rotate(${deg(aP)})`);
+    }
+  }
+  setStates(st){ // st: {S,T,H,P} -> 'flow'|'fixed'|'idle'|'turn'
+    const set = (g, s) => { g.classList.remove('st-flow','st-fixed','st-idle'); if (s && s !== 'turn') g.classList.add('st-' + s); };
+    set(this.gS, st.S); set(this.gT, st.T); set(this.gH, st.H); set(this.pWrap, st.P);
+  }
+}
+
+/* ---------- Schema-Bausteine (Halbschnitt) ---------- */
+function makeSchem(svg, Y){
+  const L = {
+    axis: el('g', {}, svg), links: el('g', {}, svg), parts: el('g', {}, svg),
+    top: el('g', {}, svg), labels: el('g', {}, svg)
+  };
+  const items = {};
+  const api = {
+    items, L, Y,
+    link(id, member, d, layer='links', halo=false){
+      const g = el('g', {class:'mc-' + member}, L[layer]);
+      if (halo) el('path', {d, class:'halo'}, g);
+      el('path', {d, class:'link'}, g);
+      el('path', {d, class:'flow-glow'}, g);
+      el('path', {d, class:'flow-dash'}, g);
+      items[id] = {g, member, kind:'link'};
+      return g;
+    },
+    rect(id, member, x, r1, w, r2, layer='parts'){
+      const g = el('g', {class:'mc-' + member}, L[layer]);
+      const a = {x, y:Y(r2), width:w, height:r2 - r1, rx:2};
+      el('rect', Object.assign({class:'part'}, a), g);
+      el('rect', Object.assign({class:'hatchov'}, a), g);
+      items[id] = {g, member, kind:'rect'};
+      return g;
+    },
+    gap(id, x, r1, w, r2){
+      items[id] = {g: el('rect', {x, y:Y(r2), width:w, height:r2-r1, class:'gap'}, L.parts), kind:'gap'};
+    },
+    gnd(x, r1, w, r2){ el('rect', {x, y:Y(r2), width:w, height:r2-r1, class:'gnd'}, L.parts); },
+    text(x, r, s, cls='t', anchor='middle', layer='labels'){
+      const t = el('text', {x, y:Y(r), class:cls, 'text-anchor':anchor}, L[layer]); t.textContent = s; return t;
+    },
+    setState(id, s, rev){
+      const it = items[id]; if (!it) return;
+      if (it.kind === 'gap'){ it.g.classList.toggle('on', !!s); return; }
+      it.g.classList.remove('st-flow','st-fixed','st-idle','st-rev');
+      if (s && s !== 'turn') it.g.classList.add('st-' + s);
+      if (s === 'flow' && rev) it.g.classList.add('st-rev');
+    }
+  };
+  return api;
+}
+
+/* ======================================================================
+   Gemeinsame Steuerung
+   ====================================================================== */
+const ui = { nIn: 1500, tIn: 200, f: 0.02, playing: !reduceMotion };
+const ninEl = $('#nin'), tinEl = $('#tin'), spdEl = $('#spd');
+function syncCommon(){
+  ui.nIn = +ninEl.value; ui.tIn = +tinEl.value; ui.f = +spdEl.value/1000;
+  $('#nin-o').textContent = fmt(ui.nIn) + ' /min';
+  $('#tin-o').textContent = fmt(ui.tIn) + ' Nm';
+  $('#spd-o').textContent = '1 : ' + Math.round(1000/+spdEl.value);
+}
+[ninEl, tinEl, spdEl].forEach(e => e.addEventListener('input', () => { syncCommon(); if (e === ninEl) M2.auto && stopAuto(); refresh(); }));
+const playBtn = $('#play');
+function syncPlay(){
+  playBtn.textContent = ui.playing ? '⏸ Pause' : '▶ Abspielen';
+  playBtn.setAttribute('aria-pressed', String(!ui.playing));
+  document.body.classList.toggle('paused', !ui.playing);
+}
+playBtn.addEventListener('click', () => { ui.playing = !ui.playing; syncPlay(); });
+
+const dirTxt = (n) => Math.abs(n) < 0.5 ? '<span class="muted">steht</span>' : (n > 0 ? '<span class="dir" aria-hidden="true">↻</span> wie Motor' : '<span class="dir" aria-hidden="true">↺</span> gegen Motor');
+function kindOf(i){
+  if (i === null) return ['Leerlauf – keine Kraftübertragung','k-none'];
+  if (Math.abs(i - 1) < 1e-9) return ['Direktgang','k-direct'];
+  if (i < 0) return [Math.abs(i) >= 1 ? 'Rückwärts, Untersetzung' : 'Rückwärts, ins Schnelle','k-rev'];
+  if (i > 1) return [i > 2 ? 'Große Untersetzung' : 'Kleine Untersetzung','k-under'];
+  return [i < 0.5 ? 'Großer Schnellgang' : 'Schnellgang (Overdrive)','k-over'];
+}
+
+/* ======================================================================
+   Stufe 1: einzelner Planetensatz
+   ====================================================================== */
+const NAME = {S:'Sonnenrad', T:'Planetenträger', H:'Hohlrad'};
+const SHORT = {S:'Sonne', T:'Träger', H:'Hohlrad'};
+const M1 = {
+  fixed:'H', input:'S', zs:24,
+  cur:{S:0,T:0,H:0}, th:{S:0,T:0,H:0},
+  set: new GearSet($('#f1'), 24, {S:'sun', T:'tr', H:'ring', P:'pl'})
+};
+function m1Roles(fixed, input){
+  const all = ['S','T','H'];
+  if (fixed === 'block' || fixed === 'none'){
+    const rest = all.filter(x => x !== input);
+    const output = rest.includes('T') ? 'T' : rest[0];
+    const free = rest.find(x => x !== output);
+    return {input, output, free, fixed:null};
+  }
+  return {input, fixed, output: all.find(x => x !== fixed && x !== input), free:null};
+}
+function m1Speeds(fixed, input, nIn, k){
+  const r = m1Roles(fixed, input);
+  if (fixed === 'block') return {S:nIn, T:nIn, H:nIn};
+  const known = {}; known[input] = nIn;
+  if (fixed === 'none') known[r.output] = 0; else known[fixed] = 0;
+  return solve3(known, k);
+}
+function m1Ratio(fixed, input, k){
+  if (fixed === 'none') return null;
+  const r = m1Roles(fixed, input);
+  return 1 / m1Speeds(fixed, input, 1, k)[r.output];
+}
+const M1TXT = {
+  'H-S': ['Das Sonnenrad treibt die Planetenräder an. Weil das Hohlrad festgehalten wird, müssen die Planeten im Hohlrad abrollen. Dabei nehmen sie den Träger mit: langsam, aber mit viel Kraft.', 'Anwendung: Anfahrgang, Radnaben-Untersetzung bei Lkw und Traktoren, Vorgelege im Anlasser.'],
+  'H-T': ['Der Träger schiebt die Planeten im festen Hohlrad herum. Sie rollen dort ab und drehen dabei das Sonnenrad sehr schnell an.', 'Anwendung: sehr großer Schnellgang, in Fahrzeugen kaum genutzt.'],
+  'S-H': ['Das Hohlrad treibt die Planeten an. Sie rollen auf dem festen Sonnenrad ab und nehmen den Träger etwas langsamer mit.', 'Anwendung: typischer 2. Gang im Automatikgetriebe (siehe Stufe 2).'],
+  'S-T': ['Der Träger führt die Planeten um das feste Sonnenrad herum. Dabei treiben sie das Hohlrad schneller an, als der Träger dreht.', 'Anwendung: Schongang (Overdrive) in vielen Automatikgetrieben.'],
+  'T-S': ['Der Träger steht. Die Planeten drehen sich nur noch auf festen Achsen und wirken wie Zwischenräder. Darum dreht das Hohlrad entgegengesetzt zur Sonne.', 'Anwendung: Rückwärtsgang.'],
+  'T-H': ['Der Träger steht, die Planeten sind Zwischenräder. Das Hohlrad treibt das Sonnenrad schneller und in Gegenrichtung an.', 'Anwendung: Rückwärts ins Schnelle, in der Praxis kaum genutzt.'],
+  'block': ['Zwei Glieder sind durch eine Kupplung miteinander verbunden. Dann können sich die Planeten nicht mehr auf ihren Achsen drehen: Der ganze Satz läuft als starrer Block um.', 'Anwendung: Direktgang (i = 1), z. B. 3. Gang im Simpson-Getriebe.'],
+  'none': ['Kein Glied wird festgehalten. Das Abtriebsglied bleibt wegen der Last stehen, und das freie Glied weicht einfach aus und dreht lose mit. Ohne Abstützung kann kein Drehmoment übertragen werden.', 'Anwendung: Neutral (N) und Parkstellung (P).']
+};
+
+/* Schema Stufe 1 */
+const S1 = makeSchem($('#s1'), r => 196 - r);
+(function buildS1(){
+  const s = S1, Y = s.Y;
+  el('line', {x1:20, y1:Y(0), x2:800, y2:Y(0), class:'axis'}, s.L.axis);
+  s.text(790, -14, 'Achse', 't s', 'end');
+  s.link('lS', 'sun', `M120,${Y(30)}H360`);
+  s.link('lH', 'ring', `M120,${Y(150)}H380V${Y(118)}`);
+  s.link('lBlock', 'in', `M165,${Y(30)}V${Y(150)}`, 'links');
+  s.rect('H', 'ring', 360, 100, 40, 118);
+  s.rect('P', 'pl', 365, 46, 30, 94);
+  s.rect('S', 'sun', 360, 22, 40, 38);
+  s.link('lT', 'tr', `M700,${Y(30)}H440V${Y(70)}H365`, 'top');
+  el('circle', {cx:380, cy:Y(70), r:4, class:'pin'}, s.L.top);
+  s.gap('gBlock', 160, 80, 10, 100);
+  s.text(408, 109, 'H', 't', 'start'); s.text(380, 12, 'S', 't'); s.text(380, 99, 'P', 't s'); s.text(452, 76, 'T', 't', 'start');
+  // Anschluss-Symbole
+  M1.term = {};
+  [['S', 120, 30, 'L'], ['H', 120, 150, 'L'], ['T', 700, 30, 'R']].forEach(([m, x, r, side]) => {
+    M1.term[m] = {g: el('g', {}, s.L.labels), x, r, side};
+  });
+  s.blockLbl = s.text(176, 90, 'Kupplung', 't s', 'start');
+})();
+function drawTerm(m, role){
+  const T = M1.term[m], g = T.g, Y = S1.Y; g.textContent = '';
+  const x = T.x, y = Y(T.r), L = T.side === 'L';
+  const label = (txt, cls='t') => { const t = el('text', {x: L ? x - 14 : x + 14, y: y + 4, class:cls, 'text-anchor': L ? 'end' : 'start'}, g); t.textContent = txt; };
+  if (role === 'an'){
+    const tip = L ? x : x, base = L ? x - 26 : x + 26;
+    el('path', {d:`M${base},${y-9}L${tip},${y}L${base},${y+9}Z`, class:'arrow'}, g);
+    label('Antrieb', 't'); g.lastChild.setAttribute('x', L ? x - 32 : x + 32);
+  } else if (role === 'ab'){
+    const tip = L ? x - 26 : x + 26;
+    el('path', {d:`M${x},${y-9}L${tip},${y}L${x},${y+9}Z`, class:'arrow out'}, g);
+    label('Abtrieb', 't'); g.lastChild.setAttribute('x', L ? x - 32 : x + 32);
+  } else if (role === 'fest'){
+    el('rect', {x: L ? x - 18 : x, y: y - 16, width:18, height:32, class:'gnd'}, g);
+    label('fest (Bremse)', 't'); g.lastChild.setAttribute('x', L ? x - 24 : x + 24);
+  } else {
+    el('circle', {cx:x, cy:y, r:5, fill:'none', stroke:'var(--muted)', 'stroke-width':1.5}, g);
+    label('frei', 't s');
+  }
+}
+
+function m1Update(){
+  const k = ZH / M1.zs;
+  const r = m1Roles(M1.fixed, M1.input);
+  const tgt = m1Speeds(M1.fixed, M1.input, ui.nIn, k);
+  const i = m1Ratio(M1.fixed, M1.input, k);
+  M1.tgt = tgt;
+  // Buttons
+  $$('#sel-fix button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === M1.fixed)));
+  $$('#sel-in button').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.v === M1.input)); b.disabled = b.dataset.v === M1.fixed; });
+  $$('#sel-z button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.v === M1.zs)));
+  // Kennzahlen
+  const [kind, kcls] = kindOf(i);
+  $('#m1-i').textContent = i === null ? 'i = –' : 'i = ' + fmt(i, 2);
+  const kc = $('#m1-kind'); kc.textContent = kind; kc.className = 'chip ' + kcls;
+  $('#m1-form').innerHTML = i === null
+    ? 'Abtrieb steht, freies Glied dreht mit ' + fmt(tgt[r.free]) + ' /min'
+    : `i = n<sub>an</sub> ÷ n<sub>ab</sub> = ${fmt(ui.nIn)} ÷ ${fmt(tgt[r.output], Math.abs(tgt[r.output]) < 100 ? 1 : 0)}` + ` · k = ${ZH}/${M1.zs} = ${fmt(k, 2)}`;
+  const roleOf = m => {
+    if (M1.fixed === 'block') return m === r.input ? 'an' : (m === r.output ? 'ab' : 'block');
+    if (m === r.input) return 'an'; if (m === r.output) return 'ab'; if (m === r.fixed) return 'fest'; return 'frei';
+  };
+  const RL = {an:'Antrieb', ab:'Abtrieb', fest:'fest', frei:'läuft frei', block:'verblockt'};
+  const Z = {S:M1.zs, T:'–', H:ZH};
+  const pl = (ZH - M1.zs)/2;
+  $('#m1-tbl tbody').innerHTML = ['S','T','H'].map(m => {
+    const col = {S:'--c-sun', T:'--c-tr', H:'--c-ring'}[m];
+    return `<tr><td><span class="dot" style="background:var(${col})"></span> ${NAME[m]}</td><td class="num">${Z[m]}</td><td><span class="role ${roleOf(m)}">${RL[roleOf(m)]}</span></td><td class="num">${fmt(tgt[m])} /min</td><td>${dirTxt(tgt[m])}</td></tr>`;
+  }).join('') + `<tr><td><span class="dot" style="background:var(--c-pl)"></span> Planetenräder (3×)</td><td class="num">${pl}</td><td><span class="muted">Verbindung</span></td><td class="num">${fmt(tgt.T - (M1.zs/pl)*(tgt.S - tgt.T))} /min</td><td>${dirTxt(tgt.T - (M1.zs/pl)*(tgt.S - tgt.T))}</td></tr>`;
+  // Drehmoment: Momentengleichgewicht M_an + M_ab + M_stütz = 0, Leistung verlustfrei
+  if (i === null){
+    $('#m1-kv').innerHTML = `<div><span>Antrieb</span><b>0 Nm</b></div><div><span>Abtrieb</span><b>0 Nm</b></div><div><span>Grund</span><b style="font-size:13px">nichts stützt ab</b></div>`;
+  } else {
+    const tOut = i * ui.tIn, tSup = ui.tIn * (i - 1);
+    $('#m1-kv').innerHTML = `<div><span>Antrieb</span><b>${fmt(ui.tIn)} Nm</b></div><div><span>Abtrieb</span><b>${fmt(Math.abs(tOut))} Nm</b></div>` +
+      (M1.fixed === 'block' ? `<div><span>Stützmoment</span><b>0 Nm</b></div>` : `<div><span>Stütze (${SHORT[M1.fixed]})</span><b>${fmt(Math.abs(tSup))} Nm</b></div>`);
+  }
+  const key = (M1.fixed === 'block' || M1.fixed === 'none') ? M1.fixed : M1.fixed + '-' + M1.input;
+  $('#m1-expl').textContent = M1TXT[key][0];
+  $('#m1-appl').textContent = M1TXT[key][1];
+  // Schema-Zustand
+  const moving = m => Math.abs(tgt[m]) > 0.5;
+  const plMoving = moving('T') || Math.abs(tgt.T - (M1.zs/pl)*(tgt.S - tgt.T)) > .5;
+  const flowOn = i !== null && ui.nIn > 0;
+  const st = {};
+  ['S','T','H'].forEach(m => {
+    const role = roleOf(m);
+    st[m] = (flowOn && (role === 'an' || role === 'ab' || role === 'block')) ? 'flow' : (role === 'fest' ? 'fixed' : (moving(m) ? 'turn' : 'idle'));
+  });
+  st.P = (flowOn && M1.fixed !== 'block') ? 'flow' : (plMoving ? 'turn' : 'idle');
+  if (M1.fixed === 'block' && flowOn) st.P = 'flow';
+  M1.set.setStates(st);
+  const linkOf = {S:'lS', T:'lT', H:'lH'};
+  ['S','T','H'].forEach(m => {
+    S1.setState(m, st[m]);
+    const role = roleOf(m);
+    S1.setState(linkOf[m], st[m], role === 'ab');
+    drawTerm(m, role === 'block' ? 'frei' : role);
+  });
+  S1.setState('P', st.P);
+  const blk = M1.fixed === 'block';
+  S1.items.lBlock.g.style.display = blk ? '' : 'none';
+  S1.items.gBlock.g.style.display = blk ? '' : 'none';
+  S1.blockLbl.style.display = blk ? '' : 'none';
+  S1.setState('gBlock', blk);
+  if (blk){
+    // verblockt: Kupplung verbindet Sonne und Hohlrad
+    S1.setState('lBlock', flowOn ? 'flow' : 'turn', r.input === 'H');
+    if (r.input === 'T'){ drawTerm('S', 'frei'); drawTerm('H', 'frei'); }
+    S1.blockLbl.textContent = 'Kupplung';
+  }
+  drawLever(tgt, k, r);
+  // Übersicht
+  $('#m1-all tbody').innerHTML = M1ALL.map(([f, a]) => {
+    const ii = m1Ratio(f, a, k), rr = m1Roles(f, a);
+    const cur = (f === M1.fixed && (f === 'block' || f === 'none' ? true : a === M1.input)) ? ' cur' : '';
+    const fl = f === 'block' ? 'zwei verblockt' : (f === 'none' ? 'nichts' : SHORT[f]);
+    return `<tr class="clk${cur}" data-f="${f}" data-a="${a}" tabindex="0"><td>${fl}</td><td>${f==='block'||f==='none' ? 'beliebig' : SHORT[a]}</td><td>${f==='block'||f==='none' ? '–' : SHORT[rr.output]}</td><td class="num">${ii === null ? '–' : fmt(ii, 2)}</td><td>${kindOf(ii)[0]}</td></tr>`;
+  }).join('');
+}
+const M1ALL = [['H','S'],['S','H'],['S','T'],['H','T'],['T','S'],['T','H'],['block','S'],['none','S']];
+$('#m1-all').addEventListener('click', e => { const tr = e.target.closest('tr[data-f]'); if (!tr) return; pickM1(tr.dataset.f, tr.dataset.a); });
+$('#m1-all').addEventListener('keydown', e => { if (e.key !== 'Enter' && e.key !== ' ') return; const tr = e.target.closest('tr[data-f]'); if (!tr) return; e.preventDefault(); pickM1(tr.dataset.f, tr.dataset.a); });
+function pickM1(f, a){
+  M1.fixed = f;
+  if (f === 'block' || f === 'none'){ if (!M1.input) M1.input = a; } else M1.input = a;
+  m1Update();
+}
+$('#sel-fix').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  M1.fixed = b.dataset.v;
+  if (M1.fixed === M1.input) M1.input = M1.fixed === 'S' ? 'H' : 'S';
+  m1Update();
+});
+$('#sel-in').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.disabled) return; M1.input = b.dataset.v; m1Update(); });
+$('#sel-z').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  M1.zs = +b.dataset.v; M1.set.build(M1.zs);
+  M1.th = {S:0,T:0,H:0}; M1.cur = {S:0,T:0,H:0};
+  m1Update();
+});
+
+/* Drehzahlplan (Hebel-Darstellung) */
+function drawLever(n, k, r){
+  const svg = $('#lever'); svg.textContent = '';
+  const xS = 50, xH = 300, xT = xS + (xH - xS)*k/(1+k), y0 = 100;
+  const mx = Math.max(1, Math.abs(n.S), Math.abs(n.T), Math.abs(n.H));
+  const sc = 72 / mx, Y = v => y0 - v*sc;
+  el('line', {x1:20, y1:y0, x2:330, y2:y0, class:'lev-zero'}, svg);
+  const t0 = el('text', {x:24, y:y0 - 5, class:'t s'}, svg); t0.textContent = '0 /min';
+  const P = {S:xS, T:xT, H:xH};
+  const C = {S:'var(--c-sun)', T:'var(--c-tr)', H:'var(--c-ring)'};
+  ['S','T','H'].forEach(m => {
+    el('line', {x1:P[m], y1:20, x2:P[m], y2:180, class:'lev-grid'}, svg);
+    const t = el('text', {x:P[m], y:198, class:'t', 'text-anchor':'middle'}, svg); t.textContent = {S:'Sonne', T:'Träger', H:'Hohlrad'}[m];
+  });
+  el('line', {x1:xS, y1:Y(n.S), x2:xH, y2:Y(n.H), class:'lev-line'}, svg);
+  ['S','T','H'].forEach(m => {
+    const y = Y(n[m]);
+    if (r.fixed === m) el('rect', {x:P[m]-10, y:y0 + 3, width:20, height:8, class:'gnd'}, svg);
+    el('circle', {cx:P[m], cy:y, r:7, fill:C[m], stroke:'var(--surface)', 'stroke-width':2}, svg);
+    const right = m !== 'H';
+    const t = el('text', {x:P[m] + (right ? 11 : -11), y:y + (n[m] >= 0 ? -6 : 14), class:'t s', 'text-anchor': right ? 'start' : 'end'}, svg);
+    t.textContent = fmt(n[m]) + ' /min';
+    if (m === r.input){ const a = el('text', {x:P[m] + (right ? 11 : -11), y:y + (n[m] >= 0 ? 8 : 27), class:'t s', 'text-anchor': right ? 'start' : 'end'}, svg); a.textContent = 'Antrieb'; a.style.fill = 'var(--flow)'; }
+  });
+}
+
+/* ======================================================================
+   Stufe 2: Simpson-Automatikgetriebe
+   ====================================================================== */
+const K2Z = ZH / 24; // k = 2,5
+const GEARS = {
+  P:  {name:'P – Parken', el:{PS:1}},
+  R:  {name:'R – Rückwärtsgang', el:{K2:1, B2:1}},
+  N:  {name:'N – Neutral', el:{}},
+  D1: {name:'D – 1. Gang', el:{K1:1, F:1}},
+  D2: {name:'D – 2. Gang', el:{K1:1, B1:1}},
+  D3: {name:'D – 3. Gang', el:{K1:1, K2:1}},
+  L:  {name:'L – 1. Gang mit Motorbremse', el:{K1:1, B2:1, F:1}}
+};
+function simpson(g, nIn, k){
+  switch (g){
+    case 'D1': case 'L': { const out = k*nIn/(1+2*k); return {in:nIn, h1:nIn, s:-k*out, out, t2:0}; }
+    case 'D2': { const out = k*nIn/(1+k); return {in:nIn, h1:nIn, s:0, out, t2:k*out/(1+k)}; }
+    case 'D3': return {in:nIn, h1:nIn, s:nIn, out:nIn, t2:nIn};
+    case 'R':  { const out = -nIn/k; return {in:nIn, h1:((1+k)*out - nIn)/k, s:nIn, out, t2:0}; }
+    default:   return {in:nIn, h1:0, s:0, out:0, t2:0};
+  }
+}
+const simpsonRatio = g => { const o = simpson(g, 1, K2Z).out; return Math.abs(o) < 1e-12 ? null : 1/o; };
+// Kraftfluss je Gang: Segment-ID -> Richtung (+1 entlang der Zeichenrichtung, -1 entgegen)
+const FLOWS = {
+  D1: {in_a:1, in_b:1, k1_hub:1, k1_pi:1, k1_po:1, k1_out:1, H1:1, P1:1, S1:1, t1:1, sun_l:-1, sun_r:1, S2:1, P2:1, H2:1, out:1},
+  L:  {in_a:1, in_b:1, k1_hub:1, k1_pi:1, k1_po:1, k1_out:1, H1:1, P1:1, S1:1, t1:1, sun_l:-1, sun_r:1, S2:1, P2:1, H2:1, out:1},
+  D2: {in_a:1, in_b:1, k1_hub:1, k1_pi:1, k1_po:1, k1_out:1, H1:1, P1:1, t1:1, H2:1, out:1},
+  D3: {in_a:1, in_b:1, k1_hub:1, k1_pi:1, k1_po:1, k1_out:1, H1:1, P1:1, S1:1, k2_hub:1, k2_pi:1, k2_po:1, k2_out:1, sun_l:1, t1:1, H2:1, out:1},
+  R:  {in_a:1, k2_hub:1, k2_pi:1, k2_po:1, k2_out:1, sun_r:1, S2:1, P2:1, H2:1, out:1},
+  P: {}, N: {}
+};
+const FIXED = {D1:['t2'], L:['t2'], R:['t2'], D2:['sun'], P:['out'], N:[], D3:[]};
+const M2TXT = {
+  P: 'Parkstellung: Beide Kupplungen sind offen, der Motor dreht nur die Turbinenwelle. Die Klinke der Parksperre greift in das Parksperrenrad auf der Abtriebswelle. Das Auto kann nicht wegrollen.',
+  R: 'Rückwärtsgang: K2 verbindet die Turbinenwelle mit den Sonnenrädern, B2 hält den hinteren Träger T2 fest. Im hinteren Satz gilt also „Träger fest“: Das Hohlrad H2 dreht langsamer und entgegengesetzt. H2 sitzt auf dem Abtrieb, das Auto fährt rückwärts. Der vordere Satz dreht leer mit.',
+  N: 'Neutral: K1 und K2 sind offen. Es gibt keine Verbindung vom Motor zu den Planetensätzen, also wird keine Kraft übertragen. Anders als in P kann das Auto rollen.',
+  D1: 'Kupplung K1 treibt das vordere Hohlrad H1 an. Der Freilauf F stützt den hinteren Träger T2 am Gehäuse ab. Die Kraft teilt sich: Ein Teil geht direkt über den vorderen Träger T1 zum Abtrieb, der Rest läuft über das rückwärts drehende Sonnenrad in den hinteren Satz und über H2 zum Abtrieb. Lässt du das Gas los, überholt der Freilauf: Es gibt keine Motorbremse.',
+  L: 'Wie im 1. Gang, zusätzlich hält die Bremse B2 den Träger T2 in beiden Drehrichtungen fest. Darum bremst der Motor das Auto auch im Schiebebetrieb, z. B. bergab.',
+  D2: 'K1 treibt das vordere Hohlrad H1, die Bremse B1 hält die Sonnenräder fest. Jetzt arbeitet nur der vordere Satz: Hohlrad treibt, Sonne fest, Träger ist Abtrieb. Das ergibt eine kleine Untersetzung. Der hintere Satz dreht leer mit, der Freilauf überholt.',
+  D3: 'K1 und K2 sind geschlossen. Hohlrad und Sonnenrad drehen gleich schnell, der Planetensatz ist verblockt und läuft als Block um. Abtrieb = Motordrehzahl (i = 1). Die Zahnräder wälzen nicht mehr aufeinander ab, der Wirkungsgrad ist am besten.'
+};
+const M2 = {
+  sel:'D', gear:1, auto:false, hold:0,
+  cur:{in:0,h1:0,s:0,out:0,t2:0}, th:{in:0,h1:0,s:0,out:0,t2:0},
+  setA: new GearSet($('#f2a'), 24, {S:'sun', T:'tr', H:'ring', P:'pl'}),
+  setB: new GearSet($('#f2b'), 24, {S:'sun', T:'t2', H:'tr', P:'pl'})
+};
+const gKey = () => M2.sel === 'D' ? 'D' + M2.gear : M2.sel;
+
+/* Schema Stufe 2 */
+const S2 = makeSchem($('#s2'), r => 214 - r);
+(function buildS2(){
+  const s = S2, Y = s.Y;
+  el('line', {x1:10, y1:Y(0), x2:990, y2:Y(0), class:'axis'}, s.L.axis);
+  // Antrieb
+  s.link('in_a', 'in', `M20,${Y(6)}H110`);
+  s.link('in_b', 'in', `M110,${Y(6)}H190`);
+  // K2 (Direkt/Rückwärts) – innen am Antrieb, außen an der Sonnen-Trommel
+  s.link('k2_hub', 'in', `M110,${Y(6)}V${Y(128)}`);
+  s.rect('k2_pi', 'in', 107, 128, 6, 152);
+  s.gap('gK2', 113, 130, 6, 150);
+  s.rect('k2_po', 'sun', 119, 128, 6, 152);
+  s.link('k2_out', 'sun', `M125,${Y(140)}H560V${Y(30)}`);
+  s.link('sun_l', 'sun', `M560,${Y(30)}H440`);
+  s.link('sun_r', 'sun', `M560,${Y(30)}H620`);
+  // B1 (Bremse auf der Sonnen-Trommel)
+  s.rect('b1_r', 'sun', 300, 143, 60, 149);
+  s.gap('gB1', 300, 149, 60, 155);
+  s.rect('b1_g', 'gnd', 300, 155, 60, 161);
+  s.gnd(296, 161, 68, 170);
+  // K1 (vorwärts) – innen Antrieb, außen Hohlrad 1
+  s.link('k1_hub', 'in', `M190,${Y(6)}V${Y(97)}`);
+  s.rect('k1_pi', 'in', 187, 97, 6, 121);
+  s.gap('gK1', 193, 99, 6, 119);
+  s.rect('k1_po', 'ring', 199, 97, 6, 121);
+  s.link('k1_out', 'ring', `M205,${Y(109)}H420`);
+  // Satz 1
+  s.rect('H1', 'ring', 420, 100, 40, 118);
+  s.rect('P1', 'pl', 425, 46, 30, 94);
+  s.rect('S1', 'sun', 420, 22, 40, 38);
+  // Satz 2
+  s.rect('H2', 'tr', 600, 100, 40, 118);
+  s.rect('P2', 'pl', 605, 46, 30, 94);
+  s.rect('S2', 'sun', 600, 22, 40, 38);
+  // T1 -> H2 (kreuzt die Sonnen-Trommel: mit Halo gezeichnet)
+  s.link('t1', 'tr', `M425,${Y(70)}H520V${Y(109)}H600`, 'top', true);
+  el('circle', {cx:440, cy:Y(70), r:4, class:'pin'}, s.L.top);
+  // Abtrieb
+  s.link('out', 'tr', `M640,${Y(109)}H760V${Y(6)}H985`, 'top');
+  // T2 mit B2 und Freilauf F
+  s.link('t2', 't2', `M605,${Y(70)}H670M670,${Y(52)}V${Y(82)}`, 'top');
+  const pin2 = el('circle', {cx:620, cy:Y(70), r:4, class:'pin'}, s.L.top); pin2.style.fill = 'var(--c-t2)';
+  s.rect('b2_r', 't2', 670, 72, 6, 92);
+  s.gap('gB2', 676, 74, 6, 90);
+  s.rect('b2_g', 'gnd', 682, 72, 6, 92);
+  s.gnd(688, 70, 9, 94);
+  s.rect('f_r', 't2', 670, 42, 6, 62);
+  s.gap('gF', 676, 44, 6, 60);
+  el('circle', {cx:679, cy:Y(52), r:3, fill:'none', stroke:'var(--muted)', 'stroke-width':1.2}, s.L.parts);
+  s.rect('f_g', 'gnd', 682, 42, 6, 62);
+  s.gnd(688, 40, 9, 64);
+  // Parksperre
+  s.rect('ps', 'tr', 860, 6, 22, 28);
+  [862, 869, 876].forEach(x => el('rect', {x, y:Y(33), width:4, height:5, fill:'var(--c-tr)'}, s.L.parts));
+  s.gnd(900, 62, 18, 72);
+  M2.pawl = el('line', {class:'pawl'}, s.L.parts);
+  // Beschriftung
+  s.text(20, -14, 'Antrieb (Turbinenwelle)', 't s', 'start');
+  s.text(985, -14, 'Abtrieb zum Achsantrieb', 't s', 'end');
+  s.text(116, 162, 'K2', 't'); s.text(196, 130, 'K1', 't'); s.text(330, 182, 'B1', 't');
+  s.text(440, 124, 'H1', 't'); s.text(440, 10, 'S1', 't'); s.text(440, 96, 'P1', 't s'); s.text(478, 76, 'T1', 't', 'start');
+  s.text(620, 124, 'H2', 't'); s.text(620, 10, 'S2', 't'); s.text(620, 96, 'P2', 't s'); s.text(640, 76, 'T2', 't', 'start');
+  s.text(702, 78, 'B2', 't', 'start'); s.text(702, 48, 'F', 't', 'start'); s.text(890, 82, 'Parksperre', 't s', 'middle');
+  s.text(440, 196, 'Satz 1', 't s'); s.text(620, 196, 'Satz 2', 't s');
+})();
+const SEG_MEMBER = {
+  in_a:'in', in_b:'in', k2_hub:'in', k2_pi:'in', k1_hub:'in', k1_pi:'in',
+  k2_po:'sun', k2_out:'sun', sun_l:'sun', sun_r:'sun', b1_r:'sun', S1:'sun', S2:'sun',
+  k1_po:'h1', k1_out:'h1', H1:'h1',
+  t1:'out', H2:'out', out:'out', ps:'out',
+  t2:'t2', b2_r:'t2', f_r:'t2', P1:'p1', P2:'p2', b1_g:'gnd', b2_g:'gnd', f_g:'gnd'
+};
+function m2Update(){
+  const g = gKey(), G = GEARS[g], k = K2Z;
+  const tgt = simpson(g, ui.nIn, k); M2.tgt = tgt;
+  const i = simpsonRatio(g);
+  // Bedienung
+  $$('#gate button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === M2.sel)));
+  $$('#sel-gear button').forEach(b => { b.setAttribute('aria-pressed', String(M2.sel === 'D' && +b.dataset.v === M2.gear)); b.disabled = M2.sel !== 'D'; });
+  $('#auto').checked = M2.auto;
+  const ELN = {K1:'K1 vorwärts', K2:'K2 direkt/rückw.', B1:'B1 Bremse', B2:'B2 Bremse', F:'F Freilauf', PS:'Parksperre'};
+  $('#elems').innerHTML = Object.keys(ELN).map(e => {
+    let on = !!G.el[e], st = on ? 'zu' : 'offen';
+    if (e === 'F') st = on ? 'sperrt' : (Math.abs(tgt.t2) > .5 ? 'überholt' : 'frei');
+    if (e === 'PS') st = on ? 'eingerastet' : 'frei';
+    return `<span class="el${on ? ' on' : ''}">${ELN[e]} <i>${st}</i></span>`;
+  }).join('');
+  // Kennzahlen
+  $('#m2-i').textContent = i === null ? 'i = –' : 'i = ' + fmt(i, 2);
+  $('#m2-gear').textContent = G.name;
+  $('#m2-gear').className = 'chip ' + kindOf(i)[1];
+  $('#m2-form').innerHTML = i === null ? 'Keine Verbindung zwischen Antrieb und Abtrieb' :
+    `n<sub>ab</sub> = ${fmt(ui.nIn)} ÷ ${fmt(i, 2)} = ${fmt(tgt.out)} /min`;
+  const v = tgt.out / 3.9 * 1.95 * 60 / 1000; // Achsantrieb 3,9 und Radumfang 1,95 m (Beispielwerte)
+  const tOut = i === null ? 0 : i * ui.tIn;
+  const sup = i === null ? 0 : Math.abs(ui.tIn * (i - 1));
+  const supName = {D1:'Stütze am Freilauf F', L:'Stütze an B2', R:'Stütze an B2', D2:'Stütze an B1'}[g];
+  $('#m2-kv').innerHTML =
+    `<div><span>Abtrieb</span><b>${fmt(tgt.out)} /min</b></div>` +
+    `<div><span>Abtriebsmoment</span><b>${fmt(Math.abs(tOut))} Nm</b></div>` +
+    (supName ? `<div><span>${supName}</span><b>${fmt(sup)} Nm</b></div>` : '') +
+    `<div><span>Tempo (Beispiel)</span><b>${g === 'P' || g === 'N' ? '–' : fmt(Math.abs(v)) + ' km/h'}${g === 'R' ? ' rückw.' : ''}</b></div>`;
+  // Leistungsaufteilung (verlustfrei, aus dem Momentengleichgewicht der Sätze)
+  const sb = $('#m2-splitbox'), sp = $('#m2-split'), sn = $('#m2-splitnote');
+  if (g === 'D1' || g === 'L'){
+    const a = (1+k)/(1+2*k), b = k/(1+2*k);
+    sp.innerHTML = `<div style="width:${a*100}%;background:var(--c-tr)">T1 direkt ${fmt(a*100)} %</div><div style="width:${b*100}%;background:var(--c-sun);color:#1b1b1b">über Sonne + Satz 2 ${fmt(b*100)} %</div>`;
+    sn.textContent = 'Die Leistung des Motors läuft auf zwei Wegen zum Abtrieb und wird dort wieder zusammengeführt (Leistungsverzweigung).';
+    sb.hidden = false;
+  } else if (g === 'D3'){
+    const a = k/(1+k), b = 1/(1+k);
+    sp.innerHTML = `<div style="width:${a*100}%;background:var(--c-ring)">über K1 ${fmt(a*100)} %</div><div style="width:${b*100}%;background:var(--c-sun);color:#1b1b1b">über K2 ${fmt(b*100)} %</div>`;
+    sn.textContent = 'Das Drehmoment teilt sich im Verhältnis der Zähnezahlen auf die beiden Kupplungen auf. Darum ist K2 kleiner gebaut als K1.';
+    sb.hidden = false;
+  } else if (g === 'D2' || g === 'R'){
+    sp.innerHTML = `<div style="width:100%;background:${g === 'D2' ? 'var(--c-ring)' : 'var(--c-sun)'};${g === 'R' ? 'color:#1b1b1b' : ''}">100 % über ${g === 'D2' ? 'K1 → H1 → T1' : 'K2 → Sonne → H2'}</div>`;
+    sn.textContent = g === 'D2' ? 'Nur der vordere Satz überträgt Kraft.' : 'Nur der hintere Satz überträgt Kraft.';
+    sb.hidden = false;
+  } else sb.hidden = true;
+  $('#m2-expl').textContent = M2TXT[g];
+  const rows = [['Turbinenwelle (Antrieb)','--c-in','in'],['Hohlrad H1','--c-ring','h1'],['Sonnenräder S1 + S2','--c-sun','s'],['Abtrieb (T1 + H2)','--c-tr','out'],['Träger T2','--c-t2','t2']];
+  $('#m2-tbl tbody').innerHTML = rows.map(([n, c, key]) => `<tr><td><span class="dot" style="background:var(${c})"></span> ${n}</td><td class="num">${fmt(tgt[key])} /min</td><td>${dirTxt(tgt[key])}</td></tr>`).join('');
+  // Schaltmatrix
+  $('#matrix tbody').innerHTML = ['P','R','N','D1','D2','D3','L'].map(key => {
+    const E = GEARS[key].el, ii = simpsonRatio(key);
+    const c = x => E[x] ? '●' : '<span class="muted">–</span>';
+    const lbl = {P:'P', R:'R', N:'N', D1:'D · 1. Gang', D2:'D · 2. Gang', D3:'D · 3. Gang', L:'L · 1. Gang'}[key];
+    return `<tr class="clk${key === g ? ' cur' : ''}" data-g="${key}" tabindex="0"><td>${lbl}</td><td>${c('K1')}</td><td>${c('K2')}</td><td>${c('B1')}</td><td>${c('B2')}</td><td>${c('F')}</td><td class="num">${ii === null ? (key === 'P' ? 'gesperrt' : '–') : fmt(ii, 2)}</td></tr>`;
+  }).join('');
+  // Schema + Vorderansichten
+  const F = (ui.nIn > 0 ? FLOWS[g] : {}) || {};
+  const fixed = FIXED[g];
+  const pl1 = tgt.out - (24/18)*(tgt.s - tgt.out), pl2 = tgt.t2 - (24/18)*(tgt.s - tgt.t2);
+  const spd = Object.assign({p1: Math.abs(pl1) + Math.abs(tgt.out), p2: Math.abs(pl2) + Math.abs(tgt.t2), gnd:0}, tgt);
+  const memState = m => fixed.includes(m) ? 'fixed' : (m === 'gnd' ? 'turn' : (Math.abs(spd[m]) > .5 ? 'turn' : 'idle'));
+  Object.keys(SEG_MEMBER).forEach(id => {
+    const m = SEG_MEMBER[id];
+    if (F[id]) S2.setState(id, 'flow', F[id] < 0); else S2.setState(id, memState(m));
+  });
+  S2.setState('gK1', !!G.el.K1); S2.setState('gK2', !!G.el.K2); S2.setState('gB1', !!G.el.B1);
+  S2.setState('gB2', !!G.el.B2); S2.setState('gF', !!G.el.F);
+  const Y = S2.Y, ps = !!G.el.PS;
+  M2.pawl.setAttribute('x1', 906); M2.pawl.setAttribute('y1', Y(64));
+  M2.pawl.setAttribute('x2', ps ? 872 : 884); M2.pawl.setAttribute('y2', ps ? Y(31) : Y(46));
+  M2.pawl.classList.toggle('on', ps);
+  const fs = (seg, m) => F[seg] ? 'flow' : memState(m);
+  M2.setA.setStates({S: fs('S1','sun'), T: F.t1 ? 'flow' : memState('out'), H: fs('H1','h1'), P: fs('P1','p1')});
+  M2.setB.setStates({S: fs('S2','sun'), T: memState('t2'), H: fs('H2','out'), P: fs('P2','p2')});
+}
+$('#gate').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; M2.sel = b.dataset.v; if (M2.sel !== 'D') stopAuto(false); m2Update(); });
+$('#sel-gear').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.disabled) return; M2.gear = +b.dataset.v; stopAuto(false); m2Update(); });
+function pickGear(key){
+  if (key.startsWith('D')){ M2.sel = 'D'; M2.gear = +key[1]; } else M2.sel = key;
+  stopAuto(false); m2Update();
+}
+$('#matrix').addEventListener('click', e => { const tr = e.target.closest('tr[data-g]'); if (tr) pickGear(tr.dataset.g); });
+$('#matrix').addEventListener('keydown', e => { if (e.key !== 'Enter' && e.key !== ' ') return; const tr = e.target.closest('tr[data-g]'); if (!tr) return; e.preventDefault(); pickGear(tr.dataset.g); });
+$('#auto').addEventListener('change', e => {
+  M2.auto = e.target.checked;
+  if (M2.auto){ M2.sel = 'D'; M2.gear = 1; M2.hold = 0; ninEl.value = 1000; syncCommon(); }
+  m2Update();
+});
+function stopAuto(update=true){ if (!M2.auto) return; M2.auto = false; $('#auto').checked = false; if (update) m2Update(); }
+
+/* Anfahr-Demo: Drehzahl steigt bis 3000 /min, dann Hochschalten. Die Abtriebsdrehzahl bleibt beim Schalten gleich,
+   die Motordrehzahl fällt um das Verhältnis der Übersetzungen. */
+function autoTick(dt){
+  if (!M2.auto || M2.sel !== 'D') return;
+  let n = +ninEl.value;
+  if (M2.gear === 3 && n >= 3000){
+    M2.hold += dt;
+    if (M2.hold > 3){ M2.gear = 1; M2.hold = 0; n = 1000; }
+  } else {
+    n = Math.min(3000, n + 520*dt);
+    if (n >= 3000 && M2.gear < 3){
+      const iOld = simpsonRatio('D' + M2.gear), iNew = simpsonRatio('D' + (M2.gear + 1));
+      M2.gear++; n = 3000 * iNew / iOld;
+    }
+  }
+  ninEl.value = n; syncCommon(); m2Update();
+}
+
+/* ======================================================================
+   Quiz
+   ====================================================================== */
+const QUIZ = [
+  {q:'Welche drei Glieder hat ein einfacher Planetensatz?', o:['Sonnenrad, Planetenträger, Hohlrad','Ritzel, Tellerrad, Differential','Kupplung, Bremse, Freilauf'], a:0, e:'Die Planetenräder sitzen auf dem Träger. Nach außen angeschlossen werden Sonnenrad, Träger und Hohlrad.'},
+  {q:'Hohlrad fest, Sonnenrad treibt an. Was passiert am Träger?', o:['Er dreht schneller als die Sonne','Er dreht langsamer, gleiche Richtung','Er dreht rückwärts'], a:1, e:'Das ist die größte Untersetzung (i = 1 + k). Probiere es in Stufe 1 aus.'},
+  {q:'Wie erhält man im einfachen Planetensatz einen Rückwärtsgang?', o:['Sonnenrad festhalten','Hohlrad festhalten','Planetenträger festhalten'], a:2, e:'Steht der Träger, werden die Planeten zu Zwischenrädern. Sonne und Hohlrad drehen gegeneinander.'},
+  {q:'Was passiert, wenn zwei Glieder miteinander verbunden werden?', o:['Leerlauf','Der Satz läuft als Block um, i = 1','Die Übersetzung verdoppelt sich'], a:1, e:'Die Planeten können sich nicht mehr auf ihren Achsen drehen. Das ist der Direktgang.'},
+  {q:'Wozu dienen Kupplungen und Bremsen im Automatikgetriebe?', o:['Sie verschieben Zahnräder','Sie verbinden Glieder mit dem Antrieb oder halten sie am Gehäuse fest','Sie kühlen das Getriebeöl'], a:1, e:'Die Zahnräder bleiben immer im Eingriff. Geschaltet wird, indem man festlegt, welches Glied angetrieben und welches abgestützt wird.'},
+  {q:'Im 2. Gang des Simpson-Satzes hält B1 die Sonnenräder fest. Welche Schaltung des Planetensatzes ist das?', o:['Hohlrad treibt, Sonne fest, Träger ist Abtrieb','Sonne treibt, Hohlrad fest, Träger ist Abtrieb','Träger fest, Sonne treibt'], a:0, e:'Das ergibt die kleine Untersetzung i = 1 + 1/k = 1,4.'},
+  {q:'Warum hat der 1. Gang in D einen Freilauf statt nur der Bremse B2?', o:['Damit das Getriebe leiser ist','Er gibt beim Hochschalten in den 2. Gang von selbst frei – die Schaltung wird weich','Damit der Rückwärtsgang schneller einlegt'], a:1, e:'Beim Wechsel 1→2 muss nur B1 schließen. Der Freilauf überholt dann automatisch. Nachteil: keine Motorbremse im 1. Gang, dafür gibt es Stellung L.'},
+  {q:'Der Motor dreht mit 2400 /min im 1. Gang (i = 2,4). Wie schnell dreht der Abtrieb?', o:['5760 /min','2400 /min','1000 /min'], a:2, e:'n_ab = n_an ÷ i = 2400 ÷ 2,4 = 1000 /min. Das Drehmoment steigt dafür um den Faktor 2,4.'}
+];
+const quizState = QUIZ.map(() => null);
+function renderQuiz(){
+  const box = $('#quiz');
+  box.innerHTML = QUIZ.map((q, qi) => `<div class="q"><p>${qi + 1}. ${q.q}</p><div class="opts">${q.o.map((o, oi) => {
+    const st = quizState[qi]; let cls = '';
+    if (st !== null){ if (oi === q.a) cls = 'right'; else if (oi === st) cls = 'wrong'; }
+    return `<button data-q="${qi}" data-o="${oi}" class="${cls}" ${st !== null ? 'aria-disabled="true"' : ''}>${o}</button>`;
+  }).join('')}</div>${quizState[qi] !== null ? `<p class="fb">${quizState[qi] === q.a ? '✔ Richtig. ' : '✘ Leider falsch. '}${q.e}</p>` : ''}</div>`).join('');
+  const done = quizState.filter(x => x !== null).length, ok = quizState.filter((x, i) => x === QUIZ[i].a).length;
+  $('#score').textContent = done ? `${ok} / ${QUIZ.length}` : '';
+}
+$('#quiz').addEventListener('click', e => {
+  const b = e.target.closest('button[data-q]'); if (!b) return;
+  const qi = +b.dataset.q; if (quizState[qi] !== null) return;
+  quizState[qi] = +b.dataset.o; renderQuiz();
+});
+$('#qreset').addEventListener('click', () => { quizState.fill(null); renderQuiz(); });
+
+/* ======================================================================
+   Tabs, Animation
+   ====================================================================== */
+let active = 'satz';
+function showTab(id){
+  active = id;
+  $$('.tab').forEach(t => t.setAttribute('aria-selected', String(t.id === 'tab-' + id)));
+  $$('section[role=tabpanel]').forEach(p => { p.hidden = p.id !== 'p-' + id; });
+  $('#common').hidden = id === 'wissen';
+  if (id !== 'auto') stopAuto(false);
+  try { localStorage.setItem('pg-tab', id); } catch (e) {}
+  refresh();
+}
+$$('.tab').forEach(t => t.addEventListener('click', () => showTab(t.id.slice(4))));
+$('.tabs').addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  const ids = ['satz','auto','wissen'], i = ids.indexOf(active);
+  const n = ids[(i + (e.key === 'ArrowRight' ? 1 : 2)) % 3];
+  showTab(n); $('#tab-' + n).focus();
+});
+function refresh(){ if (active === 'satz') m1Update(); else if (active === 'auto') m2Update(); }
+
+// Drehzahlen weich nachführen: eine Linearkombination zulässiger Zustände erfüllt die Willis-Gleichung weiterhin.
+function ease(cur, tgt, dt){ const a = 1 - Math.exp(-dt/0.28); for (const k in tgt) cur[k] += (tgt[k] - cur[k])*a; }
+const w = n => n/60*TAU*ui.f; // sichtbare Winkelgeschwindigkeit in Zeitlupe
+let last = performance.now();
+function frame(t){
+  const dt = Math.min(0.05, (t - last)/1000); last = t;
+  if (ui.playing){
+    if (active === 'satz' && M1.tgt){
+      ease(M1.cur, M1.tgt, dt);
+      for (const m of ['S','T','H']) M1.th[m] += w(M1.cur[m])*dt;
+    } else if (active === 'auto' && M2.tgt){
+      autoTick(dt);
+      ease(M2.cur, M2.tgt, dt);
+      for (const m in M2.cur) M2.th[m] += w(M2.cur[m])*dt;
+    }
+  }
+  if (active === 'satz') M1.set.render(M1.th.S, M1.th.T, M1.th.H);
+  else if (active === 'auto'){
+    M2.setA.render(M2.th.s, M2.th.out, M2.th.h1);
+    M2.setB.render(M2.th.s, M2.th.t2, M2.th.out);
+  }
+  requestAnimationFrame(frame);
+}
+
+syncCommon(); syncPlay(); renderQuiz();
+let startTab = 'satz';
+try { const s = localStorage.getItem('pg-tab'); if (s === 'auto' || s === 'wissen') startTab = s; } catch (e) {}
+const hashTab = (location.hash || '').slice(1);
+if (['satz','auto','wissen'].includes(hashTab)) startTab = hashTab;
+m2Update(); showTab(startTab);
+requestAnimationFrame(frame);
+
+/* Service Worker (nur über http/https, nicht als lokale Datei) */
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && !window.__NO_SW__){
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+/* Prüfhilfe für tools/validate-planeten.js */
+window.validatePlanetengetriebe = function(){
+  const errs = [], near = (a, b) => Math.abs(a - b) < 1e-9;
+  const k = 2.5;
+  [['H','S',1+k],['S','H',1+1/k],['S','T',k/(1+k)],['H','T',1/(1+k)],['T','S',-k],['T','H',-1/k],['block','S',1]].forEach(([f, a, exp]) => {
+    const i = m1Ratio(f, a, k); if (!near(i, exp)) errs.push(`Stufe 1 ${f}/${a}: i=${i}, erwartet ${exp}`);
+  });
+  [['D1',(1+2*k)/k],['D2',(1+k)/k],['D3',1],['R',-k],['L',(1+2*k)/k]].forEach(([g, exp]) => {
+    const i = simpsonRatio(g); if (!near(i, exp)) errs.push(`Simpson ${g}: i=${i}, erwartet ${exp}`);
+    const n = simpson(g, 1000, k);
+    if (!near(n.s + k*n.h1, (1+k)*n.out)) errs.push(`Simpson ${g}: Satz 1 verletzt Willis`);
+    if (!near(n.s + k*n.out, (1+k)*n.t2)) errs.push(`Simpson ${g}: Satz 2 verletzt Willis`);
+  });
+  [18,24,30,36].forEach(z => { if ((z + ZH) % NPL) errs.push(`Zähnezahl ${z}: Montagebedingung verletzt`); if ((ZH - z) % 2) errs.push(`Zähnezahl ${z}: Planeten nicht ganzzahlig`); });
+  if (simpsonRatio('P') !== null || simpsonRatio('N') !== null) errs.push('P/N dürfen kein Drehmoment übertragen');
+  return {ok: errs.length === 0, errors: errs};
+};
+</script>
+</body>
+</html>
